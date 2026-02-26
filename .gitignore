@@ -86,3 +86,7 @@ upi/
 1.pdf
 Screenshot *.png
 .vscode/
+
+# Vite build artifacts
+script-legacy.js
+*.js.map

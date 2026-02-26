@@ -4,7 +4,11 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "tests/**",
+      "vitest.config.js",
+      "vite.config.js",
+      "*.map"
     ],
     "headers": [
       {

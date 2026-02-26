@@ -1,152 +1,242 @@
 rules_version = '2';
+
+// =============================================================================
+// AMOGHA CAFE — FIRESTORE SECURITY RULES
+// =============================================================================
+//
+// IMPORTANT SECURITY NOTE:
+// This app uses a custom phone+PIN authentication system, NOT Firebase Auth.
+// Because of this, request.auth is always null and true row-level security
+// (e.g. "user can only edit their own data") is NOT enforceable here.
+//
+// These rules provide the best protection achievable without Firebase Auth:
+//   - Field validation on creates (required fields, correct types)
+//   - DELETE blocked on all collections
+//   - Admin-only collections (menu, specials, heroSlides, addons, testimonials,
+//     socialPosts, settings) are read-only from client. Admin operations must
+//     go through Firebase Console or a future Cloud Function with Admin SDK.
+//   - Coupons: only usedCount can be updated (not discount/type/etc.)
+//   - Gift cards: only balance and redeemedAt can be updated
+//   - Reviews: immutable after creation
+//
+// To enable true row-level security in the future:
+//   1. Migrate to Firebase Anonymous Auth or phone Auth
+//   2. Add request.auth.uid == resource.data.phone checks
+//   3. Add admin role via Custom Claims
+// =============================================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users collection: anyone can create, only matching user can read/update
+    // -------------------------------------------------------------------------
+    // HELPER FUNCTIONS
+    // -------------------------------------------------------------------------
+
+    function hasFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function isString(val) {
+      return val is string && val.size() > 0;
+    }
+
+    function isNumber(val) {
+      return val is number;
+    }
+
+    // -------------------------------------------------------------------------
+    // USERS
+    // -------------------------------------------------------------------------
     match /users/{phone} {
-      allow create: if true;
       allow read: if true;
-      allow update: if true;
+      allow create: if hasFields(['name', 'phone', 'pin', 'createdAt'])
+                    && isString(request.resource.data.name)
+                    && isString(request.resource.data.phone)
+                    && isString(request.resource.data.pin)
+                    && request.resource.data.phone == phone;
+      allow update: if true;  // loyalty points, tier, order history, preferences
       allow delete: if false;
     }
 
-    // Orders collection: anyone can create and read, update for status changes
+    // -------------------------------------------------------------------------
+    // ORDERS
+    // -------------------------------------------------------------------------
     match /orders/{orderId} {
-      allow create: if true;
       allow read: if true;
-      allow update: if true;
+      allow create: if hasFields(['items', 'total', 'customer', 'phone', 'status', 'createdAt'])
+                    && isString(request.resource.data.customer)
+                    && isString(request.resource.data.phone)
+                    && isNumber(request.resource.data.total)
+                    && request.resource.data.total > 0
+                    && request.resource.data.items is list
+                    && request.resource.data.items.size() > 0;
+      allow update: if true;  // kitchen status updates, payment status, tracking
       allow delete: if false;
     }
 
-    // Messages collection: kitchen-FOH chat
-    match /messages/{msgId} {
-      allow create: if true;
-      allow read: if true;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    // Reviews collection: customer ratings & reviews
-    match /reviews/{reviewId} {
-      allow create: if true;
-      allow read: if true;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    // Reservations collection: table bookings
-    match /reservations/{resId} {
-      allow create: if true;
-      allow read: if true;
-      allow update: if true;
-      allow delete: if false;
-    }
-
-    // Inventory collection: stock levels (cross-device sync)
-    match /inventory/{itemId} {
-      allow create: if true;
-      allow read: if true;
-      allow update: if true;
-      allow delete: if false;
-    }
-
-    // Tables collection: table status management
-    match /tables/{tableId} {
-      allow create: if true;
-      allow read: if true;
-      allow update: if true;
-      allow delete: if false;
-    }
-
-    // Referrals collection: referral program tracking
-    match /referrals/{refId} {
-      allow create: if true;
-      allow read: if true;
-      allow update: if true;
-      allow delete: if false;
-    }
-
-    // Menu collection: menu items catalog
+    // -------------------------------------------------------------------------
+    // MENU — read-only from client
+    // Admin writes go through Firebase Console or Admin SDK Cloud Function.
+    // -------------------------------------------------------------------------
     match /menu/{itemId} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if true;
+      allow write: if false;
     }
 
-    // Specials collection: today's specials
+    // -------------------------------------------------------------------------
+    // SPECIALS — read-only from client
+    // -------------------------------------------------------------------------
     match /specials/{specialId} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if true;
+      allow write: if false;
     }
 
-    // Hero slideshow: admin-managed slides
+    // -------------------------------------------------------------------------
+    // HERO SLIDES — read-only from client
+    // -------------------------------------------------------------------------
     match /heroSlides/{slideId} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if true;
+      allow write: if false;
     }
 
-    // Coupons collection: promo codes
-    match /coupons/{code} {
-      allow read: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if true;
-    }
-
-    // Addons collection: item customization add-ons
+    // -------------------------------------------------------------------------
+    // ADDONS — read-only from client
+    // -------------------------------------------------------------------------
     match /addons/{addonId} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if true;
+      allow write: if false;
     }
 
-    // Gift cards collection: digital gift cards
+    // -------------------------------------------------------------------------
+    // TESTIMONIALS — read-only from client
+    // -------------------------------------------------------------------------
+    match /testimonials/{tid} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // SOCIAL POSTS — read-only from client
+    // -------------------------------------------------------------------------
+    match /socialPosts/{postId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // SETTINGS — read-only from client
+    // -------------------------------------------------------------------------
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // COUPONS
+    // Only usedCount may be updated (prevents tampering with discount/type/etc.)
+    // -------------------------------------------------------------------------
+    match /coupons/{code} {
+      allow read: if true;
+      allow create: if false;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['usedCount']);
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // GIFT CARDS
+    // -------------------------------------------------------------------------
     match /giftCards/{code} {
       allow read: if true;
-      allow create: if true;
+      allow create: if hasFields(['code', 'balance', 'recipientPhone', 'createdAt'])
+                    && isNumber(request.resource.data.balance)
+                    && request.resource.data.balance > 0;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['balance', 'redeemedAt']);
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // REVIEWS — immutable after creation
+    // -------------------------------------------------------------------------
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if hasFields(['rating', 'createdAt'])
+                    && isNumber(request.resource.data.rating)
+                    && request.resource.data.rating >= 1
+                    && request.resource.data.rating <= 5;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // RESERVATIONS
+    // -------------------------------------------------------------------------
+    match /reservations/{resId} {
+      allow read: if true;
+      allow create: if hasFields(['name', 'phone', 'date', 'time', 'partySize', 'status', 'createdAt'])
+                    && isString(request.resource.data.name)
+                    && isString(request.resource.data.phone)
+                    && request.resource.data.partySize is int
+                    && request.resource.data.partySize > 0;
+      allow update: if true;  // admin/kitchen updates status
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // INVENTORY — kitchen staff updates stock counts
+    // -------------------------------------------------------------------------
+    match /inventory/{itemId} {
+      allow read: if true;
+      allow create: if false;
       allow update: if true;
       allow delete: if false;
     }
 
-    // Notifications collection: order status notifications
+    // -------------------------------------------------------------------------
+    // TABLES — status managed by kitchen/display
+    // -------------------------------------------------------------------------
+    match /tables/{tableId} {
+      allow read: if true;
+      allow create: if false;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // MESSAGES — kitchen-FOH chat, immutable after creation
+    // -------------------------------------------------------------------------
+    match /messages/{msgId} {
+      allow read: if true;
+      allow create: if hasFields(['text', 'createdAt'])
+                    && isString(request.resource.data.text);
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // NOTIFICATIONS — created by system, updated (mark as read) by client
+    // -------------------------------------------------------------------------
     match /notifications/{notifId} {
       allow read: if true;
       allow create: if true;
-      allow update: if true;
+      allow update: if true;  // mark as read
       allow delete: if false;
     }
 
-    // Testimonials collection: customer video testimonials
-    match /testimonials/{tid} {
+    // -------------------------------------------------------------------------
+    // REFERRALS
+    // -------------------------------------------------------------------------
+    match /referrals/{refId} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if true;
-    }
-
-    // Social posts collection: Instagram-style feed
-    match /socialPosts/{postId} {
-      allow read: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if true;
-    }
-
-    // Settings collection: global app settings
-    match /settings/{docId} {
-      allow read: if true;
-      allow create: if true;
-      allow update: if true;
+      allow create: if hasFields(['code', 'referrerId', 'createdAt']);
+      allow update: if true;  // increment usageCount
       allow delete: if false;
     }
 
-    // Block everything else
+    // -------------------------------------------------------------------------
+    // DEFAULT DENY — all other paths
+    // -------------------------------------------------------------------------
     match /{document=**} {
       allow read, write: if false;
     }

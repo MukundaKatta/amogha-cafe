@@ -2127,7 +2127,7 @@
             <div class="mac-image-section" style="margin-top:0.5rem;">
                 <label class="mac-img-upload-btn" for="menu-item-image" style="display:inline-flex;margin-bottom:0.4rem;">&#128247; Attach Image (optional)</label>
                 <input type="file" id="menu-item-image" accept="image/jpeg,image/png,image/webp" style="display:none">
-                <img id="new-item-img-preview" src="" alt="" style="display:none;width:100%;max-height:100px;object-fit:cover;border-radius:8px;margin-top:0.4rem;border:1px solid rgba(212,160,23,0.12);">
+                <img id="new-item-img-preview" src="" alt="" loading="lazy" style="display:none;width:100%;max-height:100px;object-fit:cover;border-radius:8px;margin-top:0.4rem;border:1px solid rgba(212,160,23,0.12);">
             </div>
             <button class="add-special-confirm" onclick="addMenuItem()">Add to Menu</button>
         </div>
@@ -2581,7 +2581,7 @@
                     '</div>' +
                     '<div class="mac-cat">' + escHtml(item.category) + '</div>' +
                     '<div class="mac-image-section">' +
-                        '<img class="mac-img-preview" id="img-preview-' + safeKey + '" src="' + (item.imageUrl ? escHtml(item.imageUrl) : '') + '" alt="" style="' + (item.imageUrl ? 'display:block' : 'display:none') + '">' +
+                        '<img class="mac-img-preview" id="img-preview-' + safeKey + '" src="' + (item.imageUrl ? escHtml(item.imageUrl) : '') + '" alt="" loading="lazy" style="' + (item.imageUrl ? 'display:block' : 'display:none') + '">' +
                         '<div class="mac-img-controls">' +
                             '<label class="mac-img-upload-btn" for="img-input-' + safeKey + '" title="Upload image">&#128247; Upload</label>' +
                             '<input type="file" id="img-input-' + safeKey + '" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadMenuImage(\'' + escapedId + '\')">' +
@@ -2895,7 +2895,7 @@
                 var isVideo = slide.type === 'video';
                 var previewHtml = isVideo
                     ? '<video class="sc-preview" src="' + escHtml(slide.url) + '" muted loop playsinline></video>'
-                    : '<img class="sc-preview" src="' + escHtml(slide.url) + '" alt="">';
+                    : '<img class="sc-preview" src="' + escHtml(slide.url) + '" alt="" loading="lazy">';
                 var activeClass = slide.active ? '' : ' sc-inactive';
                 var checked = slide.active ? ' checked' : '';
 
@@ -3117,7 +3117,7 @@
             }
             container.innerHTML = allSocialPosts.map(function(p) {
                 return '<div class="media-admin-card">' +
-                    '<img class="media-thumb-img" src="' + escHtml(p.imageUrl) + '" alt="">' +
+                    '<img class="media-thumb-img" src="' + escHtml(p.imageUrl) + '" alt="" loading="lazy">' +
                     '<div class="media-info">' +
                         '<input class="media-caption-input" value="' + escHtml(p.caption || '') + '" placeholder="Caption" onchange="updateSocialPost(\'' + p.id + '\', \'caption\', this.value)">' +
                         '<input class="media-caption-input" value="' + escHtml(p.link || '') + '" placeholder="Link (optional)" onchange="updateSocialPost(\'' + p.id + '\', \'link\', this.value)">' +
