@@ -83,10 +83,37 @@ export function addToCart(itemName, price, btnEl) {
         return;
     }
 
-    finalizeAddToCart(itemName, parseFloat(price), spiceLevel, []);
+    finalizeAddToCart(itemName, parseFloat(price), spiceLevel, [], btnEl);
 }
 
-export function finalizeAddToCart(itemName, price, spiceLevel, addons) {
+// Fly-to-cart animation
+function flyToCart(btnEl) {
+    var cartIcon = document.getElementById('cart-icon');
+    if (!btnEl || !cartIcon) return;
+    var btnRect = btnEl.getBoundingClientRect();
+    var cartRect = cartIcon.getBoundingClientRect();
+    var dot = document.createElement('div');
+    dot.className = 'cart-fly-item';
+    dot.style.left = (btnRect.left + btnRect.width / 2 - 6) + 'px';
+    dot.style.top  = (btnRect.top  + btnRect.height / 2 - 6) + 'px';
+    document.body.appendChild(dot);
+    // Force reflow then animate
+    requestAnimationFrame(function() {
+        dot.style.transition = 'left 0.55s cubic-bezier(0.4,0,0.2,1), top 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.55s, transform 0.55s';
+        dot.style.left    = (cartRect.left + cartRect.width / 2 - 6) + 'px';
+        dot.style.top     = (cartRect.top  + cartRect.height / 2 - 6) + 'px';
+        dot.style.opacity = '0';
+        dot.style.transform = 'scale(0.3)';
+    });
+    setTimeout(function() { dot.remove(); }, 600);
+    // Jiggle the cart icon
+    cartIcon.classList.remove('cart-jiggle');
+    void cartIcon.offsetWidth;
+    cartIcon.classList.add('cart-jiggle');
+    setTimeout(function() { cartIcon.classList.remove('cart-jiggle'); }, 400);
+}
+
+export function finalizeAddToCart(itemName, price, spiceLevel, addons, btnEl) {
     var addonKey = addons.map(function(a) { return a.name; }).sort().join(',');
     var existingItem = cart.find(function(item) {
         var itemAddonKey = (item.addons || []).map(function(a) { return a.name; }).sort().join(',');
@@ -105,10 +132,19 @@ export function finalizeAddToCart(itemName, price, spiceLevel, addons) {
         });
     }
 
+    // Micro-interactions
+    if (btnEl) {
+        btnEl.classList.remove('cart-adding');
+        void btnEl.offsetWidth;
+        btnEl.classList.add('cart-adding');
+        flyToCart(btnEl);
+    }
+
     updateCartCount();
     saveCart();
     updateButtonState(itemName);
     updateFloatingCart();
+    updateFloatingCartBar();
 }
 
 export function openAddonPicker(itemName, basePrice) {
@@ -281,6 +317,25 @@ export function updateFloatingCart() {
 
     // Update mobile cart FAB
     updateCartFab();
+}
+
+// ===== FLOATING CART BAR (mobile sticky bottom) =====
+export function updateFloatingCartBar() {
+    var bar = document.getElementById('floating-cart-bar');
+    if (!bar) return;
+    var count = cart.reduce(function(t, i) { return t + i.quantity; }, 0);
+    var subtotal = cart.reduce(function(t, i) { return t + i.price * i.quantity; }, 0);
+    if (count === 0) {
+        bar.classList.remove('visible');
+        return;
+    }
+    var countEl   = bar.querySelector('.floating-cart-count');
+    var totalEl   = bar.querySelector('.floating-cart-total');
+    var labelEl   = bar.querySelector('.floating-cart-label');
+    if (countEl) countEl.textContent = count;
+    if (totalEl) totalEl.textContent = '₹' + subtotal;
+    if (labelEl) labelEl.textContent = count === 1 ? '1 item' : count + ' items';
+    bar.classList.add('visible');
 }
 
 export function updateCartFab(count) {
@@ -491,7 +546,7 @@ export function initCart() {
         if (e.target.classList.contains('add-to-cart') && !e.target.classList.contains('has-qty')) {
             const itemName = e.target.dataset.item;
             const price = e.target.dataset.price;
-            addToCart(itemName, price);
+            addToCart(itemName, price, e.target);
             showCartCheckmark(e.target);
         }
     });
@@ -508,6 +563,7 @@ export function initCart() {
 
 Object.assign(window, {
     addToCart,
+    finalizeAddToCart,
     updateQuantity,
     removeItem,
     clearCart,
@@ -515,5 +571,6 @@ Object.assign(window, {
     toggleAddonOption,
     confirmAddonSelection,
     closeFloatingCart,
-    closeSignInPrompt
+    closeSignInPrompt,
+    updateFloatingCartBar
 });

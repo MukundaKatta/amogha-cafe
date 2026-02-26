@@ -1889,6 +1889,7 @@
             <button class="admin-tab" data-tab="reviews" onclick="switchTab('reviews',this)">Reviews</button>
             <button class="admin-tab" data-tab="crm" onclick="switchTab('crm',this)">Customers</button>
             <button class="admin-tab" data-tab="giftcards" onclick="switchTab('giftcards',this)">Gift Cards</button>
+            <button class="admin-tab" data-tab="daily-special" onclick="switchTab('daily-special',this);loadDailySpecialAdmin()">Daily Special</button>
         </div>
 
         <div class="filters">
@@ -2045,6 +2046,42 @@
         </div>
 
         <!-- Gift Cards Panel -->
+        <!-- Daily Special Panel -->
+        <div id="daily-special-panel" class="admin-panel" style="display:none;">
+            <div class="panel-header">
+                <h2 class="panel-title">Daily Special</h2>
+                <button class="btn-primary" onclick="saveDailySpecial()">Save & Publish</button>
+            </div>
+            <div style="max-width:600px">
+                <p style="color:#a09080;font-size:0.85rem;margin-bottom:1.5rem">This special appears on the homepage with a countdown to midnight. Toggle "Active" to show or hide it.</p>
+                <div class="form-row" style="margin-bottom:1rem">
+                    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;margin-bottom:1rem">
+                        <input type="checkbox" id="ds-active" style="accent-color:#D4A017;width:18px;height:18px">
+                        <span style="font-weight:600;color:#e8dcc8">Active (show on site)</span>
+                    </label>
+                </div>
+                <div style="display:grid;gap:1rem">
+                    <div>
+                        <label style="display:block;font-size:0.78rem;color:#a09080;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.07em">Title</label>
+                        <input type="text" id="ds-title" placeholder="e.g. Hyderabadi Biryani Special" style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.78rem;color:#a09080;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.07em">Description</label>
+                        <textarea id="ds-desc" rows="2" placeholder="e.g. Slow-cooked dum biryani with raita and salan" style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem;resize:vertical"></textarea>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.78rem;color:#a09080;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.07em">Price (₹)</label>
+                        <input type="number" id="ds-price" placeholder="e.g. 299" style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.78rem;color:#a09080;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.07em">Image URL (optional)</label>
+                        <input type="url" id="ds-image" placeholder="https://..." style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem">
+                    </div>
+                </div>
+                <div id="ds-msg" style="margin-top:1rem;font-size:0.85rem;display:none"></div>
+            </div>
+        </div>
+
         <div id="giftcards-panel" class="admin-panel" style="display:none;">
             <div class="panel-header">
                 <h2 class="panel-title">Gift Cards</h2>
@@ -2462,7 +2499,15 @@
         }
 
         function updateStatus(orderId, newStatus, customerName, phone) {
-            db.collection('orders').doc(orderId).update({ status: newStatus }).then(function() {
+            var updateData = { status: newStatus };
+            // If marking as preparing, prompt for ETA and record start time
+            if (newStatus === 'preparing') {
+                var eta = prompt('Set ETA for this order (minutes):', '20');
+                if (eta === null) return; // staff cancelled
+                updateData.etaMinutes = parseInt(eta) || 20;
+                updateData.preparingAt = new Date().toISOString();
+            }
+            db.collection('orders').doc(orderId).update(updateData).then(function() {
                 // Write notification for customer
                 if (phone) {
                     var statusMessages = {
@@ -3644,6 +3689,63 @@
                 return '<div class="crm-order-row"><span class="crm-order-date">' + date + '</span><span class="crm-order-items">' + escHtml(items) + '</span><span class="crm-order-total">\u20B9' + (o.total || 0) + '</span><span class="order-status status-' + (o.status || 'pending') + '">' + (o.status || 'pending') + '</span></div>';
             }).join('') + '</div>';
         }
+        // ===== DAILY SPECIAL ADMIN =====
+        function loadDailySpecialAdmin() {
+            db.collection('settings').doc('dailySpecial').get().then(function(doc) {
+                if (doc.exists) {
+                    var d = doc.data();
+                    document.getElementById('ds-active').checked = !!d.active;
+                    document.getElementById('ds-title').value   = d.title || '';
+                    document.getElementById('ds-desc').value    = d.description || '';
+                    document.getElementById('ds-price').value   = d.price || '';
+                    document.getElementById('ds-image').value   = d.imageUrl || '';
+                }
+            }).catch(function(e) { console.error('Load daily special error:', e); });
+        }
+
+        function saveDailySpecial() {
+            var data = {
+                active:      document.getElementById('ds-active').checked,
+                title:       document.getElementById('ds-title').value.trim(),
+                description: document.getElementById('ds-desc').value.trim(),
+                price:       parseFloat(document.getElementById('ds-price').value) || 0,
+                imageUrl:    document.getElementById('ds-image').value.trim(),
+                updatedAt:   new Date().toISOString()
+            };
+            var msgEl = document.getElementById('ds-msg');
+            db.collection('settings').doc('dailySpecial').set(data).then(function() {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#27ae60';
+                msgEl.textContent = '✓ Daily special saved and published!';
+                setTimeout(function() { msgEl.style.display = 'none'; }, 3000);
+            }).catch(function(e) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#e74c3c';
+                msgEl.textContent = 'Error: ' + e.message;
+            });
+        }
+
+        // ===== ETA PROMPT ON PREPARING =====
+        // Wrap the existing setOrderStatus to inject ETA for 'preparing'
+        var _origSetOrderStatus = typeof setOrderStatus !== 'undefined' ? setOrderStatus : null;
+        window.setOrderStatusWithETA = function(orderId, status) {
+            if (status === 'preparing') {
+                var eta = prompt('Set ETA for this order (minutes):', '20');
+                if (eta === null) return; // cancelled
+                var etaMins = parseInt(eta) || 20;
+                db.collection('orders').doc(orderId).update({
+                    status: 'preparing',
+                    preparingAt: new Date().toISOString(),
+                    etaMinutes: etaMins
+                }).then(function() {
+                    showToast('Order marked as Preparing (ETA: ' + etaMins + ' min)');
+                    loadOrders();
+                }).catch(function(e) { showToast('Error: ' + e.message); });
+            } else {
+                if (typeof setOrderStatus === 'function') setOrderStatus(orderId, status);
+            }
+        };
+
     </script>
     <style>
         @keyframes shake {

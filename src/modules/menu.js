@@ -144,11 +144,54 @@ function renderSpecials(specials) {
     }).join('');
 }
 
+// ===== SKELETON LOADERS =====
+function showMenuSkeletons() {
+    var skeletonHTML = '<div class="menu-skeleton-card">' +
+        '<div class="skeleton-line h-img"></div>' +
+        '<div class="skeleton-line w-60"></div>' +
+        '<div class="skeleton-line w-100"></div>' +
+        '<div class="skeleton-line w-80"></div>' +
+        '<div class="skeleton-btn"></div>' +
+        '</div>';
+    document.querySelectorAll('.menu-items').forEach(function(container) {
+        if (!container.querySelector('.menu-skeleton-card')) {
+            container.insertAdjacentHTML('afterbegin', skeletonHTML + skeletonHTML + skeletonHTML);
+        }
+    });
+}
+
+function removeMenuSkeletons() {
+    document.querySelectorAll('.menu-skeleton-card').forEach(function(el) { el.remove(); });
+}
+
+// ===== FLAME BADGE INJECTION =====
+function applyFlameBadges() {
+    document.querySelectorAll('.menu-item-card').forEach(function(card) {
+        var badge = card.querySelector('.menu-badge');
+        var h4 = card.querySelector('h4');
+        var target = badge || h4;
+        if (!target) return;
+        var badgeText = (badge ? badge.textContent : '') + target.closest('.menu-item-card').dataset.id;
+        var isHot = /chef|spicy|hot|bestseller/i.test(badgeText);
+        if (isHot && !card.querySelector('.flame-badge')) {
+            var flame = document.createElement('span');
+            flame.className = 'flame-badge';
+            flame.textContent = '🔥';
+            flame.title = 'Popular pick!';
+            if (badge) badge.after(flame);
+            else if (h4) h4.appendChild(flame);
+        }
+    });
+}
+
 // ===== FIRESTORE MENU OVERLAY =====
 // Syncs availability & prices from Firestore onto hardcoded menu HTML
 export function initMenuSync() {
     var db = getDb();
     if (!db) return;
+
+    // Show skeletons immediately while waiting for Firestore
+    showMenuSkeletons();
 
     // Helper: ensure image wrapper exists on a menu card
     function ensureImageWrap(card) {
@@ -171,6 +214,7 @@ export function initMenuSync() {
 
     // 1. Menu items — overlay availability, price & image updates
     db.collection('menu').onSnapshot(function(snapshot) {
+        removeMenuSkeletons();
         var menuData = {};
         snapshot.forEach(function(doc) {
             menuData[doc.id] = doc.data();
@@ -234,8 +278,12 @@ export function initMenuSync() {
                 delete card.dataset.imageUrl;
             }
         });
+
+        // Apply flame badges after menu data is loaded
+        applyFlameBadges();
     }, function(error) {
         console.error('Menu listener error:', error);
+        removeMenuSkeletons();
     });
 
     // 2. Specials — cached .get() (changes rarely, saves reads vs onSnapshot)

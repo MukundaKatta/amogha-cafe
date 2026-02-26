@@ -271,6 +271,17 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
     var notes = document.getElementById('co-notes').value.trim();
     var totals = getCheckoutTotals();
 
+    // Scheduled order
+    var scheduleCheck = document.getElementById('schedule-order-check');
+    var scheduledFor = null;
+    if (scheduleCheck && scheduleCheck.checked) {
+        var schedDate = document.getElementById('schedule-date');
+        var schedTime = document.getElementById('schedule-time');
+        if (schedDate && schedTime && schedDate.value && schedTime.value) {
+            scheduledFor = new Date(schedDate.value + 'T' + schedTime.value).toISOString();
+        }
+    }
+
     document.getElementById('confirm-detail').textContent = 'Payment: ' + payMethod + (paymentRef ? ' (Ref: ' + paymentRef + ')' : '') + ' | Total: \u20B9' + totals.total.toFixed(0);
 
     // Build WhatsApp message
@@ -307,8 +318,9 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         paymentRef: paymentRef || null,
         paymentStatus: paymentStatus,
         paymentVerifiedAt: paymentRef ? new Date().toISOString() : null,
-        status: 'pending',
+        status: scheduledFor ? 'scheduled' : 'pending',
         createdAt: new Date().toISOString(),
+        scheduledFor: scheduledFor || null,
         userId: currentUser ? currentUser.phone : null
     };
     // Save items before clearing (for button state update)
@@ -378,6 +390,40 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
 
         // Send push notification
         if (typeof sendPushNotification === 'function') sendPushNotification('Order Placed!', 'Your order from Amogha has been placed successfully.');
+
+        // WhatsApp confirmation to customer
+        if (phone) {
+            var customerPhone = phone.replace(/\D/g, '');
+            if (customerPhone.length === 10) customerPhone = '91' + customerPhone;
+            var custMsg = 'Hi ' + name + '! 🙏\n\nYour order at *Amogha Cafe & Restaurant* has been placed successfully!\n\n';
+            custMsg += '*Order ID:* ' + docRef.id + '\n';
+            custMsg += '*Items:* ' + orderData.items.map(function(i) { return i.name + ' x' + i.qty; }).join(', ') + '\n';
+            custMsg += '*Total:* ₹' + totals.total.toFixed(0) + '\n\n';
+            custMsg += '📍 Track your order: ' + window.location.origin + '/track/?id=' + docRef.id + '\n\n';
+            custMsg += 'Thank you for dining with us! 🍛';
+            window.open('https://wa.me/' + customerPhone + '?text=' + encodeURIComponent(custMsg), '_blank');
+        }
+
+        // Inventory auto-deduction
+        db.collection('inventory').get().then(function(invSnap) {
+            var inventoryMap = {};
+            invSnap.forEach(function(doc) {
+                var d = doc.data();
+                inventoryMap[(d.name || '').toLowerCase()] = { id: doc.id, qty: d.quantity || 0 };
+            });
+            var batch = db.batch();
+            var hasUpdates = false;
+            orderData.items.forEach(function(item) {
+                var key = item.name.toLowerCase();
+                if (inventoryMap[key] && inventoryMap[key].qty > 0) {
+                    var ref = db.collection('inventory').doc(inventoryMap[key].id);
+                    batch.update(ref, { quantity: Math.max(0, inventoryMap[key].qty - item.qty) });
+                    hasUpdates = true;
+                }
+            });
+            if (hasUpdates) batch.commit().catch(function(e) { console.error('Inventory deduction error:', e); });
+        }).catch(function(e) { console.error('Inventory fetch error:', e); });
+
     }).catch(function(err) {
         console.error('Order save error:', err);
         showAuthToast('Order failed to save. Please try again or check your connection.');

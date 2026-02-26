@@ -24,7 +24,8 @@ import { initAuth } from './modules/auth.js';
 import { initNotifications } from './modules/notifications.js';
 import { initReservations } from './modules/reservations.js';
 import { initLoyalty } from './modules/loyalty.js';
-import { initFeatures, showRecommendations } from './modules/features.js';
+import { initFeatures, showRecommendations, loadDailySpecial, initComboBuilder, showReorderToast } from './modules/features.js';
+import { updateFloatingCartBar } from './modules/cart.js';
 
 // Note: script is loaded as a module (deferred by default), DOM is already parsed
 
@@ -48,6 +49,18 @@ initLoyalty();       // Loyalty widget
 initNotifications(); // Push notification banner
 initReservations();  // Reservation modal button override
 initFeatures();      // Reviews carousel, gallery, combos, happy hour, voice, i18n, etc.
+loadDailySpecial();  // Daily special section (reads from Firestore settings/dailySpecial)
+initComboBuilder();  // Combo builder dropdowns + pricing
+
+// Show reorder toast after short delay (needs DOM + auth to be ready)
+setTimeout(function() {
+    var user = null;
+    try { user = JSON.parse(localStorage.getItem('amoghaUser')); } catch(e) {}
+    if (user) showReorderToast();
+}, 2000);
+
+// Init floating cart bar state
+updateFloatingCartBar();
 
 // Expose displayCart and showRecommendations at window level (used by features.js hook)
 window.displayCart = function() {

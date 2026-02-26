@@ -290,17 +290,17 @@
             <h2 data-i18n="ourStory">Our Story</h2>
             <p class="section-subtitle">A legacy of flavors, crafted with love since generations</p>
             <div class="about-content">
-                <div class="about-text">
+                <div class="about-text reveal reveal-delay-1">
                     <h3>What is <span class="amogha-brand"><img class="amogha-a" src="pics/image.png" alt="అ" loading="lazy">mogha</span>?</h3>
                     <p><span class="amogha-brand"><img class="amogha-a" src="pics/image.png" alt="అ" loading="lazy">mogha</span> means "flawless" or "perfect" in Sanskrit, and that's our promise to you. We bring the authentic tastes of India to your table with recipes passed down through generations.</p>
                     <p>From aromatic biryanis to tandoori specialties, every dish is crafted with traditional techniques and the finest ingredients. Our chefs have over 20 years of experience in authentic Indian cuisine.</p>
                 </div>
-                <div class="about-text">
+                <div class="about-text reveal reveal-delay-2">
                     <h3>Our Mission</h3>
                     <p>To create an unforgettable dining experience that celebrates India's rich culinary heritage while bringing people together through exceptional food and warm hospitality.</p>
                     <p>We use traditional cooking methods including clay oven (tandoor) roasting and slow-cooked curries to ensure authentic flavors in every bite.</p>
                 </div>
-                <div class="about-text">
+                <div class="about-text reveal reveal-delay-3">
                     <h3>Why Choose Us?</h3>
                     <ul class="features-list">
                         <li>✓ Fresh ingredients daily</li>
@@ -408,7 +408,7 @@
             <h2>Today's Specials</h2>
             <p class="section-subtitle">Handpicked dishes by our chef, available for a limited time</p>
             <div class="specials-grid">
-                <div class="special-card" data-id="Baghara Rice + Chicken Fry">
+                <div class="special-card reveal reveal-delay-1" data-id="Baghara Rice + Chicken Fry">
                     <div class="special-badge">Amogha Special</div>
                     <h3>Baghara Rice + Chicken Fry</h3>
                     <p>Aromatic baghara rice served with crispy chicken fry</p>
@@ -417,7 +417,7 @@
                     </div>
                     <button class="add-to-cart" data-item="Baghara Rice + Chicken Fry" data-price="249">Order Now</button>
                 </div>
-                <div class="special-card" data-id="Chicken 65 Biryani">
+                <div class="special-card reveal reveal-delay-2" data-id="Chicken 65 Biryani">
                     <div class="special-badge">Bestseller</div>
                     <h3>Chicken 65 Biryani</h3>
                     <p>Dum biryani topped with spicy chicken 65</p>
@@ -426,7 +426,7 @@
                     </div>
                     <button class="add-to-cart" data-item="Chicken 65 Biryani" data-price="249">Order Now</button>
                 </div>
-                <div class="special-card" data-id="Gongura Chicken + Naan">
+                <div class="special-card reveal reveal-delay-3" data-id="Gongura Chicken + Naan">
                     <div class="special-badge">Must Try</div>
                     <h3>Gongura Chicken + Naan</h3>
                     <p>Andhra-style gongura chicken curry with butter naan</p>
@@ -447,6 +447,63 @@
             <line x1="115" y1="15" x2="190" y2="15" stroke="#d4a017" stroke-width="1" fill="none" stroke-linecap="round"/>
         </svg>
     </div>
+
+    <!-- Daily Special Section -->
+    <section id="daily-special-section" class="daily-special-section reveal" style="display:none">
+        <div class="container">
+            <div class="daily-special-inner">
+                <div class="daily-special-img-placeholder">🍛</div>
+                <img class="daily-special-img" src="" alt="Daily Special" style="display:none">
+                <div class="daily-special-body">
+                    <div class="daily-special-badge">⭐ Today Only</div>
+                    <div class="daily-special-title">Chef's Special</div>
+                    <p class="daily-special-desc"></p>
+                    <div class="daily-special-price"></div>
+                    <div class="daily-special-countdown">
+                        <span class="countdown-label">Expires in</span>
+                        <div class="countdown-unit"><span class="countdown-num cd-h">00</span><span class="countdown-sub">hrs</span></div>
+                        <div class="countdown-unit"><span class="countdown-num cd-m">00</span><span class="countdown-sub">min</span></div>
+                        <div class="countdown-unit"><span class="countdown-num cd-s">00</span><span class="countdown-sub">sec</span></div>
+                    </div>
+                    <button class="add-to-cart daily-special-add-btn" data-item="" data-price="0">Order This Special</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Combo Builder Section -->
+    <section id="combo-builder-section" class="combo-builder-section reveal">
+        <div class="container">
+            <div class="combo-builder-card">
+                <h2 class="combo-builder-heading">Build Your Combo</h2>
+                <p class="combo-builder-sub">Mix &amp; match your favourites — get 20% off any combination</p>
+                <div class="combo-selects">
+                    <div class="combo-select-wrap">
+                        <label>Starter</label>
+                        <select id="combo-starter"><option value="">— Choose —</option></select>
+                    </div>
+                    <div class="combo-select-wrap">
+                        <label>Main Course</label>
+                        <select id="combo-main"><option value="">— Choose —</option></select>
+                    </div>
+                    <div class="combo-select-wrap">
+                        <label>Bread</label>
+                        <select id="combo-bread"><option value="">— Choose —</option></select>
+                    </div>
+                    <div class="combo-select-wrap">
+                        <label>Drink</label>
+                        <select id="combo-drink"><option value="">— Choose —</option></select>
+                    </div>
+                </div>
+                <div class="combo-pricing">
+                    <span class="combo-original"></span>
+                    <span class="combo-discounted">₹0</span>
+                    <span class="combo-savings"></span>
+                </div>
+                <button class="combo-add-btn" disabled>Add Combo to Cart</button>
+            </div>
+        </div>
+    </section>
 
     <section id="menu" class="menu section-wipe">
         <div class="container">
@@ -1164,19 +1221,18 @@
                     <textarea id="co-notes" placeholder="Special Instructions (Optional)" rows="2"></textarea>
                 </form>
                 <!-- Scheduled Orders -->
-                <div class="schedule-order-section">
-                    <label class="schedule-toggle">
-                        <input type="checkbox" id="schedule-order-check">
-                        <span class="schedule-toggle-text">Schedule for Later</span>
-                    </label>
-                    <div id="schedule-fields" class="schedule-fields" style="display:none;">
-                        <div class="schedule-row">
-                            <input type="date" id="schedule-date" class="schedule-input">
-                            <select id="schedule-time" class="schedule-input">
-                                <option value="">Select Time</option>
-                            </select>
-                        </div>
-                        <p class="schedule-note">Orders can be scheduled up to 3 days in advance</p>
+                <label class="schedule-toggle-row" for="schedule-order-check">
+                    <input type="checkbox" id="schedule-order-check" onchange="document.getElementById('schedule-picker').classList.toggle('active',this.checked)">
+                    <span class="schedule-toggle-label">🕐 Schedule for later</span>
+                </label>
+                <div id="schedule-picker" class="schedule-picker">
+                    <div>
+                        <label for="schedule-date">Date</label>
+                        <input type="date" id="schedule-date" min="">
+                    </div>
+                    <div>
+                        <label for="schedule-time">Time</label>
+                        <input type="time" id="schedule-time" min="10:00" max="23:00">
                     </div>
                 </div>
                 <div class="checkout-nav">
@@ -1523,6 +1579,16 @@
         <svg class="btt-ring" viewBox="0 0 36 36"><defs><linearGradient id="btt-gold-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F5D76E"/><stop offset="100%" stop-color="#D4A017"/></linearGradient></defs><circle class="btt-ring-bg" cx="18" cy="18" r="16"/><circle class="btt-ring-fill" id="btt-ring-fill" cx="18" cy="18" r="16" stroke="url(#btt-gold-gradient)"/></svg>
         <span class="btt-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
     </button>
+
+    <!-- Floating Cart Bar (mobile) -->
+    <div id="floating-cart-bar" class="floating-cart-bar">
+        <div class="floating-cart-info">
+            <span class="floating-cart-count">0</span>
+            <span class="floating-cart-label">items</span>
+        </div>
+        <span class="floating-cart-total">₹0</span>
+        <button class="floating-cart-btn" onclick="document.getElementById('cart-icon').click()">View Cart</button>
+    </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>

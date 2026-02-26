@@ -959,5 +959,192 @@ Object.assign(window, {
     applyReferralAtSignup,
     openMyOrders,
     closeMyOrders,
-    reorderFromHistory
+    reorderFromHistory,
+    loadDailySpecial,
+    initComboBuilder
 });
+
+// ===== B3: WELCOME-BACK REORDER TOAST =====
+export function showReorderToast() {
+    var cached = null;
+    try { cached = JSON.parse(localStorage.getItem('amoghaMyOrders')); } catch(e) {}
+    if (!cached || !cached.length) return;
+    var last = cached[0].data;
+    if (!last || !last.items || !last.items.length) return;
+    // Only show if last order was > 1 day ago
+    if (last.createdAt) {
+        var daysSince = (Date.now() - new Date(last.createdAt).getTime()) / 86400000;
+        if (daysSince < 1) return;
+    }
+    var itemSummary = last.items.slice(0, 2).map(function(i) { return i.name; }).join(', ');
+    if (last.items.length > 2) itemSummary += ' +' + (last.items.length - 2) + ' more';
+
+    var toast = document.createElement('div');
+    toast.className = 'reorder-toast';
+    toast.innerHTML =
+        '<div class="reorder-toast-text">' +
+            '<div class="reorder-toast-title">Welcome back! 👋</div>' +
+            '<div class="reorder-toast-sub">' + itemSummary + '</div>' +
+        '</div>' +
+        '<button class="reorder-toast-btn" id="reorder-toast-btn">Order Again</button>' +
+        '<button class="reorder-toast-close" id="reorder-toast-close">&times;</button>';
+    document.body.appendChild(toast);
+
+    setTimeout(function() { toast.classList.add('show'); }, 100);
+
+    var orderId = cached[0].id;
+    toast.querySelector('#reorder-toast-btn').addEventListener('click', function() {
+        if (typeof window.reorderFromHistory === 'function') window.reorderFromHistory(orderId);
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 400);
+    });
+    toast.querySelector('#reorder-toast-close').addEventListener('click', function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 400);
+    });
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { if (toast.parentNode) toast.remove(); }, 400);
+    }, 8000);
+}
+
+// ===== D2: DAILY SPECIAL =====
+export function loadDailySpecial() {
+    var section = document.getElementById('daily-special-section');
+    if (!section) return;
+    var db = null;
+    try { db = window.db; } catch(e) {}
+    if (!db) { section.style.display = 'none'; return; }
+
+    db.collection('settings').doc('dailySpecial').get().then(function(doc) {
+        if (!doc.exists || !doc.data().active) { section.style.display = 'none'; return; }
+        var d = doc.data();
+        section.style.display = '';
+        var imgEl   = section.querySelector('.daily-special-img');
+        var phEl    = section.querySelector('.daily-special-img-placeholder');
+        var titleEl = section.querySelector('.daily-special-title');
+        var descEl  = section.querySelector('.daily-special-desc');
+        var priceEl = section.querySelector('.daily-special-price');
+        var addBtn  = section.querySelector('.daily-special-add-btn');
+
+        if (d.imageUrl && imgEl) { imgEl.src = d.imageUrl; imgEl.style.display = 'block'; if (phEl) phEl.style.display = 'none'; }
+        if (titleEl) titleEl.textContent = d.title || 'Chef\'s Special';
+        if (descEl)  descEl.textContent  = d.description || '';
+        if (priceEl) priceEl.innerHTML   = '&#8377;' + (d.price || '');
+        if (addBtn && d.title) {
+            addBtn.dataset.item  = d.title;
+            addBtn.dataset.price = d.price || 0;
+        }
+
+        // Countdown to midnight
+        function updateCountdown() {
+            var now  = new Date();
+            var midnight = new Date(); midnight.setHours(24, 0, 0, 0);
+            var diff = Math.max(0, midnight - now);
+            var h = Math.floor(diff / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            var s = Math.floor((diff % 60000) / 1000);
+            var hEl = section.querySelector('.cd-h');
+            var mEl = section.querySelector('.cd-m');
+            var sEl = section.querySelector('.cd-s');
+            if (hEl) hEl.textContent = String(h).padStart(2,'0');
+            if (mEl) mEl.textContent = String(m).padStart(2,'0');
+            if (sEl) sEl.textContent = String(s).padStart(2,'0');
+        }
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }).catch(function() { section.style.display = 'none'; });
+}
+
+// ===== E1: COMBO BUILDER =====
+export function initComboBuilder() {
+    var section = document.getElementById('combo-builder-section');
+    if (!section) return;
+
+    var categories = {
+        starter: ['Veg Manchurian', 'Paneer 65', 'Chicken 65', 'Chicken Hot Wings', 'Veg Spring Rolls', 'Chicken Lollipop', 'Paneer Tikka', 'Chicken Seekh Kebab', 'Tandoori Chicken'],
+        main:    ['Paneer Butter Masala', 'Dal Tadka', 'Butter Chicken', 'Chicken Curry', 'Mutton Curry', 'Gongura Chicken', 'Veg Dum Biryani', 'Chicken Dum Biryani', 'Mutton Dum Biryani'],
+        bread:   ['Butter Naan', 'Garlic Naan', 'Tandoori Roti', 'Butter Roti', 'Laccha Paratha'],
+        drink:   ['Tea', 'Coffee', 'Lassi', 'Buttermilk', 'Fresh Lime Soda', 'Hot Chocolate']
+    };
+
+    var ITEM_PRICES_MAP = {};
+    try {
+        // Pull from menu cards if available
+        document.querySelectorAll('.menu-item-card[data-id]').forEach(function(card) {
+            var btn = card.querySelector('.add-to-cart');
+            if (btn) ITEM_PRICES_MAP[card.dataset.id] = parseFloat(btn.dataset.price) || 0;
+        });
+    } catch(e) {}
+
+    // Fallback prices from constants
+    var fallback = {"Veg Manchurian":169,"Paneer 65":189,"Chicken 65":200,"Chicken Hot Wings":220,"Veg Spring Rolls":149,"Chicken Lollipop":230,"Paneer Tikka":209,"Chicken Seekh Kebab":229,"Tandoori Chicken":269,"Paneer Butter Masala":199,"Dal Tadka":149,"Butter Chicken":249,"Chicken Curry":219,"Mutton Curry":319,"Gongura Chicken":239,"Veg Dum Biryani":199,"Chicken Dum Biryani":249,"Mutton Dum Biryani":349,"Butter Naan":40,"Garlic Naan":50,"Tandoori Roti":30,"Butter Roti":35,"Laccha Paratha":45,"Tea":30,"Coffee":40,"Lassi":50,"Buttermilk":35,"Fresh Lime Soda":45,"Hot Chocolate":60};
+    Object.keys(fallback).forEach(function(k) { if (!ITEM_PRICES_MAP[k]) ITEM_PRICES_MAP[k] = fallback[k]; });
+
+    function populate(selectId, items) {
+        var sel = section.querySelector('#' + selectId);
+        if (!sel) return;
+        sel.innerHTML = '<option value="">— Choose —</option>' +
+            items.map(function(name) {
+                var price = ITEM_PRICES_MAP[name] || 0;
+                return '<option value="' + name + '" data-price="' + price + '">' + name + ' (₹' + price + ')</option>';
+            }).join('');
+    }
+    populate('combo-starter', categories.starter);
+    populate('combo-main',    categories.main);
+    populate('combo-bread',   categories.bread);
+    populate('combo-drink',   categories.drink);
+
+    function updateComboPrice() {
+        var total = 0;
+        ['combo-starter','combo-main','combo-bread','combo-drink'].forEach(function(id) {
+            var sel = section.querySelector('#' + id);
+            if (sel && sel.value) {
+                var opt = sel.options[sel.selectedIndex];
+                total += parseFloat(opt.dataset.price) || 0;
+            }
+        });
+        var discounted = Math.round(total * 0.80);
+        var savings    = total - discounted;
+        var origEl  = section.querySelector('.combo-original');
+        var discEl  = section.querySelector('.combo-discounted');
+        var saveEl  = section.querySelector('.combo-savings');
+        var addBtn  = section.querySelector('.combo-add-btn');
+        if (origEl)  origEl.textContent  = total > 0 ? '₹' + total : '';
+        if (discEl)  discEl.textContent  = total > 0 ? '₹' + discounted : '₹0';
+        if (saveEl)  saveEl.textContent  = total > 0 ? 'Save ₹' + savings : '';
+        if (addBtn)  addBtn.disabled     = total === 0;
+    }
+
+    section.querySelectorAll('select').forEach(function(sel) {
+        sel.addEventListener('change', updateComboPrice);
+    });
+    updateComboPrice();
+
+    var addBtn = section.querySelector('.combo-add-btn');
+    if (addBtn) {
+        addBtn.addEventListener('click', function() {
+            var added = 0;
+            ['combo-starter','combo-main','combo-bread','combo-drink'].forEach(function(id) {
+                var sel = section.querySelector('#' + id);
+                if (!sel || !sel.value) return;
+                var opt  = sel.options[sel.selectedIndex];
+                var price = parseFloat(opt.dataset.price) || 0;
+                // Apply 20% combo discount to each item
+                var discountedPrice = Math.round(price * 0.80);
+                if (typeof window.finalizeAddToCart === 'function') {
+                    window.finalizeAddToCart(sel.value, discountedPrice, 'medium', []);
+                }
+                added++;
+            });
+            if (added > 0) {
+                addBtn.textContent = '✓ Added to Cart!';
+                addBtn.style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)';
+                setTimeout(function() {
+                    addBtn.textContent = 'Add Combo to Cart';
+                    addBtn.style.background = '';
+                }, 2000);
+            }
+        });
+    }
+}

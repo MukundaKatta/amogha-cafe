@@ -154,6 +154,21 @@ export function initUI() {
         }
     })();
 
+    // ===== SCROLL REVEAL ANIMATIONS =====
+    (function() {
+        var revealEls = document.querySelectorAll('.reveal');
+        if (!revealEls.length || typeof IntersectionObserver === 'undefined') return;
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        revealEls.forEach(function(el) { observer.observe(el); });
+    })();
+
     // ===== MOBILE NAV SETUP =====
     (function() {
         var navLinks = document.getElementById('nav-links');

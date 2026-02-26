@@ -869,7 +869,7 @@
     }
 
     // ===== Estimated Time =====
-    var PREP_TIME_MINUTES = 15;
+    var DEFAULT_PREP_MINUTES = 20;
 
     function updateTimeDisplay(order) {
         var status = order.status || 'pending';
@@ -891,7 +891,11 @@
 
         timeCard.classList.remove('hidden');
 
-        var kitchenStart = toDate(order.kitchenStartedAt);
+        // Use admin-set ETA if available, else default
+        var prepMinutes = (order.etaMinutes && !isNaN(order.etaMinutes))
+            ? parseInt(order.etaMinutes)
+            : DEFAULT_PREP_MINUTES;
+        var kitchenStart = toDate(order.preparingAt || order.kitchenStartedAt);
 
         if (kitchenStart && (status === 'preparing' || status === 'confirmed')) {
             if (timerInterval) clearInterval(timerInterval);
@@ -899,7 +903,7 @@
             function tick() {
                 var now = new Date();
                 var elapsed = (now - kitchenStart) / 1000;
-                var totalSec = PREP_TIME_MINUTES * 60;
+                var totalSec = prepMinutes * 60;
                 var remaining = Math.max(0, totalSec - elapsed);
                 var mins = Math.floor(remaining / 60);
                 var secs = Math.floor(remaining % 60);
@@ -910,7 +914,7 @@
                     timeBarFill.style.width = '100%';
                 } else {
                     timeValue.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
-                    timeLabel.textContent = '~' + (mins + 1) + ' minute' + (mins === 0 ? '' : 's') + ' remaining';
+                    timeLabel.textContent = '~' + (mins + 1) + ' min remaining (of ' + prepMinutes + ' min)';
                     var pct = Math.min(100, (elapsed / totalSec) * 100);
                     timeBarFill.style.width = pct + '%';
                 }
@@ -920,7 +924,8 @@
             timerInterval = setInterval(tick, 1000);
         } else {
             if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-            timeValue.textContent = '~15-20 min';
+            var estText = prepMinutes ? '~' + prepMinutes + ' min' : '~15-20 min';
+            timeValue.textContent = estText;
             timeLabel.textContent = 'Estimated preparation time';
             timeBarFill.style.width = '5%';
         }
