@@ -1,6 +1,7 @@
 # Amogha Cafe & Restaurant — Documentation Index
 
-**Live Site:** https://amogha-cafe.web.app
+**Live Site:** https://amoghahotels.com
+**Firebase Hosting:** https://amogha-cafe.web.app (same site, alternate URL)
 **Firebase Console:** https://console.firebase.google.com/project/amogha-cafe
 
 ---
@@ -9,12 +10,12 @@
 
 | Doc | Page | URL |
 |-----|------|-----|
-| [01-main-page.md](01-main-page.md) | Main / Public Ordering | https://amogha-cafe.web.app |
-| [02-admin-dashboard.md](02-admin-dashboard.md) | Admin Dashboard | https://amogha-cafe.web.app/admin.html |
-| [03-kitchen-display.md](03-kitchen-display.md) | Kitchen Display System | https://amogha-cafe.web.app/kitchen/ |
-| [04-order-tracking.md](04-order-tracking.md) | Order Tracking | https://amogha-cafe.web.app/track/ |
-| [05-qr-ordering.md](05-qr-ordering.md) | QR Dine-In Ordering | https://amogha-cafe.web.app/qr/ |
-| [06-display-board.md](06-display-board.md) | Restaurant Display Board | https://amogha-cafe.web.app/display/ |
+| [01-main-page.md](01-main-page.md) | Main / Public Ordering | https://amoghahotels.com |
+| [02-admin-dashboard.md](02-admin-dashboard.md) | Admin Dashboard | https://amoghahotels.com/admin.html |
+| [03-kitchen-display.md](03-kitchen-display.md) | Kitchen Display System | https://amoghahotels.com/kitchen/ |
+| [04-order-tracking.md](04-order-tracking.md) | Order Tracking | https://amoghahotels.com/track/ |
+| [05-qr-ordering.md](05-qr-ordering.md) | QR Dine-In Ordering | https://amoghahotels.com/qr/ |
+| [06-display-board.md](06-display-board.md) | Restaurant Display Board | https://amoghahotels.com/display/ |
 
 ## Features
 

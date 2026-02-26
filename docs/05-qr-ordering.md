@@ -1,6 +1,6 @@
 # QR Dine-In Ordering
 
-**URL:** https://amogha-cafe.web.app/qr/
+**URL:** https://amoghahotels.com/qr/
 **File:** `qr/index.html` (1,023 lines)
 
 A table-specific ordering page accessed by scanning a QR code placed at each table. Customers browse and order directly from their phones without needing a waiter to take their order.
@@ -10,7 +10,7 @@ A table-specific ordering page accessed by scanning a QR code placed at each tab
 ## How It Works
 
 1. A unique QR code is printed and placed on each table (Table 1 – Table 12)
-2. QR code encodes the URL: `https://amogha-cafe.web.app/qr/?table=3`
+2. QR code encodes the URL: `https://amoghahotels.com/qr/?table=3`
 3. Customer scans the code → lands on the QR ordering page pre-loaded for their table number
 4. Customer browses menu, adds items, and places order — it goes directly to the kitchen KDS
 
@@ -59,12 +59,12 @@ Identical menu browsing experience to the main site, optimized for mobile:
 
 Each table needs its own QR code pointing to:
 ```
-https://amogha-cafe.web.app/qr/?table=TABLE_NUMBER
+https://amoghahotels.com/qr/?table=TABLE_NUMBER
 ```
 
 Example for Table 5:
 ```
-https://amogha-cafe.web.app/qr/?table=5
+https://amoghahotels.com/qr/?table=5
 ```
 
 Use any QR code generator (e.g. qr-code-generator.com) to create, print, and laminate these for each table.

@@ -1,6 +1,6 @@
 # Admin Dashboard
 
-**URL:** https://amogha-cafe.web.app/admin.html
+**URL:** https://amoghahotels.com/admin.html
 **File:** `admin.html` (3,657 lines)
 
 The internal management interface for restaurant staff. Handles orders, menu, inventory, reservations, tables, customers, and site content.

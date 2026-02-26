@@ -1,6 +1,6 @@
 # Main Page — Public Ordering Site
 
-**URL:** https://amogha-cafe.web.app
+**URL:** https://amoghahotels.com
 **File:** `index.html` (1,553 lines)
 
 The primary customer-facing page. Customers browse the menu, place orders, make reservations, read reviews, and manage their account from here.

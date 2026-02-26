@@ -67,7 +67,7 @@ Stored in Firestore `referrals` collection:
 ### Referral Link Format
 
 ```
-https://amogha-cafe.web.app/?ref=USER_UID
+https://amoghahotels.com/?ref=USER_UID
 ```
 
 When the new user signs up, the `ref` parameter is read from the URL and the referral is recorded.

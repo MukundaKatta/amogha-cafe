@@ -1,6 +1,6 @@
 # Kitchen Display System (KDS)
 
-**URL:** https://amogha-cafe.web.app/kitchen/
+**URL:** https://amoghahotels.com/kitchen/
 **File:** `kitchen/index.html` (2,234 lines)
 
 A real-time display screen for kitchen staff. Shows all active orders, their status, and elapsed time. Designed to be shown on a tablet or monitor mounted in the kitchen.

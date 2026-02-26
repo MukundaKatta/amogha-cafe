@@ -1,6 +1,6 @@
 # Restaurant Display Board
 
-**URL:** https://amogha-cafe.web.app/display/
+**URL:** https://amoghahotels.com/display/
 **File:** `display/index.html` (1,014 lines)
 
 A TV/monitor display intended for public areas of the restaurant — lobby, waiting area, or above the counter. Shows ready orders, today's specials, and promotional content.

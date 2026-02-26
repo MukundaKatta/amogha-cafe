@@ -1,6 +1,6 @@
 # Order Tracking
 
-**URL:** https://amogha-cafe.web.app/track/
+**URL:** https://amoghahotels.com/track/
 **File:** `track/index.html` (1,159 lines)
 
 Lets customers track the live status of their order after checkout. Customers are redirected here automatically after placing an order, or can return by bookmarking the URL.
@@ -69,6 +69,6 @@ If the order ID in the URL doesn't exist, a "Order not found" message is shown w
 
 The tracking URL contains the order ID as a query parameter:
 ```
-https://amogha-cafe.web.app/track/?id=abc123
+https://amoghahotels.com/track/?id=abc123
 ```
 Customers can share this link with others to let them track the same order.
