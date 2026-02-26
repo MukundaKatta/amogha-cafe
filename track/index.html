@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order | Amogha Cafe</title>
+    <meta name="description" content="Track your Amogha Cafe order in real-time.">
+    <meta name="theme-color" content="#1a0f08">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="icon" type="image/png" href="../amogha-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#080604;
+            --bg2:rgba(14,11,9,.94);
+            --bg-card:rgba(16,14,12,.88);
+            --bg-card2:rgba(22,18,14,.92);
+            --gold:#D4A017;
+            --gold-l:#F5D76E;
+            --gold-d:#B8860B;
+            --gold-xl:#ffe6a0;
+            --txt:#ede2d2;
+            --txt2:#a09080;
+            --txt3:#6a5a4a;
+            --txt4:#4a3a2a;
+            --grn:#2ecc71;
+            --ylw:#f1c40f;
+            --red:#e74c3c;
+            --r:16px;
+            --r-s:10px;
+            --r-p:20px;
+            --mono:'JetBrains Mono',monospace;
+            --glass:rgba(255,255,255,.025);
+            --glass-border:rgba(255,255,255,.05);
+            --shadow-s:0 1px 2px rgba(0,0,0,.2),0 4px 12px rgba(0,0,0,.12);
+            --shadow-m:0 2px 6px rgba(0,0,0,.2),0 8px 24px rgba(0,0,0,.15),0 0 0 .5px rgba(212,160,23,.06);
+            --shadow-l:0 4px 16px rgba(0,0,0,.25),0 16px 48px rgba(0,0,0,.2),0 0 80px rgba(212,160,23,.03);
+            --shadow-glow:0 0 24px rgba(212,160,23,.06),0 0 60px rgba(212,160,23,.03);
+            --ease:cubic-bezier(.4,0,.2,1);
+            --ease-out:cubic-bezier(.16,1,.3,1);
+            --ease-spring:cubic-bezier(.34,1.56,.64,1);
+            --ease-luxe:cubic-bezier(.22,1,.36,1);
+        }
+
+        html{scroll-behavior:smooth}
+        body{
+            font-family:'Poppins',sans-serif;
+            background:var(--bg);
+            color:var(--txt);
+            min-height:100vh;min-height:100dvh;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            text-rendering:optimizeLegibility;
+            overflow-x:hidden;
+        }
+        ::selection{background:rgba(212,160,23,.2);color:var(--gold-l)}
+
+        /* Scrollbar */
+        ::-webkit-scrollbar{width:5px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(212,160,23,.3),rgba(212,160,23,.12),rgba(212,160,23,.3));border-radius:10px}
+        ::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--gold),rgba(212,160,23,.3),var(--gold))}
+
+        /* Grain texture */
+        body::before{
+            content:'';position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;opacity:.02;
+            background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        /* Background aura */
+        body::after{
+            content:'';position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;
+            background:radial-gradient(ellipse at 50% 0%,rgba(212,160,23,.04) 0%,transparent 60%),radial-gradient(ellipse at 50% 100%,rgba(212,160,23,.02) 0%,transparent 50%);
+        }
+
+        /* ===== LAYOUT ===== */
+        .page-wrap{
+            position:relative;z-index:1;
+            max-width:480px;margin:0 auto;
+            padding:0 16px 40px;
+            min-height:100vh;
+        }
+
+        /* ===== HEADER ===== */
+        .track-header{
+            text-align:center;
+            padding:40px 0 24px;
+        }
+        .logo-wrap{
+            width:120px;height:120px;margin:0 auto 16px;
+            border-radius:50%;
+            background:linear-gradient(145deg,rgba(212,160,23,.12),rgba(212,160,23,.04));
+            border:2px solid rgba(212,160,23,.15);
+            box-shadow:0 0 30px rgba(212,160,23,.08),0 0 60px rgba(212,160,23,.04),0 8px 32px rgba(0,0,0,.3);
+            overflow:hidden;
+            display:flex;align-items:center;justify-content:center;
+            padding:8px;
+            animation:logoFloat 6s ease-in-out infinite;
+        }
+        @keyframes logoFloat{0%,100%{transform:translateY(0);box-shadow:0 0 30px rgba(212,160,23,.08),0 0 60px rgba(212,160,23,.04),0 8px 32px rgba(0,0,0,.3)}50%{transform:translateY(-4px);box-shadow:0 0 40px rgba(212,160,23,.12),0 0 80px rgba(212,160,23,.06),0 16px 48px rgba(0,0,0,.25)}}
+        .logo-wrap img{width:100%;height:100%;object-fit:contain}
+        .brand-name{
+            font-family:'Playfair Display',serif;
+            font-size:.85rem;font-weight:500;
+            color:var(--gold);letter-spacing:.12em;text-transform:uppercase;
+            margin-bottom:4px;
+        }
+        .brand-name b{color:var(--gold-l);text-shadow:0 0 20px rgba(212,160,23,.12)}
+        .page-title{
+            font-family:'Playfair Display',serif;
+            font-size:1.5rem;font-weight:700;color:var(--txt);
+            margin-top:4px;
+        }
+
+        /* ===== CARDS ===== */
+        .card{
+            background:linear-gradient(170deg,rgba(20,16,12,.9),rgba(28,22,16,.85));
+            backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+            border:1px solid rgba(212,160,23,.06);
+            border-radius:var(--r);
+            padding:20px;
+            margin-bottom:14px;
+            box-shadow:var(--shadow-m);
+            position:relative;
+            overflow:hidden;
+            animation:cardIn .6s var(--ease-out) both;
+        }
+        .card::before{
+            content:'';position:absolute;top:-1px;left:15%;right:15%;height:1px;
+            background:linear-gradient(90deg,transparent,rgba(212,160,23,.12),transparent);
+        }
+        .card:nth-child(1){animation-delay:.05s}
+        .card:nth-child(2){animation-delay:.1s}
+        .card:nth-child(3){animation-delay:.15s}
+        .card:nth-child(4){animation-delay:.2s}
+        .card:nth-child(5){animation-delay:.25s}
+        .card:nth-child(6){animation-delay:.3s}
+        .card:nth-child(7){animation-delay:.35s}
+        @keyframes cardIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+        .card-label{
+            font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+            color:var(--txt3);margin-bottom:12px;
+        }
+
+        /* ===== ORDER ID CARD ===== */
+        .order-id-card{text-align:center;padding:24px 20px}
+        .order-number{
+            font-family:var(--mono);font-size:1.6rem;font-weight:700;
+            color:var(--gold-l);letter-spacing:.08em;
+            text-shadow:0 0 30px rgba(212,160,23,.1);
+        }
+        .order-greeting{
+            font-size:1.1rem;font-weight:500;color:var(--txt);margin-top:6px;
+        }
+        .order-time{
+            font-size:.75rem;color:var(--txt3);margin-top:6px;
+            font-family:var(--mono);
+        }
+
+        /* ===== STEPPER ===== */
+        .stepper-card{padding:28px 20px}
+        .stepper{display:flex;align-items:flex-start;justify-content:space-between;position:relative}
+        .stepper-line{
+            position:absolute;top:18px;left:24px;right:24px;height:2px;
+            background:rgba(212,160,23,.08);z-index:0;border-radius:2px;
+        }
+        .stepper-line-fill{
+            height:100%;background:linear-gradient(90deg,var(--grn),var(--gold));
+            border-radius:2px;transition:width .8s var(--ease-luxe);
+            box-shadow:0 0 8px rgba(212,160,23,.2);
+        }
+        .step{
+            display:flex;flex-direction:column;align-items:center;
+            position:relative;z-index:1;flex:1;
+        }
+        .step-dot{
+            width:44px;height:44px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-size:.85rem;font-weight:700;
+            border:2px solid rgba(212,160,23,.1);
+            background:rgba(12,10,8,.95);
+            color:var(--txt4);
+            transition:all .6s var(--ease-luxe);
+            position:relative;
+        }
+        .step-label{
+            font-size:.6rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+            color:var(--txt4);margin-top:8px;text-align:center;
+            transition:color .6s var(--ease-luxe);
+        }
+
+        /* Step states */
+        .step.completed .step-dot{
+            background:linear-gradient(135deg,var(--grn),#27ae60);
+            border-color:var(--grn);color:#fff;
+            box-shadow:0 0 12px rgba(46,204,113,.2),0 4px 12px rgba(0,0,0,.2);
+        }
+        .step.completed .step-label{color:var(--grn)}
+
+        .step.active .step-dot{
+            background:linear-gradient(135deg,var(--gold),var(--gold-d));
+            border-color:var(--gold-l);color:#1a0f08;
+            box-shadow:0 0 20px rgba(212,160,23,.25),0 0 40px rgba(212,160,23,.1),0 4px 12px rgba(0,0,0,.2);
+            animation:activePulse 2s ease-in-out infinite;
+        }
+        .step.active .step-label{color:var(--gold-l);font-weight:700}
+        @keyframes activePulse{0%,100%{box-shadow:0 0 20px rgba(212,160,23,.25),0 0 40px rgba(212,160,23,.1),0 4px 12px rgba(0,0,0,.2)}50%{box-shadow:0 0 30px rgba(212,160,23,.35),0 0 60px rgba(212,160,23,.15),0 4px 12px rgba(0,0,0,.2)}}
+
+        .step.cancelled .step-dot{
+            background:linear-gradient(135deg,var(--red),#c0392b);
+            border-color:var(--red);color:#fff;
+            box-shadow:0 0 12px rgba(231,76,60,.2);
+        }
+        .step.cancelled .step-label{color:var(--red)}
+
+        /* ===== STATUS DISPLAY ===== */
+        .status-card{text-align:center;padding:28px 20px;position:relative}
+        .status-icon{
+            font-size:3rem;line-height:1;margin-bottom:12px;
+            display:inline-block;
+        }
+        .status-icon.cooking{animation:cookSpin 2s linear infinite}
+        .status-icon.bounce{animation:iconBounce 1s var(--ease-spring) infinite}
+        .status-icon.pulse{animation:iconPulse 1.5s ease-in-out infinite}
+        @keyframes cookSpin{0%{transform:rotate(0deg) scale(1)}25%{transform:rotate(-15deg) scale(1.05)}50%{transform:rotate(0deg) scale(1)}75%{transform:rotate(15deg) scale(1.05)}100%{transform:rotate(0deg) scale(1)}}
+        @keyframes iconBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+        @keyframes iconPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.8}}
+        .status-text{
+            font-size:1.15rem;font-weight:600;color:var(--txt);
+            line-height:1.5;
+        }
+        .status-sub{
+            font-size:.78rem;color:var(--txt2);margin-top:6px;
+        }
+
+        /* Status themes */
+        .status-card.st-pending{border-color:rgba(241,196,15,.1)}
+        .status-card.st-pending .status-text{color:var(--ylw)}
+        .status-card.st-confirmed{border-color:rgba(212,160,23,.12)}
+        .status-card.st-confirmed .status-text{color:var(--gold-l)}
+        .status-card.st-preparing{border-color:rgba(212,160,23,.15)}
+        .status-card.st-preparing .status-text{color:var(--gold-l)}
+        .status-card.st-preparing::after{
+            content:'';position:absolute;inset:0;border-radius:var(--r);
+            background:radial-gradient(ellipse at 50% 80%,rgba(212,160,23,.04),transparent 60%);
+            pointer-events:none;
+        }
+        .status-card.st-delivered{border-color:rgba(46,204,113,.15);box-shadow:var(--shadow-m),0 0 30px rgba(46,204,113,.06)}
+        .status-card.st-delivered .status-text{color:var(--grn)}
+        .status-card.st-delivered::after{
+            content:'';position:absolute;inset:0;border-radius:var(--r);
+            background:radial-gradient(ellipse at 50% 80%,rgba(46,204,113,.04),transparent 60%);
+            pointer-events:none;
+        }
+        .status-card.st-cancelled{border-color:rgba(231,76,60,.12)}
+        .status-card.st-cancelled .status-text{color:var(--red)}
+
+        /* ===== ESTIMATED TIME ===== */
+        .time-card{text-align:center;padding:24px 20px}
+        .time-value{
+            font-family:var(--mono);font-size:2rem;font-weight:700;
+            color:var(--gold-l);
+            text-shadow:0 0 30px rgba(212,160,23,.1);
+        }
+        .time-label{
+            font-size:.78rem;color:var(--txt2);margin-top:4px;
+        }
+        .time-bar{
+            width:100%;height:4px;background:rgba(212,160,23,.06);
+            border-radius:4px;margin-top:14px;overflow:hidden;
+        }
+        .time-bar-fill{
+            height:100%;border-radius:4px;
+            background:linear-gradient(90deg,var(--gold-d),var(--gold),var(--gold-l));
+            transition:width 1s var(--ease-luxe);
+            box-shadow:0 0 8px rgba(212,160,23,.2);
+        }
+
+        /* ===== ITEMS LIST ===== */
+        .items-card{padding:20px}
+        .item-row{
+            display:flex;align-items:center;justify-content:space-between;
+            padding:10px 0;
+            border-bottom:1px solid rgba(212,160,23,.04);
+        }
+        .item-row:last-of-type{border-bottom:none}
+        .item-name{font-size:.88rem;font-weight:500;color:var(--txt)}
+        .item-qty{
+            font-family:var(--mono);font-size:.72rem;font-weight:600;
+            color:var(--txt2);margin-left:6px;
+        }
+        .item-price{
+            font-family:var(--mono);font-size:.85rem;font-weight:600;
+            color:var(--gold-l);white-space:nowrap;
+        }
+        .items-divider{
+            height:1px;margin:12px 0;
+            background:linear-gradient(90deg,transparent,rgba(212,160,23,.12),transparent);
+        }
+        .total-row{
+            display:flex;align-items:center;justify-content:space-between;
+            padding:4px 0;
+        }
+        .total-row .label{font-size:.8rem;color:var(--txt2)}
+        .total-row .value{font-family:var(--mono);font-size:.85rem;font-weight:600;color:var(--txt2)}
+        .total-row.grand .label{font-size:.95rem;font-weight:700;color:var(--txt)}
+        .total-row.grand .value{font-size:1.05rem;font-weight:700;color:var(--gold-l)}
+
+        /* ===== DELIVERY INFO ===== */
+        .delivery-card{padding:20px}
+        .delivery-address{
+            font-size:.9rem;font-weight:500;color:var(--txt);
+            line-height:1.5;margin-bottom:8px;
+        }
+        .delivery-notes{
+            font-size:.8rem;color:var(--txt2);
+            background:rgba(212,160,23,.04);
+            border:1px solid rgba(212,160,23,.06);
+            border-radius:var(--r-s);
+            padding:10px 14px;
+            margin-top:8px;
+            line-height:1.5;
+        }
+        .delivery-notes .notes-icon{margin-right:6px}
+        .payment-badge{
+            display:inline-flex;align-items:center;gap:4px;
+            font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+            color:var(--gold);
+            background:rgba(212,160,23,.06);
+            border:1px solid rgba(212,160,23,.08);
+            padding:4px 10px;border-radius:var(--r-p);
+            margin-top:10px;
+        }
+
+        /* ===== CONTACT BUTTONS ===== */
+        .contact-card{text-align:center;padding:24px 20px}
+        .contact-title{
+            font-size:.85rem;font-weight:500;color:var(--txt2);margin-bottom:14px;
+        }
+        .contact-btns{display:flex;gap:10px;justify-content:center}
+        .contact-btn{
+            flex:1;max-width:160px;
+            padding:12px 16px;
+            border-radius:12px;
+            font-family:'Poppins',sans-serif;
+            font-size:.8rem;font-weight:600;
+            text-decoration:none;
+            display:flex;align-items:center;justify-content:center;gap:8px;
+            transition:all .4s var(--ease);
+            cursor:pointer;border:none;
+        }
+        .contact-btn.call{
+            background:linear-gradient(135deg,rgba(46,204,113,.12),rgba(46,204,113,.06));
+            border:1px solid rgba(46,204,113,.15);
+            color:var(--grn);
+        }
+        .contact-btn.call:hover{
+            background:linear-gradient(135deg,rgba(46,204,113,.2),rgba(46,204,113,.1));
+            box-shadow:0 0 20px rgba(46,204,113,.1);transform:translateY(-2px);
+        }
+        .contact-btn.whatsapp{
+            background:linear-gradient(135deg,rgba(37,211,102,.12),rgba(37,211,102,.06));
+            border:1px solid rgba(37,211,102,.15);
+            color:#25d366;
+        }
+        .contact-btn.whatsapp:hover{
+            background:linear-gradient(135deg,rgba(37,211,102,.2),rgba(37,211,102,.1));
+            box-shadow:0 0 20px rgba(37,211,102,.1);transform:translateY(-2px);
+        }
+
+        /* ===== FOOTER ===== */
+        .track-footer{
+            text-align:center;padding:30px 0 20px;
+        }
+        .footer-brand{
+            font-family:'Playfair Display',serif;
+            font-size:.8rem;color:var(--txt3);
+            letter-spacing:.06em;margin-bottom:6px;
+        }
+        .footer-love{
+            font-size:.68rem;color:var(--txt4);
+        }
+
+        /* ===== ERROR STATE ===== */
+        .error-state{
+            text-align:center;
+            padding:80px 20px;
+            animation:cardIn .6s var(--ease-out) both;
+        }
+        .error-icon{font-size:4rem;margin-bottom:20px;opacity:.6}
+        .error-title{
+            font-family:'Playfair Display',serif;
+            font-size:1.4rem;font-weight:700;color:var(--txt);
+            margin-bottom:8px;
+        }
+        .error-text{
+            font-size:.88rem;color:var(--txt2);line-height:1.6;
+            max-width:300px;margin:0 auto;
+        }
+        .error-link{
+            display:inline-block;margin-top:24px;
+            padding:12px 28px;
+            background:linear-gradient(135deg,var(--gold),var(--gold-d));
+            color:#1a0f08;
+            font-weight:700;font-size:.85rem;
+            border-radius:12px;
+            text-decoration:none;
+            box-shadow:0 4px 16px rgba(212,160,23,.15);
+            transition:all .4s var(--ease);
+        }
+        .error-link:hover{
+            transform:translateY(-2px);
+            box-shadow:0 8px 32px rgba(212,160,23,.25);
+        }
+
+        /* ===== LOADING ===== */
+        .loading-state{
+            text-align:center;padding:80px 20px;
+            animation:cardIn .6s var(--ease-out) both;
+        }
+        .loading-spinner{
+            width:48px;height:48px;margin:0 auto 20px;
+            border:3px solid rgba(212,160,23,.1);
+            border-top-color:var(--gold);
+            border-radius:50%;
+            animation:spin .8s linear infinite;
+        }
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .loading-text{
+            font-size:.88rem;color:var(--txt2);
+        }
+
+        /* ===== CONFETTI ===== */
+        .confetti-wrap{
+            position:fixed;top:0;left:0;width:100%;height:100%;
+            pointer-events:none;z-index:9998;overflow:hidden;
+        }
+        .confetti-wrap::before{
+            content:'';position:absolute;inset:0;
+            background:radial-gradient(ellipse at 50% 30%,rgba(212,160,23,.08) 0%,transparent 60%);
+            animation:celebGlow 2s ease-out forwards;
+        }
+        @keyframes celebGlow{
+            0%{opacity:0;transform:scale(.8)}
+            30%{opacity:1;transform:scale(1)}
+            100%{opacity:0;transform:scale(1.2)}
+        }
+        .confetti-piece{
+            position:absolute;
+            width:8px;height:8px;
+            border-radius:2px;
+            top:-10px;
+            animation:confettiFall linear forwards;
+        }
+        @keyframes confettiFall{
+            0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}
+            80%{opacity:1}
+            100%{transform:translateY(100vh) rotate(720deg) scale(.3);opacity:0}
+        }
+
+        /* ===== CANCELLED OVERLAY ===== */
+        .cancelled-badge{
+            display:inline-block;
+            padding:6px 18px;
+            background:rgba(231,76,60,.1);
+            border:1px solid rgba(231,76,60,.2);
+            border-radius:var(--r-p);
+            font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+            color:var(--red);margin-top:8px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width:360px){
+            .step-label{font-size:.52rem}
+            .step-dot{width:30px;height:30px;font-size:.72rem}
+            .status-icon{font-size:2.5rem}
+            .order-number{font-size:1.3rem}
+            .time-value{font-size:1.6rem}
+        }
+
+        /* ===== FADE-IN UTILITY ===== */
+        .fade-in{animation:fadeIn .5s var(--ease-out) both}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+        /* ===== HIDDEN ===== */
+        .hidden{display:none!important}
+
+        /* ===== SAFE AREA ===== */
+        @supports(padding: env(safe-area-inset-bottom)) {
+            body { padding-bottom: env(safe-area-inset-bottom); }
+        }
+
+        /* ===== REDUCED MOTION ===== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== LOADING STATE ===== -->
+<div class="page-wrap" id="loadingView">
+    <div class="track-header">
+        <div class="logo-wrap">
+            <img src="../amogha-logo.png" alt="Amogha Cafe">
+        </div>
+        <div class="brand-name">Amogha <b>Cafe</b> & Restaurant</div>
+        <div class="page-title">Track Your Order</div>
+    </div>
+    <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading your order details...</div>
+    </div>
+</div>
+
+<!-- ===== ERROR STATE ===== -->
+<div class="page-wrap hidden" id="errorView">
+    <div class="track-header">
+        <div class="logo-wrap">
+            <img src="../amogha-logo.png" alt="Amogha Cafe">
+        </div>
+        <div class="brand-name">Amogha <b>Cafe</b> & Restaurant</div>
+        <div class="page-title">Track Your Order</div>
+    </div>
+    <div class="error-state">
+        <div class="error-icon" id="errorIcon">🔍</div>
+        <div class="error-title" id="errorTitle">Order Not Found</div>
+        <div class="error-text" id="errorText">
+            We couldn't find this order. Please check the link and try again, or contact us for help.
+        </div>
+        <a href="../" class="error-link">Visit Amogha Cafe</a>
+    </div>
+    <div class="track-footer">
+        <div class="footer-brand">Amogha Cafe & Restaurant</div>
+        <div class="footer-love">Made with love</div>
+    </div>
+</div>
+
+<!-- ===== ORDER VIEW ===== -->
+<div class="page-wrap hidden" id="orderView">
+
+    <!-- Header -->
+    <div class="track-header">
+        <div class="logo-wrap">
+            <img src="../amogha-logo.png" alt="Amogha Cafe">
+        </div>
+        <div class="brand-name">Amogha <b>Cafe</b> & Restaurant</div>
+        <div class="page-title">Track Your Order</div>
+    </div>
+
+    <!-- Order ID Card -->
+    <div class="card order-id-card">
+        <div class="order-number" id="orderNumber">---</div>
+        <div class="order-greeting" id="orderGreeting"></div>
+        <div class="order-time" id="orderTime"></div>
+    </div>
+
+    <!-- Progress Stepper -->
+    <div class="card stepper-card" id="stepperCard">
+        <div class="card-label">Order Progress</div>
+        <div class="stepper">
+            <div class="stepper-line">
+                <div class="stepper-line-fill" id="stepperFill" style="width:0%"></div>
+            </div>
+            <div class="step" id="step0">
+                <div class="step-dot">1</div>
+                <div class="step-label">Placed</div>
+            </div>
+            <div class="step" id="step1">
+                <div class="step-dot">2</div>
+                <div class="step-label">Confirmed</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-dot">3</div>
+                <div class="step-label">Cooking</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-dot">4</div>
+                <div class="step-label">Ready</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Status -->
+    <div class="card status-card" id="statusCard">
+        <div class="status-icon" id="statusIcon">⏳</div>
+        <div class="status-text" id="statusText">Loading...</div>
+        <div class="status-sub" id="statusSub"></div>
+    </div>
+
+    <!-- Estimated Time -->
+    <div class="card time-card" id="timeCard">
+        <div class="card-label">Estimated Time</div>
+        <div class="time-value" id="timeValue">--:--</div>
+        <div class="time-label" id="timeLabel">calculating...</div>
+        <div class="time-bar">
+            <div class="time-bar-fill" id="timeBarFill" style="width:0%"></div>
+        </div>
+    </div>
+
+    <!-- Items List -->
+    <div class="card items-card" id="itemsCard">
+        <div class="card-label">Your Items</div>
+        <div id="itemsList"></div>
+        <div class="items-divider"></div>
+        <div id="totalSection"></div>
+    </div>
+
+    <!-- Delivery Info -->
+    <div class="card delivery-card" id="deliveryCard">
+        <div class="card-label">Delivery To</div>
+        <div class="delivery-address" id="deliveryAddress"></div>
+        <div class="delivery-notes hidden" id="deliveryNotes"></div>
+        <div class="payment-badge" id="paymentBadge"></div>
+    </div>
+
+    <!-- Contact -->
+    <div class="card contact-card">
+        <div class="contact-title">Need help with your order?</div>
+        <div class="contact-btns">
+            <a href="tel:+919121004999" class="contact-btn call">
+                <span>📱</span> Call Us
+            </a>
+            <a id="whatsappLink" href="#" target="_blank" rel="noopener" class="contact-btn whatsapp">
+                <span>💬</span> WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="track-footer">
+        <div class="footer-brand">Amogha Cafe & Restaurant</div>
+        <div class="footer-love">Powered by ❤️</div>
+    </div>
+</div>
+
+<!-- Confetti container -->
+<div class="confetti-wrap hidden" id="confettiWrap"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+(function(){
+    'use strict';
+
+    // ===== Firebase Init =====
+    firebase.initializeApp({
+        apiKey:"AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",
+        authDomain:"amogha-cafe.firebaseapp.com",
+        projectId:"amogha-cafe",
+        storageBucket:"amogha-cafe.firebasestorage.app",
+        messagingSenderId:"1000994409697",
+        appId:"1:1000994409697:web:983214bafab529d6a2fba0"
+    });
+
+    var db = firebase.firestore();
+
+    // ===== DOM Elements =====
+    var loadingView = document.getElementById('loadingView');
+    var errorView = document.getElementById('errorView');
+    var orderView = document.getElementById('orderView');
+    var errorIcon = document.getElementById('errorIcon');
+    var errorTitle = document.getElementById('errorTitle');
+    var errorText = document.getElementById('errorText');
+    var orderNumber = document.getElementById('orderNumber');
+    var orderGreeting = document.getElementById('orderGreeting');
+    var orderTime = document.getElementById('orderTime');
+    var stepperFill = document.getElementById('stepperFill');
+    var statusCard = document.getElementById('statusCard');
+    var statusIcon = document.getElementById('statusIcon');
+    var statusText = document.getElementById('statusText');
+    var statusSub = document.getElementById('statusSub');
+    var timeCard = document.getElementById('timeCard');
+    var timeValue = document.getElementById('timeValue');
+    var timeLabel = document.getElementById('timeLabel');
+    var timeBarFill = document.getElementById('timeBarFill');
+    var itemsList = document.getElementById('itemsList');
+    var totalSection = document.getElementById('totalSection');
+    var deliveryAddress = document.getElementById('deliveryAddress');
+    var deliveryNotes = document.getElementById('deliveryNotes');
+    var paymentBadge = document.getElementById('paymentBadge');
+    var whatsappLink = document.getElementById('whatsappLink');
+    var confettiWrap = document.getElementById('confettiWrap');
+
+    // ===== State =====
+    var timerInterval = null;
+    var currentStatus = null;
+    var confettiShown = false;
+
+    // ===== Utility =====
+    function shortId(docId) {
+        if (!docId) return '---';
+        return '#' + docId.slice(-4).toUpperCase();
+    }
+
+    function formatTime(dateStr) {
+        if (!dateStr) return '';
+        var d;
+        if (dateStr.toDate) {
+            d = dateStr.toDate();
+        } else {
+            d = new Date(dateStr);
+        }
+        if (isNaN(d.getTime())) return '';
+        var hours = d.getHours();
+        var mins = d.getMinutes();
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        if (hours === 0) hours = 12;
+        return hours + ':' + (mins < 10 ? '0' : '') + mins + ' ' + ampm;
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        var d;
+        if (dateStr.toDate) {
+            d = dateStr.toDate();
+        } else {
+            d = new Date(dateStr);
+        }
+        if (isNaN(d.getTime())) return '';
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' at ' + formatTime(dateStr);
+    }
+
+    function toDate(val) {
+        if (!val) return null;
+        if (val.toDate) return val.toDate();
+        var d = new Date(val);
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    // ===== Show/Hide Views =====
+    function showLoading() {
+        loadingView.classList.remove('hidden');
+        errorView.classList.add('hidden');
+        orderView.classList.add('hidden');
+    }
+
+    function showError(icon, title, text) {
+        loadingView.classList.add('hidden');
+        errorView.classList.remove('hidden');
+        orderView.classList.add('hidden');
+        errorIcon.textContent = icon || '🔍';
+        errorTitle.textContent = title || 'Order Not Found';
+        errorText.textContent = text || 'We couldn\'t find this order. Please check the link and try again, or contact us for help.';
+    }
+
+    function showOrder() {
+        loadingView.classList.add('hidden');
+        errorView.classList.add('hidden');
+        orderView.classList.remove('hidden');
+    }
+
+    // ===== Stepper =====
+    var statusSteps = {
+        'pending':   0,
+        'confirmed': 1,
+        'preparing': 2,
+        'delivered': 3,
+        'cancelled': -1
+    };
+
+    function updateStepper(status) {
+        var activeIndex = statusSteps[status];
+        if (activeIndex === undefined) activeIndex = 0;
+
+        var steps = [
+            document.getElementById('step0'),
+            document.getElementById('step1'),
+            document.getElementById('step2'),
+            document.getElementById('step3')
+        ];
+
+        if (status === 'cancelled') {
+            steps.forEach(function(step, i) {
+                step.className = 'step';
+                var dot = step.querySelector('.step-dot');
+                dot.innerHTML = '✕';
+                step.classList.add('cancelled');
+            });
+            stepperFill.style.width = '100%';
+            stepperFill.style.background = 'linear-gradient(90deg, var(--red), #c0392b)';
+            return;
+        }
+
+        stepperFill.style.background = 'linear-gradient(90deg, var(--grn), var(--gold))';
+
+        var fillPercents = [0, 33, 66, 100];
+        stepperFill.style.width = fillPercents[activeIndex] + '%';
+
+        steps.forEach(function(step, i) {
+            step.className = 'step';
+            var dot = step.querySelector('.step-dot');
+
+            if (i < activeIndex) {
+                step.classList.add('completed');
+                dot.innerHTML = '✓';
+            } else if (i === activeIndex) {
+                step.classList.add('active');
+                dot.innerHTML = (i + 1).toString();
+            } else {
+                dot.innerHTML = (i + 1).toString();
+            }
+        });
+    }
+
+    // ===== Status Display =====
+    var statusConfig = {
+        'pending': {
+            icon: '⏳',
+            iconClass: 'pulse',
+            text: 'Your order has been placed!',
+            sub: 'We\'ll confirm it shortly.',
+            cardClass: 'st-pending'
+        },
+        'confirmed': {
+            icon: '✅',
+            iconClass: 'bounce',
+            text: 'Order confirmed!',
+            sub: 'The kitchen will start preparing your food soon.',
+            cardClass: 'st-confirmed'
+        },
+        'preparing': {
+            icon: '🍳',
+            iconClass: 'cooking',
+            text: 'Your food is being prepared!',
+            sub: 'Our chefs are working on your delicious meal.',
+            cardClass: 'st-preparing'
+        },
+        'delivered': {
+            icon: '🎉',
+            iconClass: 'bounce',
+            text: 'Your order is ready!',
+            sub: 'Pick up or delivery is on the way.',
+            cardClass: 'st-delivered'
+        },
+        'cancelled': {
+            icon: '❌',
+            iconClass: '',
+            text: 'This order has been cancelled.',
+            sub: 'If you have questions, please contact us.',
+            cardClass: 'st-cancelled'
+        }
+    };
+
+    function updateStatus(status) {
+        var cfg = statusConfig[status] || statusConfig['pending'];
+
+        statusCard.className = 'card status-card ' + cfg.cardClass;
+        statusIcon.textContent = cfg.icon;
+        statusIcon.className = 'status-icon' + (cfg.iconClass ? ' ' + cfg.iconClass : '');
+        statusText.textContent = cfg.text;
+        statusSub.textContent = cfg.sub;
+
+        if (status === 'cancelled') {
+            statusSub.innerHTML = cfg.sub + '<div class="cancelled-badge">Cancelled</div>';
+        }
+    }
+
+    // ===== Estimated Time =====
+    var PREP_TIME_MINUTES = 15;
+
+    function updateTimeDisplay(order) {
+        var status = order.status || 'pending';
+
+        if (status === 'delivered') {
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            timeValue.textContent = 'Done!';
+            timeLabel.textContent = 'Your order has been completed';
+            timeBarFill.style.width = '100%';
+            timeCard.classList.remove('hidden');
+            return;
+        }
+
+        if (status === 'cancelled') {
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            timeCard.classList.add('hidden');
+            return;
+        }
+
+        timeCard.classList.remove('hidden');
+
+        var kitchenStart = toDate(order.kitchenStartedAt);
+
+        if (kitchenStart && (status === 'preparing' || status === 'confirmed')) {
+            if (timerInterval) clearInterval(timerInterval);
+
+            function tick() {
+                var now = new Date();
+                var elapsed = (now - kitchenStart) / 1000;
+                var totalSec = PREP_TIME_MINUTES * 60;
+                var remaining = Math.max(0, totalSec - elapsed);
+                var mins = Math.floor(remaining / 60);
+                var secs = Math.floor(remaining % 60);
+
+                if (remaining <= 0) {
+                    timeValue.textContent = 'Almost ready!';
+                    timeLabel.textContent = 'Your food should be ready any moment';
+                    timeBarFill.style.width = '100%';
+                } else {
+                    timeValue.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                    timeLabel.textContent = '~' + (mins + 1) + ' minute' + (mins === 0 ? '' : 's') + ' remaining';
+                    var pct = Math.min(100, (elapsed / totalSec) * 100);
+                    timeBarFill.style.width = pct + '%';
+                }
+            }
+
+            tick();
+            timerInterval = setInterval(tick, 1000);
+        } else {
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            timeValue.textContent = '~15-20 min';
+            timeLabel.textContent = 'Estimated preparation time';
+            timeBarFill.style.width = '5%';
+        }
+    }
+
+    // ===== Items List =====
+    function renderItems(order) {
+        var items = order.items || [];
+        var html = '';
+
+        items.forEach(function(item) {
+            var lineTotal = (item.qty || 1) * (item.price || 0);
+            html += '<div class="item-row">';
+            html += '<div><span class="item-name">' + escHtml(item.name || 'Item') + '</span>';
+            html += '<span class="item-qty"> x' + (item.qty || 1) + '</span></div>';
+            html += '<div class="item-price">₹' + lineTotal.toLocaleString('en-IN') + '</div>';
+            html += '</div>';
+        });
+
+        itemsList.innerHTML = html;
+
+        var totHtml = '';
+        if (order.subtotal !== undefined) {
+            totHtml += '<div class="total-row"><span class="label">Subtotal</span><span class="value">₹' + Number(order.subtotal).toLocaleString('en-IN') + '</span></div>';
+        }
+        if (order.deliveryFee !== undefined && order.deliveryFee > 0) {
+            totHtml += '<div class="total-row"><span class="label">Delivery Fee</span><span class="value">₹' + Number(order.deliveryFee).toLocaleString('en-IN') + '</span></div>';
+        }
+        if (order.total !== undefined) {
+            totHtml += '<div class="total-row grand"><span class="label">Total</span><span class="value">₹' + Number(order.total).toLocaleString('en-IN') + '</span></div>';
+        }
+        totalSection.innerHTML = totHtml;
+    }
+
+    // ===== Delivery Info =====
+    function renderDelivery(order) {
+        deliveryAddress.textContent = order.address || 'Not specified';
+
+        if (order.notes && order.notes.trim()) {
+            deliveryNotes.classList.remove('hidden');
+            deliveryNotes.innerHTML = '<span class="notes-icon">📝</span> ' + escHtml(order.notes);
+        } else {
+            deliveryNotes.classList.add('hidden');
+        }
+
+        var paymentMethod = order.payment || 'Cash';
+        var paymentIcon = '💳';
+        var pm = paymentMethod.toLowerCase();
+        if (pm === 'upi') paymentIcon = '📱';
+        else if (pm === 'cash' || pm.indexOf('cod') !== -1 || pm === 'cash on delivery') paymentIcon = '💵';
+        else if (pm === 'card') paymentIcon = '💳';
+
+        var payHtml = paymentIcon + ' Paid via ' + escHtml(paymentMethod);
+        if (order.paymentRef) {
+            payHtml += ' <span style="display:inline-block;margin-left:6px;padding:2px 8px;background:rgba(39,174,96,0.12);color:#27ae60;border-radius:6px;font-size:0.72rem;font-weight:700">Ref: ' + escHtml(order.paymentRef) + '</span>';
+        } else if (order.paymentStatus === 'cod-pending') {
+            payHtml += ' <span style="display:inline-block;margin-left:6px;padding:2px 8px;background:rgba(231,76,60,0.12);color:#e74c3c;border-radius:6px;font-size:0.72rem;font-weight:700">Pay on delivery</span>';
+        }
+        paymentBadge.innerHTML = payHtml;
+    }
+
+    // ===== WhatsApp =====
+    function updateWhatsApp(orderId) {
+        var orderTag = shortId(orderId);
+        var msg = encodeURIComponent('Hi, I want to check on my order ' + orderTag);
+        whatsappLink.href = 'https://wa.me/919121004999?text=' + msg;
+    }
+
+    // ===== Confetti =====
+    function launchConfetti() {
+        if (confettiShown) return;
+        confettiShown = true;
+        confettiWrap.classList.remove('hidden');
+
+        var colors = ['#D4A017', '#F5D76E', '#2ecc71', '#e74c3c', '#5dade2', '#a569bd', '#f39c12', '#1abc9c'];
+        var count = 60;
+
+        for (var i = 0; i < count; i++) {
+            var piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = Math.random() * 100 + '%';
+            piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            piece.style.width = (Math.random() * 6 + 4) + 'px';
+            piece.style.height = (Math.random() * 6 + 4) + 'px';
+            piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            piece.style.animationDelay = (Math.random() * 1.5) + 's';
+            if (Math.random() > 0.5) piece.style.borderRadius = '50%';
+            confettiWrap.appendChild(piece);
+        }
+
+        setTimeout(function() {
+            confettiWrap.classList.add('hidden');
+            confettiWrap.innerHTML = '';
+        }, 5000);
+    }
+
+    // ===== Escape HTML =====
+    function escHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+
+    // ===== Render Full Order =====
+    function renderOrder(orderId, data) {
+        showOrder();
+
+        // Order ID & Greeting
+        orderNumber.textContent = 'Order ' + shortId(orderId);
+        var name = data.customer || '';
+        var firstName = name.split(' ')[0];
+        if (firstName) {
+            orderGreeting.textContent = 'Hi, ' + firstName + '!';
+        } else {
+            orderGreeting.textContent = '';
+        }
+        orderTime.textContent = formatDate(data.createdAt);
+
+        // Status
+        var status = data.status || 'pending';
+        updateStepper(status);
+        updateStatus(status);
+        updateTimeDisplay(data);
+        renderItems(data);
+        renderDelivery(data);
+        updateWhatsApp(orderId);
+
+        // Confetti on delivered
+        if (status === 'delivered' && !confettiShown) {
+            setTimeout(launchConfetti, 600);
+        }
+
+        // Reset confetti flag if status changes back from delivered
+        if (status !== 'delivered') {
+            confettiShown = false;
+        }
+
+        // Auto-scroll to status on first load
+        if (currentStatus === null) {
+            setTimeout(function() {
+                var sc = document.getElementById('statusCard');
+                if (sc) {
+                    sc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 800);
+        }
+
+        currentStatus = status;
+    }
+
+    // ===== INIT =====
+    function init() {
+        var params = new URLSearchParams(window.location.search);
+        var orderId = params.get('id');
+
+        if (!orderId || !orderId.trim()) {
+            showError(
+                '🔗',
+                'No Order ID',
+                'This link appears to be incomplete. Please use the tracking link from your order confirmation.'
+            );
+            return;
+        }
+
+        orderId = orderId.trim();
+        showLoading();
+
+        // Real-time listener
+        var unsubscribe = db.collection('orders').doc(orderId).onSnapshot(
+            function(doc) {
+                if (!doc.exists) {
+                    showError(
+                        '🔍',
+                        'Order Not Found',
+                        'We couldn\'t find an order with this ID. It may have been removed or the link may be incorrect.'
+                    );
+                    return;
+                }
+
+                var data = doc.data();
+                renderOrder(orderId, data);
+                // Start notification listener for this order
+                if (!window._notifListening) {
+                    window._notifListening = true;
+                    listenForNotifications(orderId);
+                }
+            },
+            function(error) {
+                console.error('Firestore error:', error);
+                showError(
+                    '⚠️',
+                    'Connection Error',
+                    'We\'re having trouble loading your order. Please check your internet connection and refresh the page.'
+                );
+            }
+        );
+    }
+
+    // ===== Order Notification Listener =====
+    function listenForNotifications(orderId) {
+        db.collection('notifications').where('orderId', '==', orderId).where('read', '==', false)
+            .onSnapshot(function(snap) {
+                snap.docChanges().forEach(function(change) {
+                    if (change.type === 'added') {
+                        var n = change.doc.data();
+                        // Show browser notification
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            new Notification(n.title || 'Order Update', { body: n.body || '', icon: '../amogha-logo.png' });
+                        } else if ('Notification' in window && Notification.permission !== 'denied') {
+                            Notification.requestPermission().then(function(perm) {
+                                if (perm === 'granted') {
+                                    new Notification(n.title || 'Order Update', { body: n.body || '', icon: '../amogha-logo.png' });
+                                }
+                            });
+                        }
+                        change.doc.ref.update({ read: true });
+                    }
+                });
+            }, function(err) { console.error('Notification listener error:', err); });
+    }
+
+    // ===== Cleanup on page unload =====
+    window.addEventListener('beforeunload', function() {
+        if (timerInterval) clearInterval(timerInterval);
+    });
+
+    // Start
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+})();
+</script>
+</body>
+</html>

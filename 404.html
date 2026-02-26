@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found — Amogha Cafe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="amogha-logo.png">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0f0a07;
+            color: #e8dcc8;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Grain texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Ambient background glow */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(212, 160, 23, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(212, 160, 23, 0.3);
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+        }
+        .particle:nth-child(1) { left: 10%; animation-duration: 12s; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 25%; animation-duration: 15s; animation-delay: 2s; width: 2px; height: 2px; }
+        .particle:nth-child(3) { left: 45%; animation-duration: 10s; animation-delay: 4s; }
+        .particle:nth-child(4) { left: 65%; animation-duration: 14s; animation-delay: 1s; width: 2px; height: 2px; }
+        .particle:nth-child(5) { left: 80%; animation-duration: 11s; animation-delay: 3s; }
+        .particle:nth-child(6) { left: 90%; animation-duration: 13s; animation-delay: 5s; width: 2px; height: 2px; }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* Main container */
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2rem;
+            max-width: 520px;
+            width: 100%;
+        }
+
+        /* Logo */
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            animation: logoFloat 4s ease-in-out infinite;
+            filter: drop-shadow(0 4px 20px rgba(212, 160, 23, 0.25));
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Card */
+        .card {
+            background: rgba(26, 15, 8, 0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(212, 160, 23, 0.15);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 80px rgba(212, 160, 23, 0.04);
+            animation: cardIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        @keyframes cardIn {
+            0% { opacity: 0; transform: translateY(30px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* 404 number */
+        .error-code {
+            font-family: 'Playfair Display', serif;
+            font-size: 6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #D4A017, #e8c547, #D4A017);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            animation: shimmer 4s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .error-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #e8dcc8;
+            margin-bottom: 1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .error-message {
+            font-size: 0.9rem;
+            color: #8a7a6a;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        /* Divider */
+        .divider {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #D4A017, transparent);
+            margin: 0 auto 2rem;
+        }
+
+        /* Navigation buttons */
+        .nav-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
+        }
+
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #D4A017, #B8860B);
+            color: #1a0f08;
+            border: none;
+        }
+
+        .nav-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(212, 160, 23, 0.35);
+        }
+
+        .nav-btn.secondary {
+            background: rgba(212, 160, 23, 0.08);
+            color: #D4A017;
+            border: 1px solid rgba(212, 160, 23, 0.2);
+        }
+
+        .nav-btn.secondary:hover {
+            background: rgba(212, 160, 23, 0.15);
+            border-color: rgba(212, 160, 23, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-row .nav-btn {
+            flex: 1;
+        }
+
+        /* Footer text */
+        .footer-text {
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #4a3a2a;
+            letter-spacing: 0.05em;
+        }
+
+        .footer-text span {
+            color: #D4A017;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .card {
+                padding: 2.5rem 1.5rem;
+                border-radius: 20px;
+            }
+            .error-code {
+                font-size: 4.5rem;
+            }
+            .error-title {
+                font-size: 1.25rem;
+            }
+            .btn-row {
+                flex-direction: column;
+            }
+            .logo {
+                width: 64px;
+                height: 64px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <img src="amogha-logo.png" alt="Amogha Cafe" class="logo">
+        <div class="card">
+            <div class="error-code">404</div>
+            <h1 class="error-title">Page Not Found</h1>
+            <p class="error-message">
+                The page you're looking for seems to have wandered off the menu.
+                Let us guide you back to something delicious.
+            </p>
+            <div class="divider"></div>
+            <div class="nav-buttons">
+                <a href="/" class="nav-btn primary">Back to Home</a>
+                <div class="btn-row">
+                    <a href="/#menu" class="nav-btn secondary">View Menu</a>
+                    <a href="/track/" class="nav-btn secondary">Track Order</a>
+                </div>
+            </div>
+        </div>
+        <p class="footer-text"><span>Amogha</span> Cafe & Restaurant</p>
+    </div>
+</body>
+</html>

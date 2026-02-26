@@ -1,0 +1,154 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users collection: anyone can create, only matching user can read/update
+    match /users/{phone} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Orders collection: anyone can create and read, update for status changes
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Messages collection: kitchen-FOH chat
+    match /messages/{msgId} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Reviews collection: customer ratings & reviews
+    match /reviews/{reviewId} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Reservations collection: table bookings
+    match /reservations/{resId} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Inventory collection: stock levels (cross-device sync)
+    match /inventory/{itemId} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Tables collection: table status management
+    match /tables/{tableId} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Referrals collection: referral program tracking
+    match /referrals/{refId} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Menu collection: menu items catalog
+    match /menu/{itemId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
+    }
+
+    // Specials collection: today's specials
+    match /specials/{specialId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
+    }
+
+    // Hero slideshow: admin-managed slides
+    match /heroSlides/{slideId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
+    }
+
+    // Coupons collection: promo codes
+    match /coupons/{code} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
+    }
+
+    // Addons collection: item customization add-ons
+    match /addons/{addonId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
+    }
+
+    // Gift cards collection: digital gift cards
+    match /giftCards/{code} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Notifications collection: order status notifications
+    match /notifications/{notifId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Testimonials collection: customer video testimonials
+    match /testimonials/{tid} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
+    }
+
+    // Social posts collection: Instagram-style feed
+    match /socialPosts/{postId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
+    }
+
+    // Settings collection: global app settings
+    match /settings/{docId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Block everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
