@@ -1,0 +1,26 @@
+{
+  "name": "Amogha Admin Panel",
+  "short_name": "Admin",
+  "description": "Admin Dashboard for Amogha Cafe & Restaurant",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0a07",
+  "theme_color": "#D4A017",
+  "categories": ["food", "restaurant", "productivity"],
+  "icons": [
+    {
+      "src": "../amogha-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../amogha-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Amogha Delivery</title>
+    <meta name="theme-color" content="#1a0f08">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Amogha Delivery">
+    <link rel="icon" type="image/png" href="../amogha-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:       #0e0905;
+            --bg2:      #16100a;
+            --card:     #1c1209;
+            --gold:     #D4A017;
+            --gold-d:   #b8860b;
+            --cream:    #e8dcc8;
+            --text-dim: #a09080;
+            --text-faint: #6a5a4a;
+            --border:   rgba(212,160,23,0.15);
+            --border2:  rgba(255,255,255,0.07);
+            --green:    #27ae60;
+            --red:      #e74c3c;
+            --blue:     #2980b9;
+            --orange:   #e67e22;
+            --radius:   14px;
+            --shadow:   0 4px 24px rgba(0,0,0,0.5);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        html, body {
+            height: 100%; min-height: 100dvh;
+            background: var(--bg);
+            color: var(--cream);
+            font-family: 'Poppins', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* ── LOGIN SCREEN ── */
+        #login-screen {
+            min-height: 100dvh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 1.5rem;
+            background: radial-gradient(ellipse at 50% 30%, rgba(212,160,23,0.06) 0%, transparent 65%), var(--bg);
+        }
+        .login-box {
+            background: linear-gradient(160deg, rgba(28,18,9,0.98), rgba(22,16,10,0.95));
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            width: 100%; max-width: 380px;
+            text-align: center;
+            box-shadow: var(--shadow), 0 0 60px rgba(0,0,0,0.4);
+        }
+        .login-logo { font-size: 3.2rem; margin-bottom: 0.5rem; }
+        .login-box h1 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1.6rem; margin-bottom: 0.3rem; }
+        .login-box .sub { color: var(--text-dim); font-size: 0.78rem; margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 0.07em; }
+        .login-field { margin-bottom: 1rem; text-align: left; }
+        .login-field label { display: block; font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.35rem; }
+        .login-field input {
+            width: 100%; padding: 0.9rem 1rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(212,160,23,0.15);
+            border-radius: 10px; color: var(--cream);
+            font-family: 'Poppins', sans-serif; font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .login-field input:focus { outline: none; border-color: var(--gold); background: rgba(255,255,255,0.06); }
+        .login-btn {
+            width: 100%; padding: 1rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-d));
+            color: #1a0f08; border: none; border-radius: 12px;
+            font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 700;
+            cursor: pointer; margin-top: 0.5rem;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .login-btn:active { transform: scale(0.98); opacity: 0.9; }
+        .login-err { color: var(--red); font-size: 0.8rem; margin-top: 0.75rem; min-height: 1.2em; }
+
+        /* ── MAIN APP ── */
+        #app { display: none; flex-direction: column; min-height: 100dvh; }
+
+        /* Header */
+        .app-header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(14,9,5,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .app-header .brand { display: flex; align-items: center; gap: 0.5rem; }
+        .app-header .brand span { font-size: 1.2rem; }
+        .app-header .brand strong { color: var(--gold); font-size: 1rem; font-weight: 600; }
+        .app-header .user-info { display: flex; align-items: center; gap: 0.75rem; }
+        .app-header .user-name { font-size: 0.82rem; color: var(--text-dim); }
+        .logout-btn {
+            padding: 0.35rem 0.75rem; border-radius: 8px;
+            background: rgba(231,76,60,0.1); color: var(--red);
+            border: 1px solid rgba(231,76,60,0.2);
+            font-size: 0.72rem; font-weight: 600; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .logout-btn:active { background: rgba(231,76,60,0.2); }
+
+        /* Connection badge */
+        .conn-badge {
+            display: inline-block; width: 8px; height: 8px;
+            border-radius: 50%; background: var(--green);
+            box-shadow: 0 0 6px var(--green);
+        }
+        .conn-badge.offline { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+        /* Tab content area */
+        .tab-content { flex: 1; overflow-y: auto; padding: 1rem 1rem 5rem; }
+
+        /* Bottom nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(22,16,10,0.97);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border);
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+        .nav-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 0.7rem 0.25rem 0.5rem;
+            background: none; border: none; color: var(--text-dim);
+            font-family: 'Poppins', sans-serif; font-size: 0.6rem;
+            font-weight: 500; cursor: pointer; gap: 0.2rem;
+            transition: color 0.2s;
+            position: relative;
+        }
+        .nav-btn .nav-icon { font-size: 1.3rem; line-height: 1; }
+        .nav-btn.active { color: var(--gold); }
+        .nav-badge {
+            position: absolute; top: 0.4rem; right: calc(50% - 1.2rem);
+            background: var(--red); color: #fff;
+            border-radius: 10px; font-size: 0.55rem; font-weight: 700;
+            padding: 0.1rem 0.35rem; min-width: 16px; text-align: center;
+            display: none;
+        }
+        .nav-badge.show { display: block; }
+
+        /* ── TAB PANELS ── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Section header */
+        .section-title {
+            font-size: 0.72rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-dim); margin-bottom: 0.85rem;
+        }
+
+        /* ── ORDER CARDS ── */
+        .order-card {
+            background: var(--card);
+            border: 1px solid var(--border2);
+            border-radius: var(--radius);
+            padding: 1rem 1.1rem;
+            margin-bottom: 0.85rem;
+            transition: border-color 0.2s;
+        }
+        .order-card:active { border-color: var(--border); }
+        .order-card .oc-top {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+        .order-card .oc-id { font-size: 0.75rem; color: var(--text-dim); font-weight: 500; }
+        .order-card .oc-total { font-size: 1.1rem; font-weight: 700; color: var(--gold); }
+        .order-card .oc-meta { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.35rem; }
+        .order-card .oc-addr {
+            font-size: 0.82rem; color: var(--cream); opacity: 0.9;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+            margin-bottom: 0.35rem;
+        }
+        .order-card .oc-customer { font-size: 0.8rem; color: var(--text-dim); }
+        .order-card .oc-actions { margin-top: 0.85rem; }
+
+        /* Buttons */
+        .btn-accept {
+            width: 100%; padding: 0.75rem;
+            background: var(--green); color: #fff;
+            border: none; border-radius: 10px;
+            font-family: 'Poppins', sans-serif; font-size: 0.88rem; font-weight: 600;
+            cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+        }
+        .btn-accept:active { transform: scale(0.98); opacity: 0.85; }
+
+        /* ── ACTIVE DELIVERY CARD ── */
+        .active-card {
+            background: linear-gradient(135deg, rgba(39,174,96,0.08), rgba(22,16,10,0.95));
+            border: 1px solid rgba(39,174,96,0.2);
+            border-radius: var(--radius);
+            padding: 1.1rem 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .active-badge {
+            display: inline-block; padding: 0.2rem 0.65rem;
+            background: rgba(39,174,96,0.15); color: var(--green);
+            border-radius: 20px; font-size: 0.65rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            margin-bottom: 0.75rem;
+        }
+        .active-divider { border: none; border-top: 1px solid var(--border2); margin: 0.75rem 0; }
+        .active-customer { font-size: 1rem; font-weight: 600; color: var(--cream); margin-bottom: 0.2rem; }
+        .active-addr { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.2rem; }
+        .active-phone { font-size: 0.82rem; color: var(--text-dim); }
+        .item-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.2rem 0; }
+        .item-row .item-name { color: var(--cream); flex: 1; }
+        .item-row .item-price { color: var(--text-dim); }
+        .active-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.92rem; padding-top: 0.5rem; }
+        .active-total .payment-tag { font-size: 0.72rem; color: var(--text-dim); font-weight: 400; }
+        .active-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 1rem; }
+        .btn-navigate, .btn-call {
+            padding: 0.7rem 0.5rem; border-radius: 10px;
+            font-family: 'Poppins', sans-serif; font-size: 0.82rem; font-weight: 600;
+            cursor: pointer; transition: opacity 0.2s, transform 0.1s; border: none; text-align: center;
+        }
+        .btn-navigate:active, .btn-call:active { transform: scale(0.97); opacity: 0.85; }
+        .btn-navigate { background: rgba(41,128,185,0.15); color: #5dade2; border: 1px solid rgba(41,128,185,0.25); }
+        .btn-call { background: rgba(39,174,96,0.12); color: var(--green); border: 1px solid rgba(39,174,96,0.2); }
+        .btn-delivered {
+            width: 100%; margin-top: 0.6rem; padding: 0.85rem;
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            color: #fff; border: none; border-radius: 12px;
+            font-family: 'Poppins', sans-serif; font-size: 0.95rem; font-weight: 700;
+            cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+            box-shadow: 0 4px 16px rgba(39,174,96,0.25);
+        }
+        .btn-delivered:active { transform: scale(0.98); opacity: 0.9; }
+
+        /* ── EARNINGS ── */
+        .earnings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem; }
+        .earn-card {
+            background: var(--card); border: 1px solid var(--border2);
+            border-radius: var(--radius); padding: 1rem;
+            text-align: center;
+        }
+        .earn-card.full { grid-column: 1 / -1; }
+        .earn-card .earn-num { font-size: 1.5rem; font-weight: 700; color: var(--gold); }
+        .earn-card .earn-label { font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 0.2rem; }
+        .earn-card .earn-sub { font-size: 0.7rem; color: var(--text-faint); margin-top: 0.1rem; }
+        .earn-note { font-size: 0.75rem; color: var(--text-dim); text-align: center; margin-top: 0.5rem; }
+
+        /* ── HISTORY ── */
+        .history-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.85rem 1rem;
+            background: var(--card); border: 1px solid var(--border2);
+            border-radius: 10px; margin-bottom: 0.6rem;
+        }
+        .history-row .hr-left { flex: 1; }
+        .history-row .hr-date { font-size: 0.72rem; color: var(--text-dim); }
+        .history-row .hr-id { font-size: 0.82rem; color: var(--cream); font-weight: 500; }
+        .history-row .hr-addr { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .history-row .hr-right { text-align: right; }
+        .history-row .hr-total { font-size: 0.9rem; font-weight: 600; color: var(--cream); }
+        .history-row .hr-fee { font-size: 0.7rem; color: var(--green); }
+
+        /* ── EMPTY / LOADING ── */
+        .empty-state {
+            text-align: center; padding: 3rem 1rem; color: var(--text-dim);
+        }
+        .empty-state .es-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+        .empty-state .es-title { font-size: 0.95rem; color: var(--cream); margin-bottom: 0.3rem; }
+        .empty-state .es-sub { font-size: 0.78rem; }
+        .loading-row { text-align: center; padding: 2rem; color: var(--text-dim); font-size: 0.85rem; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 6rem; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: rgba(39,174,96,0.92); color: #fff;
+            padding: 0.65rem 1.25rem; border-radius: 20px;
+            font-size: 0.82rem; font-weight: 600;
+            opacity: 0; transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none; z-index: 9999; white-space: nowrap;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { background: rgba(231,76,60,0.92); }
+
+        /* Confirm overlay */
+        .confirm-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9990;
+            display: none; align-items: flex-end; justify-content: center;
+            padding: 1rem;
+        }
+        .confirm-overlay.show { display: flex; }
+        .confirm-box {
+            background: #1c1209; border: 1px solid var(--border); border-radius: 20px;
+            padding: 1.5rem 1.5rem 1rem; width: 100%; max-width: 400px;
+            text-align: center;
+        }
+        .confirm-box .cb-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .confirm-box h3 { color: var(--cream); font-size: 1rem; margin-bottom: 0.4rem; }
+        .confirm-box p { color: var(--text-dim); font-size: 0.82rem; margin-bottom: 1.25rem; }
+        .confirm-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+        .confirm-btns button {
+            padding: 0.75rem; border-radius: 10px;
+            font-family: 'Poppins', sans-serif; font-size: 0.88rem; font-weight: 600;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .confirm-btns button:active { opacity: 0.8; }
+        .cb-cancel { background: rgba(255,255,255,0.06); color: var(--cream); border: 1px solid var(--border2); }
+        .cb-confirm { background: var(--green); color: #fff; border: none; }
+
+        @media (min-width: 480px) {
+            .tab-content { max-width: 480px; margin: 0 auto; }
+            .bottom-nav { max-width: 480px; left: 50%; transform: translateX(-50%); border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  LOGIN SCREEN                                             -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+    <div class="login-box">
+        <div class="login-logo">🛵</div>
+        <h1>Amogha Delivery</h1>
+        <p class="sub">Delivery Partner Login</p>
+        <div class="login-field">
+            <label>Phone Number</label>
+            <input type="tel" id="login-phone" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" autocomplete="tel">
+        </div>
+        <div class="login-field">
+            <label>PIN</label>
+            <input type="password" id="login-pin" placeholder="Enter your PIN" maxlength="6" inputmode="numeric" autocomplete="current-password">
+        </div>
+        <button class="login-btn" onclick="doLogin()">Login</button>
+        <div class="login-err" id="login-err"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  MAIN APP                                                 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="app">
+    <!-- Header -->
+    <header class="app-header">
+        <div class="brand">
+            <span>🛵</span>
+            <strong>Amogha Delivery</strong>
+        </div>
+        <div class="user-info">
+            <span class="conn-badge" id="conn-badge"></span>
+            <span class="user-name" id="user-name-display"></span>
+            <button class="logout-btn" onclick="doLogout()">Logout</button>
+        </div>
+    </header>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+
+        <!-- Tab: Available Orders -->
+        <div id="tab-available" class="tab-panel active">
+            <div class="section-title">Available Orders</div>
+            <div id="available-list">
+                <div class="loading-row">Loading orders…</div>
+            </div>
+        </div>
+
+        <!-- Tab: Active Delivery -->
+        <div id="tab-active" class="tab-panel">
+            <div class="section-title">Active Delivery</div>
+            <div id="active-delivery-content">
+                <div class="loading-row">Loading…</div>
+            </div>
+        </div>
+
+        <!-- Tab: Earnings -->
+        <div id="tab-earnings" class="tab-panel">
+            <div class="section-title">Your Earnings</div>
+            <div class="earnings-grid" id="earnings-grid">
+                <div class="loading-row" style="grid-column:1/-1">Loading…</div>
+            </div>
+            <p class="earn-note">Earnings shown include ₹49/order delivery fee.<br>Free-delivery orders also count towards your total.</p>
+        </div>
+
+        <!-- Tab: History -->
+        <div id="tab-history" class="tab-panel">
+            <div class="section-title">Delivery History</div>
+            <div id="history-list">
+                <div class="loading-row">Loading…</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" id="nav-available" onclick="switchTab('available')">
+            <span class="nav-icon">📦</span>
+            Available
+            <span class="nav-badge" id="badge-available"></span>
+        </button>
+        <button class="nav-btn" id="nav-active" onclick="switchTab('active')">
+            <span class="nav-icon">🛵</span>
+            Active
+            <span class="nav-badge" id="badge-active"></span>
+        </button>
+        <button class="nav-btn" id="nav-earnings" onclick="switchTab('earnings')">
+            <span class="nav-icon">📊</span>
+            Earnings
+        </button>
+        <button class="nav-btn" id="nav-history" onclick="switchTab('history')">
+            <span class="nav-icon">📋</span>
+            History
+        </button>
+    </nav>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<!-- Confirm dialog -->
+<div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+        <div class="cb-icon" id="cb-icon">✅</div>
+        <h3 id="cb-title">Confirm</h3>
+        <p id="cb-msg"></p>
+        <div class="confirm-btns">
+            <button class="cb-cancel" onclick="confirmCancel()">Cancel</button>
+            <button class="cb-confirm" id="cb-confirm-btn" onclick="confirmOK()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+// ── Firebase init ──────────────────────────────────────────────
+var firebaseConfig = {
+    apiKey:            "AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",
+    authDomain:        "amogha-cafe.firebaseapp.com",
+    projectId:         "amogha-cafe",
+    storageBucket:     "amogha-cafe.firebasestorage.app",
+    messagingSenderId: "1000994409697",
+    appId:             "1:1000994409697:web:983214bafab529d6a2fba0"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+
+// ── State ──────────────────────────────────────────────────────
+var myPhone = '';
+var myName  = '';
+var currentTab = 'available';
+var availableOrders  = [];
+var myHistory        = [];
+var availableUnsub   = null;
+var activeUnsub      = null;
+var confirmCallback  = null;
+var DELIVERY_FEE     = 49;
+
+// ── Helpers ────────────────────────────────────────────────────
+function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg, isError) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    clearTimeout(t._tid);
+    t._tid = setTimeout(function() { t.classList.remove('show'); }, 2800);
+}
+
+function showConfirm(icon, title, msg, confirmLabel, callback) {
+    document.getElementById('cb-icon').textContent = icon;
+    document.getElementById('cb-title').textContent = title;
+    document.getElementById('cb-msg').textContent = msg;
+    document.getElementById('cb-confirm-btn').textContent = confirmLabel;
+    confirmCallback = callback;
+    document.getElementById('confirm-overlay').classList.add('show');
+}
+function confirmOK() {
+    document.getElementById('confirm-overlay').classList.remove('show');
+    if (confirmCallback) confirmCallback();
+    confirmCallback = null;
+}
+function confirmCancel() {
+    document.getElementById('confirm-overlay').classList.remove('show');
+    confirmCallback = null;
+}
+
+function fmtDate(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
+function fmtAmount(n) {
+    return '\u20B9' + Number(n || 0).toLocaleString('en-IN');
+}
+
+// ── Connection indicator ───────────────────────────────────────
+window.addEventListener('online',  function() { document.getElementById('conn-badge').classList.remove('offline'); });
+window.addEventListener('offline', function() { document.getElementById('conn-badge').classList.add('offline'); });
+
+// ── Auth ──────────────────────────────────────────────────────
+function doLogin() {
+    var phone = (document.getElementById('login-phone').value || '').trim();
+    var pin   = (document.getElementById('login-pin').value   || '').trim();
+    var err   = document.getElementById('login-err');
+
+    if (!/^\d{10}$/.test(phone)) { err.textContent = 'Enter a valid 10-digit phone number.'; return; }
+    if (!pin) { err.textContent = 'Enter your PIN.'; return; }
+    err.textContent = '';
+
+    db.collection('deliveryPersons').doc(phone).get().then(function(doc) {
+        if (!doc.exists) { err.textContent = 'Phone number not registered. Contact admin.'; return; }
+        var d = doc.data();
+        if (!d.active) { err.textContent = 'Your account is inactive. Contact admin.'; return; }
+        if (d.pin !== pin) { err.textContent = 'Incorrect PIN. Try again.'; document.getElementById('login-pin').value = ''; return; }
+
+        // Login success
+        myPhone = phone;
+        myName  = d.name || 'Delivery Partner';
+        sessionStorage.setItem('dp_session', JSON.stringify({ phone: myPhone, name: myName }));
+        startApp();
+    }).catch(function(err2) {
+        console.error('Login error:', err2);
+        err.textContent = 'Login failed. Check your connection.';
+    });
+}
+
+document.getElementById('login-pin').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+});
+
+function doLogout() {
+    sessionStorage.removeItem('dp_session');
+    if (availableUnsub) { availableUnsub(); availableUnsub = null; }
+    if (activeUnsub)    { activeUnsub();    activeUnsub    = null; }
+    myPhone = ''; myName = '';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-phone').value = '';
+    document.getElementById('login-pin').value = '';
+}
+
+function startApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('user-name-display').textContent = myName;
+    switchTab('available');
+    loadAvailable();
+    loadMyActive();
+    loadHistory();
+}
+
+// ── Auto-restore session ───────────────────────────────────────
+(function() {
+    try {
+        var sess = JSON.parse(sessionStorage.getItem('dp_session'));
+        if (sess && sess.phone) {
+            myPhone = sess.phone; myName = sess.name || 'Delivery Partner';
+            startApp();
+        }
+    } catch(e) {}
+})();
+
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(tab) {
+    currentTab = tab;
+    ['available','active','earnings','history'].forEach(function(t) {
+        document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+        var nb = document.getElementById('nav-' + t);
+        if (nb) nb.classList.toggle('active', t === tab);
+    });
+    if (tab === 'earnings') renderEarnings();
+}
+
+// ── Tab 1: Available Orders ────────────────────────────────────
+function loadAvailable() {
+    if (availableUnsub) availableUnsub();
+    availableUnsub = db.collection('orders')
+        .where('status', '==', 'ready')
+        .onSnapshot(function(snap) {
+            availableOrders = [];
+            snap.forEach(function(doc) {
+                var d = doc.data();
+                // Only show unassigned delivery orders
+                if (!d.deliveryPerson) {
+                    availableOrders.push(Object.assign({ id: doc.id }, d));
+                }
+            });
+            // Sort newest first (client-side to avoid composite index requirement)
+            availableOrders.sort(function(a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
+            renderAvailable();
+        }, function(e) {
+            console.error('Available orders error:', e);
+            var el = document.getElementById('available-list');
+            if (el) el.innerHTML = '<div class="empty-state"><div class="es-icon">⚠️</div><div class="es-title">Failed to load orders</div><div class="es-sub">' + (e.message || e) + '</div></div>';
+        });
+}
+
+function renderAvailable() {
+    var badge = document.getElementById('badge-available');
+    badge.textContent = availableOrders.length || '';
+    badge.classList.toggle('show', availableOrders.length > 0);
+
+    var el = document.getElementById('available-list');
+    if (!el) return;
+
+    if (availableOrders.length === 0) {
+        el.innerHTML = '<div class="empty-state"><div class="es-icon">📦</div><div class="es-title">No orders waiting</div><div class="es-sub">New orders will appear here in real-time</div></div>';
+        return;
+    }
+
+    el.innerHTML = availableOrders.map(function(o) {
+        var itemCount = (o.items || []).reduce(function(s, i) { return s + (i.qty || 1); }, 0);
+        var delFeeStr = (o.deliveryFee === 0) ? 'Free delivery' : '\u20B9' + (o.deliveryFee || DELIVERY_FEE) + ' delivery fee';
+        var shortId = o.id.slice(-6).toUpperCase();
+        var createdStr = o.createdAt ? fmtDate(o.createdAt) : '';
+        return '<div class="order-card">' +
+            '<div class="oc-top">' +
+                '<span class="oc-id">#' + shortId + ' &nbsp; ' + createdStr + '</span>' +
+                '<span class="oc-total">' + fmtAmount(o.total) + '</span>' +
+            '</div>' +
+            '<div class="oc-meta">' + itemCount + ' item' + (itemCount !== 1 ? 's' : '') + ' &middot; ' + escHtml(delFeeStr) + '</div>' +
+            '<div class="oc-addr">📍 ' + escHtml(o.address || 'No address') + '</div>' +
+            '<div class="oc-customer">👤 ' + escHtml(o.customer || '') + ' &nbsp; 📞 ' + escHtml(o.phone || '') + '</div>' +
+            '<div class="oc-actions">' +
+                '<button class="btn-accept" onclick="acceptOrder(\'' + o.id + '\',\'' + escHtml(o.customer || '') + '\')">Accept Delivery</button>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function acceptOrder(orderId, customerName) {
+    showConfirm('🛵', 'Accept Delivery?',
+        'Accept order for ' + (customerName || 'customer') + '?',
+        'Accept',
+        function() {
+            db.collection('orders').doc(orderId).update({
+                status:            'out_for_delivery',
+                deliveryPerson:    myPhone,
+                outForDeliveryAt:  new Date().toISOString()
+            }).then(function() {
+                showToast('Order accepted! Go to Active tab.');
+                switchTab('active');
+            }).catch(function(e) {
+                console.error('Accept error:', e);
+                showToast('Failed to accept. Try again.', true);
+            });
+        }
+    );
+}
+
+// ── Tab 2: Active Delivery ─────────────────────────────────────
+function loadMyActive() {
+    if (activeUnsub) activeUnsub();
+    // Listen for orders assigned to me (filter status client-side to avoid composite index)
+    activeUnsub = db.collection('orders')
+        .where('deliveryPerson', '==', myPhone)
+        .onSnapshot(function(snap) {
+            var docs = [];
+            snap.forEach(function(doc) {
+                var d = doc.data();
+                if (d.status === 'out_for_delivery') {
+                    docs.push(Object.assign({ id: doc.id }, d));
+                }
+            });
+
+            var badge = document.getElementById('badge-active');
+            badge.textContent = docs.length || '';
+            badge.classList.toggle('show', docs.length > 0);
+
+            var el = document.getElementById('active-delivery-content');
+            if (!el) return;
+
+            if (docs.length === 0) {
+                el.innerHTML = '<div class="empty-state"><div class="es-icon">🛵</div><div class="es-title">No active delivery</div><div class="es-sub">Accept an order from the Available tab</div></div>';
+                return;
+            }
+
+            el.innerHTML = docs.map(function(o) {
+                var shortId = o.id.slice(-6).toUpperCase();
+                var itemsHtml = (o.items || []).map(function(item) {
+                    return '<div class="item-row"><span class="item-name">' + escHtml(item.name) + ' x' + (item.qty || 1) + '</span><span class="item-price">' + fmtAmount((item.price || 0) * (item.qty || 1)) + '</span></div>';
+                }).join('');
+                return '<div class="active-card">' +
+                    '<div class="active-badge">🛵 Active · #' + shortId + '</div>' +
+                    '<div class="active-customer">' + escHtml(o.customer || '') + '</div>' +
+                    '<div class="active-addr">📍 ' + escHtml(o.address || '') + '</div>' +
+                    '<div class="active-phone">📞 ' + escHtml(o.phone || '') + '</div>' +
+                    '<hr class="active-divider">' +
+                    itemsHtml +
+                    '<hr class="active-divider">' +
+                    '<div class="active-total"><span>' + fmtAmount(o.total) + '</span><span class="payment-tag">' + escHtml(o.payment || 'Cash on Delivery') + '</span></div>' +
+                    '<div class="active-btns">' +
+                        '<button class="btn-navigate" onclick="navigate(\'' + escHtml(o.address || '') + '\')">📍 Navigate</button>' +
+                        '<button class="btn-call" onclick="callCustomer(\'' + escHtml(o.phone || '') + '\')">📞 Call</button>' +
+                    '</div>' +
+                    '<button class="btn-delivered" onclick="markDelivered(\'' + o.id + '\',\'' + escHtml(o.customer || '') + '\')">✅ Mark as Delivered</button>' +
+                '</div>';
+            }).join('');
+        }, function(e) { console.error('Active delivery error:', e); });
+}
+
+function navigate(address) {
+    var url = 'https://maps.google.com/?q=' + encodeURIComponent(address);
+    window.open(url, '_blank');
+}
+
+function callCustomer(phone) {
+    window.location.href = 'tel:' + phone;
+}
+
+function markDelivered(orderId, customerName) {
+    showConfirm('✅', 'Confirm Delivery?',
+        'Mark order for ' + (customerName || 'customer') + ' as delivered?',
+        'Mark Delivered',
+        function() {
+            db.collection('orders').doc(orderId).update({
+                status:      'delivered',
+                deliveredAt: new Date().toISOString()
+            }).then(function() {
+                showToast('Delivery confirmed!');
+                loadHistory();
+            }).catch(function(e) {
+                console.error('Mark delivered error:', e);
+                showToast('Failed. Try again.', true);
+            });
+        }
+    );
+}
+
+// ── Tab 3: Earnings ────────────────────────────────────────────
+function renderEarnings() {
+    var now = new Date();
+    var todayStr = now.toISOString().slice(0, 10);
+    var weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
+    var monthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+    var todayDeliveries  = myHistory.filter(function(o) { return (o.deliveredAt || o.createdAt || '').slice(0,10) === todayStr; });
+    var weekDeliveries   = myHistory.filter(function(o) { return new Date(o.deliveredAt || o.createdAt) >= weekStart; });
+    var monthDeliveries  = myHistory.filter(function(o) { return (o.deliveredAt || o.createdAt || '').startsWith(monthStr); });
+
+    function totalFee(arr) { return arr.reduce(function(s, o) { return s + (parseFloat(o.deliveryFee) || DELIVERY_FEE); }, 0); }
+
+    var grid = document.getElementById('earnings-grid');
+    grid.innerHTML =
+        '<div class="earn-card full">' +
+            '<div class="earn-num">' + monthDeliveries.length + '</div>' +
+            '<div class="earn-label">This Month</div>' +
+            '<div class="earn-sub">' + fmtAmount(totalFee(monthDeliveries)) + ' earned</div>' +
+        '</div>' +
+        '<div class="earn-card">' +
+            '<div class="earn-num">' + todayDeliveries.length + '</div>' +
+            '<div class="earn-label">Today</div>' +
+            '<div class="earn-sub">' + fmtAmount(totalFee(todayDeliveries)) + '</div>' +
+        '</div>' +
+        '<div class="earn-card">' +
+            '<div class="earn-num">' + weekDeliveries.length + '</div>' +
+            '<div class="earn-label">This Week</div>' +
+            '<div class="earn-sub">' + fmtAmount(totalFee(weekDeliveries)) + '</div>' +
+        '</div>' +
+        '<div class="earn-card full">' +
+            '<div class="earn-num">' + myHistory.length + '</div>' +
+            '<div class="earn-label">All Time Deliveries</div>' +
+            '<div class="earn-sub">' + fmtAmount(myHistory.reduce(function(s, o) { return s + (parseFloat(o.deliveryFee) || DELIVERY_FEE); }, 0)) + ' total</div>' +
+        '</div>';
+}
+
+// ── Tab 4: History ─────────────────────────────────────────────
+function loadHistory() {
+    db.collection('orders')
+        .where('deliveryPerson', '==', myPhone)
+        .get()
+        .then(function(snap) {
+            myHistory = [];
+            snap.forEach(function(doc) {
+                var d = doc.data();
+                if (d.status === 'delivered') {
+                    myHistory.push(Object.assign({ id: doc.id }, d));
+                }
+            });
+            // Sort by deliveredAt descending (client-side to avoid composite index)
+            myHistory.sort(function(a, b) { return (b.deliveredAt || '').localeCompare(a.deliveredAt || ''); });
+            renderHistory();
+            if (currentTab === 'earnings') renderEarnings();
+        }).catch(function(e) { console.error('History error:', e); });
+}
+
+function renderHistory() {
+    var el = document.getElementById('history-list');
+    if (!el) return;
+    if (myHistory.length === 0) {
+        el.innerHTML = '<div class="empty-state"><div class="es-icon">📋</div><div class="es-title">No deliveries yet</div><div class="es-sub">Your completed deliveries will appear here</div></div>';
+        return;
+    }
+    el.innerHTML = myHistory.map(function(o) {
+        var shortId = o.id.slice(-6).toUpperCase();
+        var fee = parseFloat(o.deliveryFee) || DELIVERY_FEE;
+        var feeLabel = fee === 0 ? 'Free delivery' : '+' + fmtAmount(fee) + ' fee';
+        return '<div class="history-row">' +
+            '<div class="hr-left">' +
+                '<div class="hr-date">' + fmtDate(o.deliveredAt || o.createdAt) + '</div>' +
+                '<div class="hr-id">#' + shortId + ' &nbsp; ' + escHtml(o.customer || '') + '</div>' +
+                '<div class="hr-addr">' + escHtml(o.address || '') + '</div>' +
+            '</div>' +
+            '<div class="hr-right">' +
+                '<div class="hr-total">' + fmtAmount(o.total) + '</div>' +
+                '<div class="hr-fee">' + feeLabel + '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+</script>
+</body>
+</html>

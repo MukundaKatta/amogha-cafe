@@ -26,8 +26,10 @@
     <link rel="apple-touch-icon" href="amogha-logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+Telugu:wght@400;700&family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=64">
+    <!-- Load fonts non-blocking: preload triggers fetch, onload swaps to stylesheet -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+Telugu:wght@400;700&family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+Telugu:wght@400;700&family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap"></noscript>
+    <link rel="stylesheet" href="styles.css?v=66">
     <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
 
     <!-- Restaurant Schema Markup for SEO -->
@@ -320,23 +322,19 @@
         <div class="container">
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-number" data-target="10000">0</span>
-                    <span class="stat-suffix">+</span>
+                    <div class="stat-value"><span class="stat-number" data-target="10000">0</span><span class="stat-suffix">+</span></div>
                     <p class="stat-label">Happy Customers</p>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number" data-target="50">0</span>
-                    <span class="stat-suffix">+</span>
+                    <div class="stat-value"><span class="stat-number" data-target="50">0</span><span class="stat-suffix">+</span></div>
                     <p class="stat-label">Dishes on Menu</p>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number" data-target="20">0</span>
-                    <span class="stat-suffix">+</span>
+                    <div class="stat-value"><span class="stat-number" data-target="20">0</span><span class="stat-suffix">+</span></div>
                     <p class="stat-label">Years Experience</p>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number" data-target="4.8">0</span>
-                    <span class="stat-suffix">★</span>
+                    <div class="stat-value"><span class="stat-number" data-target="4.8">0</span><span class="stat-suffix">★</span></div>
                     <p class="stat-label">Customer Rating</p>
                 </div>
             </div>
@@ -472,26 +470,26 @@
     </section>
 
     <!-- Combo Builder Section -->
-    <section id="combo-builder-section" class="combo-builder-section reveal">
+    <section id="combo-builder-section" class="combo-builder-section">
         <div class="container">
+            <h2 style="text-align:center;font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:var(--primary);margin-bottom:0.4rem;">Build Your Combo</h2>
+            <p class="section-subtitle" style="text-align:center;margin-bottom:2.5rem;">Mix &amp; match your favourites — save 20% on every combination</p>
             <div class="combo-builder-card">
-                <h2 class="combo-builder-heading">Build Your Combo</h2>
-                <p class="combo-builder-sub">Mix &amp; match your favourites — get 20% off any combination</p>
                 <div class="combo-selects">
                     <div class="combo-select-wrap">
-                        <label>Starter</label>
+                        <span class="combo-label">🥗 Starter</span>
                         <select id="combo-starter"><option value="">— Choose —</option></select>
                     </div>
                     <div class="combo-select-wrap">
-                        <label>Main Course</label>
+                        <span class="combo-label">🍛 Main Course</span>
                         <select id="combo-main"><option value="">— Choose —</option></select>
                     </div>
                     <div class="combo-select-wrap">
-                        <label>Bread</label>
+                        <span class="combo-label">🫓 Bread</span>
                         <select id="combo-bread"><option value="">— Choose —</option></select>
                     </div>
                     <div class="combo-select-wrap">
-                        <label>Drink</label>
+                        <span class="combo-label">🥤 Drink</span>
                         <select id="combo-drink"><option value="">— Choose —</option></select>
                     </div>
                 </div>
@@ -1095,7 +1093,7 @@
                 <h4>Services</h4>
                 <ul>
                     <li><a href="#menu">Online Ordering</a></li>
-                    <li><a href="#contact">Catering</a></li>
+                    <li><a href="javascript:void(0)" onclick="openCateringModal()">Catering Enquiry</a></li>
                     <li><a href="#contact">Private Events</a></li>
                     <li><a href="javascript:void(0)" onclick="openGiftCardModal()">Gift Cards</a></li>
                 </ul>
@@ -1129,6 +1127,56 @@
             <p>&copy; 2026 <span class="amogha-brand"><img class="amogha-a" src="pics/image.png" alt="అ" loading="lazy">mogha</span> Cafe & Restaurant. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
         </div>
     </footer>
+
+    <!-- Catering Enquiry Modal -->
+    <div id="catering-modal" class="catering-modal-overlay" onclick="if(event.target===this)closeCateringModal()">
+        <div class="catering-modal-card">
+            <button class="catering-modal-close" onclick="closeCateringModal()" aria-label="Close">&times;</button>
+            <div class="catering-modal-header">
+                <span class="catering-modal-icon">🍽️</span>
+                <h2>Catering Enquiry</h2>
+                <p>Tell us about your event and we'll craft a perfect menu for you</p>
+            </div>
+            <form class="catering-form" onsubmit="event.preventDefault(); submitCateringEnquiry();">
+                <div class="catering-form-row">
+                    <div class="catering-field">
+                        <label for="catering-name">Your Name *</label>
+                        <input type="text" id="catering-name" placeholder="e.g. Arjun Sharma" required>
+                    </div>
+                    <div class="catering-field">
+                        <label for="catering-phone">Phone Number *</label>
+                        <input type="tel" id="catering-phone" placeholder="+91 98765 43210" required>
+                    </div>
+                </div>
+                <div class="catering-form-row">
+                    <div class="catering-field">
+                        <label for="catering-event">Event Type *</label>
+                        <select id="catering-event" required>
+                            <option value="">Select event type</option>
+                            <option value="Wedding">Wedding</option>
+                            <option value="Corporate">Corporate Event</option>
+                            <option value="Birthday">Birthday Party</option>
+                            <option value="Private Party">Private Party</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="catering-field">
+                        <label for="catering-guests">Number of Guests *</label>
+                        <input type="number" id="catering-guests" min="10" max="5000" placeholder="e.g. 150" required>
+                    </div>
+                </div>
+                <div class="catering-field">
+                    <label for="catering-date">Preferred Date *</label>
+                    <input type="date" id="catering-date" required>
+                </div>
+                <div class="catering-field">
+                    <label for="catering-message">Additional Details</label>
+                    <textarea id="catering-message" rows="3" placeholder="Dietary requirements, theme, venue, special requests…"></textarea>
+                </div>
+                <button type="submit" id="catering-submit-btn" class="catering-submit-btn">Submit Enquiry</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Reservation Modal -->
     <div id="reservation-modal" class="modal">
@@ -1593,6 +1641,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
     <script>
         firebase.initializeApp({
             apiKey: "AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",
@@ -1600,9 +1649,11 @@
             projectId: "amogha-cafe",
             storageBucket: "amogha-cafe.firebasestorage.app",
             messagingSenderId: "1000994409697",
-            appId: "1:1000994409697:web:983214bafab529d6a2fba0"
+            appId: "1:1000994409697:web:983214bafab529d6a2fba0",
+            measurementId: "G-PLACEHOLDER"
         });
         var db = firebase.firestore();
+        var analytics = firebase.analytics();
     </script>
     <script type="module" src="/src/main.js"></script>
     <script>

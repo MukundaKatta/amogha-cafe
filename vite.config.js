@@ -15,7 +15,7 @@ export default defineConfig({
       output: {
         entryFileNames: 'script.js',
         chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash][extname]',
+        assetFileNames: (a) => a.name && a.name.endsWith('.css') ? 'styles.css' : 'assets/[name]-[hash][extname]',
       },
     },
     sourcemap: true,

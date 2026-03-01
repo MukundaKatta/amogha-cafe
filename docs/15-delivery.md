@@ -1,0 +1,145 @@
+# Delivery Management
+
+**URL:** https://amoghahotels.com/delivery/
+**File:** `delivery/index.html` (~824 lines)
+
+A mobile-first app for delivery drivers to accept orders, navigate to customers, and track earnings. Designed to run on a delivery partner's phone.
+
+---
+
+## Authentication
+
+- Login with phone number (10 digits) + PIN (up to 6 digits)
+- Validated against Firestore `deliveryPersons` collection
+- Checks: phone registered, account active, PIN matches
+- Session persisted via `sessionStorage` — auto-restores on page reload
+- Logout clears session and unsubscribes from all Firestore listeners
+
+---
+
+## Layout
+
+- **Header:** Logo + "Amogha Delivery" title, connection status badge (green/red), driver name, logout button
+- **Bottom Navigation:** 4 tabs with icons and badge counts
+  - 📦 Available · 🛵 Active · 📊 Earnings · 📋 History
+
+---
+
+## Tabs
+
+### 1. Available Orders
+
+Real-time Firestore listener for orders with `status: 'ready'` and no assigned delivery person.
+
+Each order card shows:
+
+| Element | Description |
+|---------|-------------|
+| Order ID | Last 6 characters, uppercase |
+| Date | Order creation time |
+| Total | Gold text (₹) |
+| Item count | Number of items |
+| Delivery fee | ₹49 or "Free delivery" |
+| Address | 📍 Customer address |
+| Customer | 👤 Name, 📞 Phone |
+| Accept button | "Accept Delivery" |
+
+**Accept flow:**
+1. Confirmation dialog appears
+2. On confirm: updates Firestore order with `status: 'out_for_delivery'`, `deliveryPerson`, `outForDeliveryAt`
+3. Auto-switches to Active tab
+
+---
+
+### 2. Active Delivery
+
+Real-time listener for orders assigned to the logged-in driver with `status: 'out_for_delivery'`.
+
+Shows a prominent green-tinted card with:
+- Customer name, address, phone
+- Full item breakdown (name, qty, price)
+- Total amount and payment method
+
+**Action buttons:**
+
+| Button | Action |
+|--------|--------|
+| 📍 Navigate | Opens Google Maps with customer address |
+| 📞 Call | Initiates phone call to customer |
+| ✅ Mark as Delivered | Confirms → updates Firestore: `status: 'delivered'`, `deliveredAt` timestamp |
+
+---
+
+### 3. Earnings
+
+Analytics dashboard calculated from delivery history:
+
+| Card | Description |
+|------|-------------|
+| This Month | Delivery count + total earned (full width) |
+| Today | Delivery count + earnings |
+| This Week | Delivery count + earnings |
+| All Time | Lifetime delivery count + total earnings (full width) |
+
+Earnings = sum of `deliveryFee` per order (default ₹49 per delivery).
+
+---
+
+### 4. History
+
+Complete list of delivered orders, sorted newest first.
+
+Each row shows:
+- Date delivered (e.g. "15 Feb")
+- Order ID
+- Customer name
+- Address (truncated)
+- Order total
+- Delivery fee earned (green text)
+
+---
+
+## Real-Time Features
+
+- **Available orders:** Live Firestore `onSnapshot` listener — new ready orders appear instantly
+- **Active delivery:** Live listener — status changes reflected immediately
+- **Connection badge:** Monitors `window.online/offline` events — green glow when online, red when offline
+
+---
+
+## Integrations
+
+| Service | Usage |
+|---------|-------|
+| Firebase Firestore | `deliveryPersons` (auth), `orders` (read/write) |
+| Google Maps | `maps.google.com/?q={address}` for navigation |
+| Phone | `tel:{number}` for customer calls |
+
+---
+
+## Visual Design
+
+- Dark theme with gold (#D4A017) accents — matches restaurant branding
+- Poppins + Playfair Display fonts
+- Glassmorphic header and bottom nav (backdrop blur)
+- Green gradient on active delivery card
+- Toast notifications for success (green) and error (red)
+- Button press animations (scale 0.97-0.98)
+- Safe area insets for notched devices
+
+---
+
+## Security
+
+- XSS protection via `escHtml()` function on all displayed user data
+- Session stored in `sessionStorage` (cleared on tab close)
+- Firestore rules restrict order updates to allowed fields only
+
+---
+
+## Intended Setup
+
+- Delivery partner's personal phone
+- Mobile-first layout (max-width 480px on desktop)
+- PWA-capable meta tags for "Add to Home Screen"
+- Works on Android and iOS browsers

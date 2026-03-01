@@ -584,7 +584,7 @@
             </div>
             <div class="step" id="step3">
                 <div class="step-dot">4</div>
-                <div class="step-label">Ready</div>
+                <div class="step-label">Delivered</div>
             </div>
         </div>
     </div>
@@ -764,11 +764,13 @@
 
     // ===== Stepper =====
     var statusSteps = {
-        'pending':   0,
-        'confirmed': 1,
-        'preparing': 2,
-        'delivered': 3,
-        'cancelled': -1
+        'pending':          0,
+        'confirmed':        1,
+        'preparing':        2,
+        'ready':            3,
+        'out_for_delivery': 3,
+        'delivered':        3,
+        'cancelled':        -1
     };
 
     function updateStepper(status) {
@@ -838,11 +840,25 @@
             sub: 'Our chefs are working on your delicious meal.',
             cardClass: 'st-preparing'
         },
+        'ready': {
+            icon: '🍽️',
+            iconClass: 'bounce',
+            text: 'Food is ready!',
+            sub: 'A delivery partner will pick it up shortly.',
+            cardClass: 'st-delivered'
+        },
+        'out_for_delivery': {
+            icon: '🛵',
+            iconClass: 'pulse',
+            text: 'Out for delivery!',
+            sub: 'Your order is on the way. Please keep cash ready.',
+            cardClass: 'st-delivered'
+        },
         'delivered': {
             icon: '🎉',
             iconClass: 'bounce',
-            text: 'Your order is ready!',
-            sub: 'Pick up or delivery is on the way.',
+            text: 'Order delivered!',
+            sub: 'Thank you for ordering from Amogha Cafe!',
             cardClass: 'st-delivered'
         },
         'cancelled': {
@@ -1053,12 +1069,12 @@
         updateWhatsApp(orderId);
 
         // Confetti on delivered
-        if (status === 'delivered' && !confettiShown) {
+        if ((status === 'delivered' || status === 'out_for_delivery') && !confettiShown) {
             setTimeout(launchConfetti, 600);
         }
 
-        // Reset confetti flag if status changes back from delivered
-        if (status !== 'delivered') {
+        // Reset confetti flag if status changes back
+        if (status !== 'delivered' && status !== 'out_for_delivery') {
             confettiShown = false;
         }
 

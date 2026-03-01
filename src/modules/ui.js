@@ -470,7 +470,7 @@ export function initUI() {
             carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
         });
 
-        carousel.addEventListener('scroll', updateArrows);
+        carousel.addEventListener('scroll', updateArrows, { passive: true });
         updateArrows();
 
         carousel.querySelectorAll('.category-item').forEach(item => {
@@ -639,24 +639,26 @@ export function initUI() {
         const maxTilt = 4;
 
         cards.forEach(function(card) {
+            var cachedRect = null;
+            // Cache rect on enter — avoids getBoundingClientRect on every mousemove pixel
+            card.addEventListener('mouseenter', function() {
+                cachedRect = card.getBoundingClientRect();
+            });
             card.addEventListener('mousemove', function(e) {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
+                if (!cachedRect) return;
+                const x = e.clientX - cachedRect.left;
+                const y = e.clientY - cachedRect.top;
+                const centerX = cachedRect.width / 2;
+                const centerY = cachedRect.height / 2;
                 const rotateX = ((y - centerY) / centerY) * -maxTilt;
                 const rotateY = ((x - centerX) / centerX) * maxTilt;
-
                 card.style.transform = 'perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-4px)';
             });
-
             card.addEventListener('mouseleave', function() {
+                cachedRect = null;
                 card.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
                 card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) translateY(0)';
-                setTimeout(function() {
-                    card.style.transition = '';
-                }, 500);
+                setTimeout(function() { card.style.transition = ''; }, 500);
             });
         });
     })();
@@ -693,42 +695,7 @@ export function initUI() {
         animate();
     })();
 
-    // ===== SCROLL-LINKED PARALLAX LAYERS =====
-    (function() {
-        if (window.innerWidth <= 768) return;
-
-        var parallaxItems = [];
-
-        var chefImg = document.querySelector('.chef-image');
-        if (chefImg) parallaxItems.push({ el: chefImg, speed: 0.04 });
-
-        document.querySelectorAll('.about-text').forEach(function(el, i) {
-            parallaxItems.push({ el: el, speed: 0.02 + (i * 0.01) });
-        });
-
-        document.querySelectorAll('.stat-item').forEach(function(el, i) {
-            parallaxItems.push({ el: el, speed: 0.015 + (i * 0.008) });
-        });
-
-        if (parallaxItems.length === 0) return;
-
-        var pxTicking = false;
-        window.addEventListener('scroll', function() {
-            if (!pxTicking) {
-                requestAnimationFrame(function() {
-                    parallaxItems.forEach(function(item) {
-                        var rect = item.el.getBoundingClientRect();
-                        var centerY = rect.top + rect.height / 2;
-                        var viewCenter = window.innerHeight / 2;
-                        var offset = (centerY - viewCenter) * item.speed;
-                        item.el.style.transform = 'translateY(' + offset + 'px)';
-                    });
-                    pxTicking = false;
-                });
-                pxTicking = true;
-            }
-        }, { passive: true });
-    })();
+    // Secondary parallax removed — getBoundingClientRect loop on 15+ elements per frame caused layout thrashing
 
     // ===== SVG ORNAMENT DRAW-ON-SCROLL =====
     (function() {
@@ -814,15 +781,16 @@ export function initUI() {
 
         magneticImgs.forEach(function(img) {
             img.classList.add('magnetic-image');
-
+            var cachedRect = null;
+            img.addEventListener('mouseenter', function() { cachedRect = img.getBoundingClientRect(); });
             img.addEventListener('mousemove', function(e) {
-                var rect = img.getBoundingClientRect();
-                var x = e.clientX - rect.left - rect.width / 2;
-                var y = e.clientY - rect.top - rect.height / 2;
+                if (!cachedRect) return;
+                var x = e.clientX - cachedRect.left - cachedRect.width / 2;
+                var y = e.clientY - cachedRect.top - cachedRect.height / 2;
                 img.style.transform = 'translate(' + (x * strength) + 'px, ' + (y * strength) + 'px) scale(1.02)';
             });
-
             img.addEventListener('mouseleave', function() {
+                cachedRect = null;
                 img.style.transform = '';
             });
         });
@@ -837,14 +805,14 @@ export function initUI() {
             var ref = document.createElement('div');
             ref.className = 'card-reflection';
             card.appendChild(ref);
-
+            var cachedRect = null;
+            card.addEventListener('mouseenter', function() { cachedRect = card.getBoundingClientRect(); });
             card.addEventListener('mousemove', function(e) {
-                var rect = card.getBoundingClientRect();
-                var x = e.clientX - rect.left;
-                var y = e.clientY - rect.top;
-                ref.style.setProperty('--ref-x', x + 'px');
-                ref.style.setProperty('--ref-y', y + 'px');
+                if (!cachedRect) return;
+                ref.style.setProperty('--ref-x', (e.clientX - cachedRect.left) + 'px');
+                ref.style.setProperty('--ref-y', (e.clientY - cachedRect.top) + 'px');
             });
+            card.addEventListener('mouseleave', function() { cachedRect = null; });
         });
     })();
 

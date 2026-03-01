@@ -327,6 +327,9 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
     var itemNames = cart.map(function(i) { return i.name; });
 
     db.collection('orders').add(orderData).then(function(docRef) {
+        // Analytics: purchase event
+        try { if (window.analytics) window.analytics.logEvent('purchase', { transaction_id: docRef.id, value: orderData.total, payment_type: payMethod }); } catch(e) {}
+
         var trackUrl = window.location.origin + '/track/index.html?id=' + docRef.id;
         var trackDiv = document.getElementById('order-tracking-link');
         if (trackDiv) {

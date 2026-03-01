@@ -145,6 +145,9 @@ export function finalizeAddToCart(itemName, price, spiceLevel, addons, btnEl) {
     updateButtonState(itemName);
     updateFloatingCart();
     updateFloatingCartBar();
+
+    // Analytics
+    try { if (window.analytics) window.analytics.logEvent('add_to_cart', { item_name: itemName, value: price }); } catch(e) {}
 }
 
 export function openAddonPicker(itemName, basePrice) {

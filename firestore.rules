@@ -70,7 +70,9 @@ service cloud.firestore {
                     && request.resource.data.total > 0
                     && request.resource.data.items is list
                     && request.resource.data.items.size() > 0;
-      allow update: if true;  // kitchen status updates, payment status, tracking
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status','kitchenStartedAt','preparingAt','etaMinutes','readyAt',
+                                   'deliveredAt','scheduledFor','deliveryPerson','outForDeliveryAt']);
       allow delete: if false;
     }
 
@@ -189,7 +191,8 @@ service cloud.firestore {
     match /inventory/{itemId} {
       allow read: if true;
       allow create: if false;
-      allow update: if true;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['quantity'])
+                    && request.resource.data.quantity >= 0;
       allow delete: if false;
     }
 
@@ -199,7 +202,8 @@ service cloud.firestore {
     match /tables/{tableId} {
       allow read: if true;
       allow create: if false;
-      allow update: if true;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status','currentOrder','updatedAt']);
       allow delete: if false;
     }
 
@@ -220,7 +224,8 @@ service cloud.firestore {
     match /notifications/{notifId} {
       allow read: if true;
       allow create: if true;
-      allow update: if true;  // mark as read
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+                    && request.resource.data.read == true;
       allow delete: if false;
     }
 
@@ -230,8 +235,42 @@ service cloud.firestore {
     match /referrals/{refId} {
       allow read: if true;
       allow create: if hasFields(['code', 'referrerId', 'createdAt']);
-      allow update: if true;  // increment usageCount
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['usageCount','credited']);
       allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // CATERING INQUIRIES — write-only by clients, admin reads via Console
+    // -------------------------------------------------------------------------
+    match /cateringInquiries/{id} {
+      allow create: if hasFields(['name','phone','eventType','guestCount','date'])
+                    && isString(request.resource.data.name)
+                    && isString(request.resource.data.phone);
+      allow read, update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // DELIVERY PERSONS — read by delivery app (PIN check), write only via Console/Admin SDK
+    // -------------------------------------------------------------------------
+    match /deliveryPersons/{phone} {
+      allow read: if true;
+      allow create, update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // EXPENSES — admin-only, full read/write from admin panel
+    // -------------------------------------------------------------------------
+    match /expenses/{expenseId} {
+      allow read: if true;
+      allow create: if hasFields(['date', 'category', 'amount', 'description', 'createdAt'])
+                    && isString(request.resource.data.date)
+                    && isString(request.resource.data.category)
+                    && isString(request.resource.data.description)
+                    && isNumber(request.resource.data.amount)
+                    && request.resource.data.amount > 0;
+      allow update: if true;
+      allow delete: if true;
     }
 
     // -------------------------------------------------------------------------

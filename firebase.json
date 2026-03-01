@@ -1,14 +1,28 @@
 {
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": ["node_modules", ".git"]
+    }
+  ],
   "hosting": {
     "public": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**",
+      "functions/**",
       "tests/**",
       "vitest.config.js",
       "vite.config.js",
       "*.map"
+    ],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "function": "api"
+      }
     ],
     "headers": [
       {
@@ -38,7 +52,8 @@
     ]
   },
   "firestore": {
-    "rules": "firestore.rules"
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "storage": {
     "rules": "storage.rules"

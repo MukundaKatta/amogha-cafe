@@ -3,6 +3,7 @@
 **Live Site:** https://amoghahotels.com
 **Firebase Hosting:** https://amogha-cafe.web.app (same site, alternate URL)
 **Firebase Console:** https://console.firebase.google.com/project/amogha-cafe
+**REST API:** https://amogha-cafe.web.app/api
 
 ---
 
@@ -16,6 +17,8 @@
 | [04-order-tracking.md](04-order-tracking.md) | Order Tracking | https://amoghahotels.com/track/ |
 | [05-qr-ordering.md](05-qr-ordering.md) | QR Dine-In Ordering | https://amoghahotels.com/qr/ |
 | [06-display-board.md](06-display-board.md) | Restaurant Display Board | https://amoghahotels.com/display/ |
+| [14-kiosk.md](14-kiosk.md) | Self-Service Kiosk | https://amoghahotels.com/kiosk/ |
+| [15-delivery.md](15-delivery.md) | Delivery Management | https://amoghahotels.com/delivery/ |
 
 ## Features
 
@@ -29,16 +32,96 @@
 | [12-reviews-and-gallery.md](12-reviews-and-gallery.md) | Reviews & Gallery |
 | [13-pwa-and-notifications.md](13-pwa-and-notifications.md) | PWA, Push Notifications & Caching |
 
+## Infrastructure
+
+| Doc | Feature |
+|-----|---------|
+| [16-cloud-functions.md](16-cloud-functions.md) | REST API & Cloud Functions (ChatGPT integration) |
+| [17-ci-cd-and-seo.md](17-ci-cd-and-seo.md) | CI/CD (GitHub Actions), SEO, Firebase Config |
+
 ---
 
 ## Tech Stack
 
 - **Frontend:** Vanilla HTML / CSS / JS (no framework)
 - **Build:** Vite (ES modules → bundled `script.js`)
-- **Backend:** Firebase — Firestore, Storage, Hosting
-- **Payments:** Razorpay
+- **Backend:** Firebase — Firestore, Cloud Functions, Storage, Hosting
+- **AI:** Google Gemini 2.0 Flash (Vertex AI) for bill parsing
+- **Payments:** Razorpay (UPI, Cards, Net Banking, Wallets)
 - **PWA:** Service workers + Web App Manifest
+- **CI/CD:** GitHub Actions (test → deploy on push to master)
 - **Tests:** Vitest (71 tests)
+
+## Project Structure
+
+```
+amogha-cafe/
+├── index.html              # Main public page
+├── admin.html              # Admin dashboard
+├── script.js               # Built JS (Vite output)
+├── styles.css              # All styles (9,189 lines)
+├── kitchen/index.html      # Kitchen Display System
+├── track/index.html        # Order tracking
+├── qr/index.html           # QR dine-in ordering
+├── display/index.html      # Restaurant display board
+├── kiosk/                  # Self-service kiosk (22 premium features)
+│   ├── index.html
+│   ├── manifest.json
+│   └── sw.js
+├── delivery/index.html     # Delivery driver app
+├── functions/              # Firebase Cloud Functions (REST API)
+│   ├── index.js
+│   └── package.json
+├── src/                    # Source modules (Vite entry)
+│   ├── main.js
+│   ├── core/
+│   │   ├── constants.js
+│   │   ├── firebase.js
+│   │   └── utils.js
+│   └── modules/
+│       ├── auth.js
+│       ├── cart.js
+│       ├── features.js
+│       ├── hero.js
+│       ├── loyalty.js
+│       ├── menu.js
+│       ├── notifications.js
+│       ├── payment.js
+│       ├── reservations.js
+│       └── ui.js
+├── .github/workflows/deploy.yml  # CI/CD pipeline
+├── firebase.json           # Firebase config
+├── firestore.rules         # Security rules
+├── openapi.json            # REST API spec (ChatGPT Actions)
+├── robots.txt              # SEO
+├── sitemap.xml             # SEO
+└── docs/                   # This documentation
+```
+
+## Firestore Collections
+
+| Collection | Purpose |
+|------------|---------|
+| orders | Customer orders (all channels) |
+| menu | Menu items with prices, categories, images |
+| addons | Add-on options (Extra Cheese, etc.) |
+| users | Customer accounts, loyalty points |
+| specials | Daily/weekly specials |
+| reviews | Customer ratings and reviews |
+| reservations | Table booking requests |
+| inventory | Ingredient stock levels |
+| tables | 12 dine-in tables with status |
+| coupons | Discount coupon codes |
+| giftCards | Pre-paid gift cards |
+| referrals | Referral program tracking |
+| messages | Contact form messages |
+| notifications | Staff call alerts, push notifications |
+| testimonials | Featured customer quotes |
+| socialPosts | Gallery photos |
+| heroSlides | Homepage slideshow images |
+| settings | Site-wide configuration |
+| cateringInquiries | Catering request forms |
+| deliveryPersons | Delivery driver accounts |
 
 ## Quick Commands
 
@@ -46,9 +129,13 @@
 # Build
 docker run --rm -v $(pwd):/app -w /app node:20-alpine sh -c "npm install && npm run build"
 
-# Deploy (requires firebase login)
-ELECTRON_RUN_AS_NODE=1 "/Applications/Visual Studio Code.app/Contents/MacOS/Electron" ./node_modules/.bin/firebase deploy --only hosting
+# Deploy hosting + Firestore rules
+docker run --rm -v $(pwd):/app -v ~/.config/configstore:/root/.config/configstore \
+  -w /app node:20-alpine sh -c "npm install -g firebase-tools --silent && firebase deploy --only hosting,firestore:rules --project amogha-cafe"
 
-# Deploy Firestore rules only
-ELECTRON_RUN_AS_NODE=1 "/Applications/Visual Studio Code.app/Contents/MacOS/Electron" ./node_modules/.bin/firebase deploy --only firestore
+# Deploy Cloud Functions
+cd functions && npm install && firebase deploy --only functions
+
+# Run tests
+docker run --rm -v $(pwd):/app -w /app node:20-alpine sh -c "npm install && npm test -- --run"
 ```

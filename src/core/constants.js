@@ -10,7 +10,7 @@ export const WHATSAPP_NUMBER = '+919121004999';
 export const MERCHANT_NAME = 'AMOGHA CAFE & RESTAURANT';
 export const FREE_DELIVERY_THRESHOLD = 500;
 export const DELIVERY_FEE = 49;
-export const COMBO_DISCOUNT = 0.15;
+export const COMBO_DISCOUNT = 0.20;
 
 export var LOYALTY_TIERS = [
     { name: 'Bronze', min: 0, color: '#cd7f32', icon: '🥉' },

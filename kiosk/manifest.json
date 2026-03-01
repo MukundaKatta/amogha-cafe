@@ -1,0 +1,26 @@
+{
+  "name": "Amogha Self-Service Kiosk",
+  "short_name": "Kiosk",
+  "description": "Self-Service Ordering Kiosk for Amogha Cafe & Restaurant",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#080604",
+  "theme_color": "#D4A017",
+  "categories": ["food", "restaurant"],
+  "icons": [
+    {
+      "src": "../amogha-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../amogha-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

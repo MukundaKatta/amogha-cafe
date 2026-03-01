@@ -1018,7 +1018,7 @@ function catOrders(){
         if(curStation!=='all'&&!matchStation(o))return;
         if(o.status==='pending'||o.status==='confirmed')n.push(o);
         else if(o.status==='preparing')p.push(o);
-        else if(o.status==='delivered')r.push(o);
+        else if(o.status==='ready'||o.status==='out_for_delivery'||o.status==='delivered')r.push(o);
     });
     var rs=function(a,b){
         if(a.priority==='rush'&&b.priority!=='rush')return-1;
@@ -1205,7 +1205,7 @@ function cardHTML(o,type){
 function startOrder(id){db.collection('orders').doc(id).update({status:'preparing',kitchenStartedAt:new Date().toISOString()});toast('&#9654;','Order started');resetIdle();var o=orders.find(function(x){return x.id===id;});if(o)invDecrementOrder(o);if(o&&detectType(o)==='dinein')tblAutoAssignDineIn(o);}
 function doneOrder(id){
     var now=new Date().toISOString();
-    db.collection('orders').doc(id).update({status:'delivered',completedAt:now});
+    db.collection('orders').doc(id).update({status:'ready',readyAt:now});
     playDone();toast('&#10003;','Order completed');delete checks[id];resetIdle();
     // Learn prep time
     var o=orders.find(function(x){return x.id===id;});
@@ -1291,8 +1291,8 @@ function bumpOrder(id){var c=document.getElementById('c-'+id);if(c)c.classList.a
 function updateStats(){
     var c=catOrders(),active=c.n.length+c.p.length,del=0,tp=0,pn=0,rev=0;
     orders.forEach(function(o){
-        if(o.status==='delivered'){del++;rev+=(o.total||0);
-            if(o.kitchenStartedAt&&o.completedAt){var p=(new Date(o.completedAt)-new Date(o.kitchenStartedAt))/60000;if(p>0&&p<120){tp+=p;pn++;}}
+        if(o.status==='ready'||o.status==='out_for_delivery'||o.status==='delivered'){del++;rev+=(o.total||0);
+            if(o.kitchenStartedAt&&(o.readyAt||o.completedAt)){var p=(new Date(o.readyAt||o.completedAt)-new Date(o.kitchenStartedAt))/60000;if(p>0&&p<120){tp+=p;pn++;}}
         }
     });
     var avg=pn>0?Math.round(tp/pn):null;
@@ -1353,14 +1353,14 @@ function showFlash(n){E.flash.innerHTML='&#128276; '+(n===1?'New Order!':n+' New
 // === HISTORY ===
 function toggleHist(){var o=E.hpanel.classList.toggle('open');E.hov.classList.toggle('open',o);if(o)renderHist();}
 function renderHist(){
-    var del=orders.filter(function(o){return o.status==='delivered';}).sort(function(a,b){return(b.completedAt||'').localeCompare(a.completedAt||'');});
-    var rev=0,tp=0,pn=0;del.forEach(function(o){rev+=(o.total||0);if(o.kitchenStartedAt&&o.completedAt){var p=(new Date(o.completedAt)-new Date(o.kitchenStartedAt))/60000;if(p>0&&p<120){tp+=p;pn++;}}});
+    var del=orders.filter(function(o){return o.status==='ready'||o.status==='out_for_delivery'||o.status==='delivered';}).sort(function(a,b){return(b.readyAt||b.completedAt||'').localeCompare(a.readyAt||a.completedAt||'');});
+    var rev=0,tp=0,pn=0;del.forEach(function(o){rev+=(o.total||0);if(o.kitchenStartedAt&&(o.readyAt||o.completedAt)){var p=(new Date(o.readyAt||o.completedAt)-new Date(o.kitchenStartedAt))/60000;if(p>0&&p<120){tp+=p;pn++;}}});
     E.hpst.innerHTML='<div class="hs"><b>'+del.length+'</b><small>Orders</small></div><div class="hs"><b>'+(pn>0?Math.round(tp/pn)+'m':'--')+'</b><small>Avg Prep</small></div><div class="hs"><b>&#8377;'+rev.toLocaleString('en-IN')+'</b><small>Revenue</small></div>';
     if(!del.length){E.hpli.innerHTML='<div class="cempty"><p>No completed orders yet</p></div>';return;}
     E.hpli.innerHTML=del.map(function(o){
         var num='#'+o.id.slice(-4).toUpperCase(),items=(o.items||[]).map(function(i){return i.name+' x'+i.qty;}).join(', ');
-        var time=o.completedAt?new Date(o.completedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'--';
-        var prep='--';if(o.kitchenStartedAt&&o.completedAt){var p=Math.round((new Date(o.completedAt)-new Date(o.kitchenStartedAt))/60000);if(p>0)prep=p+'m';}
+        var doneTs=o.readyAt||o.completedAt;var time=doneTs?new Date(doneTs).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'--';
+        var prep='--';if(o.kitchenStartedAt&&doneTs){var p=Math.round((new Date(doneTs)-new Date(o.kitchenStartedAt))/60000);if(p>0)prep=p+'m';}
         return'<div class="hi"><span class="hon">'+num+'</span><div class="hoi"><div class="hn">'+esc(o.customer||'Walk-in')+'</div><div class="hit">'+esc(items)+'</div></div><div class="hom"><div class="ht">'+time+'</div><div class="hp">'+prep+'</div></div></div>';
     }).join('');
 }

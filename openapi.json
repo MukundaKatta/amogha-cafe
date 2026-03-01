@@ -1,0 +1,197 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Amogha Cafe Ordering API",
+    "description": "Order food from Amogha Cafe & Restaurant in Kukatpally, Hyderabad. Browse the menu, check today's specials, place delivery orders (Cash on Delivery), and track order status.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://amogha-cafe.web.app/api",
+      "description": "Amogha Cafe Production API"
+    }
+  ],
+  "paths": {
+    "/menu": {
+      "get": {
+        "operationId": "getMenu",
+        "summary": "Get the full menu",
+        "description": "Returns all available menu items with names, prices, categories, and dietary info. Call this first to find item names and prices before placing an order.",
+        "responses": {
+          "200": {
+            "description": "List of available menu items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name":        { "type": "string",  "description": "Item name (use exact name when placing order)" },
+                          "category":    { "type": "string",  "description": "Menu category e.g. Biryani, Starters, Desserts" },
+                          "price":       { "type": "number",  "description": "Price in Indian Rupees (INR)" },
+                          "description": { "type": "string" },
+                          "isVeg":       { "type": "boolean", "description": "True if vegetarian" }
+                        }
+                      }
+                    },
+                    "count": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/specials": {
+      "get": {
+        "operationId": "getSpecials",
+        "summary": "Get today's specials",
+        "description": "Returns today's chef-curated special dishes at promotional prices.",
+        "responses": {
+          "200": {
+            "description": "Today's specials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name":  { "type": "string" },
+                          "price": { "type": "number" },
+                          "description": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/order": {
+      "post": {
+        "operationId": "placeOrder",
+        "summary": "Place a delivery order",
+        "description": "Place a food delivery order. Payment is Cash on Delivery only. IMPORTANT: Always confirm the complete order (items, quantities, total price, name, phone, address) with the customer before calling this endpoint. Delivery is FREE for orders above ₹500, otherwise ₹49 delivery fee applies.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["customer", "phone", "address", "items"],
+                "properties": {
+                  "customer": {
+                    "type": "string",
+                    "description": "Customer's full name"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "description": "Customer's phone number (Indian mobile number)"
+                  },
+                  "address": {
+                    "type": "string",
+                    "description": "Full delivery address including area and city"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Special instructions, e.g. extra spicy, no onion (optional)"
+                  },
+                  "items": {
+                    "type": "array",
+                    "description": "List of items to order",
+                    "items": {
+                      "type": "object",
+                      "required": ["name", "price", "qty"],
+                      "properties": {
+                        "name":       { "type": "string",  "description": "Exact item name from the menu" },
+                        "price":      { "type": "number",  "description": "Item price in INR (from menu)" },
+                        "qty":        { "type": "integer", "description": "Quantity (minimum 1)" },
+                        "spiceLevel": {
+                          "type": "string",
+                          "enum": ["mild", "medium", "hot", "extra hot"],
+                          "description": "Spice level preference (default: medium)"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order placed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success":     { "type": "boolean" },
+                    "orderId":     { "type": "string",  "description": "Unique order ID for tracking" },
+                    "summary":     { "type": "string",  "description": "Human-readable order confirmation message" },
+                    "trackingUrl": { "type": "string",  "description": "URL to track order status in real-time" },
+                    "total":       { "type": "number",  "description": "Final total in INR" },
+                    "deliveryFee": { "type": "number",  "description": "Delivery fee (0 if free)" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error — missing required fields"
+          }
+        }
+      }
+    },
+    "/order/{orderId}": {
+      "get": {
+        "operationId": "trackOrder",
+        "summary": "Track an order",
+        "description": "Get the current status of a placed order using its order ID.",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The order ID returned when the order was placed"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details and current status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "orderId":     { "type": "string" },
+                    "status":      { "type": "string", "description": "Order status: pending, preparing, ready, delivered" },
+                    "customer":    { "type": "string" },
+                    "total":       { "type": "number" },
+                    "createdAt":   { "type": "string" },
+                    "trackingUrl": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Order not found" }
+        }
+      }
+    }
+  }
+}

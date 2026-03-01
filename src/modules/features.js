@@ -1148,3 +1148,93 @@ export function initComboBuilder() {
         });
     }
 }
+
+// ===== LIVE ORDER TICKER =====
+export function initLiveOrderTicker() {
+    const db = getDb();
+    if (!db) return;
+    const track = document.querySelector('.bar-ticker-track');
+    if (!track) return;
+
+    db.collection('orders').orderBy('createdAt', 'desc').limit(6).get()
+        .then(function(snap) {
+            const items = [];
+            snap.forEach(function(doc) {
+                const d = doc.data();
+                // Extract first item name and mask customer to first name only
+                const itemName = (d.items && d.items[0] && d.items[0].name) ? d.items[0].name : null;
+                const rawName = (d.customerName || d.userName || '');
+                const firstName = rawName.split(' ')[0] || 'Someone';
+                if (itemName) items.push({ firstName, itemName });
+            });
+            // Only replace static content if we have 3+ real orders
+            if (items.length < 3) return;
+
+            function makeItem(emoji, text) {
+                return `<div class="bar-ticker-item"><span>${emoji}</span><span>${text}</span></div><span class="bar-dot"></span>`;
+            }
+            const html = items.map(function(o) {
+                return makeItem('🍛', `${o.firstName} just ordered ${o.itemName}`);
+            }).join('');
+            // Duplicate for seamless CSS marquee loop
+            track.innerHTML = html + html;
+        })
+        .catch(function() {
+            // Silently keep static ticker if Firestore fails
+        });
+}
+window.initLiveOrderTicker = initLiveOrderTicker;
+
+// ===== CATERING INQUIRY FORM =====
+export function openCateringModal() {
+    const modal = document.getElementById('catering-modal');
+    if (!modal) return;
+    modal.classList.add('active');
+    lockScroll();
+}
+window.openCateringModal = openCateringModal;
+
+export function closeCateringModal() {
+    const modal = document.getElementById('catering-modal');
+    if (!modal) return;
+    modal.classList.remove('active');
+    unlockScroll();
+}
+window.closeCateringModal = closeCateringModal;
+
+export function submitCateringEnquiry() {
+    const db = getDb();
+    const name      = document.getElementById('catering-name')?.value.trim();
+    const phone     = document.getElementById('catering-phone')?.value.trim();
+    const eventType = document.getElementById('catering-event')?.value;
+    const guests    = document.getElementById('catering-guests')?.value;
+    const date      = document.getElementById('catering-date')?.value;
+    const message   = document.getElementById('catering-message')?.value.trim();
+    const btn       = document.getElementById('catering-submit-btn');
+
+    if (!name || !phone || !eventType || !guests || !date) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+
+    const payload = { name, phone, eventType, guestCount: parseInt(guests) || 0, date, message: message || '', createdAt: new Date().toISOString() };
+
+    (db ? db.collection('cateringInquiries').add(payload) : Promise.reject('no db'))
+        .then(function() {
+            closeCateringModal();
+            // Show success toast
+            const toast = document.createElement('div');
+            toast.className = 'catering-toast';
+            toast.textContent = '✅ Catering enquiry received! We\'ll contact you within 24 hours.';
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.classList.add('show'); }, 10);
+            setTimeout(function() { toast.classList.remove('show'); setTimeout(function(){ toast.remove(); }, 400); }, 4000);
+        })
+        .catch(function() {
+            alert('Could not submit. Please call us at +91 91210 04999.');
+            if (btn) { btn.disabled = false; btn.textContent = 'Submit Enquiry'; }
+        });
+}
+window.submitCateringEnquiry = submitCateringEnquiry;
