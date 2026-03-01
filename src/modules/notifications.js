@@ -69,8 +69,50 @@ export function sendPushNotification(title, body) {
     }
 }
 
-export function initNotifications() {
-    setTimeout(requestNotificationPermission, 5000);
+// ===== FIREBASE CLOUD MESSAGING (FCM) =====
+export function initFCM() {
+    // Check if Firebase Messaging is available
+    if (typeof firebase === 'undefined' || !firebase.messaging) return;
+
+    try {
+        var messaging = firebase.messaging();
+        messaging.getToken({ vapidKey: 'BAmoghaVapidKeyPlaceholder' }).then(function(token) {
+            if (token) {
+                saveFCMToken(token);
+            }
+        }).catch(function(err) {
+            console.log('FCM token error (expected on some browsers):', err.message);
+        });
+
+        // Handle foreground messages
+        messaging.onMessage(function(payload) {
+            var title = payload.notification ? payload.notification.title : 'Amogha Cafe';
+            var body = payload.notification ? payload.notification.body : '';
+            sendPushNotification(title, body);
+            showAuthToast(body || title);
+        });
+    } catch (e) {
+        // FCM not available — browser notifications still work
+    }
 }
 
-Object.assign(window, { enableNotifications, dismissNotifBanner, sendPushNotification });
+function saveFCMToken(token) {
+    try {
+        var user = JSON.parse(localStorage.getItem('amoghaUser'));
+        if (user && user.phone && window.db) {
+            window.db.collection('users').doc(user.phone).update({
+                fcmToken: token,
+                fcmUpdatedAt: new Date().toISOString()
+            }).catch(function() {});
+        }
+    } catch (e) {}
+    safeSetItem('amoghaFcmToken', token);
+}
+
+export function initNotifications() {
+    setTimeout(requestNotificationPermission, 5000);
+    // Try FCM after a delay
+    setTimeout(initFCM, 8000);
+}
+
+Object.assign(window, { enableNotifications, dismissNotifBanner, sendPushNotification, initFCM });

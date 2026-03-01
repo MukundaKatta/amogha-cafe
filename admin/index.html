@@ -1679,6 +1679,15 @@
         .stock-low { background: rgba(241,196,15,0.1); color: #f1c40f; border: 1px solid rgba(241,196,15,0.2); }
         .stock-out { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
 
+        /* ─── PREP TIME ─── */
+        .mac-preptime-row { display: flex; align-items: center; gap: 0.4rem; padding-top: 0.5rem; margin-top: 0.5rem; border-top: 1px solid rgba(212,160,23,0.06); flex-wrap: wrap; }
+        .preptime-label { font-size: 0.7rem; color: var(--text-muted); }
+        .preptime-input { width: 55px; padding: 0.25rem 0.4rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(212,160,23,0.1); border-radius: 6px; color: var(--gold); font-size: 0.75rem; text-align: center; }
+        .preptime-input:focus { outline: none; border-color: rgba(212,160,23,0.3); }
+        .preptime-save-btn { padding: 0.25rem 0.6rem; background: rgba(212,160,23,0.1); color: var(--gold); border: 1px solid rgba(212,160,23,0.15); border-radius: 6px; font-size: 0.7rem; cursor: pointer; }
+        .preptime-save-btn:hover { background: rgba(212,160,23,0.2); }
+        .preptime-unit { font-size: 0.65rem; color: var(--text-muted); }
+
         /* ─── ANALYTICS ─── */
         .analytics-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.8rem; margin-bottom: 1.2rem; }
         .an-card { background: rgba(26,15,8,0.6); border: 1px solid rgba(212,160,23,0.08); border-radius: var(--radius); padding: 1rem 1.2rem; text-align: center; }
@@ -1714,6 +1723,171 @@
         .status-bg-preparing { background: #e67e22; } .status-bg-delivered { background: #27ae60; }
         .status-bg-cancelled { background: #e74c3c; }
         .sb-val { font-size: 0.68rem; color: var(--text-muted); min-width: 60px; text-align: right; }
+
+        /* ─── ENHANCED ANALYTICS CHARTS ─── */
+        .analytics-section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 2rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(212,160,23,0.12);
+        }
+        .analytics-section-title:first-of-type { margin-top: 1.5rem; }
+        .chart-container {
+            background: rgba(26,15,8,0.5);
+            border: 1px solid rgba(212,160,23,0.06);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .chart-container h3 {
+            font-size: 0.85rem;
+            color: var(--gold);
+            margin-bottom: 0.6rem;
+            font-weight: 500;
+        }
+        .chart-canvas-wrap {
+            position: relative;
+            width: 100%;
+            max-height: 350px;
+        }
+        .chart-canvas-wrap canvas {
+            width: 100% !important;
+        }
+        .chart-toggle-bar {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.8rem;
+        }
+        .chart-toggle-btn {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.72rem;
+            font-family: 'Poppins', sans-serif;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(212,160,23,0.15);
+            border-radius: 6px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .chart-toggle-btn:hover {
+            border-color: rgba(212,160,23,0.35);
+            color: var(--cream);
+        }
+        .chart-toggle-btn.active {
+            background: rgba(212,160,23,0.15);
+            border-color: var(--gold);
+            color: var(--gold);
+            font-weight: 600;
+        }
+        .analytics-charts-enhanced {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(450px, 100%), 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .doughnut-wrap {
+            max-width: 320px;
+            margin: 0 auto;
+        }
+
+        /* Heatmap */
+        .heatmap-container {
+            background: rgba(26,15,8,0.5);
+            border: 1px solid rgba(212,160,23,0.06);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+        }
+        .heatmap-container h3 {
+            font-size: 0.85rem;
+            color: var(--gold);
+            margin-bottom: 0.8rem;
+            font-weight: 500;
+        }
+        .heatmap-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 3px;
+            min-width: 700px;
+        }
+        .heatmap-table th {
+            font-size: 0.62rem;
+            color: var(--text-dim);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.3rem 0.15rem;
+            text-align: center;
+        }
+        .heatmap-table th:first-child {
+            text-align: left;
+            min-width: 50px;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+        .heatmap-table td {
+            text-align: center;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.35rem 0.15rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            min-width: 28px;
+        }
+        .heatmap-table td:first-child {
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: transparent !important;
+            min-width: 50px;
+        }
+        .heatmap-cell {
+            color: var(--cream);
+            cursor: default;
+            position: relative;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.15);
+            z-index: 2;
+            box-shadow: 0 0 8px rgba(212,160,23,0.3);
+        }
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+            justify-content: flex-end;
+        }
+        .heatmap-legend span {
+            font-size: 0.62rem;
+            color: var(--text-dim);
+        }
+        .heatmap-legend-scale {
+            display: flex;
+            gap: 2px;
+        }
+        .heatmap-legend-swatch {
+            width: 16px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        /* Light mode overrides for enhanced analytics */
+        body.light-mode .chart-container { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.06); }
+        body.light-mode .chart-container h3 { color: var(--primary); }
+        body.light-mode .analytics-section-title { color: var(--primary); border-bottom-color: rgba(139,26,26,0.12); }
+        body.light-mode .chart-toggle-btn { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); color: #6b5b4b; }
+        body.light-mode .chart-toggle-btn.active { background: rgba(139,26,26,0.08); border-color: var(--primary); color: var(--primary); }
+        body.light-mode .heatmap-container { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.06); }
+        body.light-mode .heatmap-container h3 { color: var(--primary); }
+        body.light-mode .heatmap-table th { color: #6b5b4b; }
+        body.light-mode .heatmap-table td:first-child { color: #6b5b4b; }
 
         /* ─── COUPONS ─── */
         .coupons-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px,100%), 1fr)); gap: 0.8rem; }
@@ -1782,6 +1956,7 @@
         body.light-mode .an-val { color: var(--primary); }
         body.light-mode .coupon-code { background: rgba(139,26,26,0.08); color: var(--primary); }
         body.light-mode .stock-input { background: rgba(0,0,0,0.03); color: var(--primary); border-color: rgba(0,0,0,0.1); }
+        body.light-mode .preptime-input { background: rgba(0,0,0,0.03); color: var(--primary); border-color: rgba(0,0,0,0.1); }
         body.light-mode .peak-cell { border-color: rgba(0,0,0,0.04); }
         body.light-mode .crm-avatar { color: #fff; }
         body.light-mode .wa-update-btn { background: rgba(37,211,102,0.08); }
@@ -1957,8 +2132,155 @@
         .exp-table .exp-date-cell { white-space: nowrap; color: var(--text-dim); font-size: 0.8rem; }
         .exp-table .exp-actions-cell { display: flex; gap: 0.4rem; justify-content: flex-end; }
         .exp-table tfoot td { font-weight: 700; border-top: 2px solid rgba(212,160,23,0.25); background: rgba(212,160,23,0.06); }
+
+        /* ─── ALLERGEN MANAGEMENT ─── */
+        .mac-allergen-row { display: flex; align-items: center; gap: 0.4rem; padding-top: 0.5rem; margin-top: 0.5rem; border-top: 1px solid rgba(212,160,23,0.06); flex-wrap: wrap; }
+        .allergen-label { font-size: 0.7rem; color: var(--text-muted); }
+        .allergen-tag { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.6rem; padding: 0.12rem 0.45rem; border-radius: 10px; font-weight: 600; line-height: 1.3; }
+        .allergen-tag-nuts { background: rgba(194,120,50,0.15); color: #c27832; border: 1px solid rgba(194,120,50,0.25); }
+        .allergen-tag-dairy { background: rgba(100,149,237,0.12); color: #6495ed; border: 1px solid rgba(100,149,237,0.2); }
+        .allergen-tag-gluten { background: rgba(218,165,32,0.12); color: #daa520; border: 1px solid rgba(218,165,32,0.2); }
+        .allergen-tag-eggs { background: rgba(255,193,37,0.12); color: #ffc125; border: 1px solid rgba(255,193,37,0.2); }
+        .allergen-tag-soy { background: rgba(107,142,35,0.12); color: #6b8e23; border: 1px solid rgba(107,142,35,0.2); }
+        .allergen-tag-shellfish { background: rgba(233,116,81,0.12); color: #e97451; border: 1px solid rgba(233,116,81,0.2); }
+        .allergen-tag-sesame { background: rgba(160,160,160,0.12); color: #a0a0a0; border: 1px solid rgba(160,160,160,0.2); }
+        .allergen-tag-fish { background: rgba(70,130,180,0.12); color: #4682b4; border: 1px solid rgba(70,130,180,0.2); }
+        .allergen-none { font-size: 0.65rem; color: var(--text-dim); font-style: italic; }
+        .allergen-edit-btn { padding: 0.2rem 0.55rem; background: rgba(212,160,23,0.08); color: var(--gold); border: 1px solid rgba(212,160,23,0.12); border-radius: 6px; font-size: 0.65rem; cursor: pointer; margin-left: auto; transition: background 0.2s; }
+        .allergen-edit-btn:hover { background: rgba(212,160,23,0.18); }
+        .allergen-editor { display: none; flex-wrap: wrap; gap: 0.5rem; padding: 0.6rem; margin-top: 0.4rem; background: rgba(15,10,7,0.6); border: 1px solid rgba(212,160,23,0.1); border-radius: 8px; }
+        .allergen-editor.open { display: flex; }
+        .allergen-check { display: flex; align-items: center; gap: 0.3rem; cursor: pointer; font-size: 0.7rem; color: var(--cream); padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); transition: background 0.2s, border-color 0.2s; user-select: none; }
+        .allergen-check:hover { background: rgba(212,160,23,0.08); border-color: rgba(212,160,23,0.15); }
+        .allergen-check input[type="checkbox"] { accent-color: var(--gold); width: 14px; height: 14px; cursor: pointer; }
+        .allergen-save-btn { padding: 0.3rem 0.8rem; background: var(--gold); color: #1a1008; border: none; border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .allergen-save-btn:hover { background: var(--gold-light); }
+        body.light-mode .allergen-editor { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.08); }
+        body.light-mode .allergen-check { color: #2c1810; border-color: rgba(0,0,0,0.08); }
+        body.light-mode .allergen-edit-btn { color: var(--primary); border-color: rgba(139,26,26,0.15); background: rgba(139,26,26,0.05); }
+
+        /* ─── STAFF MANAGEMENT ─── */
+        .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; padding: 0 2rem 2rem; }
+        .staff-card { background: var(--dark-card); border: 1px solid rgba(212,160,23,0.1); border-radius: var(--radius); padding: 1.2rem; transition: all var(--transition); position: relative; }
+        .staff-card:hover { border-color: rgba(212,160,23,0.25); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .staff-card-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; }
+        .staff-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--gold-dark)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--dark); font-size: 1rem; flex-shrink: 0; }
+        .staff-name { font-weight: 600; color: var(--cream); font-size: 0.95rem; }
+        .staff-phone { font-size: 0.78rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+        .staff-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+        .staff-role-badge { font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 10px; font-weight: 600; text-transform: capitalize; }
+        .staff-role-chef { background: rgba(231,76,60,0.12); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+        .staff-role-waiter { background: rgba(52,152,219,0.12); color: #3498db; border: 1px solid rgba(52,152,219,0.2); }
+        .staff-role-delivery { background: rgba(46,204,113,0.12); color: #2ecc71; border: 1px solid rgba(46,204,113,0.2); }
+        .staff-role-manager { background: rgba(212,160,23,0.12); color: var(--gold); border: 1px solid rgba(212,160,23,0.2); }
+        .staff-shift-badge { font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 10px; background: rgba(255,255,255,0.04); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.08); text-transform: capitalize; }
+        .staff-status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; }
+        .staff-status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .staff-status-dot.active { background: #2ecc71; box-shadow: 0 0 6px rgba(46,204,113,0.4); }
+        .staff-status-dot.inactive { background: #e74c3c; }
+        .staff-card-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(212,160,23,0.08); }
+        .staff-btn { flex: 1; padding: 0.4rem; border-radius: 8px; border: 1px solid rgba(212,160,23,0.15); background: rgba(212,160,23,0.06); color: var(--gold); font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all var(--transition); font-family: 'Poppins', sans-serif; }
+        .staff-btn:hover { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.3); }
+        .staff-btn.danger { color: #e74c3c; border-color: rgba(231,76,60,0.15); background: rgba(231,76,60,0.06); }
+        .staff-btn.danger:hover { background: rgba(231,76,60,0.15); border-color: rgba(231,76,60,0.3); }
+        .staff-form { background: var(--dark-card); border: 1px solid rgba(212,160,23,0.15); border-radius: var(--radius); padding: 1.5rem; margin: 0 2rem 1.5rem; display: none; }
+        .staff-form.open { display: block; }
+        .staff-form h3 { color: var(--gold); font-family: 'Playfair Display', serif; margin-bottom: 1rem; font-size: 1rem; }
+        .staff-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .staff-form-field label { display: block; font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.06em; }
+        .staff-form-field input, .staff-form-field select { width: 100%; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,160,23,0.15); border-radius: 8px; color: var(--cream); font-family: 'Poppins', sans-serif; font-size: 0.85rem; }
+        .staff-form-field input:focus, .staff-form-field select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,160,23,0.1); }
+        .staff-form-actions { display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: flex-end; }
+        body.light-mode .staff-card { background: #fff; border-color: rgba(0,0,0,0.08); }
+        body.light-mode .staff-name { color: #2c1810; }
+        body.light-mode .staff-form { background: #fff; border-color: rgba(0,0,0,0.1); }
+        body.light-mode .staff-form-field input, body.light-mode .staff-form-field select { background: rgba(0,0,0,0.03); color: #2c1810; border-color: rgba(0,0,0,0.12); }
+
+        /* ─── RESERVATION CALENDAR ─── */
+        .calendar-nav { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 0 2rem 1rem; }
+        .calendar-nav-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(212,160,23,0.2); background: rgba(212,160,23,0.06); color: var(--gold); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition); font-size: 1rem; }
+        .calendar-nav-btn:hover { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.3); }
+        .calendar-week-label { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 1rem; min-width: 220px; text-align: center; }
+        .calendar-grid-wrap { overflow-x: auto; padding: 0 2rem 2rem; }
+        .calendar-grid { display: grid; grid-template-columns: 80px repeat(7, 1fr); min-width: 800px; border: 1px solid rgba(212,160,23,0.1); border-radius: var(--radius); overflow: hidden; }
+        .cal-header { background: rgba(212,160,23,0.08); padding: 0.6rem 0.4rem; text-align: center; font-size: 0.75rem; font-weight: 600; color: var(--gold); border-bottom: 1px solid rgba(212,160,23,0.1); }
+        .cal-header.today { background: rgba(212,160,23,0.18); }
+        .cal-time { padding: 0.4rem; font-size: 0.7rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.03); border-right: 1px solid rgba(212,160,23,0.08); display: flex; align-items: flex-start; justify-content: flex-end; min-height: 60px; }
+        .cal-cell { border-bottom: 1px solid rgba(255,255,255,0.03); border-right: 1px solid rgba(255,255,255,0.03); min-height: 60px; padding: 2px; position: relative; }
+        .cal-cell:last-child { border-right: none; }
+        .cal-cell.today { background: rgba(212,160,23,0.03); }
+        .cal-block { padding: 0.25rem 0.4rem; border-radius: 6px; font-size: 0.65rem; margin-bottom: 2px; cursor: pointer; transition: all var(--transition); line-height: 1.3; }
+        .cal-block:hover { transform: scale(1.03); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .cal-block-confirmed { background: rgba(46,204,113,0.15); border-left: 3px solid #2ecc71; color: #2ecc71; }
+        .cal-block-pending { background: rgba(241,196,15,0.15); border-left: 3px solid #f1c40f; color: #f1c40f; }
+        .cal-block-cancelled { background: rgba(231,76,60,0.1); border-left: 3px solid #e74c3c; color: #e74c3c; text-decoration: line-through; opacity: 0.6; }
+        .cal-block-seated { background: rgba(52,152,219,0.15); border-left: 3px solid #3498db; color: #3498db; }
+        .cal-block-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cal-block-info { opacity: 0.8; font-size: 0.6rem; }
+        body.light-mode .cal-header { background: rgba(139,26,26,0.06); color: var(--primary); }
+        body.light-mode .cal-time { color: #888; }
+        body.light-mode .cal-cell { border-color: rgba(0,0,0,0.05); }
+
+        /* ─── MARKETING PANEL ─── */
+        .mkt-sections { padding: 0 2rem 2rem; display: grid; gap: 1.5rem; }
+        .mkt-section { background: var(--dark-card); border: 1px solid rgba(212,160,23,0.1); border-radius: var(--radius); padding: 1.5rem; }
+        .mkt-section h3 { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 1rem; }
+        .mkt-filters { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .mkt-filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+        .mkt-filter-group label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+        .mkt-filter-group select, .mkt-filter-group input { padding: 0.5rem 0.7rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,160,23,0.15); border-radius: 8px; color: var(--cream); font-family: 'Poppins', sans-serif; font-size: 0.82rem; }
+        .mkt-filter-group select:focus, .mkt-filter-group input:focus { outline: none; border-color: var(--gold); }
+        .mkt-results-count { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.8rem; }
+        .mkt-template-list { display: grid; gap: 0.6rem; }
+        .mkt-template { background: rgba(255,255,255,0.03); border: 1px solid rgba(212,160,23,0.1); border-radius: 10px; padding: 1rem; cursor: pointer; transition: all var(--transition); }
+        .mkt-template:hover { border-color: rgba(212,160,23,0.25); background: rgba(212,160,23,0.04); }
+        .mkt-template.selected { border-color: var(--gold); background: rgba(212,160,23,0.08); }
+        .mkt-template-title { font-weight: 600; color: var(--cream); font-size: 0.88rem; margin-bottom: 0.3rem; }
+        .mkt-template-body { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+        .mkt-custom-msg { width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,160,23,0.15); border-radius: 8px; color: var(--cream); font-family: 'Poppins', sans-serif; font-size: 0.85rem; resize: vertical; min-height: 80px; margin-top: 0.8rem; }
+        .mkt-custom-msg:focus { outline: none; border-color: var(--gold); }
+        .mkt-links-output { background: rgba(15,10,7,0.6); border: 1px solid rgba(212,160,23,0.1); border-radius: 10px; padding: 1rem; max-height: 300px; overflow-y: auto; margin-top: 1rem; display: none; }
+        .mkt-link-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.8rem; }
+        .mkt-link-row:last-child { border-bottom: none; }
+        .mkt-link-name { color: var(--cream); font-weight: 500; }
+        .mkt-link-a { color: var(--gold); text-decoration: none; font-size: 0.75rem; word-break: break-all; }
+        .mkt-link-a:hover { text-decoration: underline; }
+        body.light-mode .mkt-section { background: #fff; border-color: rgba(0,0,0,0.08); }
+        body.light-mode .mkt-template { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.08); }
+        body.light-mode .mkt-template.selected { border-color: var(--primary); background: rgba(139,26,26,0.04); }
+        body.light-mode .mkt-links-output { background: rgba(0,0,0,0.02); }
+
+        /* ─── DYNAMIC PRICING ─── */
+        .dp-sections { padding: 0 2rem 2rem; display: grid; gap: 1.5rem; }
+        .dp-section { background: var(--dark-card); border: 1px solid rgba(212,160,23,0.1); border-radius: var(--radius); padding: 1.5rem; }
+        .dp-section h3 { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 1rem; }
+        .dp-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; margin-bottom: 1rem; }
+        .dp-field label { display: block; font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.06em; }
+        .dp-field select, .dp-field input { width: 100%; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,160,23,0.15); border-radius: 8px; color: var(--cream); font-family: 'Poppins', sans-serif; font-size: 0.85rem; }
+        .dp-field select:focus, .dp-field input:focus { outline: none; border-color: var(--gold); }
+        .dp-categories { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .dp-cat-check { display: flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; color: var(--cream); cursor: pointer; }
+        .dp-cat-check input { accent-color: var(--gold); width: 14px; height: 14px; }
+        .dp-rules-list { display: grid; gap: 0.6rem; }
+        .dp-rule-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(212,160,23,0.1); border-radius: 10px; padding: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; transition: all var(--transition); }
+        .dp-rule-card:hover { border-color: rgba(212,160,23,0.2); }
+        .dp-rule-info { flex: 1; }
+        .dp-rule-day { font-weight: 600; color: var(--cream); font-size: 0.88rem; }
+        .dp-rule-time { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; }
+        .dp-rule-cats { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.2rem; }
+        .dp-rule-multiplier { font-size: 1.1rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 0.3rem 0.7rem; border-radius: 8px; }
+        .dp-rule-multiplier.discount { color: #2ecc71; background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.2); }
+        .dp-rule-multiplier.surcharge { color: #e74c3c; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.2); }
+        .dp-rule-multiplier.neutral { color: var(--text-muted); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+        .dp-rule-delete { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(231,76,60,0.2); background: rgba(231,76,60,0.06); color: #e74c3c; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition); flex-shrink: 0; }
+        .dp-rule-delete:hover { background: rgba(231,76,60,0.15); border-color: rgba(231,76,60,0.4); }
+        .dp-empty { text-align: center; padding: 2rem; color: var(--text-dim); font-size: 0.88rem; }
+        body.light-mode .dp-section { background: #fff; border-color: rgba(0,0,0,0.08); }
+        body.light-mode .dp-rule-card { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.08); }
+        body.light-mode .dp-field input, body.light-mode .dp-field select { background: rgba(0,0,0,0.03); color: #2c1810; border-color: rgba(0,0,0,0.12); }
     </style>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -2014,6 +2336,10 @@
             <button class="admin-tab" data-tab="giftcards" onclick="switchTab('giftcards',this)">Gift Cards</button>
             <button class="admin-tab" data-tab="daily-special" onclick="switchTab('daily-special',this);loadDailySpecialAdmin()">Daily Special</button>
             <button class="admin-tab" data-tab="expenses" onclick="switchTab('expenses',this)">Expenses</button>
+            <button class="admin-tab" data-tab="staff" onclick="switchTab('staff',this)">Staff</button>
+            <button class="admin-tab" data-tab="calendar" onclick="switchTab('calendar',this)">Calendar</button>
+            <button class="admin-tab" data-tab="marketing" onclick="switchTab('marketing',this)">Marketing</button>
+            <button class="admin-tab" data-tab="pricing" onclick="switchTab('pricing',this)">Pricing</button>
         </div>
 
         <div class="filters">
@@ -2128,6 +2454,33 @@
             <div class="analytics-charts">
                 <div class="chart-box"><h3>Orders by Hour</h3><div id="peak-hours-grid" class="peak-grid"></div></div>
                 <div class="chart-box"><h3>Order Status Breakdown</h3><div id="status-breakdown"></div></div>
+            </div>
+
+            <!-- Enhanced Analytics Charts -->
+            <h3 class="analytics-section-title">Advanced Analytics</h3>
+            <div class="analytics-charts-enhanced">
+                <div class="chart-container">
+                    <h3>Revenue Trend</h3>
+                    <div class="chart-toggle-bar" id="revenue-trend-toggles">
+                        <button class="chart-toggle-btn active" onclick="switchRevenueTrendView('daily', this)">Daily</button>
+                        <button class="chart-toggle-btn" onclick="switchRevenueTrendView('weekly', this)">Weekly</button>
+                        <button class="chart-toggle-btn" onclick="switchRevenueTrendView('monthly', this)">Monthly</button>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="revenue-trend-chart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Revenue by Category</h3>
+                    <div class="doughnut-wrap">
+                        <canvas id="category-doughnut-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="heatmap-container">
+                <h3>Busiest Hours Heatmap</h3>
+                <div id="busiest-hours-heatmap"></div>
             </div>
         </div>
 
@@ -2307,6 +2660,238 @@
                 <div class="empty-state"><div class="icon">🎁</div><p>No gift cards yet</p><p class="sub">Customers can purchase gift cards from the main site</p></div>
             </div>
         </div>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!--  STAFF MANAGEMENT PANEL                                   -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div id="staff-panel" class="admin-panel" style="display:none;">
+            <div class="panel-header">
+                <h2 class="panel-title">Staff Management</h2>
+                <button class="btn-primary" onclick="toggleStaffForm()">+ Add Staff</button>
+            </div>
+            <div class="staff-form" id="staff-form">
+                <h3 id="staff-form-title">Add New Staff Member</h3>
+                <input type="hidden" id="staff-edit-id">
+                <div class="staff-form-grid">
+                    <div class="staff-form-field">
+                        <label>Name</label>
+                        <input type="text" id="staff-name-input" placeholder="Full name">
+                    </div>
+                    <div class="staff-form-field">
+                        <label>Phone</label>
+                        <input type="tel" id="staff-phone-input" placeholder="Phone number">
+                    </div>
+                    <div class="staff-form-field">
+                        <label>Role</label>
+                        <select id="staff-role-input">
+                            <option value="chef">Chef</option>
+                            <option value="waiter">Waiter</option>
+                            <option value="delivery">Delivery</option>
+                            <option value="manager">Manager</option>
+                        </select>
+                    </div>
+                    <div class="staff-form-field">
+                        <label>Shift</label>
+                        <select id="staff-shift-input">
+                            <option value="morning">Morning</option>
+                            <option value="evening">Evening</option>
+                            <option value="full">Full Day</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="staff-form-actions">
+                    <button class="staff-btn" onclick="cancelStaffForm()">Cancel</button>
+                    <button class="btn-primary" onclick="addStaff()">Save</button>
+                </div>
+            </div>
+            <div class="staff-grid" id="staff-grid">
+                <div class="empty-state"><div class="icon">👥</div><p>No staff members yet</p><p class="sub">Click "+ Add Staff" to add team members</p></div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!--  RESERVATION CALENDAR PANEL                               -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div id="calendar-panel" class="admin-panel" style="display:none;">
+            <div class="panel-header">
+                <h2 class="panel-title">Reservation Calendar</h2>
+            </div>
+            <div class="calendar-nav">
+                <button class="calendar-nav-btn" onclick="navigateCalendarWeek(-1)" title="Previous week">&larr;</button>
+                <span class="calendar-week-label" id="calendar-week-label">This Week</span>
+                <button class="calendar-nav-btn" onclick="navigateCalendarWeek(1)" title="Next week">&rarr;</button>
+            </div>
+            <div class="calendar-grid-wrap">
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!--  MARKETING PANEL                                          -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div id="marketing-panel" class="admin-panel" style="display:none;">
+            <div class="panel-header">
+                <h2 class="panel-title">Marketing &amp; WhatsApp</h2>
+            </div>
+            <div class="mkt-sections">
+                <div class="mkt-section">
+                    <h3>Customer Segments</h3>
+                    <div class="mkt-filters">
+                        <div class="mkt-filter-group">
+                            <label>Loyalty Tier</label>
+                            <select id="mkt-tier-filter" onchange="filterCustomers()">
+                                <option value="all">All Tiers</option>
+                                <option value="Bronze">Bronze</option>
+                                <option value="Silver">Silver</option>
+                                <option value="Gold">Gold</option>
+                            </select>
+                        </div>
+                        <div class="mkt-filter-group">
+                            <label>Min Spend</label>
+                            <input type="number" id="mkt-min-spend" placeholder="0" min="0" onchange="filterCustomers()">
+                        </div>
+                        <div class="mkt-filter-group">
+                            <label>Max Spend</label>
+                            <input type="number" id="mkt-max-spend" placeholder="No limit" min="0" onchange="filterCustomers()">
+                        </div>
+                        <div class="mkt-filter-group">
+                            <label>Last Order Before</label>
+                            <input type="date" id="mkt-last-order" onchange="filterCustomers()">
+                        </div>
+                    </div>
+                    <div class="mkt-results-count" id="mkt-results-count">Load CRM data first (visit Customers tab)</div>
+                </div>
+                <div class="mkt-section">
+                    <h3>WhatsApp Message Templates</h3>
+                    <div class="mkt-template-list" id="mkt-template-list">
+                        <div class="mkt-template" onclick="selectMktTemplate(this, 'Thank you for being a loyal Amogha customer, {name}! You have {points} loyalty points as a {tier} member. Visit us today!')" data-msg="Thank you for being a loyal Amogha customer, {name}! You have {points} loyalty points as a {tier} member. Visit us today!">
+                            <div class="mkt-template-title">Loyalty Appreciation</div>
+                            <div class="mkt-template-body">Thank you for being a loyal Amogha customer, {name}! You have {points} loyalty points as a {tier} member. Visit us today!</div>
+                        </div>
+                        <div class="mkt-template" onclick="selectMktTemplate(this, 'Hey {name}, we miss you at Amogha! Come back and enjoy 10% off your next order. Use code COMEBACK10. See you soon!')" data-msg="Hey {name}, we miss you at Amogha! Come back and enjoy 10% off your next order. Use code COMEBACK10. See you soon!">
+                            <div class="mkt-template-title">Win-back Campaign</div>
+                            <div class="mkt-template-body">Hey {name}, we miss you at Amogha! Come back and enjoy 10% off your next order. Use code COMEBACK10. See you soon!</div>
+                        </div>
+                        <div class="mkt-template" onclick="selectMktTemplate(this, 'Happy birthday, {name}! 🎂 Celebrate with us at Amogha and get a complimentary dessert with your meal. Valid today only!')" data-msg="Happy birthday, {name}! 🎂 Celebrate with us at Amogha and get a complimentary dessert with your meal. Valid today only!">
+                            <div class="mkt-template-title">Birthday Greeting</div>
+                            <div class="mkt-template-body">Happy birthday, {name}! Celebrate with us at Amogha and get a complimentary dessert with your meal. Valid today only!</div>
+                        </div>
+                        <div class="mkt-template" onclick="selectMktTemplate(this, 'Hi {name}! This weekend at Amogha: Special Hyderabadi Biryani festival. Family packs starting at Rs.499. Order now on amoghahotels.com!')" data-msg="Hi {name}! This weekend at Amogha: Special Hyderabadi Biryani festival. Family packs starting at Rs.499. Order now on amoghahotels.com!">
+                            <div class="mkt-template-title">Weekend Promotion</div>
+                            <div class="mkt-template-body">Hi {name}! This weekend at Amogha: Special Hyderabadi Biryani festival. Family packs starting at Rs.499. Order now on amoghahotels.com!</div>
+                        </div>
+                    </div>
+                    <textarea class="mkt-custom-msg" id="mkt-custom-msg" placeholder="Or write a custom message... Use {name}, {points}, {tier} as placeholders."></textarea>
+                    <div style="margin-top:1rem;display:flex;gap:0.5rem;">
+                        <button class="btn-primary" onclick="generateWhatsAppLinks()">Generate WhatsApp Links</button>
+                    </div>
+                    <div class="mkt-links-output" id="mkt-links-output"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!--  DYNAMIC PRICING PANEL                                    -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <div id="pricing-panel" class="admin-panel" style="display:none;">
+            <div class="panel-header">
+                <h2 class="panel-title">Dynamic Pricing</h2>
+            </div>
+            <div class="dp-sections">
+                <div class="dp-section">
+                    <h3>Add Pricing Rule</h3>
+                    <div class="dp-form-grid">
+                        <div class="dp-field">
+                            <label>Day of Week</label>
+                            <select id="dp-day">
+                                <option value="0">Sunday</option>
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                                <option value="all">Every Day</option>
+                            </select>
+                        </div>
+                        <div class="dp-field">
+                            <label>Start Hour</label>
+                            <select id="dp-start-hour">
+                                <option value="0">12 AM</option>
+                                <option value="6">6 AM</option>
+                                <option value="7">7 AM</option>
+                                <option value="8">8 AM</option>
+                                <option value="9">9 AM</option>
+                                <option value="10">10 AM</option>
+                                <option value="11" selected>11 AM</option>
+                                <option value="12">12 PM</option>
+                                <option value="13">1 PM</option>
+                                <option value="14">2 PM</option>
+                                <option value="15">3 PM</option>
+                                <option value="16">4 PM</option>
+                                <option value="17">5 PM</option>
+                                <option value="18">6 PM</option>
+                                <option value="19">7 PM</option>
+                                <option value="20">8 PM</option>
+                                <option value="21">9 PM</option>
+                                <option value="22">10 PM</option>
+                                <option value="23">11 PM</option>
+                            </select>
+                        </div>
+                        <div class="dp-field">
+                            <label>End Hour</label>
+                            <select id="dp-end-hour">
+                                <option value="6">6 AM</option>
+                                <option value="7">7 AM</option>
+                                <option value="8">8 AM</option>
+                                <option value="9">9 AM</option>
+                                <option value="10">10 AM</option>
+                                <option value="11">11 AM</option>
+                                <option value="12">12 PM</option>
+                                <option value="13">1 PM</option>
+                                <option value="14">2 PM</option>
+                                <option value="15">3 PM</option>
+                                <option value="16">4 PM</option>
+                                <option value="17" selected>5 PM</option>
+                                <option value="18">6 PM</option>
+                                <option value="19">7 PM</option>
+                                <option value="20">8 PM</option>
+                                <option value="21">9 PM</option>
+                                <option value="22">10 PM</option>
+                                <option value="23">11 PM</option>
+                                <option value="24">12 AM (next day)</option>
+                            </select>
+                        </div>
+                        <div class="dp-field">
+                            <label>Multiplier</label>
+                            <input type="number" id="dp-multiplier" placeholder="e.g. 0.8 or 1.2" step="0.05" min="0.1" max="3" value="0.9">
+                        </div>
+                    </div>
+                    <div style="margin-bottom:0.5rem;font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Applicable Categories</div>
+                    <div class="dp-categories" id="dp-categories">
+                        <label class="dp-cat-check"><input type="checkbox" value="Starters" checked> Starters</label>
+                        <label class="dp-cat-check"><input type="checkbox" value="Main Course" checked> Main Course</label>
+                        <label class="dp-cat-check"><input type="checkbox" value="Biryani" checked> Biryani</label>
+                        <label class="dp-cat-check"><input type="checkbox" value="Kebabs & Grill" checked> Kebabs &amp; Grill</label>
+                        <label class="dp-cat-check"><input type="checkbox" value="Noodles" checked> Noodles</label>
+                        <label class="dp-cat-check"><input type="checkbox" value="Fried Rice" checked> Fried Rice</label>
+                        <label class="dp-cat-check"><input type="checkbox" value="Rotis & Naan" checked> Rotis &amp; Naan</label>
+                        <label class="dp-cat-check"><input type="checkbox" value="Beverages" checked> Beverages</label>
+                    </div>
+                    <button class="btn-primary" onclick="addPricingRule()">Add Rule</button>
+                    <div id="dp-msg" style="margin-top:0.8rem;font-size:0.82rem;display:none"></div>
+                </div>
+                <div class="dp-section">
+                    <h3>Active Rules</h3>
+                    <div class="dp-rules-list" id="dp-rules-list">
+                        <div class="dp-empty">No pricing rules configured yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Add Coupon Modal -->
@@ -2767,6 +3352,11 @@
             document.getElementById('crm-panel').style.display = tab === 'crm' ? 'block' : 'none';
             document.getElementById('giftcards-panel').style.display = tab === 'giftcards' ? 'block' : 'none';
             document.getElementById('expenses-panel').style.display = tab === 'expenses' ? 'block' : 'none';
+            document.getElementById('daily-special-panel').style.display = tab === 'daily-special' ? 'block' : 'none';
+            document.getElementById('staff-panel').style.display = tab === 'staff' ? 'block' : 'none';
+            document.getElementById('calendar-panel').style.display = tab === 'calendar' ? 'block' : 'none';
+            document.getElementById('marketing-panel').style.display = tab === 'marketing' ? 'block' : 'none';
+            document.getElementById('pricing-panel').style.display = tab === 'pricing' ? 'block' : 'none';
 
             // Load data if needed
             if (tab === 'menu' && allMenuItems.length === 0) { loadMenuItems(); loadAddons(); }
@@ -2782,6 +3372,11 @@
             if (tab === 'crm' && crmCustomers.length === 0) loadCRM();
             if (tab === 'giftcards' && allGiftCards.length === 0) loadGiftCardsAdmin();
             if (tab === 'expenses' && !expensesLoaded) loadExpenses();
+            if (tab === 'daily-special') loadDailySpecialAdmin();
+            if (tab === 'staff' && !staffLoaded) loadStaff();
+            if (tab === 'calendar' && !calendarLoaded) loadCalendar();
+            if (tab === 'marketing' && !marketingLoaded) loadMarketing();
+            if (tab === 'pricing' && !pricingLoaded) loadDynamicPricing();
         }
 
         // ─── MENU MANAGEMENT ───
@@ -2879,6 +3474,66 @@
                                 '<input type="number" class="stock-input" id="stock-' + safeKey + '" value="' + (stock != null ? stock : '') + '" placeholder="∞" min="0">' +
                                 '<button class="stock-save-btn" onclick="saveStock(\'' + escapedId + '\')">Set</button>' +
                                 stockBadge;
+                        })() +
+                    '</div>' +
+                    '<div class="mac-preptime-row">' +
+                        '<label class="preptime-label">Prep Time:</label>' +
+                        '<input type="number" class="preptime-input" id="preptime-' + safeKey + '" value="' + (item.prepTimeMinutes != null ? item.prepTimeMinutes : 15) + '" placeholder="15" min="1" max="120">' +
+                        '<span class="preptime-unit">min</span>' +
+                        '<button class="preptime-save-btn" onclick="savePrepTime(\'' + escapedId + '\')">Set</button>' +
+                    '</div>' +
+                    '<div class="mac-allergen-row">' +
+                        (function() {
+                            var allergenMeta = {
+                                nuts: { emoji: '\uD83E\uDD5C', label: 'Nuts' },
+                                dairy: { emoji: '\uD83E\uDD5B', label: 'Dairy' },
+                                gluten: { emoji: '\uD83C\uDF3E', label: 'Gluten' },
+                                eggs: { emoji: '\uD83E\uDD5A', label: 'Eggs' },
+                                soy: { emoji: '\uD83E\uDED8', label: 'Soy' },
+                                shellfish: { emoji: '\uD83E\uDD90', label: 'Shellfish' },
+                                sesame: { emoji: '\u26AA', label: 'Sesame' },
+                                fish: { emoji: '\uD83D\uDC1F', label: 'Fish' }
+                            };
+                            var allergens = item.allergens || [];
+                            var tagsHtml = '';
+                            if (allergens.length > 0) {
+                                allergens.forEach(function(a) {
+                                    var meta = allergenMeta[a];
+                                    if (meta) {
+                                        tagsHtml += '<span class="allergen-tag allergen-tag-' + escHtml(a) + '">' + meta.emoji + ' ' + escHtml(meta.label) + '</span>';
+                                    }
+                                });
+                            } else {
+                                tagsHtml = '<span class="allergen-none">No allergens set</span>';
+                            }
+                            return '<label class="allergen-label">Allergens:</label>' +
+                                tagsHtml +
+                                '<button class="allergen-edit-btn" onclick="toggleAllergenEditor(\'' + escapedId + '\')">Edit</button>';
+                        })() +
+                    '</div>' +
+                    '<div class="allergen-editor" id="allergen-editor-' + safeKey + '">' +
+                        (function() {
+                            var allergenList = [
+                                { key: 'nuts', emoji: '\uD83E\uDD5C', label: 'Nuts' },
+                                { key: 'dairy', emoji: '\uD83E\uDD5B', label: 'Dairy' },
+                                { key: 'gluten', emoji: '\uD83C\uDF3E', label: 'Gluten' },
+                                { key: 'eggs', emoji: '\uD83E\uDD5A', label: 'Eggs' },
+                                { key: 'soy', emoji: '\uD83E\uDED8', label: 'Soy' },
+                                { key: 'shellfish', emoji: '\uD83E\uDD90', label: 'Shellfish' },
+                                { key: 'sesame', emoji: '\u26AA', label: 'Sesame' },
+                                { key: 'fish', emoji: '\uD83D\uDC1F', label: 'Fish' }
+                            ];
+                            var current = item.allergens || [];
+                            var html = '';
+                            allergenList.forEach(function(a) {
+                                var isChecked = current.indexOf(a.key) !== -1 ? ' checked' : '';
+                                html += '<label class="allergen-check">' +
+                                    '<input type="checkbox" value="' + a.key + '"' + isChecked + '>' +
+                                    a.emoji + ' ' + escHtml(a.label) +
+                                '</label>';
+                            });
+                            html += '<button class="allergen-save-btn" onclick="saveAllergens(\'' + escapedId + '\')">Save</button>';
+                            return html;
                         })() +
                     '</div>' +
                 '</div>';
@@ -3916,6 +4571,48 @@
             db.collection('menu').doc(itemId).update(update).catch(function(err) { console.error('Save stock error:', err); });
         }
 
+        // ─── PREP TIME ───
+        function savePrepTime(itemId) {
+            var key = itemId.replace(/[^a-zA-Z0-9]/g, '_');
+            var input = document.getElementById('preptime-' + key);
+            var val = input.value.trim();
+            var prepTime = val === '' ? 15 : parseInt(val);
+            if (isNaN(prepTime) || prepTime < 1) prepTime = 15;
+            db.collection('menu').doc(itemId).update({
+                prepTimeMinutes: prepTime,
+                updatedAt: new Date().toISOString()
+            }).catch(function(err) { console.error('Save prep time error:', err); });
+        }
+
+        // ─── ALLERGEN MANAGEMENT ───
+        function toggleAllergenEditor(itemId) {
+            var key = itemId.replace(/[^a-zA-Z0-9]/g, '_');
+            var editor = document.getElementById('allergen-editor-' + key);
+            if (!editor) return;
+            editor.classList.toggle('open');
+        }
+
+        function saveAllergens(itemId) {
+            var key = itemId.replace(/[^a-zA-Z0-9]/g, '_');
+            var editor = document.getElementById('allergen-editor-' + key);
+            if (!editor) return;
+            var checkboxes = editor.querySelectorAll('input[type="checkbox"]');
+            var selected = [];
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    selected.push(checkboxes[i].value);
+                }
+            }
+            db.collection('menu').doc(itemId).update({
+                allergens: selected,
+                updatedAt: new Date().toISOString()
+            }).then(function() {
+                editor.classList.remove('open');
+            }).catch(function(err) {
+                console.error('Save allergens error:', err);
+            });
+        }
+
         // ─── PRINT ORDER ───
         function printOrder(orderId) {
             var order = allOrders.find(function(o) { return o.id === orderId; });
@@ -3978,6 +4675,7 @@
         function loadAnalytics() {
             analyticsLoaded = true;
             renderAnalytics();
+            renderAnalyticsCharts();
         }
 
         function renderAnalytics() {
@@ -4050,6 +4748,9 @@
                 var pct = Math.round(statusCounts[s] / total * 100);
                 return '<div class="sb-row"><span class="sb-label status-' + s + '">' + s + '</span><div class="sb-bar"><div class="sb-fill status-bg-' + s + '" style="width:' + pct + '%"></div></div><span class="sb-val">' + statusCounts[s] + ' (' + pct + '%)</span></div>';
             }).join('');
+
+            // Refresh enhanced charts when range changes
+            if (chartsRendered) refreshEnhancedCharts();
         }
 
         function drawRevenueChart(orders, range) {
@@ -4101,6 +4802,402 @@
                 ctx.fillStyle = '#6a5a4a'; ctx.font = '9px Poppins'; ctx.textAlign = 'center';
                 ctx.fillText(day.slice(5), x + barW / 2, 20 + chartH + 14);
             });
+        }
+
+        // ─── ENHANCED ANALYTICS CHARTS ───
+        var chartsRendered = false;
+        var revenueTrendChart = null;
+        var categoryDoughnutChart = null;
+        var currentTrendView = 'daily';
+
+        function renderAnalyticsCharts() {
+            if (chartsRendered) return;
+            chartsRendered = true;
+            renderRevenueTrendChart('daily');
+            renderCategoryDoughnut();
+            renderBusiestHoursHeatmap();
+        }
+
+        function getAnalyticsFilteredOrders() {
+            var range = parseInt(document.getElementById('analytics-range').value);
+            var now = new Date();
+            var filtered = allOrders;
+            if (range > 0) {
+                var cutoff = new Date(now.getTime() - range * 24 * 60 * 60 * 1000).toISOString();
+                filtered = allOrders.filter(function(o) { return o.createdAt && o.createdAt >= cutoff; });
+            }
+            return filtered.filter(function(o) { return o.status !== 'cancelled'; });
+        }
+
+        function switchRevenueTrendView(view, btn) {
+            currentTrendView = view;
+            document.querySelectorAll('#revenue-trend-toggles .chart-toggle-btn').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            if (btn) btn.classList.add('active');
+            renderRevenueTrendChart(view);
+        }
+
+        function renderRevenueTrendChart(view) {
+            var active = getAnalyticsFilteredOrders();
+            var labels = [];
+            var dataPoints = [];
+
+            if (view === 'daily') {
+                // Group by day for last 30 days
+                var dailyMap = {};
+                var now = new Date();
+                for (var d = 29; d >= 0; d--) {
+                    var date = new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
+                    var key = date.toISOString().split('T')[0];
+                    dailyMap[key] = 0;
+                }
+                active.forEach(function(o) {
+                    if (o.createdAt) {
+                        var dayKey = o.createdAt.split('T')[0];
+                        if (dailyMap.hasOwnProperty(dayKey)) {
+                            dailyMap[dayKey] += (o.total || 0);
+                        }
+                    }
+                });
+                var sortedKeys = Object.keys(dailyMap).sort();
+                sortedKeys.forEach(function(k) {
+                    labels.push(k.slice(5)); // MM-DD
+                    dataPoints.push(dailyMap[k]);
+                });
+            } else if (view === 'weekly') {
+                // Group by ISO week for last 12 weeks
+                var weeklyMap = {};
+                var now = new Date();
+                for (var w = 11; w >= 0; w--) {
+                    var weekStart = new Date(now.getTime() - w * 7 * 24 * 60 * 60 * 1000);
+                    var weekKey = getISOWeekLabel(weekStart);
+                    if (!weeklyMap[weekKey]) weeklyMap[weekKey] = 0;
+                }
+                active.forEach(function(o) {
+                    if (o.createdAt) {
+                        var oDate = new Date(o.createdAt);
+                        var weekKey = getISOWeekLabel(oDate);
+                        if (weeklyMap.hasOwnProperty(weekKey)) {
+                            weeklyMap[weekKey] += (o.total || 0);
+                        }
+                    }
+                });
+                var weekKeys = Object.keys(weeklyMap);
+                weekKeys.forEach(function(k) {
+                    labels.push(k);
+                    dataPoints.push(weeklyMap[k]);
+                });
+            } else if (view === 'monthly') {
+                // Group by month for last 12 months
+                var monthlyMap = {};
+                var now = new Date();
+                for (var m = 11; m >= 0; m--) {
+                    var monthDate = new Date(now.getFullYear(), now.getMonth() - m, 1);
+                    var mKey = monthDate.getFullYear() + '-' + String(monthDate.getMonth() + 1).padStart(2, '0');
+                    monthlyMap[mKey] = 0;
+                }
+                active.forEach(function(o) {
+                    if (o.createdAt) {
+                        var oDate = new Date(o.createdAt);
+                        var mKey = oDate.getFullYear() + '-' + String(oDate.getMonth() + 1).padStart(2, '0');
+                        if (monthlyMap.hasOwnProperty(mKey)) {
+                            monthlyMap[mKey] += (o.total || 0);
+                        }
+                    }
+                });
+                var monthKeys = Object.keys(monthlyMap).sort();
+                var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                monthKeys.forEach(function(k) {
+                    var parts = k.split('-');
+                    labels.push(monthNames[parseInt(parts[1]) - 1] + ' ' + parts[0].slice(2));
+                    dataPoints.push(monthlyMap[k]);
+                });
+            }
+
+            var canvas = document.getElementById('revenue-trend-chart');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+
+            if (revenueTrendChart) {
+                revenueTrendChart.destroy();
+                revenueTrendChart = null;
+            }
+
+            revenueTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: dataPoints,
+                        borderColor: '#D4A017',
+                        backgroundColor: 'rgba(212, 160, 23, 0.1)',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#D4A017',
+                        pointBorderColor: '#D4A017',
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#e8c547',
+                        tension: 0.35,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 10, 7, 0.95)',
+                            titleColor: '#D4A017',
+                            bodyColor: '#e8dcc8',
+                            borderColor: 'rgba(212, 160, 23, 0.3)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return '₹' + (context.parsed.y || 0).toLocaleString('en-IN');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#6a5a4a',
+                                font: { size: 10, family: 'Poppins' },
+                                maxRotation: 45,
+                                autoSkip: true,
+                                maxTicksLimit: 15
+                            },
+                            grid: {
+                                color: 'rgba(212, 160, 23, 0.06)',
+                                drawBorder: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#6a5a4a',
+                                font: { size: 10, family: 'Poppins' },
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString('en-IN');
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(212, 160, 23, 0.06)',
+                                drawBorder: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getISOWeekLabel(date) {
+            var d = new Date(date.getTime());
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+            var week1 = new Date(d.getFullYear(), 0, 4);
+            var weekNum = 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+            return 'W' + weekNum + ' ' + d.getFullYear().toString().slice(2);
+        }
+
+        function renderCategoryDoughnut() {
+            var active = getAnalyticsFilteredOrders();
+            var categoryRevenue = {};
+
+            active.forEach(function(o) {
+                (o.items || []).forEach(function(it) {
+                    var cat = it.category || 'Other';
+                    if (!categoryRevenue[cat]) categoryRevenue[cat] = 0;
+                    categoryRevenue[cat] += (it.price || 0) * (parseInt(it.qty) || 1);
+                });
+            });
+
+            var categories = Object.keys(categoryRevenue).sort(function(a, b) {
+                return categoryRevenue[b] - categoryRevenue[a];
+            });
+            var values = categories.map(function(c) { return categoryRevenue[c]; });
+
+            var chartColors = [
+                '#D4A017',  // gold
+                '#8B1A1A',  // primary red
+                '#27ae60',  // green
+                '#3498db',  // blue
+                '#9b59b6',  // purple
+                '#e67e22',  // orange
+                '#e8c547',  // gold-light
+                '#1abc9c',  // teal
+                '#e74c3c',  // red
+                '#2ecc71'   // emerald
+            ];
+
+            var canvas = document.getElementById('category-doughnut-chart');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+
+            if (categoryDoughnutChart) {
+                categoryDoughnutChart.destroy();
+                categoryDoughnutChart = null;
+            }
+
+            if (categories.length === 0) {
+                canvas.parentElement.innerHTML = '<p style="text-align:center;color:#6a5a4a;padding:2rem 0;font-size:0.85rem">No category data available</p>';
+                return;
+            }
+
+            categoryDoughnutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: chartColors.slice(0, categories.length),
+                        borderColor: 'rgba(15, 10, 7, 0.8)',
+                        borderWidth: 2,
+                        hoverBorderColor: '#e8dcc8',
+                        hoverBorderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '55%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e8dcc8',
+                                font: { size: 11, family: 'Poppins' },
+                                padding: 12,
+                                usePointStyle: true,
+                                pointStyleWidth: 10
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 10, 7, 0.95)',
+                            titleColor: '#D4A017',
+                            bodyColor: '#e8dcc8',
+                            borderColor: 'rgba(212, 160, 23, 0.3)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    var total = context.dataset.data.reduce(function(s, v) { return s + v; }, 0);
+                                    var pct = total > 0 ? Math.round(context.parsed / total * 100) : 0;
+                                    return context.label + ': ₹' + context.parsed.toLocaleString('en-IN') + ' (' + pct + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderBusiestHoursHeatmap() {
+            var active = getAnalyticsFilteredOrders();
+            var dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            // 7 rows (days) x 24 columns (hours)
+            var heatData = [];
+            var i, j;
+            for (i = 0; i < 7; i++) {
+                heatData[i] = [];
+                for (j = 0; j < 24; j++) {
+                    heatData[i][j] = 0;
+                }
+            }
+
+            active.forEach(function(o) {
+                if (o.createdAt) {
+                    var d = new Date(o.createdAt);
+                    var dayOfWeek = d.getDay(); // 0=Sun
+                    var hour = d.getHours();
+                    heatData[dayOfWeek][hour]++;
+                }
+            });
+
+            // Find max for color scaling
+            var maxCount = 0;
+            for (i = 0; i < 7; i++) {
+                for (j = 0; j < 24; j++) {
+                    if (heatData[i][j] > maxCount) maxCount = heatData[i][j];
+                }
+            }
+            if (maxCount === 0) maxCount = 1;
+
+            // Build HTML table
+            var html = '<table class="heatmap-table"><thead><tr><th></th>';
+            for (j = 0; j < 24; j++) {
+                var hourLabel = j < 10 ? '0' + j : '' + j;
+                html += '<th>' + hourLabel + '</th>';
+            }
+            html += '</tr></thead><tbody>';
+
+            // Reorder days: Mon-Sun for business view
+            var dayOrder = [1, 2, 3, 4, 5, 6, 0];
+            var dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+            for (i = 0; i < 7; i++) {
+                var dayIdx = dayOrder[i];
+                html += '<tr><td>' + dayLabels[i] + '</td>';
+                for (j = 0; j < 24; j++) {
+                    var count = heatData[dayIdx][j];
+                    var intensity = count / maxCount;
+                    var bgColor;
+                    if (count === 0) {
+                        bgColor = 'rgba(255,255,255,0.02)';
+                    } else {
+                        // Gradient from dark warm to gold
+                        var r = Math.round(44 + (212 - 44) * intensity);
+                        var g = Math.round(24 + (160 - 24) * intensity);
+                        var b = Math.round(16 + (23 - 16) * intensity);
+                        var alpha = 0.3 + 0.7 * intensity;
+                        bgColor = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+                    }
+                    var hourDisplay = j < 10 ? '0' + j : '' + j;
+                    var cellText = count > 0 ? count : '';
+                    html += '<td class="heatmap-cell" style="background:' + bgColor + '" title="' + dayLabels[i] + ' ' + hourDisplay + ':00 — ' + count + ' orders">' + cellText + '</td>';
+                }
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+
+            // Add legend
+            html += '<div class="heatmap-legend">';
+            html += '<span>Fewer</span>';
+            html += '<div class="heatmap-legend-scale">';
+            var legendSteps = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+            legendSteps.forEach(function(step) {
+                var lr, lg, lb, la;
+                if (step === 0) {
+                    html += '<div class="heatmap-legend-swatch" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06)"></div>';
+                } else {
+                    lr = Math.round(44 + (212 - 44) * step);
+                    lg = Math.round(24 + (160 - 24) * step);
+                    lb = Math.round(16 + (23 - 16) * step);
+                    la = 0.3 + 0.7 * step;
+                    html += '<div class="heatmap-legend-swatch" style="background:rgba(' + lr + ',' + lg + ',' + lb + ',' + la + ')"></div>';
+                }
+            });
+            html += '</div>';
+            html += '<span>More</span>';
+            html += '</div>';
+
+            document.getElementById('busiest-hours-heatmap').innerHTML = html;
+        }
+
+        function refreshEnhancedCharts() {
+            chartsRendered = false;
+            renderAnalyticsCharts();
         }
 
         // ─── COUPON MANAGEMENT ───
@@ -4377,6 +5474,427 @@
                 if (typeof setOrderStatus === 'function') setOrderStatus(orderId, status);
             }
         };
+
+        // ═══════════════════════════════════════════════════════════════
+        //  STAFF MANAGEMENT
+        // ═══════════════════════════════════════════════════════════════
+        var allStaff = [];
+        var staffLoaded = false;
+
+        function loadStaff() {
+            staffLoaded = true;
+            db.collection('staff').onSnapshot(function(snapshot) {
+                allStaff = [];
+                snapshot.forEach(function(doc) {
+                    allStaff.push({ id: doc.id, ...doc.data() });
+                });
+                renderStaff();
+            }, function(err) { console.error('Staff load error:', err); });
+        }
+
+        function renderStaff() {
+            var container = document.getElementById('staff-grid');
+            if (allStaff.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>No staff members yet</p><p class="sub">Click "+ Add Staff" to add team members</p></div>';
+                return;
+            }
+            container.innerHTML = allStaff.map(function(s) {
+                var initial = (s.name || 'S').charAt(0).toUpperCase();
+                var activeLabel = s.active !== false ? 'Active' : 'Inactive';
+                var dotClass = s.active !== false ? 'active' : 'inactive';
+                var toggleLabel = s.active !== false ? 'Deactivate' : 'Activate';
+                return '<div class="staff-card">' +
+                    '<div class="staff-card-header">' +
+                        '<div class="staff-avatar">' + initial + '</div>' +
+                        '<div><div class="staff-name">' + escHtml(s.name) + '</div><div class="staff-phone">' + escHtml(s.phone || '') + '</div></div>' +
+                    '</div>' +
+                    '<div class="staff-meta">' +
+                        '<span class="staff-role-badge staff-role-' + escHtml(s.role || 'waiter') + '">' + escHtml(s.role || 'waiter') + '</span>' +
+                        '<span class="staff-shift-badge">' + escHtml(s.shift || 'full') + ' shift</span>' +
+                    '</div>' +
+                    '<div class="staff-status"><span class="staff-status-dot ' + dotClass + '"></span> ' + activeLabel + '</div>' +
+                    '<div class="staff-card-actions">' +
+                        '<button class="staff-btn" onclick="editStaff(\'' + s.id + '\')">Edit</button>' +
+                        '<button class="staff-btn ' + (s.active !== false ? 'danger' : '') + '" onclick="toggleStaffActive(\'' + s.id + '\')">' + toggleLabel + '</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        function toggleStaffForm() {
+            var form = document.getElementById('staff-form');
+            if (form.classList.contains('open')) {
+                cancelStaffForm();
+            } else {
+                form.classList.add('open');
+                document.getElementById('staff-form-title').textContent = 'Add New Staff Member';
+                document.getElementById('staff-edit-id').value = '';
+            }
+        }
+
+        function cancelStaffForm() {
+            var form = document.getElementById('staff-form');
+            form.classList.remove('open');
+            document.getElementById('staff-name-input').value = '';
+            document.getElementById('staff-phone-input').value = '';
+            document.getElementById('staff-role-input').value = 'chef';
+            document.getElementById('staff-shift-input').value = 'morning';
+            document.getElementById('staff-edit-id').value = '';
+        }
+
+        function addStaff() {
+            var editId = document.getElementById('staff-edit-id').value;
+            var name = document.getElementById('staff-name-input').value.trim();
+            var phone = document.getElementById('staff-phone-input').value.trim();
+            var role = document.getElementById('staff-role-input').value;
+            var shift = document.getElementById('staff-shift-input').value;
+
+            if (!name) { alert('Please enter a name'); return; }
+            if (!phone) { alert('Please enter a phone number'); return; }
+
+            var data = {
+                name: name,
+                phone: phone,
+                role: role,
+                shift: shift,
+                active: true,
+                updatedAt: new Date().toISOString()
+            };
+
+            if (editId) {
+                db.collection('staff').doc(editId).update(data).then(function() {
+                    cancelStaffForm();
+                }).catch(function(e) { alert('Error: ' + e.message); });
+            } else {
+                data.createdAt = new Date().toISOString();
+                db.collection('staff').add(data).then(function() {
+                    cancelStaffForm();
+                }).catch(function(e) { alert('Error: ' + e.message); });
+            }
+        }
+
+        function toggleStaffActive(id) {
+            var staff = allStaff.find(function(s) { return s.id === id; });
+            if (!staff) return;
+            var newActive = staff.active === false ? true : false;
+            db.collection('staff').doc(id).update({ active: newActive }).catch(function(e) { alert('Error: ' + e.message); });
+        }
+
+        function editStaff(id) {
+            var staff = allStaff.find(function(s) { return s.id === id; });
+            if (!staff) return;
+            document.getElementById('staff-edit-id').value = id;
+            document.getElementById('staff-name-input').value = staff.name || '';
+            document.getElementById('staff-phone-input').value = staff.phone || '';
+            document.getElementById('staff-role-input').value = staff.role || 'chef';
+            document.getElementById('staff-shift-input').value = staff.shift || 'morning';
+            document.getElementById('staff-form-title').textContent = 'Edit Staff Member';
+            document.getElementById('staff-form').classList.add('open');
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  RESERVATION CALENDAR
+        // ═══════════════════════════════════════════════════════════════
+        var calendarReservations = [];
+        var calendarLoaded = false;
+        var calendarWeekStart = null;
+
+        function getMonday(d) {
+            var date = new Date(d);
+            var day = date.getDay();
+            var diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            date.setDate(diff);
+            date.setHours(0, 0, 0, 0);
+            return date;
+        }
+
+        function loadCalendar() {
+            calendarLoaded = true;
+            calendarWeekStart = getMonday(new Date());
+            db.collection('reservations').get().then(function(snapshot) {
+                calendarReservations = [];
+                snapshot.forEach(function(doc) {
+                    calendarReservations.push({ id: doc.id, ...doc.data() });
+                });
+                renderCalendarWeek(calendarWeekStart);
+            }).catch(function(err) { console.error('Calendar load error:', err); });
+        }
+
+        function navigateCalendarWeek(dir) {
+            if (!calendarWeekStart) calendarWeekStart = getMonday(new Date());
+            calendarWeekStart = new Date(calendarWeekStart.getTime() + dir * 7 * 86400000);
+            renderCalendarWeek(calendarWeekStart);
+        }
+
+        function renderCalendarWeek(startDate) {
+            var dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Week label
+            var endDate = new Date(startDate.getTime() + 6 * 86400000);
+            document.getElementById('calendar-week-label').textContent =
+                startDate.getDate() + ' ' + months[startDate.getMonth()] + ' - ' +
+                endDate.getDate() + ' ' + months[endDate.getMonth()] + ' ' + endDate.getFullYear();
+
+            // Build grid
+            var html = '';
+            // Header row
+            html += '<div class="cal-header">Time</div>';
+            for (var d = 0; d < 7; d++) {
+                var dayDate = new Date(startDate.getTime() + d * 86400000);
+                var isToday = dayDate.getTime() === today.getTime();
+                html += '<div class="cal-header' + (isToday ? ' today' : '') + '">' +
+                    dayNames[d] + '<br>' + dayDate.getDate() + ' ' + months[dayDate.getMonth()] + '</div>';
+            }
+
+            // Time slots: 11 AM to 10 PM
+            for (var hour = 11; hour <= 22; hour++) {
+                var ampm = hour < 12 ? 'AM' : 'PM';
+                var displayHour = hour <= 12 ? hour : hour - 12;
+                html += '<div class="cal-time">' + displayHour + ':00 ' + ampm + '</div>';
+
+                for (var d2 = 0; d2 < 7; d2++) {
+                    var cellDate = new Date(startDate.getTime() + d2 * 86400000);
+                    var isTodayCell = cellDate.getTime() === today.getTime();
+                    var cellDateStr = cellDate.getFullYear() + '-' +
+                        String(cellDate.getMonth() + 1).padStart(2, '0') + '-' +
+                        String(cellDate.getDate()).padStart(2, '0');
+
+                    var blocks = '';
+                    calendarReservations.forEach(function(r) {
+                        if (r.date !== cellDateStr) return;
+                        var rHour = parseInt((r.time || '12:00').split(':')[0]);
+                        if (rHour !== hour) return;
+                        var status = (r.status || 'pending').toLowerCase();
+                        var blockClass = 'cal-block cal-block-' + status;
+                        blocks += '<div class="' + blockClass + '" onclick="showReservationDetail(\'' + r.id + '\')">' +
+                            '<div class="cal-block-name">' + escHtml(r.name || 'Guest') + '</div>' +
+                            '<div class="cal-block-info">' + (r.partySize || '?') + ' guests' + (r.tableNumber ? ' · T' + r.tableNumber : '') + '</div>' +
+                        '</div>';
+                    });
+
+                    html += '<div class="cal-cell' + (isTodayCell ? ' today' : '') + '">' + blocks + '</div>';
+                }
+            }
+
+            document.getElementById('calendar-grid').innerHTML = html;
+        }
+
+        function showReservationDetail(id) {
+            var r = calendarReservations.find(function(res) { return res.id === id; });
+            if (!r) return;
+            alert(
+                'Reservation Details\n' +
+                '─────────────────\n' +
+                'Name: ' + (r.name || 'N/A') + '\n' +
+                'Phone: ' + (r.phone || 'N/A') + '\n' +
+                'Date: ' + (r.date || 'N/A') + '\n' +
+                'Time: ' + (r.time || 'N/A') + '\n' +
+                'Party Size: ' + (r.partySize || 'N/A') + '\n' +
+                'Table: ' + (r.tableNumber || 'Not assigned') + '\n' +
+                'Status: ' + (r.status || 'pending') + '\n' +
+                'Notes: ' + (r.notes || r.specialRequests || 'None')
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  MARKETING PANEL
+        // ═══════════════════════════════════════════════════════════════
+        var marketingLoaded = false;
+        var mktFilteredCustomers = [];
+        var mktSelectedTemplate = '';
+
+        function loadMarketing() {
+            marketingLoaded = true;
+            // If CRM data is already loaded, use it
+            if (crmCustomers.length > 0) {
+                filterCustomers();
+            } else {
+                // Load CRM data
+                db.collection('users').get().then(function(userSnap) {
+                    var usersMap = {};
+                    userSnap.forEach(function(doc) {
+                        var d = doc.data();
+                        usersMap[doc.id] = { phone: doc.id, name: d.name || 'Unknown', loyaltyPoints: d.loyaltyPoints || 0, orderCount: 0, totalSpent: 0, lastOrder: null };
+                    });
+                    allOrders.forEach(function(o) {
+                        var phone = o.phone || o.userId;
+                        if (phone && usersMap[phone]) {
+                            usersMap[phone].orderCount++;
+                            if (o.status !== 'cancelled') usersMap[phone].totalSpent += (o.total || 0);
+                            if (!usersMap[phone].lastOrder || (o.createdAt && o.createdAt > usersMap[phone].lastOrder)) {
+                                usersMap[phone].lastOrder = o.createdAt;
+                            }
+                        }
+                    });
+                    if (crmCustomers.length === 0) crmCustomers = Object.values(usersMap);
+                    filterCustomers();
+                }).catch(function(err) { console.error('Marketing CRM error:', err); });
+            }
+        }
+
+        function filterCustomers() {
+            var tier = document.getElementById('mkt-tier-filter').value;
+            var minSpend = parseFloat(document.getElementById('mkt-min-spend').value) || 0;
+            var maxSpend = parseFloat(document.getElementById('mkt-max-spend').value) || Infinity;
+            var lastOrderBefore = document.getElementById('mkt-last-order').value;
+
+            mktFilteredCustomers = crmCustomers.filter(function(c) {
+                // Tier filter
+                var cTier = c.loyaltyPoints >= 1000 ? 'Gold' : c.loyaltyPoints >= 500 ? 'Silver' : 'Bronze';
+                if (tier !== 'all' && cTier !== tier) return false;
+                // Spend filter
+                if (c.totalSpent < minSpend) return false;
+                if (maxSpend && isFinite(maxSpend) && c.totalSpent > maxSpend) return false;
+                // Last order date filter
+                if (lastOrderBefore && c.lastOrder) {
+                    if (c.lastOrder > lastOrderBefore) return false;
+                }
+                return true;
+            });
+
+            document.getElementById('mkt-results-count').textContent = mktFilteredCustomers.length + ' customer' + (mktFilteredCustomers.length !== 1 ? 's' : '') + ' match your filters';
+        }
+
+        function selectMktTemplate(el, msg) {
+            document.querySelectorAll('.mkt-template').forEach(function(t) { t.classList.remove('selected'); });
+            el.classList.add('selected');
+            mktSelectedTemplate = msg;
+            document.getElementById('mkt-custom-msg').value = msg;
+        }
+
+        function generateWhatsAppLinks() {
+            var msg = document.getElementById('mkt-custom-msg').value.trim();
+            if (!msg) { alert('Please select a template or write a message'); return; }
+            if (mktFilteredCustomers.length === 0) { alert('No customers match your filters. Adjust filters or load CRM data first.'); return; }
+
+            var output = document.getElementById('mkt-links-output');
+            var html = '';
+            mktFilteredCustomers.forEach(function(c) {
+                if (!c.phone) return;
+                var cTier = c.loyaltyPoints >= 1000 ? 'Gold' : c.loyaltyPoints >= 500 ? 'Silver' : 'Bronze';
+                var personalizedMsg = msg
+                    .replace(/\{name\}/g, c.name || 'Valued Customer')
+                    .replace(/\{points\}/g, String(c.loyaltyPoints || 0))
+                    .replace(/\{tier\}/g, cTier);
+                var phoneClean = c.phone.replace(/[^0-9]/g, '');
+                if (phoneClean.length === 10) phoneClean = '91' + phoneClean;
+                var waLink = 'https://wa.me/' + phoneClean + '?text=' + encodeURIComponent(personalizedMsg);
+                html += '<div class="mkt-link-row">' +
+                    '<span class="mkt-link-name">' + escHtml(c.name) + ' (' + escHtml(c.phone) + ')</span>' +
+                    '<a class="mkt-link-a" href="' + waLink + '" target="_blank" rel="noopener">Open WhatsApp</a>' +
+                '</div>';
+            });
+
+            if (!html) {
+                html = '<div style="color:var(--text-dim);text-align:center;padding:1rem">No customers with phone numbers found</div>';
+            }
+
+            output.innerHTML = html;
+            output.style.display = 'block';
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  DYNAMIC PRICING
+        // ═══════════════════════════════════════════════════════════════
+        var pricingRules = [];
+        var pricingLoaded = false;
+
+        function loadDynamicPricing() {
+            pricingLoaded = true;
+            db.collection('settings').doc('dynamicPricing').get().then(function(doc) {
+                if (doc.exists && doc.data().rules) {
+                    pricingRules = doc.data().rules;
+                } else {
+                    pricingRules = [];
+                }
+                renderPricingRules();
+            }).catch(function(err) {
+                console.error('Dynamic pricing load error:', err);
+                pricingRules = [];
+                renderPricingRules();
+            });
+        }
+
+        function renderPricingRules() {
+            var container = document.getElementById('dp-rules-list');
+            var dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            if (pricingRules.length === 0) {
+                container.innerHTML = '<div class="dp-empty">No pricing rules configured yet</div>';
+                return;
+            }
+            container.innerHTML = pricingRules.map(function(rule, idx) {
+                var dayLabel = rule.day === 'all' ? 'Every Day' : dayNames[parseInt(rule.day)] || rule.day;
+                var startH = parseInt(rule.startHour);
+                var endH = parseInt(rule.endHour);
+                var startLabel = (startH <= 12 ? startH : startH - 12) + ':00 ' + (startH < 12 ? 'AM' : 'PM');
+                var endLabel = (endH <= 12 ? endH : endH - 12) + ':00 ' + (endH < 12 ? 'AM' : 'PM');
+                var mult = parseFloat(rule.multiplier);
+                var pctChange = Math.round((mult - 1) * 100);
+                var multClass = mult < 1 ? 'discount' : mult > 1 ? 'surcharge' : 'neutral';
+                var multLabel = mult < 1 ? (pctChange + '%') : ('+' + pctChange + '%');
+                if (mult === 1) multLabel = '0%';
+                var cats = (rule.categories || []).join(', ') || 'All';
+                return '<div class="dp-rule-card">' +
+                    '<div class="dp-rule-info">' +
+                        '<div class="dp-rule-day">' + escHtml(dayLabel) + '</div>' +
+                        '<div class="dp-rule-time">' + startLabel + ' - ' + endLabel + '</div>' +
+                        '<div class="dp-rule-cats">Categories: ' + escHtml(cats) + '</div>' +
+                    '</div>' +
+                    '<span class="dp-rule-multiplier ' + multClass + '">' + multLabel + '</span>' +
+                    '<button class="dp-rule-delete" onclick="deletePricingRule(' + idx + ')" title="Delete rule">&times;</button>' +
+                '</div>';
+            }).join('');
+        }
+
+        function addPricingRule() {
+            var day = document.getElementById('dp-day').value;
+            var startHour = parseInt(document.getElementById('dp-start-hour').value);
+            var endHour = parseInt(document.getElementById('dp-end-hour').value);
+            var multiplier = parseFloat(document.getElementById('dp-multiplier').value);
+
+            if (isNaN(multiplier) || multiplier <= 0) { alert('Please enter a valid multiplier (e.g. 0.8 for 20% off, 1.2 for 20% surcharge)'); return; }
+            if (startHour >= endHour) { alert('Start hour must be before end hour'); return; }
+
+            var categories = [];
+            document.querySelectorAll('#dp-categories input:checked').forEach(function(cb) {
+                categories.push(cb.value);
+            });
+            if (categories.length === 0) { alert('Please select at least one category'); return; }
+
+            pricingRules.push({
+                day: day,
+                startHour: startHour,
+                endHour: endHour,
+                multiplier: multiplier,
+                categories: categories
+            });
+
+            savePricingRules();
+        }
+
+        function deletePricingRule(index) {
+            if (!confirm('Delete this pricing rule?')) return;
+            pricingRules.splice(index, 1);
+            savePricingRules();
+        }
+
+        function savePricingRules() {
+            var msgEl = document.getElementById('dp-msg');
+            db.collection('settings').doc('dynamicPricing').set({ rules: pricingRules }).then(function() {
+                renderPricingRules();
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#27ae60';
+                msgEl.textContent = 'Pricing rules saved!';
+                setTimeout(function() { msgEl.style.display = 'none'; }, 3000);
+            }).catch(function(e) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#e74c3c';
+                msgEl.textContent = 'Error: ' + e.message;
+            });
+        }
 
     </script>
     <style>

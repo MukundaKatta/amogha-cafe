@@ -67,7 +67,15 @@ export function checkout() {
     }
     document.getElementById('cart-modal').style.display = 'none';
     lockScroll();
-    openCheckout();
+    // Allergen check before opening checkout
+    if (typeof window.checkAllergenWarning === 'function') {
+        window.checkAllergenWarning(cart, function(proceed) {
+            if (proceed) openCheckout();
+            else unlockScroll();
+        });
+    } else {
+        openCheckout();
+    }
 }
 
 export function openCheckout() {
@@ -79,7 +87,29 @@ export function openCheckout() {
     cart.forEach(function(item) {
         itemsHtml += '<div class="co-item"><span>' + item.name + ' x' + item.quantity + '</span><span>\u20B9' + (item.price * item.quantity) + '</span></div>';
     });
-    document.getElementById('checkout-items').innerHTML = itemsHtml;
+    // Render upsell suggestions
+    var upsellHtml = '';
+    if (typeof window.getUpsellItems === 'function') {
+        var upsellItems = window.getUpsellItems(cart);
+        if (upsellItems && upsellItems.length > 0) {
+            upsellHtml = '<div class="upsell-section" id="upsell-section">' +
+                '<div class="upsell-title">Customers also ordered</div>' +
+                '<div class="upsell-items">';
+            upsellItems.forEach(function(item) {
+                upsellHtml += '<div class="upsell-card">' +
+                    '<div class="upsell-info">' +
+                        '<div class="upsell-name">' + item.name + '</div>' +
+                        '<div class="upsell-reason">' + item.reason + '</div>' +
+                    '</div>' +
+                    '<span class="upsell-price">\u20B9' + item.price + '</span>' +
+                    '<button class="upsell-add-btn" onclick="addUpsellItem(\'' + item.name.replace(/'/g, "\\'") + '\',' + item.price + ')">+ Add</button>' +
+                '</div>';
+            });
+            upsellHtml += '</div></div>';
+        }
+    }
+
+    document.getElementById('checkout-items').innerHTML = itemsHtml + upsellHtml;
     document.getElementById('co-subtotal').textContent = '\u20B9' + subtotal;
     document.getElementById('co-delivery').textContent = deliveryFee === 0 ? 'FREE' : '\u20B9' + deliveryFee;
     document.getElementById('co-total').textContent = '\u20B9' + total;
@@ -330,6 +360,10 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         // Analytics: purchase event
         try { if (window.analytics) window.analytics.logEvent('purchase', { transaction_id: docRef.id, value: orderData.total, payment_type: payMethod }); } catch(e) {}
 
+        // Save for split bill feature
+        window._lastOrderId = docRef.id;
+        window._lastOrderTotal = orderData.total;
+
         var trackUrl = window.location.origin + '/track/index.html?id=' + docRef.id;
         var trackDiv = document.getElementById('order-tracking-link');
         if (trackDiv) {
@@ -370,6 +404,12 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
 
         // Award loyalty points
         if (typeof awardLoyaltyPoints === 'function') awardLoyaltyPoints(orderData.total);
+
+        // Check and award badges
+        if (typeof checkAndAwardBadges === 'function') {
+            var badgeUser = getCurrentUser();
+            if (badgeUser) checkAndAwardBadges(badgeUser, orderData);
+        }
 
         // Award referrer points if current user was referred
         if (currentUser && db) {
@@ -644,6 +684,65 @@ export function redeemLoyaltyAtCheckout() {
     if (typeof updateLoyaltyWidget === 'function') updateLoyaltyWidget();
 }
 
+// ===== SOCIAL SHARING (Share & Earn 10 pts) =====
+export function shareOrder() {
+    var shareText = 'I just ordered from Amogha Cafe & Restaurant! \uD83C\uDF7D\uFE0F Check them out at https://amoghahotels.com';
+
+    function awardSharePoints() {
+        var user = getCurrentUser();
+        if (!user) return;
+        // Prevent double-earning for same session
+        var sharedOrders = [];
+        try { sharedOrders = JSON.parse(localStorage.getItem('amoghaSharedOrders') || '[]'); } catch(e) {}
+        var orderId = Date.now().toString();
+        // Use the last share timestamp to deduplicate (within 5 min = same order)
+        var lastShare = sharedOrders.length > 0 ? sharedOrders[sharedOrders.length - 1] : 0;
+        if (Date.now() - lastShare < 300000) return; // Already shared this order
+        sharedOrders.push(Date.now());
+        try { localStorage.setItem('amoghaSharedOrders', JSON.stringify(sharedOrders)); } catch(e) {}
+        user.loyaltyPoints = (user.loyaltyPoints || 0) + 10;
+        setCurrentUser(user);
+        var db = getDb();
+        if (db) {
+            db.collection('users').doc(user.phone).update({ loyaltyPoints: user.loyaltyPoints }).catch(function(e) { console.error('Share loyalty update error:', e); });
+        }
+        showAuthToast('Thanks for sharing! +10 loyalty points');
+    }
+
+    if (navigator.share) {
+        navigator.share({ text: shareText }).then(function() {
+            awardSharePoints();
+        }).catch(function() {
+            // User cancelled share — no points
+        });
+    } else {
+        window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
+        awardSharePoints();
+    }
+}
+
+// ===== UPSELL: Add item from upsell section =====
+export function addUpsellItem(name, price) {
+    // Add item to cart
+    var found = false;
+    for (var i = 0; i < cart.length; i++) {
+        if (cart[i].name === name) {
+            cart[i].quantity++;
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        cart.push({ name: name, price: price, quantity: 1, spiceLevel: 'medium', addons: [] });
+    }
+    updateCartCount();
+    saveCart();
+    updateFloatingCart();
+    showAuthToast(name + ' added to your order!');
+    // Re-render checkout to reflect the new item
+    openCheckout();
+}
+
 Object.assign(window, {
     checkout,
     openCheckout,
@@ -663,5 +762,7 @@ Object.assign(window, {
     closeGiftCardModal,
     buyGiftCard,
     selectGcAmount,
-    redeemLoyaltyAtCheckout
+    redeemLoyaltyAtCheckout,
+    shareOrder,
+    addUpsellItem
 });

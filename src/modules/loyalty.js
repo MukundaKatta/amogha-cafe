@@ -134,4 +134,41 @@ export function initLoyalty() {
     setTimeout(updateLoyaltyWidget, 500);
 }
 
-Object.assign(window, { openLoyaltyModal, closeLoyaltyModal, updateLoyaltyWidget, awardLoyaltyPoints, getLoyaltyTier });
+// ===== BIRTHDAY REWARDS =====
+
+export function checkBirthdayRewards(user) {
+    if (!user || !user.dob) return false;
+    var now = new Date();
+    var dobDate = new Date(user.dob);
+    return now.getMonth() === dobDate.getMonth();
+}
+
+export function showBirthdayBanner(user) {
+    if (!user || !checkBirthdayRewards(user)) return;
+    // Don't show if already shown this session
+    if (document.getElementById('birthday-banner')) return;
+    var name = (user.name || 'Guest').split(' ')[0];
+    var banner = document.createElement('div');
+    banner.id = 'birthday-banner';
+    banner.className = 'birthday-banner';
+    banner.innerHTML = '<span class="birthday-banner-icon">&#127874;</span>' +
+        '<span class="birthday-banner-text">Happy Birthday, ' + name + '! Enjoy special offers this month!</span>' +
+        '<button class="birthday-banner-close" onclick="closeBirthdayBanner()">&times;</button>';
+    var header = document.querySelector('header') || document.querySelector('nav');
+    if (header && header.nextSibling) {
+        header.parentNode.insertBefore(banner, header.nextSibling);
+    } else {
+        document.body.insertBefore(banner, document.body.firstChild);
+    }
+}
+
+function closeBirthdayBanner() {
+    var banner = document.getElementById('birthday-banner');
+    if (banner) {
+        banner.style.opacity = '0';
+        banner.style.transform = 'translateY(-100%)';
+        setTimeout(function() { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 400);
+    }
+}
+
+Object.assign(window, { openLoyaltyModal, closeLoyaltyModal, updateLoyaltyWidget, awardLoyaltyPoints, getLoyaltyTier, checkBirthdayRewards, showBirthdayBanner, closeBirthdayBanner });

@@ -277,10 +277,27 @@ export function initMenuSync() {
                 imgEl.dataset.currentUrl = '';
                 delete card.dataset.imageUrl;
             }
+
+            // Allergen icons
+            var allergens = item.allergens || [];
+            card.dataset.allergens = allergens.join(',');
+            var existingAllergenRow = card.querySelector('.menu-allergen-icons');
+            if (existingAllergenRow) existingAllergenRow.remove();
+            if (allergens.length > 0) {
+                var allergenMeta = { nuts: '🥜', dairy: '🥛', gluten: '🌾', eggs: '🥚', soy: '🫘', shellfish: '🦐', sesame: '⚪', fish: '🐟' };
+                var allergenHtml = '<div class="menu-allergen-icons">';
+                allergens.forEach(function(a) { allergenHtml += '<span class="allergen-icon">' + (allergenMeta[a] || '') + ' ' + a + '</span>'; });
+                allergenHtml += '</div>';
+                var desc = card.querySelector('.item-description') || card.querySelector('.price');
+                if (desc) desc.insertAdjacentHTML('afterend', allergenHtml);
+            }
         });
 
         // Apply flame badges after menu data is loaded
         applyFlameBadges();
+
+        // Re-apply Safe for Me filter if active
+        if (window._safeForMeActive) applySafeForMeFilter();
     }, function(error) {
         console.error('Menu listener error:', error);
         removeMenuSkeletons();
@@ -372,3 +389,76 @@ export function initMenuSync() {
         }, renderSocialFeed, { orderBy: ['sortOrder'] });
     }
 }
+
+// ===== SAFE FOR ME FILTER =====
+window._safeForMeActive = false;
+
+export function toggleSafeForMe() {
+    window._safeForMeActive = !window._safeForMeActive;
+    var btn = document.getElementById('safe-for-me-btn');
+    if (btn) btn.classList.toggle('active', window._safeForMeActive);
+    applySafeForMeFilter();
+}
+
+function applySafeForMeFilter() {
+    var user = null;
+    try { var u = localStorage.getItem('amoghaUser'); if (u) user = JSON.parse(u); } catch(e) {}
+    var userAllergens = (user && user.allergenAlerts) || [];
+
+    document.querySelectorAll('.menu-item-card[data-id]').forEach(function(card) {
+        if (!window._safeForMeActive || userAllergens.length === 0) {
+            card.classList.remove('allergen-hidden');
+            if (!card.classList.contains('item-unavailable')) card.style.display = '';
+            return;
+        }
+        var itemAllergens = (card.dataset.allergens || '').split(',').filter(Boolean);
+        var hasConflict = itemAllergens.some(function(a) { return userAllergens.indexOf(a) !== -1; });
+        if (hasConflict) {
+            card.classList.add('allergen-hidden');
+            card.style.display = 'none';
+        } else {
+            card.classList.remove('allergen-hidden');
+            if (!card.classList.contains('item-unavailable')) card.style.display = '';
+        }
+    });
+}
+
+// Checkout allergen warning
+export function checkAllergenWarning(cartItems, callback) {
+    var user = null;
+    try { var u = localStorage.getItem('amoghaUser'); if (u) user = JSON.parse(u); } catch(e) {}
+    var userAllergens = (user && user.allergenAlerts) || [];
+    if (userAllergens.length === 0) { callback(true); return; }
+
+    var flagged = [];
+    document.querySelectorAll('.menu-item-card[data-id]').forEach(function(card) {
+        var itemAllergens = (card.dataset.allergens || '').split(',').filter(Boolean);
+        var nameEl = card.querySelector('h4');
+        var itemName = nameEl ? nameEl.textContent.replace(/Bestseller|Must Try|New/gi, '').trim() : card.dataset.id;
+        cartItems.forEach(function(ci) {
+            if (ci.name === itemName || ci.name === card.dataset.id) {
+                var matches = itemAllergens.filter(function(a) { return userAllergens.indexOf(a) !== -1; });
+                if (matches.length > 0) flagged.push({ name: ci.name, allergens: matches });
+            }
+        });
+    });
+
+    if (flagged.length === 0) { callback(true); return; }
+
+    var html = '<div class="allergen-warning-popup" id="allergen-warning-popup">' +
+        '<div class="allergen-warning-box">' +
+        '<h3>Allergen Warning</h3>' +
+        '<div class="allergen-list">';
+    flagged.forEach(function(f) {
+        html += '<p><strong>' + f.name + '</strong> contains: ' + f.allergens.join(', ') + '</p>';
+    });
+    html += '</div>' +
+        '<button class="btn-proceed" onclick="document.getElementById(\'allergen-warning-popup\').remove();window._allergenCb(true)">Proceed Anyway</button>' +
+        '<button class="btn-cancel" onclick="document.getElementById(\'allergen-warning-popup\').remove();window._allergenCb(false)">Go Back</button>' +
+        '</div></div>';
+    window._allergenCb = callback;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+window.toggleSafeForMe = toggleSafeForMe;
+window.checkAllergenWarning = checkAllergenWarning;

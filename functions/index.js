@@ -251,3 +251,95 @@ app.post('/parse-bill', async function(req, res) {
 });
 
 exports.api = functions.https.onRequest(app);
+
+// -----------------------------------------------------------------------
+// SCHEDULED: Birthday Auto-Rewards — runs daily at 8 AM IST
+// Creates a BDAY coupon for users whose birthday is today
+// -----------------------------------------------------------------------
+exports.birthdayRewards = functions.pubsub
+    .schedule('0 8 * * *')
+    .timeZone('Asia/Kolkata')
+    .onRun(async function() {
+        try {
+            var today = new Date();
+            var month = String(today.getMonth() + 1).padStart(2, '0');
+            var day = String(today.getDate()).padStart(2, '0');
+            var todayMMDD = month + '-' + day;
+
+            var usersSnap = await db.collection('users').get();
+            var batch = db.batch();
+            var count = 0;
+
+            usersSnap.forEach(function(doc) {
+                var user = doc.data();
+                if (!user.dob) return;
+
+                // dob format: YYYY-MM-DD
+                var dobParts = user.dob.split('-');
+                if (dobParts.length < 3) return;
+                var userMMDD = dobParts[1] + '-' + dobParts[2];
+
+                if (userMMDD === todayMMDD) {
+                    var couponCode = 'BDAY-' + doc.id;
+                    var couponRef = db.collection('coupons').doc(couponCode);
+                    batch.set(couponRef, {
+                        code: couponCode,
+                        discount: 30,
+                        type: 'percent',
+                        maxUses: 1,
+                        usedCount: 0,
+                        minOrder: 200,
+                        description: 'Happy Birthday! 30% off your order',
+                        expiresAt: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7).toISOString(),
+                        createdAt: today.toISOString(),
+                        source: 'birthday-auto'
+                    }, { merge: true });
+                    count++;
+                }
+            });
+
+            if (count > 0) {
+                await batch.commit();
+                console.log('Birthday coupons created for ' + count + ' users');
+            }
+            return null;
+        } catch (e) {
+            console.error('Birthday rewards error:', e);
+            return null;
+        }
+    });
+
+// -----------------------------------------------------------------------
+// POST /notify — Send push notification (for admin/system use)
+// -----------------------------------------------------------------------
+app.post('/notify', async function(req, res) {
+    try {
+        var body = req.body || {};
+        var phone = body.phone;
+        var title = body.title || 'Amogha Cafe';
+        var message = body.message || '';
+
+        if (!phone || !message) {
+            return res.status(400).json({ error: 'phone and message are required' });
+        }
+
+        var userDoc = await db.collection('users').doc(phone).get();
+        if (!userDoc.exists) return res.status(404).json({ error: 'User not found' });
+
+        var userData = userDoc.data();
+        if (!userData.fcmToken) {
+            return res.status(400).json({ error: 'User has no FCM token registered' });
+        }
+
+        var fcmMessage = {
+            notification: { title: title, body: message },
+            token: userData.fcmToken
+        };
+
+        await admin.messaging().send(fcmMessage);
+        res.json({ success: true, message: 'Notification sent' });
+    } catch (e) {
+        console.error('POST /notify error:', e);
+        res.status(500).json({ error: 'Failed to send notification' });
+    }
+});

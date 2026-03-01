@@ -1,5 +1,6 @@
 import { safeGetItem, safeSetItem, lockScroll, unlockScroll } from '../core/utils.js';
 import { getDb } from '../core/firebase.js';
+import { showBirthdayBanner } from './loyalty.js';
 
 // ===== AUTH SYSTEM (Sign In / Sign Up) =====
 
@@ -116,6 +117,8 @@ export function handleSignUp() {
                 updateCarouselGreeting();
                 closeAuthModal();
                 showAuthToast('Welcome, ' + (name || 'Guest') + '! 25% off applied to your first order!');
+                // Check for birthday rewards
+                setTimeout(function() { showBirthdayBanner(newUser); }, 500);
                 // Apply referral code if entered
                 var refCode = document.getElementById('signup-referral');
                 var code = refCode ? refCode.value.trim() : '';
@@ -184,6 +187,8 @@ export function handleSignIn() {
             var userName = user.name || 'Guest';
             var bonusMsg = !user.usedWelcomeBonus ? ' Your 25% welcome bonus is still active!' : '';
             showAuthToast('Welcome back, ' + userName + '!' + bonusMsg);
+            // Check for birthday rewards
+            setTimeout(function() { showBirthdayBanner(user); }, 500);
         } catch (uiErr) {
             console.error('SignIn UI error:', uiErr);
             closeAuthModal();
@@ -302,7 +307,12 @@ export function updateSignInUI(user) {
     var userName = user.name || 'Guest';
     var initials = userName.split(' ').filter(function(w) { return w.length > 0; }).map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2) || 'G';
     btn.className = 'signin-nav-btn signed-in';
-    btn.innerHTML = '<span class="user-avatar">' + initials + '</span><span id="signin-text">' + userName.split(' ')[0] + '</span>';
+    btn.innerHTML = '<span class="user-avatar">' + initials + '</span><span id="signin-text">' + userName.split(' ')[0] + '</span>' +
+        '<div class="user-dropdown" id="user-dropdown">' +
+            '<a href="#" onclick="event.preventDefault();event.stopPropagation();openProfileModal()">My Profile</a>' +
+            '<a href="#" onclick="event.preventDefault();event.stopPropagation();signOut()">Sign Out</a>' +
+        '</div>';
+    btn.onclick = function(e) { e.preventDefault(); var dd = document.getElementById('user-dropdown'); if (dd) dd.classList.toggle('show'); };
     if (typeof updateLoyaltyWidget === 'function') updateLoyaltyWidget();
 }
 
@@ -351,7 +361,10 @@ export function initAuth() {
     try {
         const savedUser = safeGetItem('amoghaUser');
         if (savedUser) {
-            updateSignInUI(JSON.parse(savedUser));
+            var parsedUser = JSON.parse(savedUser);
+            updateSignInUI(parsedUser);
+            // Check for birthday rewards on page load
+            setTimeout(function() { showBirthdayBanner(parsedUser); }, 1000);
         }
         updateCarouselGreeting();
     } catch (e) {
@@ -363,6 +376,11 @@ export function initAuth() {
         var authModal = document.getElementById('auth-modal');
         if (e.target === authModal) {
             closeAuthModal();
+        }
+        // Close user dropdown when clicking outside
+        var dd = document.getElementById('user-dropdown');
+        if (dd && dd.classList.contains('show') && !e.target.closest('.signin-nav-btn')) {
+            dd.classList.remove('show');
         }
     });
 

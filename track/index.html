@@ -13,6 +13,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{
@@ -495,6 +497,37 @@
             body { padding-bottom: env(safe-area-inset-bottom); }
         }
 
+        /* ===== DELIVERY MAP ===== */
+        .map-card{
+            background:var(--bg-card2);
+            border:1px solid var(--glass-border);
+            border-radius:var(--r);
+            padding:16px;
+            margin-bottom:16px;
+            box-shadow:var(--shadow-m);
+        }
+        .map-card .card-label{
+            font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+            color:var(--txt2);margin-bottom:10px;
+        }
+        #deliveryMap{
+            width:100%;height:250px;
+            border-radius:var(--r-s);
+            border:1px solid rgba(212,160,23,.1);
+            z-index:1;
+        }
+        .driver-distance{
+            text-align:center;margin-top:10px;
+            font-size:.85rem;color:var(--txt2);font-weight:500;
+        }
+        .driver-distance b{color:var(--gold-l);font-weight:700;}
+
+        /* ===== PREP TIME COUNTDOWN ===== */
+        .prep-countdown{
+            text-align:center;margin-top:8px;
+            font-size:.82rem;color:var(--gold-l);font-weight:600;
+        }
+
         /* ===== REDUCED MOTION ===== */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
@@ -604,6 +637,14 @@
         <div class="time-bar">
             <div class="time-bar-fill" id="timeBarFill" style="width:0%"></div>
         </div>
+        <div class="prep-countdown hidden" id="prepCountdown"></div>
+    </div>
+
+    <!-- Live Delivery Map (shown only during out_for_delivery) -->
+    <div class="map-card hidden" id="mapCard">
+        <div class="card-label">Live Delivery Tracking</div>
+        <div id="deliveryMap"></div>
+        <div class="driver-distance" id="driverDistance"></div>
     </div>
 
     <!-- Items List -->
@@ -691,11 +732,26 @@
     var paymentBadge = document.getElementById('paymentBadge');
     var whatsappLink = document.getElementById('whatsappLink');
     var confettiWrap = document.getElementById('confettiWrap');
+    var mapCard = document.getElementById('mapCard');
+    var driverDistanceEl = document.getElementById('driverDistance');
+    var prepCountdown = document.getElementById('prepCountdown');
 
     // ===== State =====
     var timerInterval = null;
     var currentStatus = null;
     var confettiShown = false;
+    var deliveryMap = null;
+    var driverMarker = null;
+    var restaurantMarker = null;
+    var mapInitialized = false;
+    var prepCountdownInterval = null;
+
+    var menuPrepTimes = {}; // { itemName: prepTimeMinutes } from Firestore
+    var menuPrepLoaded = false;
+
+    // Restaurant location (Hyderabad)
+    var RESTAURANT_LAT = 17.4065;
+    var RESTAURANT_LNG = 78.4772;
 
     // ===== Utility =====
     function shortId(docId) {
@@ -1044,6 +1100,160 @@
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
     }
 
+    // ===== Load Menu Prep Times =====
+    function loadMenuPrepTimes(callback) {
+        if (menuPrepLoaded) { if (callback) callback(); return; }
+        db.collection('menu').get().then(function(snap) {
+            snap.forEach(function(doc) {
+                var d = doc.data();
+                if (d.name && d.prepTimeMinutes) {
+                    menuPrepTimes[d.name] = parseInt(d.prepTimeMinutes) || 0;
+                }
+            });
+            menuPrepLoaded = true;
+            if (callback) callback();
+        }).catch(function(e) {
+            console.error('Menu prep times load error:', e);
+            if (callback) callback();
+        });
+    }
+
+    // ===== Haversine Distance (km) =====
+    function haversineDistance(lat1, lng1, lat2, lng2) {
+        var R = 6371; // Earth radius in km
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLng = (lng2 - lng1) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    // ===== Delivery Map =====
+    function initDeliveryMap() {
+        if (mapInitialized) return;
+        mapInitialized = true;
+
+        deliveryMap = L.map('deliveryMap', {
+            zoomControl: true,
+            attributionControl: true
+        }).setView([RESTAURANT_LAT, RESTAURANT_LNG], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap',
+            maxZoom: 18
+        }).addTo(deliveryMap);
+
+        // Restaurant marker
+        var restaurantIcon = L.divIcon({
+            html: '<div style="font-size:1.5rem;text-align:center;">🍽️</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            className: ''
+        });
+        restaurantMarker = L.marker([RESTAURANT_LAT, RESTAURANT_LNG], { icon: restaurantIcon })
+            .addTo(deliveryMap)
+            .bindPopup('Amogha Cafe & Restaurant');
+    }
+
+    function updateDriverLocation(driverLocation) {
+        if (!driverLocation || !driverLocation.lat || !driverLocation.lng) return;
+
+        mapCard.classList.remove('hidden');
+        initDeliveryMap();
+
+        var lat = driverLocation.lat;
+        var lng = driverLocation.lng;
+
+        var driverIcon = L.divIcon({
+            html: '<div style="font-size:1.5rem;text-align:center;">🛵</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            className: ''
+        });
+
+        if (driverMarker) {
+            driverMarker.setLatLng([lat, lng]);
+        } else {
+            driverMarker = L.marker([lat, lng], { icon: driverIcon })
+                .addTo(deliveryMap)
+                .bindPopup('Your delivery partner');
+        }
+
+        // Fit map to show both markers
+        var bounds = L.latLngBounds(
+            [RESTAURANT_LAT, RESTAURANT_LNG],
+            [lat, lng]
+        );
+        deliveryMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+
+        // Calculate and display distance
+        var dist = haversineDistance(RESTAURANT_LAT, RESTAURANT_LNG, lat, lng);
+        driverDistanceEl.innerHTML = 'Your delivery partner is <b>' + dist.toFixed(1) + ' km</b> away';
+    }
+
+    function hideDeliveryMap() {
+        mapCard.classList.add('hidden');
+        driverDistanceEl.innerHTML = '';
+    }
+
+    // ===== Prep Time Countdown =====
+    function updatePrepCountdown(order) {
+        var status = order.status || 'pending';
+
+        if (status !== 'preparing') {
+            if (prepCountdownInterval) { clearInterval(prepCountdownInterval); prepCountdownInterval = null; }
+            prepCountdown.classList.add('hidden');
+            return;
+        }
+
+        var kitchenStart = toDate(order.preparingAt || order.kitchenStartedAt);
+        if (!kitchenStart) {
+            prepCountdown.classList.add('hidden');
+            return;
+        }
+
+        // Find max prep time from menu data or order items
+        var maxPrepTime = 0;
+        var items = order.items || [];
+        items.forEach(function(item) {
+            // Check Firestore menu prep times first
+            var pt = menuPrepTimes[item.name] || parseInt(item.prepTimeMinutes) || 0;
+            if (pt > maxPrepTime) maxPrepTime = pt;
+        });
+
+        // Override with admin-set ETA if available
+        if (order.etaMinutes && parseInt(order.etaMinutes) > 0) {
+            maxPrepTime = parseInt(order.etaMinutes);
+        }
+
+        if (maxPrepTime <= 0) {
+            prepCountdown.classList.add('hidden');
+            return;
+        }
+
+        prepCountdown.classList.remove('hidden');
+
+        if (prepCountdownInterval) clearInterval(prepCountdownInterval);
+
+        function tickPrep() {
+            var now = new Date();
+            var elapsedMin = (now - kitchenStart) / 60000;
+            var remaining = Math.max(0, maxPrepTime - elapsedMin);
+            var mins = Math.ceil(remaining);
+
+            if (remaining <= 0) {
+                prepCountdown.textContent = 'Your food should be ready any moment!';
+            } else {
+                prepCountdown.textContent = 'Estimated ready in ~' + mins + ' min';
+            }
+        }
+
+        tickPrep();
+        prepCountdownInterval = setInterval(tickPrep, 60000);
+    }
+
     // ===== Render Full Order =====
     function renderOrder(orderId, data) {
         showOrder();
@@ -1067,6 +1277,16 @@
         renderItems(data);
         renderDelivery(data);
         updateWhatsApp(orderId);
+
+        // Live delivery map
+        if (status === 'out_for_delivery' && data.driverLocation) {
+            updateDriverLocation(data.driverLocation);
+        } else {
+            hideDeliveryMap();
+        }
+
+        // Prep time countdown
+        updatePrepCountdown(data);
 
         // Confetti on delivered
         if ((status === 'delivered' || status === 'out_for_delivery') && !confettiShown) {
@@ -1107,6 +1327,9 @@
 
         orderId = orderId.trim();
         showLoading();
+
+        // Load menu prep times for countdown display
+        loadMenuPrepTimes();
 
         // Real-time listener
         var unsubscribe = db.collection('orders').doc(orderId).onSnapshot(
@@ -1165,6 +1388,7 @@
     // ===== Cleanup on page unload =====
     window.addEventListener('beforeunload', function() {
         if (timerInterval) clearInterval(timerInterval);
+        if (prepCountdownInterval) clearInterval(prepCountdownInterval);
     });
 
     // Start

@@ -437,6 +437,30 @@
         .auto-reset-text{font-family:var(--mono);font-size:12px;color:var(--txt3);margin-top:16px;
             letter-spacing:.05em;animation:blurReveal .6s .8s var(--ease-luxe) both}
 
+        /* ── Kiosk Feedback ──────────────────────────────────────── */
+        .kiosk-feedback{margin-top:20px;padding:20px;background:rgba(212,160,23,.05);border:1px solid rgba(212,160,23,.12);
+            border-radius:18px;text-align:center;animation:blurReveal .6s .9s var(--ease-luxe) both}
+        .kiosk-feedback-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold);margin-bottom:12px}
+        .kiosk-feedback-emojis{display:flex;justify-content:center;gap:12px;margin-bottom:14px}
+        .kiosk-feedback-emoji{width:56px;height:56px;border-radius:50%;border:2px solid rgba(212,160,23,.15);
+            background:rgba(212,160,23,.06);display:flex;align-items:center;justify-content:center;font-size:1.8rem;
+            cursor:pointer;transition:all .25s ease}
+        .kiosk-feedback-emoji:hover,.kiosk-feedback-emoji.selected{border-color:var(--gold);background:rgba(212,160,23,.15);
+            transform:scale(1.15);box-shadow:0 0 20px rgba(212,160,23,.2)}
+        .kiosk-feedback-comment{width:100%;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(212,160,23,.12);
+            border-radius:10px;color:var(--txt);font-family:inherit;font-size:.85rem;resize:none;outline:none;
+            margin-bottom:12px;transition:border-color .2s}
+        .kiosk-feedback-comment:focus{border-color:rgba(212,160,23,.3)}
+        .kiosk-feedback-comment::placeholder{color:rgba(160,144,128,.5)}
+        .kiosk-feedback-submit{padding:10px 28px;background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#080604;
+            border:none;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .25s;
+            text-transform:uppercase;letter-spacing:.03em}
+        .kiosk-feedback-submit:hover{transform:scale(1.04);box-shadow:0 4px 20px rgba(212,160,23,.3)}
+        .kiosk-feedback-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .kiosk-feedback-thanks{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--gold);padding:20px 0}
+        body.light-mode .kiosk-feedback{background:rgba(212,160,23,.04);border-color:rgba(212,160,23,.1)}
+        body.light-mode .kiosk-feedback-comment{background:rgba(0,0,0,.03);color:#333}
+
         /* ── Loader Overlay ────────────────────────────────────── */
         .loader-overlay{position:fixed;inset:0;z-index:400;background:rgba(8,6,4,.88);
             backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
@@ -928,6 +952,22 @@
             </svg>
             <span data-i18n="trackOrder">Track Your Order</span>
         </a>
+        <!-- Kiosk Feedback Section -->
+        <div class="kiosk-feedback" id="kiosk-feedback">
+            <div class="kiosk-feedback-title">How was your experience?</div>
+            <div class="kiosk-feedback-emojis" id="feedback-emojis">
+                <div class="kiosk-feedback-emoji" onclick="selectFeedbackRating(1)" data-rating="1">&#128544;</div>
+                <div class="kiosk-feedback-emoji" onclick="selectFeedbackRating(2)" data-rating="2">&#128528;</div>
+                <div class="kiosk-feedback-emoji" onclick="selectFeedbackRating(3)" data-rating="3">&#128522;</div>
+                <div class="kiosk-feedback-emoji" onclick="selectFeedbackRating(4)" data-rating="4">&#128525;</div>
+            </div>
+            <textarea class="kiosk-feedback-comment" id="feedback-comment" placeholder="Any comments? (optional)" rows="2"></textarea>
+            <button class="kiosk-feedback-submit" id="feedback-submit-btn" onclick="submitKioskFeedback()" disabled>Submit Feedback</button>
+        </div>
+        <div id="kiosk-feedback-thanks" style="display:none">
+            <div class="kiosk-feedback-thanks">&#10024; Thank you for your feedback! &#10024;</div>
+        </div>
+
         <button class="success-new-order" onclick="resetOrder()" data-i18n="newOrder">Place Another Order</button>
         <p class="auto-reset-text" id="auto-reset-text"></p>
     </div>
@@ -1699,6 +1739,9 @@ function placeOrderToFirestore(payMethod, paymentId, status) {
         document.getElementById('success-screen').classList.add('show');
         document.body.style.overflow = 'hidden';
         launchConfetti();
+        // Store order ID for feedback
+        lastKioskOrderId = docRef.id;
+        resetKioskFeedback();
         // Show wait time
         estimateWaitTime();
         // Show WhatsApp button
@@ -1788,8 +1831,80 @@ function resetOrder() {
     document.getElementById('recent-section').classList.remove('show');
     document.getElementById('wait-time-row').style.display = 'none';
     document.getElementById('whatsapp-btn').style.display = 'none';
+    // Reset feedback state
+    resetKioskFeedback();
     updateCartBar(); renderMenu();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Kiosk Feedback ─────────────────────────────────────────────
+var kioskFeedbackRating = 0;
+var lastKioskOrderId = null;
+
+function selectFeedbackRating(rating) {
+    kioskFeedbackRating = rating;
+    var emojis = document.querySelectorAll('.kiosk-feedback-emoji');
+    emojis.forEach(function(el) {
+        var r = parseInt(el.getAttribute('data-rating'));
+        if (r === rating) {
+            el.classList.add('selected');
+        } else {
+            el.classList.remove('selected');
+        }
+    });
+    var submitBtn = document.getElementById('feedback-submit-btn');
+    if (submitBtn) submitBtn.disabled = false;
+}
+
+function submitKioskFeedback() {
+    if (kioskFeedbackRating === 0) return;
+    var comment = document.getElementById('feedback-comment').value.trim();
+    var submitBtn = document.getElementById('feedback-submit-btn');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
+
+    var reviewData = {
+        rating: kioskFeedbackRating,
+        comment: comment || '',
+        source: 'kiosk',
+        createdAt: new Date().toISOString(),
+        orderId: lastKioskOrderId || null
+    };
+
+    if (typeof db !== 'undefined' && db) {
+        db.collection('reviews').add(reviewData).then(function() {
+            showFeedbackThanks();
+        }).catch(function(err) {
+            console.error('Feedback save error:', err);
+            showFeedbackThanks();
+        });
+    } else {
+        showFeedbackThanks();
+    }
+}
+
+function showFeedbackThanks() {
+    var feedbackSection = document.getElementById('kiosk-feedback');
+    var thanksSection = document.getElementById('kiosk-feedback-thanks');
+    if (feedbackSection) feedbackSection.style.display = 'none';
+    if (thanksSection) thanksSection.style.display = 'block';
+    // Auto-reset after 3 seconds
+    setTimeout(function() {
+        resetOrder();
+    }, 3000);
+}
+
+function resetKioskFeedback() {
+    kioskFeedbackRating = 0;
+    var feedbackSection = document.getElementById('kiosk-feedback');
+    var thanksSection = document.getElementById('kiosk-feedback-thanks');
+    var submitBtn = document.getElementById('feedback-submit-btn');
+    var comment = document.getElementById('feedback-comment');
+    if (feedbackSection) feedbackSection.style.display = '';
+    if (thanksSection) thanksSection.style.display = 'none';
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submit Feedback'; }
+    if (comment) comment.value = '';
+    var emojis = document.querySelectorAll('.kiosk-feedback-emoji');
+    emojis.forEach(function(el) { el.classList.remove('selected'); });
 }
 
 // ── Fullscreen ─────────────────────────────────────────────────
@@ -1806,7 +1921,7 @@ function toggleFullscreen() {
 
 // ── Prevent double-tap zoom ────────────────────────────────────
 document.addEventListener('touchend', function(e) {
-    if (e.target.closest('.add-btn,.qty-ctrl button,.cat-tab,.cat-item,.filter-chip,.cart-btn,.pay-btn,.cod-btn,.success-new-order,.lang-btn,.fs-btn,.featured-item,.mode-btn,.mic-btn,.staff-call-btn,.spice-opt,.spice-skip,.addon-item,.addon-confirm,.pairing-chip,.detail-add-btn,.detail-close,.whatsapp-btn,.table-qr-btn,.reorder-btn,.recent-chip,.voice-cancel')) {
+    if (e.target.closest('.add-btn,.qty-ctrl button,.cat-tab,.cat-item,.filter-chip,.cart-btn,.pay-btn,.cod-btn,.success-new-order,.lang-btn,.fs-btn,.featured-item,.mode-btn,.mic-btn,.staff-call-btn,.spice-opt,.spice-skip,.addon-item,.addon-confirm,.pairing-chip,.detail-add-btn,.detail-close,.whatsapp-btn,.table-qr-btn,.reorder-btn,.recent-chip,.voice-cancel,.kiosk-feedback-emoji,.kiosk-feedback-submit')) {
         e.preventDefault(); e.target.click();
     }
 }, { passive: false });

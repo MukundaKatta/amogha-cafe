@@ -78,6 +78,15 @@ export var TRANSLATIONS = {
     }
 };
 
+// Multi-branch support (future-ready)
+export var CURRENT_BRANCH = 'main';
+export var BRANCHES = [
+    { id: 'main', name: 'Amogha Cafe - Main Branch', code: 'MAIN', address: 'Kukatpally, Hyderabad', coordinates: { lat: 17.4947, lng: 78.3996 }, active: true }
+];
+
+// Dynamic pricing rules (loaded from Firestore settings/dynamicPricing)
+export var DYNAMIC_PRICING_RULES = [];
+
 export var ITEM_PAIRINGS = {
     'Chicken Dum Biryani': ['Raita', 'Mirchi ka Salan', 'Buttermilk'],
     'Chicken 65 Biryani': ['Raita', 'Mirchi ka Salan', 'Fresh Lime Soda'],

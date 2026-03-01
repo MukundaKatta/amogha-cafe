@@ -1,4 +1,4 @@
-const CACHE_NAME = 'amogha-v68';
+const CACHE_NAME = 'amogha-v69';
 const ASSETS = [
   './',
   './index.html',
@@ -98,6 +98,41 @@ self.addEventListener('fetch', function(e) {
         }
         return response;
       });
+    })
+  );
+});
+
+// ===== FIREBASE CLOUD MESSAGING (Background Push) =====
+self.addEventListener('push', function(e) {
+  var data = {};
+  try { data = e.data ? e.data.json() : {}; } catch(err) { data = {}; }
+
+  var title = (data.notification && data.notification.title) || 'Amogha Cafe';
+  var options = {
+    body: (data.notification && data.notification.body) || 'You have a new notification',
+    icon: './amogha-logo.png',
+    badge: './amogha-logo.png',
+    tag: 'amogha-push',
+    data: data.data || {}
+  };
+
+  e.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', function(e) {
+  e.notification.close();
+  var url = '/';
+  if (e.notification.data && e.notification.data.url) {
+    url = e.notification.data.url;
+  }
+  e.waitUntil(
+    clients.matchAll({ type: 'window' }).then(function(windowClients) {
+      for (var i = 0; i < windowClients.length; i++) {
+        if (windowClients[i].url.indexOf(url) !== -1) {
+          return windowClients[i].focus();
+        }
+      }
+      return clients.openWindow(url);
     })
   );
 });

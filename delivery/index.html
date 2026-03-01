@@ -463,6 +463,10 @@ var availableUnsub   = null;
 var activeUnsub      = null;
 var confirmCallback  = null;
 var DELIVERY_FEE     = 49;
+var gpsWatchId       = null;
+var gpsOrderId       = null;
+var gpsLastUpdate    = 0;
+var GPS_THROTTLE_MS  = 15000; // 15 seconds
 
 // ── Helpers ────────────────────────────────────────────────────
 function escHtml(s) {
@@ -541,6 +545,7 @@ document.getElementById('login-pin').addEventListener('keydown', function(e) {
 
 function doLogout() {
     sessionStorage.removeItem('dp_session');
+    stopGPSTracking();
     if (availableUnsub) { availableUnsub(); availableUnsub = null; }
     if (activeUnsub)    { activeUnsub();    activeUnsub    = null; }
     myPhone = ''; myName = '';
@@ -639,6 +644,56 @@ function renderAvailable() {
     }).join('');
 }
 
+// ── GPS Tracking ──────────────────────────────────────────────
+function startGPSTracking(orderId) {
+    if (!navigator.geolocation) {
+        showToast('GPS not supported on this device.', true);
+        return;
+    }
+    stopGPSTracking();
+    gpsOrderId = orderId;
+    gpsLastUpdate = 0;
+
+    gpsWatchId = navigator.geolocation.watchPosition(
+        function(position) {
+            var now = Date.now();
+            if (now - gpsLastUpdate < GPS_THROTTLE_MS) return;
+            gpsLastUpdate = now;
+
+            var locationData = {
+                driverLocation: {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    timestamp: new Date().toISOString()
+                }
+            };
+
+            db.collection('orders').doc(gpsOrderId).update(locationData)
+                .catch(function(e) { console.error('GPS update error:', e); });
+        },
+        function(error) {
+            if (error.code === 1) {
+                showToast('Location access denied. Please enable GPS.', true);
+            } else if (error.code === 2) {
+                showToast('Unable to determine location.', true);
+            } else if (error.code === 3) {
+                showToast('Location request timed out.', true);
+            }
+            console.error('GPS error:', error);
+        },
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    );
+}
+
+function stopGPSTracking() {
+    if (gpsWatchId !== null) {
+        navigator.geolocation.clearWatch(gpsWatchId);
+        gpsWatchId = null;
+    }
+    gpsOrderId = null;
+    gpsLastUpdate = 0;
+}
+
 function acceptOrder(orderId, customerName) {
     showConfirm('🛵', 'Accept Delivery?',
         'Accept order for ' + (customerName || 'customer') + '?',
@@ -650,6 +705,7 @@ function acceptOrder(orderId, customerName) {
                 outForDeliveryAt:  new Date().toISOString()
             }).then(function() {
                 showToast('Order accepted! Go to Active tab.');
+                startGPSTracking(orderId);
                 switchTab('active');
             }).catch(function(e) {
                 console.error('Accept error:', e);
@@ -677,6 +733,13 @@ function loadMyActive() {
             var badge = document.getElementById('badge-active');
             badge.textContent = docs.length || '';
             badge.classList.toggle('show', docs.length > 0);
+
+            // Resume GPS tracking if there is an active delivery
+            if (docs.length > 0 && gpsWatchId === null) {
+                startGPSTracking(docs[0].id);
+            } else if (docs.length === 0 && gpsWatchId !== null) {
+                stopGPSTracking();
+            }
 
             var el = document.getElementById('active-delivery-content');
             if (!el) return;
@@ -724,6 +787,7 @@ function markDelivered(orderId, customerName) {
         'Mark order for ' + (customerName || 'customer') + ' as delivered?',
         'Mark Delivered',
         function() {
+            stopGPSTracking();
             db.collection('orders').doc(orderId).update({
                 status:      'delivered',
                 deliveredAt: new Date().toISOString()

@@ -72,17 +72,18 @@ service cloud.firestore {
                     && request.resource.data.items.size() > 0;
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['status','kitchenStartedAt','preparingAt','etaMinutes','readyAt',
-                                   'deliveredAt','scheduledFor','deliveryPerson','outForDeliveryAt']);
+                                   'deliveredAt','scheduledFor','deliveryPerson','outForDeliveryAt',
+                                   'driverLocation','splitBill']);
       allow delete: if false;
     }
 
     // -------------------------------------------------------------------------
-    // MENU — read-only from client
-    // Admin writes go through Firebase Console or Admin SDK Cloud Function.
+    // MENU — readable by all, updatable by admin panel
     // -------------------------------------------------------------------------
     match /menu/{itemId} {
       allow read: if true;
-      allow write: if false;
+      allow create, delete: if false;
+      allow update: if true;
     }
 
     // -------------------------------------------------------------------------
@@ -126,11 +127,12 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
-    // SETTINGS — read-only from client
+    // SETTINGS — readable by all, writable by admin panel
     // -------------------------------------------------------------------------
     match /settings/{docId} {
       allow read: if true;
-      allow write: if false;
+      allow create, update: if true;
+      allow delete: if false;
     }
 
     // -------------------------------------------------------------------------
@@ -271,6 +273,51 @@ service cloud.firestore {
                     && request.resource.data.amount > 0;
       allow update: if true;
       allow delete: if true;
+    }
+
+    // -------------------------------------------------------------------------
+    // STAFF — managed by admin panel
+    // -------------------------------------------------------------------------
+    match /staff/{staffId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // GROUP CARTS — shared ordering
+    // -------------------------------------------------------------------------
+    match /groupCarts/{cartId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // SUBSCRIPTION PLANS — read by customers, managed by admin
+    // -------------------------------------------------------------------------
+    match /subscriptionPlans/{planId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // SUBSCRIPTIONS — customer subscriptions
+    // -------------------------------------------------------------------------
+    match /subscriptions/{subId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // BRANCHES — multi-branch support (future)
+    // -------------------------------------------------------------------------
+    match /branches/{branchId} {
+      allow read: if true;
+      allow write: if false;
     }
 
     // -------------------------------------------------------------------------

@@ -14,6 +14,11 @@ import './modules/notifications.js';
 import './modules/reservations.js';
 import './modules/loyalty.js';
 import './modules/features.js';
+import './modules/badges.js';
+import './modules/profile.js';
+import './modules/group.js';
+import './modules/splitbill.js';
+import './modules/subscriptions.js';
 
 // Named imports for initialization
 import { loadCart, initAddonCache, restoreButtonStates, updateCartFab, initCart, displayCart } from './modules/cart.js';
@@ -24,7 +29,9 @@ import { initAuth } from './modules/auth.js';
 import { initNotifications } from './modules/notifications.js';
 import { initReservations } from './modules/reservations.js';
 import { initLoyalty } from './modules/loyalty.js';
-import { initFeatures, showRecommendations, loadDailySpecial, initComboBuilder, showReorderToast, initLiveOrderTicker } from './modules/features.js';
+import { initFeatures, showRecommendations, loadDailySpecial, initComboBuilder, showReorderToast, initLiveOrderTicker, initOrderAgainSection } from './modules/features.js';
+import { initProfile } from './modules/profile.js';
+import { initGroupOrdering } from './modules/group.js';
 import { updateFloatingCartBar } from './modules/cart.js';
 
 // Note: script is loaded as a module (deferred by default), DOM is already parsed
@@ -49,6 +56,7 @@ initLoyalty();       // Loyalty widget
 initNotifications(); // Push notification banner
 initReservations();  // Reservation modal button override
 initFeatures();      // Reviews carousel, gallery, combos, happy hour, voice, i18n, etc.
+initProfile();       // Customer profile module
 loadDailySpecial();  // Daily special section (reads from Firestore settings/dailySpecial)
 initComboBuilder();  // Combo builder dropdowns + pricing
 initLiveOrderTicker(); // Replace static ticker with real recent orders from Firestore
@@ -59,6 +67,12 @@ setTimeout(function() {
     try { user = JSON.parse(localStorage.getItem('amoghaUser')); } catch(e) {}
     if (user) showReorderToast();
 }, 2000);
+
+// Order Again section (shows last 3 orders on main page)
+initOrderAgainSection();
+
+// Group ordering (check URL for ?group= parameter)
+initGroupOrdering();
 
 // Init floating cart bar state
 updateFloatingCartBar();

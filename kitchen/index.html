@@ -921,6 +921,7 @@ var orders=[],prevIds=new Set(),bumpT={},bumped=new Set(),audioCtx=null,sndOn=tr
 var staffRoster=[],recipes={},prepTimes={},chatMsgs=[],chatUnread=0,chatOpen=false,staffOpen=false,
     curRecipeItem='',chatUnsub=null;
 var STAFF_COLORS=['#e74c3c','#3498db','#2ecc71','#9b59b6','#e67e22','#1abc9c','#e91e63','#00bcd4'];
+var menuPrepTimes={}; // { itemName: prepTimeMinutes } from Firestore menu collection
 
 // === INVENTORY / TABLES / REPORT STATE (Features 12-14) ===
 var invOpen=false,invData={},invUnsub=null,invSearchQ='';
@@ -974,7 +975,7 @@ function cacheDOM(){
 function doLogin(){
     if(E.pin.value===PIN){
         E.login.style.display='none';E.dash.classList.add('vis');
-        initAudio();loadOrders();startTimers();startClock();initConn();initPeak();initAmbient();startIdle();loadPrefs();initSwipe();initDrag();initChat();
+        initAudio();loadOrders();loadMenuPrepTimes();startTimers();startClock();initConn();initPeak();initAmbient();startIdle();loadPrefs();initSwipe();initDrag();initChat();
     }else{E.lerr.textContent='Invalid PIN.';E.pin.value='';E.pin.focus();}
 }
 
@@ -993,6 +994,28 @@ function loadPrefs(){
 }
 
 // === LOAD ORDERS ===
+function loadMenuPrepTimes(){
+    db.collection('menu').get().then(function(snap){
+        snap.forEach(function(doc){
+            var d=doc.data();
+            if(d.name&&d.prepTimeMinutes){
+                menuPrepTimes[d.name]=parseInt(d.prepTimeMinutes)||0;
+            }
+        });
+        renderBoard();
+    }).catch(function(e){console.error('Menu prep times load error:',e);});
+}
+
+function getMaxPrepTime(items){
+    if(!items||!items.length)return 0;
+    var maxTime=0;
+    items.forEach(function(item){
+        var pt=menuPrepTimes[item.name]||0;
+        if(pt>maxTime)maxTime=pt;
+    });
+    return maxTime;
+}
+
 function loadOrders(){
     db.collection('orders').orderBy('createdAt','desc').onSnapshot(function(snap){
         var today=todayISO(),cIds=new Set(),newO=[];
@@ -1141,10 +1164,13 @@ function cardHTML(o,type){
     if(o.assignedTo){var sf=staffRoster.find(function(s){return s.name===o.assignedTo;});
         h+='<div class="card-staff"><span class="mini-av" style="background:'+(sf?sf.color:'#888')+'">'+o.assignedTo[0].toUpperCase()+'</span> '+esc(o.assignedTo)+'</div>';}
 
-    // ETA (learned)
-    if(type==='new'){var eta=getLearnedETA(o.items)||Math.max(5,ic*ETA_PER_ITEM);
-        var learned=o.items&&o.items.some(function(i){return prepTimes[i.name]&&prepTimes[i.name].count>=1;});
-        h+='<div class="ceta">Est. prep: <b>~'+eta+' min</b>'+(learned?' <span style="color:var(--grn);font-size:.55rem">(learned)</span>':'')+'</div>';}
+    // ETA (Firestore menu prep time + learned fallback)
+    if(type==='new'||type==='prog'){
+        var firestorePT=getMaxPrepTime(o.items);
+        var eta=firestorePT>0?firestorePT:(getLearnedETA(o.items)||Math.max(5,ic*ETA_PER_ITEM));
+        var src=firestorePT>0?' <span style="color:var(--blu);font-size:.55rem">(menu)</span>':(o.items&&o.items.some(function(i){return prepTimes[i.name]&&prepTimes[i.name].count>=1;})?' <span style="color:var(--grn);font-size:.55rem">(learned)</span>':'');
+        h+='<div class="ceta">Est. ready in: <b>~'+eta+' min</b>'+src+'</div>';
+    }
 
     // Items
     if(o.items&&o.items.length){h+='<div class="citems">';

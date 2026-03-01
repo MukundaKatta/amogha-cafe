@@ -1,7 +1,7 @@
 import { safeGetItem, safeSetItem, lockScroll, unlockScroll } from '../core/utils.js';
 import { getCurrentUser, setCurrentUser, showAuthToast } from './auth.js';
 import { cart, updateCartCount, saveCart, updateFloatingCart, updateCartFab, addToCart, displayCart } from './cart.js';
-import { ITEM_PAIRINGS, ITEM_PRICES, HAPPY_HOURS, TRANSLATIONS } from '../core/constants.js';
+import { ITEM_PAIRINGS, ITEM_PRICES, HAPPY_HOURS, TRANSLATIONS, DYNAMIC_PRICING_RULES } from '../core/constants.js';
 import { getDb } from '../core/firebase.js';
 
 // ===== SPICE LEVEL SELECTOR =====
@@ -191,7 +191,7 @@ export function openReviewModal(orderItems) {
     });
     html += '</div>';
     html += '<textarea id="review-text" class="review-textarea" placeholder="Share your thoughts (optional)" maxlength="200"></textarea>';
-    html += '<button class="cta-button" onclick="submitReviews()">Submit Review</button>';
+    html += '<button class="cta-button" onclick="submitReviews()">Submit Review</button><span style="color:#D4A017;font-size:0.75rem;margin-left:8px">Earn 25 pts</span>';
     modal.querySelector('.review-modal-content').innerHTML = html;
     modal.style.display = 'block';
     window._reviewRatings = new Array(items.length).fill(0);
@@ -236,6 +236,17 @@ export function submitReviews() {
     batch.commit().then(function() {
         document.getElementById('review-modal').style.display = 'none';
         showAuthToast('Thank you for your review!');
+        // Award 25 loyalty points for submitting a review
+        var reviewUser = getCurrentUser();
+        if (reviewUser) {
+            reviewUser.loyaltyPoints = (reviewUser.loyaltyPoints || 0) + 25;
+            setCurrentUser(reviewUser);
+            var reviewDb = getDb();
+            if (reviewDb) {
+                reviewDb.collection('users').doc(reviewUser.phone).update({ loyaltyPoints: reviewUser.loyaltyPoints }).catch(function(e) { console.error('Review loyalty update error:', e); });
+            }
+            setTimeout(function() { showAuthToast('+25 loyalty points for your review!'); }, 1500);
+        }
         setTimeout(function() {
             if (typeof window.loadMenuRatings === 'function') window.loadMenuRatings();
         }, 1000);
@@ -920,6 +931,9 @@ export function initFeatures() {
     // Scheduled orders
     initScheduledOrders();
 
+    // Dynamic pricing (load rules from Firestore)
+    setTimeout(loadDynamicPricingRules, 1500);
+
     // Hook displayCart to show recommendations
     var _origDisplayCart = window.displayCart;
     if (typeof _origDisplayCart === 'function') {
@@ -928,6 +942,45 @@ export function initFeatures() {
             showRecommendations();
         };
     }
+}
+
+// ===== UPSELL ENGINE =====
+export function getUpsellItems(cartItems) {
+    var cartNames = [];
+    var i;
+    for (i = 0; i < cartItems.length; i++) {
+        cartNames.push(cartItems[i].name);
+    }
+
+    var suggestions = [];
+    var seen = {};
+
+    for (i = 0; i < cartItems.length; i++) {
+        var itemName = cartItems[i].name;
+        var pairings = ITEM_PAIRINGS[itemName];
+        if (!pairings) continue;
+
+        for (var j = 0; j < pairings.length; j++) {
+            var paired = pairings[j];
+            // Skip items already in cart or already suggested
+            if (cartNames.indexOf(paired) !== -1) continue;
+            if (seen[paired]) continue;
+
+            var price = ITEM_PRICES[paired];
+            if (!price) continue;
+
+            seen[paired] = true;
+            suggestions.push({
+                name: paired,
+                price: price,
+                reason: 'Goes great with ' + itemName
+            });
+
+            if (suggestions.length >= 3) return suggestions;
+        }
+    }
+
+    return suggestions;
 }
 
 Object.assign(window, {
@@ -961,7 +1014,8 @@ Object.assign(window, {
     closeMyOrders,
     reorderFromHistory,
     loadDailySpecial,
-    initComboBuilder
+    initComboBuilder,
+    getUpsellItems
 });
 
 // ===== B3: WELCOME-BACK REORDER TOAST =====
@@ -1238,3 +1292,126 @@ export function submitCateringEnquiry() {
         });
 }
 window.submitCateringEnquiry = submitCateringEnquiry;
+
+// ===== ORDER AGAIN SECTION (Main Page) =====
+export function initOrderAgainSection() {
+    var section = document.getElementById('reorder-section');
+    var container = document.getElementById('reorder-cards');
+    if (!section || !container) return;
+
+    var user = getCurrentUser();
+    if (!user) { section.style.display = 'none'; return; }
+
+    var cached = null;
+    try { cached = JSON.parse(localStorage.getItem('amoghaMyOrders')); } catch(e) {}
+    if (!cached || !cached.length) { section.style.display = 'none'; return; }
+
+    var recent = cached.slice(0, 3);
+    var html = '';
+    recent.forEach(function(entry) {
+        var o = entry.data;
+        var d = o.createdAt ? new Date(o.createdAt) : new Date();
+        var dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        var itemCount = (o.items || []).reduce(function(sum, i) { return sum + (i.qty || 1); }, 0);
+        var total = o.total || 0;
+        html += '<div class="reorder-card" style="min-width:220px;background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.15);border-radius:14px;padding:1rem;scroll-snap-align:start;flex-shrink:0">' +
+            '<div style="font-size:0.8rem;color:#a09080;margin-bottom:0.4rem">' + dateStr + '</div>' +
+            '<div style="font-size:0.95rem;font-weight:600;color:var(--text-primary,#1a0f08);margin-bottom:0.3rem">' + itemCount + ' item' + (itemCount !== 1 ? 's' : '') + '</div>' +
+            '<div style="font-size:1.05rem;font-weight:700;color:#D4A017;margin-bottom:0.7rem">Rs.' + total + '</div>' +
+            '<button onclick="reorderFromHistory(\'' + entry.id + '\')" style="width:100%;padding:0.5rem;background:linear-gradient(135deg,#D4A017,#B8860B);color:#1a0f08;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem">Reorder</button>' +
+        '</div>';
+    });
+    container.innerHTML = html;
+    section.style.display = 'block';
+}
+window.initOrderAgainSection = initOrderAgainSection;
+
+// ===== DYNAMIC PRICING =====
+export function loadDynamicPricingRules() {
+    var db = getDb();
+    if (!db) return;
+    db.collection('settings').doc('dynamicPricing').get().then(function(doc) {
+        if (doc.exists && doc.data().rules) {
+            // Update the shared mutable array
+            DYNAMIC_PRICING_RULES.length = 0;
+            doc.data().rules.forEach(function(rule) {
+                DYNAMIC_PRICING_RULES.push(rule);
+            });
+            applyDynamicPricing();
+        }
+    }).catch(function(err) {
+        console.error('Dynamic pricing load error:', err);
+    });
+}
+window.loadDynamicPricingRules = loadDynamicPricingRules;
+
+export function getAdjustedPrice(basePrice, category) {
+    if (!DYNAMIC_PRICING_RULES || DYNAMIC_PRICING_RULES.length === 0) return basePrice;
+    var now = new Date();
+    var day = now.getDay();
+    var hour = now.getHours();
+    var catLower = (category || '').toLowerCase();
+
+    for (var i = 0; i < DYNAMIC_PRICING_RULES.length; i++) {
+        var rule = DYNAMIC_PRICING_RULES[i];
+        // Check day match
+        var dayMatch = rule.day === 'all' || parseInt(rule.day) === day;
+        if (!dayMatch) continue;
+        // Check hour match
+        if (hour < parseInt(rule.startHour) || hour >= parseInt(rule.endHour)) continue;
+        // Check category match
+        var cats = rule.categories || [];
+        var catMatch = false;
+        for (var j = 0; j < cats.length; j++) {
+            if (cats[j].toLowerCase() === catLower) { catMatch = true; break; }
+        }
+        if (!catMatch) continue;
+        // Apply multiplier
+        return Math.round(basePrice * parseFloat(rule.multiplier));
+    }
+    return basePrice;
+}
+window.getAdjustedPrice = getAdjustedPrice;
+
+export function applyDynamicPricing() {
+    if (!DYNAMIC_PRICING_RULES || DYNAMIC_PRICING_RULES.length === 0) return;
+    document.querySelectorAll('.menu-item-card').forEach(function(card) {
+        var priceEl = card.querySelector('.price');
+        if (!priceEl) return;
+        // Skip if happy hour is already applied
+        if (priceEl.classList.contains('hh-crossed')) return;
+
+        var catEl = card.closest('.menu-category');
+        if (!catEl) return;
+        var category = '';
+        // Try to get category from the section heading
+        var heading = catEl.querySelector('h2, h3, .category-title');
+        if (heading) category = heading.textContent.trim();
+        if (!category) category = (catEl.id || '').replace('cat-', '');
+
+        var origPrice = parseInt(priceEl.textContent.replace(/[^\d]/g, ''));
+        if (!origPrice) return;
+
+        var adjusted = getAdjustedPrice(origPrice, category);
+        if (adjusted === origPrice) {
+            // Remove any existing dynamic price
+            var existingDp = card.querySelector('.dp-price');
+            if (existingDp) existingDp.remove();
+            priceEl.classList.remove('dp-crossed');
+            return;
+        }
+
+        // Show strikethrough original + new price
+        priceEl.classList.add('dp-crossed');
+        var existing = card.querySelector('.dp-price');
+        if (!existing) {
+            var dpPrice = document.createElement('span');
+            dpPrice.className = 'dp-price';
+            dpPrice.textContent = '\u20B9' + adjusted;
+            priceEl.after(dpPrice);
+        } else {
+            existing.textContent = '\u20B9' + adjusted;
+        }
+    });
+}
+window.applyDynamicPricing = applyDynamicPricing;
