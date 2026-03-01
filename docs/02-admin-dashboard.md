@@ -1,7 +1,7 @@
 # Admin Dashboard
 
 **URL:** https://amoghahotels.com/admin.html
-**File:** `admin.html` (3,657 lines)
+**File:** `admin.html` (~5,175 lines)
 
 The internal management interface for restaurant staff. Handles orders, menu, inventory, reservations, tables, customers, and site content.
 
@@ -76,10 +76,18 @@ Add, edit, and control all menu items.
 | Badge | None / Bestseller / Popular / Chef's Pick |
 | Available | Toggle on/off (unavailable items show grey overlay to customers) |
 | Image | Upload via Firebase Storage; URL stored in Firestore |
+| Allergens | Multi-select checkboxes: nuts, dairy, gluten, eggs, soy, shellfish, sesame, fish. Saved to `menu/{itemId}.allergens: string[]` |
+| Prep Time | Estimated kitchen preparation time in minutes. Shown on KDS and track page |
 
 **Bulk actions:**
 - Toggle availability for multiple items at once
 - Reorder items within a category (affects display order)
+
+**Allergen Editor:**
+- Click the allergen tag area on any menu item card to open/close the editor
+- Select applicable allergens via checkboxes
+- Save writes `allergens` array to Firestore `menu/{itemId}`
+- Allergen icons then appear on customer-facing menu cards
 
 ---
 
@@ -287,8 +295,106 @@ Site-wide configuration stored in Firestore `settings` collection.
 
 ---
 
+### 17. Analytics Dashboard
+
+Visual analytics powered by **Chart.js 4.4** CDN. All charts computed from the existing `allOrders` array.
+
+| Chart | Type | Description |
+|-------|------|-------------|
+| Revenue Trend | Line chart | Daily/weekly/monthly revenue with toggle |
+| AOV Trend | Line chart | Average order value over time |
+| Category Revenue | Doughnut chart | Revenue breakdown by menu category |
+| Customer Retention | Bar chart | New vs repeat customers |
+| Busiest Hours | Heatmap (7×24 grid) | Order volume by day-of-week and hour |
+
+Charts are rendered on first visit to the Analytics tab using `renderAnalyticsCharts()`.
+
+---
+
+### 18. Staff Management
+
+New tab for managing restaurant staff.
+
+| Field | Notes |
+|-------|-------|
+| Name | Staff member's full name |
+| Phone | Contact number |
+| Role | Chef / Waiter / Manager / Delivery / Cashier |
+| Shift | Morning / Evening / Night |
+| Schedule | Work schedule notes |
+| Active | Toggle on/off |
+
+- Card grid layout with add/edit modal
+- Data stored in Firestore `staff` collection
+- Active toggle immediately updates the staff member's status
+
+---
+
+### 19. Reservation Calendar
+
+Week-view calendar for visualizing reservations.
+
+- 7-day grid with time slots
+- Color-coded reservation blocks by status (pending = amber, confirmed = green, cancelled = red)
+- Click a reservation block to view details and assign a table
+- Conflict detection — warns if overlapping reservations exist for the same table/time
+
+---
+
+### 20. Marketing Panel
+
+Customer segmentation and outreach tools.
+
+**Segments:**
+- Filter customers by loyalty tier (Bronze/Silver/Gold), total spend, last order date
+- Reuses `crmCustomers` data from the Customers tab
+
+**WhatsApp Templates:**
+- Pre-built message templates with `{name}`, `{tier}`, `{points}` placeholders
+- Auto-fills customer data into templates
+- Bulk `wa.me` link generator for targeted campaigns
+
+---
+
+### 21. Dynamic Pricing
+
+Admin panel for time-based and category-based pricing rules.
+
+| Field | Notes |
+|-------|-------|
+| Day(s) | Which days of the week the rule applies |
+| Start/End Hour | Time window for the rule |
+| Multiplier | Price multiplier (e.g. 0.85 for 15% off, 1.10 for 10% surcharge) |
+| Categories | Which menu categories are affected |
+| Label | Display label for customers (e.g. "Lunch Special — 15% OFF!") |
+
+- Rules stored in Firestore `settings/dynamicPricing`
+- Customer-facing: active rules show original price with strikethrough + adjusted price on menu cards
+- Loaded at runtime by `loadDynamicPricingRules()` in `features.js`
+
+---
+
+### 22. Expenses
+
+Track restaurant operating expenses.
+
+| Field | Notes |
+|-------|-------|
+| Date | Expense date |
+| Category | Ingredients / Utilities / Staff / Equipment / Rent / Marketing / Other |
+| Amount | In ₹ |
+| Description | Vendor/purchase description |
+| Paid By | Staff member who paid |
+
+- Supports AI-powered bill parsing via `POST /parse-bill` (upload receipt photo → auto-extract fields)
+- Full CRUD operations
+- Data stored in Firestore `expenses` collection
+
+---
+
 ## Key Notes
 
 - All changes are **live immediately** — Firestore real-time sync pushes updates to customers without page reload
 - Menu images uploaded here appear in customer cards on hover
+- Chart.js charts are loaded via CDN on first visit to the Analytics tab
 - Use **Firebase Console** for bulk operations, data export, or emergency corrections

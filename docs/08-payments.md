@@ -2,7 +2,7 @@
 
 **File:** `src/modules/payment.js`
 
-Three payment methods are supported: Razorpay (online), Cash on Delivery, and Gift Cards.
+Three payment methods are supported: Razorpay (online), Cash on Delivery, and Gift Cards. Post-checkout features include Split Bill and Social Sharing.
 
 ---
 
@@ -128,6 +128,55 @@ After payment, a document is written to `orders` collection:
   "status": "pending",
   "specialInstructions": "...",
   "loyaltyPointsAwarded": 45,
-  "createdAt": "timestamp"
+  "createdAt": "timestamp",
+  "splitBill": null,
+  "driverLocation": null
 }
+```
+
+---
+
+## Split Bill
+
+**File:** `src/modules/splitbill.js`
+
+After a successful order placement, a "Split Bill" button appears in the confirmation screen.
+
+### Flow
+1. Customer clicks "Split Bill"
+2. Modal opens with split options: 2, 3, 4, or custom N
+3. Per-person amount calculated: `ceil(total / N)`
+4. For each share, a UPI payment link is generated: `upi://pay?pa=amogha@upi&pn=Amogha+Cafe&am=AMOUNT&cu=INR&tn=Split+ORDER_ID`
+5. "Share" button sends the split details via Web Share API (WhatsApp / SMS / copy link fallback)
+
+### Data
+Split bill data is stored on the order document:
+```json
+{
+  "splitBill": {
+    "count": 3,
+    "perPerson": 153,
+    "createdAt": "timestamp"
+  }
+}
+```
+
+---
+
+## Social Sharing (Share & Earn)
+
+**File:** `src/modules/payment.js`
+
+After order placement, a "Share & Earn 10 pts" button appears.
+
+### Flow
+1. Customer clicks "Share & Earn"
+2. Web Share API opens native share sheet (on supported browsers)
+3. Fallback: opens WhatsApp with pre-filled order message + link
+4. Clipboard copy fallback if neither is available
+5. **10 loyalty points** are awarded for sharing (one-time per order)
+
+### Shared Content
+```
+I just ordered from Amogha Cafe! Try it out: https://amoghahotels.com
 ```

@@ -1,7 +1,7 @@
 # Delivery Management
 
 **URL:** https://amoghahotels.com/delivery/
-**File:** `delivery/index.html` (~824 lines)
+**File:** `delivery/index.html` (~888 lines)
 
 A mobile-first app for delivery drivers to accept orders, navigate to customers, and track earnings. Designed to run on a delivery partner's phone.
 
@@ -99,10 +99,41 @@ Each row shows:
 
 ---
 
+## Live GPS Tracking
+
+When a driver accepts an order, GPS tracking starts automatically.
+
+### How It Works
+
+1. **Start:** `startGPSTracking(orderId)` is called when the driver accepts a delivery
+2. **Geolocation:** Uses `navigator.geolocation.watchPosition()` with high accuracy
+3. **Throttling:** GPS updates are sent to Firestore every **15 seconds** (not on every position change) to limit Firestore writes
+4. **Data:** Writes `driverLocation: { lat, lng, timestamp }` to `orders/{orderId}`
+5. **Stop:** `stopGPSTracking()` is called when the driver marks as delivered or logs out
+
+### Firestore Update
+
+```json
+{
+  "driverLocation": {
+    "lat": 17.4947,
+    "lng": 78.3996,
+    "timestamp": "2026-03-01T10:30:00Z"
+  }
+}
+```
+
+### Customer Impact
+
+The customer's tracking page ([04-order-tracking.md](04-order-tracking.md)) shows a live map with the driver's position and distance when `driverLocation` is present.
+
+---
+
 ## Real-Time Features
 
 - **Available orders:** Live Firestore `onSnapshot` listener — new ready orders appear instantly
 - **Active delivery:** Live listener — status changes reflected immediately
+- **GPS tracking:** Background position updates to Firestore while delivering
 - **Connection badge:** Monitors `window.online/offline` events — green glow when online, red when offline
 
 ---

@@ -1,6 +1,6 @@
 # Ordering & Cart
 
-**Files:** `src/modules/cart.js`, `src/modules/menu.js`, `src/modules/features.js`
+**Files:** `src/modules/cart.js`, `src/modules/menu.js`, `src/modules/features.js`, `src/modules/payment.js`
 
 ---
 
@@ -11,6 +11,17 @@ Menu items are fetched from Firestore `menu` collection and cached in `localStor
 - **Cache key:** `menu_cache` in localStorage
 - **TTL:** Refreshes automatically when stale
 - **Ratings:** Item average star ratings are merged in from the `reviews` collection
+- **Allergens:** Items with allergen data show small icons (e.g. 🥜 nuts, 🥛 dairy, 🌾 gluten) on their cards
+- **Dynamic Pricing:** Active pricing rules show original price with strikethrough + adjusted price
+
+### Allergen Filter ("Safe for Me")
+
+A toggle in the menu filter bar that hides items matching the logged-in user's allergen alerts:
+
+1. User sets their allergen alerts in the Customer Profile modal (e.g. "nuts", "dairy")
+2. "Safe for Me" toggle activates the filter
+3. Menu cards for items containing any flagged allergen are hidden
+4. Filter re-applies automatically after menu data reloads
 
 ---
 
@@ -74,9 +85,13 @@ Grand Total = Subtotal − Combo − Happy Hour − Coupon + Delivery Fee
 
 ## Checkout Steps
 
+### Allergen Safety Check (pre-checkout)
+Before the checkout modal opens, if the user has allergen alerts configured in their profile, the system scans all cart items for matching allergens. If any conflicts are found, a warning popup lists the items and their allergens. The user can choose to proceed or go back to modify their cart.
+
 ### Step 1 — Review
 - Final item list with all modifiers
 - Full price breakdown
+- **Upsell section** — "Customers also ordered" shows up to 3 complementary items from `ITEM_PAIRINGS` that are not already in the cart
 
 ### Step 2 — Details
 | Field | Validation |
@@ -99,9 +114,12 @@ See [08-payments.md](08-payments.md) for full details.
 2. Order appears on KDS immediately
 3. Loyalty points awarded: **1 point per ₹10 spent**
 4. If a referral code was used at signup, referrer gets credit
-5. Cart is cleared
-6. Confetti animation plays
-7. Customer is redirected to `track/?id=ORDER_ID`
+5. Badges checked and awarded (see [09-loyalty-and-referrals.md](09-loyalty-and-referrals.md))
+6. Cart is cleared
+7. Confetti animation plays
+8. **Share & Earn** button — share order via Web Share API / WhatsApp, earn 10 loyalty points
+9. **Split Bill** button — split total N ways with UPI payment links (see [08-payments.md](08-payments.md))
+10. Customer is redirected to `track/?id=ORDER_ID`
 
 ---
 

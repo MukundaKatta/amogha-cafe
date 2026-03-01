@@ -1,7 +1,7 @@
 # Self-Service Kiosk
 
 **URL:** https://amoghahotels.com/kiosk/
-**File:** `kiosk/index.html` (~2,267 lines)
+**File:** `kiosk/index.html` (~2,384 lines)
 
 A premium self-service ordering kiosk designed for tablets and touchscreens placed at the restaurant counter or tables. Customers browse the menu, customize items with spice levels and add-ons, and pay — all without staff assistance.
 
@@ -163,6 +163,19 @@ After payment:
 
 ---
 
+## Post-Order Feedback
+
+After order completion, a feedback prompt appears on the success screen:
+
+- **Emoji rating** with 4 levels: 😠 (Bad) · 😐 (Okay) · 😊 (Good) · 😍 (Loved it!)
+- **Optional text comment** field for detailed feedback
+- Saves to Firestore `reviews` collection with `source: 'kiosk'`
+- Skippable — auto-dismissed after the 60-second reset timer
+
+This provides quick, low-friction feedback collection from dine-in and counter customers.
+
+---
+
 ## Screensaver
 
 - Activates after 2 minutes of inactivity (no touch/mouse/key/scroll)
@@ -275,6 +288,7 @@ All UI labels, buttons, placeholders, and category names switch. Menu item names
 | orders | Place orders, query recent orders for loyalty/reorder, estimate wait time |
 | users | Loyalty points lookup by phone |
 | notifications | Staff call button creates notification docs |
+| reviews | Post-order feedback saved with `source: 'kiosk'` |
 
 ---
 

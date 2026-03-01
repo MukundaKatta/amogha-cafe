@@ -24,13 +24,16 @@
 
 | Doc | Feature |
 |-----|---------|
-| [07-ordering-and-cart.md](07-ordering-and-cart.md) | Menu, Cart & Checkout |
-| [08-payments.md](08-payments.md) | Payments (Razorpay, Cash, Gift Cards, Coupons) |
-| [09-loyalty-and-referrals.md](09-loyalty-and-referrals.md) | Loyalty Points, Tiers & Referral Program |
+| [07-ordering-and-cart.md](07-ordering-and-cart.md) | Menu, Cart, Checkout, Allergen Warnings & Upsell |
+| [08-payments.md](08-payments.md) | Payments (Razorpay, Cash, Gift Cards, Coupons, Split Bill) |
+| [09-loyalty-and-referrals.md](09-loyalty-and-referrals.md) | Loyalty, Referrals, Badges, Birthday & Review Rewards |
 | [10-auth.md](10-auth.md) | Authentication (Sign In / Sign Up) |
 | [11-reservations.md](11-reservations.md) | Table Reservations |
 | [12-reviews-and-gallery.md](12-reviews-and-gallery.md) | Reviews & Gallery |
-| [13-pwa-and-notifications.md](13-pwa-and-notifications.md) | PWA, Push Notifications & Caching |
+| [13-pwa-and-notifications.md](13-pwa-and-notifications.md) | PWA, FCM Push Notifications & Caching |
+| [18-customer-profile.md](18-customer-profile.md) | Customer Profile (DOB, Dietary Prefs, Addresses) |
+| [19-group-ordering.md](19-group-ordering.md) | Group Ordering (Shared Carts) |
+| [20-subscriptions.md](20-subscriptions.md) | Subscription Meal Plans |
 
 ## Infrastructure
 
@@ -47,7 +50,10 @@
 - **Build:** Vite (ES modules → bundled `script.js`)
 - **Backend:** Firebase — Firestore, Cloud Functions, Storage, Hosting
 - **AI:** Google Gemini 2.0 Flash (Vertex AI) for bill parsing
-- **Payments:** Razorpay (UPI, Cards, Net Banking, Wallets)
+- **Payments:** Razorpay (UPI, Cards, Net Banking, Wallets) + Split Bill via UPI deep links
+- **Maps:** Leaflet.js + OpenStreetMap (live delivery tracking)
+- **Charts:** Chart.js 4.4 (admin analytics dashboard)
+- **Push:** Firebase Cloud Messaging (background notifications)
 - **PWA:** Service workers + Web App Manifest
 - **CI/CD:** GitHub Actions (test → deploy on push to master)
 - **Tests:** Vitest (71 tests)
@@ -80,14 +86,19 @@ amogha-cafe/
 │   │   └── utils.js
 │   └── modules/
 │       ├── auth.js
+│       ├── badges.js          # Gamification badges (10 achievements)
 │       ├── cart.js
 │       ├── features.js
+│       ├── group.js           # Group ordering (shared carts)
 │       ├── hero.js
 │       ├── loyalty.js
 │       ├── menu.js
 │       ├── notifications.js
 │       ├── payment.js
+│       ├── profile.js         # Customer profile (DOB, dietary, addresses)
 │       ├── reservations.js
+│       ├── splitbill.js       # Post-checkout split bill
+│       ├── subscriptions.js   # Subscription meal plans
 │       └── ui.js
 ├── .github/workflows/deploy.yml  # CI/CD pipeline
 ├── firebase.json           # Firebase config
@@ -122,6 +133,12 @@ amogha-cafe/
 | settings | Site-wide configuration |
 | cateringInquiries | Catering request forms |
 | deliveryPersons | Delivery driver accounts |
+| expenses | Restaurant expense tracking (admin) |
+| staff | Staff members, roles, shifts, schedules |
+| groupCarts | Shared group ordering carts |
+| subscriptionPlans | Meal plan definitions (admin-managed) |
+| subscriptions | Customer subscription records |
+| branches | Multi-branch locations (future) |
 
 ## Quick Commands
 

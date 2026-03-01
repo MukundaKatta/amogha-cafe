@@ -16,7 +16,8 @@ The primary customer-facing page. Customers browse the menu, place orders, make 
 | Logo | Amogha branding (top-left) |
 | Header Slideshow | 8 rotating promotional banners in the center — Today's specials, discounts, Telugu taglines, bestseller highlights |
 | Nav Links | Home · About · Menu · Specials · Gallery · Reviews · Contact (smooth-scroll) |
-| Sign In Button | Shows "Sign In" when logged out; shows user initials when logged in |
+| Sign In Button | Shows "Sign In" when logged out; shows user initials with dropdown (My Profile / Sign Out) when logged in |
+| Birthday Banner | Appears during the user's birthday month (gold gradient, auto-dismiss) |
 | Loyalty Widget | Visible when logged in — shows tier icon (🥉🥈🥇) and current points |
 | Cart Icon | Shows item count badge; opens cart panel |
 | Theme Toggle | 🌙 / ☀️ switches dark/light mode |
@@ -70,6 +71,7 @@ The core of the page. All items are loaded from Firestore in real time with clie
 |---------|----------|
 | Search bar | Live filter by item name or description |
 | All / Veg / Non-Veg toggle | Filters items by type |
+| Safe for Me toggle | Hides items matching the user's allergen alerts (requires profile setup) |
 | Category tabs | Starters · Mains · Biryani · Tandoor · Noodles & Rice · Breads · Beverages · Specials |
 
 ### Menu Item Card
@@ -82,8 +84,10 @@ Each card shows:
 - **Hover → image slides in** (loaded from Firebase Storage)
 - Spice level selector: Mild / Medium / Spicy
 - Add-ons selector (e.g. extra cheese, extra sauce) — loaded from Firestore
+- **Allergen icons** — small tags (e.g. 🥜 nuts, 🥛 dairy, 🌾 gluten) if set in admin
 - "Add to Order" button
 - Smart Pairing suggestion — when you add certain items (e.g. Biryani), a suggestion appears to add Raita or Salan
+- **Dynamic pricing** — if a pricing rule is active, shows original price with strikethrough and adjusted price
 
 ### Unavailable Items
 
@@ -94,6 +98,17 @@ Items marked unavailable in admin show a grey overlay with "Currently Unavailabl
 Automatically appears when within a Happy Hour window:
 - **Mon–Fri 2 PM – 5 PM:** 15% off Beverages
 - **Daily 10 PM – 11 PM:** 20% off all items
+
+---
+
+## Order Again Section
+
+Shown above the menu for logged-in users with order history.
+
+- Displays last 3 orders as horizontal scroll cards
+- Each card shows: order date, items, total
+- "Reorder" button re-adds all items from that order to the cart
+- Powered by `initOrderAgainSection()` in `features.js`
 
 ---
 
@@ -121,8 +136,12 @@ Slides in from the right when the cart icon is clicked.
 
 ## Checkout Flow (3-step modal)
 
+### Allergen Check
+Before checkout opens, if the logged-in user has allergen alerts in their profile, the cart is scanned. If any items contain flagged allergens, a warning popup appears listing the conflicts. The user can proceed or go back to modify.
+
 ### Step 1 — Order Summary
 Review all items, quantities, add-ons, and the final price breakdown.
+- **Upsell section** — "Customers also ordered" suggestions based on `ITEM_PAIRINGS` and cart contents (up to 3 items)
 
 ### Step 2 — Your Details
 | Field | Notes |
@@ -145,7 +164,10 @@ On successful payment:
 - Order saved to Firestore `orders` collection
 - Loyalty points awarded (1 point per ₹10 spent)
 - Referral credit applied if applicable
+- Badges checked and awarded (see [09-loyalty-and-referrals.md](09-loyalty-and-referrals.md))
 - Confetti animation plays
+- **Share & Earn** button — share order via Web Share API / WhatsApp, earn 10 loyalty points
+- **Split Bill** button — split the total N ways with UPI payment links (see [08-payments.md](08-payments.md))
 - Customer redirected to order tracking
 
 ---
@@ -163,6 +185,7 @@ On successful payment:
 - Star ratings (1–5) and text reviews from Firestore (`reviews` collection)
 - Average rating displayed with star breakdown
 - "Write a Review" button — opens review modal (requires login)
+- **"Earn 25 pts" badge** on review button — submitting a review awards 25 loyalty points (1 per order cap)
 - Reviews are immutable after submission (Firestore rules enforce this)
 
 ---
@@ -194,11 +217,17 @@ On successful payment:
 | Sign In / Sign Up | "Sign In" button in header |
 | Reservation | "Reserve Table" button in hero or nav |
 | Loyalty Program | Loyalty widget in header (when logged in) |
+| Customer Profile | "My Profile" in user dropdown (see [18-customer-profile.md](18-customer-profile.md)) |
+| Badge Gallery | Badge icon in nav — shows all 10 badges, earned and locked |
 | Cart | Cart icon in header |
 | Checkout | "Proceed to Checkout" in cart |
 | Lightbox | Click gallery image |
 | Review | "Write a Review" button |
 | Voice Order | Microphone icon in menu section |
+| Group Ordering | "Group Order" button — create/join shared cart (see [19-group-ordering.md](19-group-ordering.md)) |
+| Subscription Plans | "Meal Plans" button — browse/subscribe (see [20-subscriptions.md](20-subscriptions.md)) |
+| Split Bill | "Split Bill" button after payment — split N ways with UPI links |
+| Allergen Warning | Auto-triggered at checkout if cart items contain user's flagged allergens |
 
 ---
 

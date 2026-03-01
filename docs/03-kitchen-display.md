@@ -38,6 +38,7 @@ Each active order appears as a card:
 | Table number | For dine-in orders |
 | Elapsed timer | Live clock showing time since order was placed (turns red after threshold) |
 | Items list | Each item with quantity, spice level, and add-ons |
+| Prep time estimate | "Est. ready in ~X min" — computed from the max `prepTimeMinutes` across all items in the order |
 | Special instructions | Customer notes (highlighted in amber) |
 
 **Card border color by status:**
@@ -73,6 +74,17 @@ Completed/delivered orders disappear automatically from the KDS.
 
 - New order chime plays when an order enters the queue
 - Can be toggled off during busy service if needed
+
+---
+
+## Prep Time Estimates
+
+Each menu item can have a `prepTimeMinutes` value set in the admin panel. The KDS uses this to show estimated completion time:
+
+- **Calculation:** Takes the maximum prep time across all items in the order
+- **Display:** "Est. ready in ~X min" shown on each order card
+- **Source:** Prep times loaded from Firestore `menu` collection via `loadMenuPrepTimes()`
+- **Fallback:** If no prep time is set for an item, it is excluded from the calculation
 
 ---
 

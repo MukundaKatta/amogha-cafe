@@ -154,6 +154,74 @@ Uses Gemini 2.0 Flash model to extract structured data from bill images. Intende
 
 ---
 
+### POST /notify
+
+Sends a push notification to a customer via Firebase Cloud Messaging.
+
+**Request body:**
+```json
+{
+  "phone": "9876543210",
+  "title": "Order Ready!",
+  "message": "Your Chicken Biryani order is ready for pickup"
+}
+```
+
+**Required fields:** `phone`, `message`
+
+**Response (success):**
+```json
+{
+  "success": true,
+  "message": "Notification sent"
+}
+```
+
+**Error cases:**
+- 400: `phone` or `message` missing
+- 404: User not found in `users` collection
+- 400: User has no `fcmToken` registered
+- 500: FCM send failed
+
+**How it works:**
+1. Looks up the user's Firestore document by phone number
+2. Reads the `fcmToken` field (saved by the client during FCM registration)
+3. Sends the notification via `admin.messaging().send()`
+
+---
+
+## Scheduled Functions
+
+### birthdayRewards
+
+Runs daily at **8 AM IST** via Cloud Scheduler.
+
+**Purpose:** Auto-creates birthday discount coupons for users whose birthday is today.
+
+**Logic:**
+1. Queries all documents in `users` collection
+2. For each user with a `dob` field (format: `YYYY-MM-DD`), checks if MM-DD matches today
+3. Creates a coupon in `coupons` collection:
+
+```json
+{
+  "code": "BDAY-9876543210",
+  "discount": 30,
+  "type": "percent",
+  "maxUses": 1,
+  "usedCount": 0,
+  "minOrder": 200,
+  "description": "Happy Birthday! 30% off your order",
+  "expiresAt": "7 days from today",
+  "createdAt": "today",
+  "source": "birthday-auto"
+}
+```
+
+Uses Firestore batch writes for efficiency. Coupon is created with `merge: true` to avoid duplicates if the function runs twice.
+
+---
+
 ## Dependencies
 
 | Package | Purpose |

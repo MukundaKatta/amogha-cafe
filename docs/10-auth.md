@@ -38,15 +38,20 @@ Triggered by the "Sign In" button in the header.
 ## After Sign In
 
 - "Sign In" button in header changes to the user's initials (e.g. "RK")
+- Clicking the initials opens a **dropdown menu** with:
+  - **My Profile** — opens the Customer Profile modal (see [18-customer-profile.md](18-customer-profile.md))
+  - **Sign Out** — clears the local session
+- Dropdown auto-closes on click outside
 - Loyalty widget appears showing tier and points
 - Checkout forms pre-fill with saved name and phone
 - Order history becomes accessible
+- **Birthday banner** appears if the current month matches the user's DOB month
 
 ---
 
 ## Sign Out
 
-Clicking the user initials badge in the header opens a dropdown with a **Sign Out** option. Clears the local session.
+Available in the user dropdown menu. Clears the local session and resets the header to show "Sign In".
 
 ---
 
@@ -64,6 +69,12 @@ On sign up, a document is created in `users` collection:
   "tier": "Bronze",
   "referralCode": "uid (used as referral link)",
   "referredBy": "uid of referrer (if any)",
+  "dob": "1995-06-15",
+  "dietaryPrefs": ["Vegetarian"],
+  "allergenAlerts": ["nuts", "dairy"],
+  "savedAddresses": ["Flat 301, Kukatpally"],
+  "badges": [{"badgeId": "first-bite", "earnedAt": "timestamp"}],
+  "fcmToken": "firebase-messaging-token",
   "createdAt": "timestamp"
 }
 ```

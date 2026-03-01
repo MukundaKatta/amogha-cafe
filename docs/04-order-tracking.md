@@ -1,7 +1,7 @@
 # Order Tracking
 
 **URL:** https://amoghahotels.com/track/
-**File:** `track/index.html` (1,159 lines)
+**File:** `track/index.html` (~1,383 lines)
 
 Lets customers track the live status of their order after checkout. Customers are redirected here automatically after placing an order, or can return by bookmarking the URL.
 
@@ -62,6 +62,34 @@ If an order is cancelled, the tracking page shows a "Cancelled" state with a mes
 ## Not Found
 
 If the order ID in the URL doesn't exist, a "Order not found" message is shown with a link back to the homepage.
+
+---
+
+## Live Delivery Map
+
+When the order status is `out_for_delivery` and the driver is sharing GPS location, a live map appears on the tracking page.
+
+**Technology:**
+- **Leaflet.js 1.9.4** CDN with OpenStreetMap tiles (free, no API key required)
+- Map card shown only when `status === 'out_for_delivery'`
+
+**Map features:**
+- Restaurant marker pin (fixed at 17.4065, 78.4772 — Hyderabad)
+- Driver marker pin (updates in real-time from `orders/{id}.driverLocation`)
+- **Distance display:** "Your delivery partner is X.X km away" using Haversine distance calculation
+- Auto-pans to fit both markers on screen
+
+**Data source:** The delivery driver's app sends GPS coordinates to Firestore every 15 seconds (see [15-delivery.md](15-delivery.md)). The tracking page listens via the existing `onSnapshot` listener.
+
+---
+
+## Prep Time Countdown
+
+When the order is in `preparing` status:
+- Shows a countdown timer: "Estimated ready in X:XX"
+- Computed from `kitchenStartedAt` timestamp + max `prepTimeMinutes` across all items in the order
+- Prep times are loaded from Firestore `menu` collection via `loadMenuPrepTimes()`
+- Updates every second; when it reaches 0, shows "Ready any moment now!"
 
 ---
 

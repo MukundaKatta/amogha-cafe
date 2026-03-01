@@ -43,7 +43,7 @@ File: `sw.js`
 
 ### Cache Names
 
-- `amogha-cache-v1` — static assets
+- `amogha-v69` — static assets (current version)
 - Cache is versioned — incrementing the version in `sw.js` forces a refresh on next visit
 
 ### Offline Behavior
@@ -107,9 +107,9 @@ When a customer places an order and grants notification permission:
 - Only requested once — browser remembers the decision
 - Falls back silently if denied (no error shown)
 
-### Implementation
+### Implementation (Browser Notifications)
 
-Uses the Web Notifications API (no FCM/server-side push required):
+Uses the Web Notifications API for in-tab notifications:
 ```js
 new Notification('Order Update', {
   body: 'Your order is being prepared!',
@@ -117,7 +117,43 @@ new Notification('Order Update', {
 });
 ```
 
-Notifications only fire while the tab is open (no background push without a service worker push subscription + server).
+Browser notifications fire while the tab is open.
+
+---
+
+## Firebase Cloud Messaging (FCM) — Background Push
+
+**Files:** `src/modules/notifications.js`, `sw.js`, `functions/index.js`
+
+FCM enables **background push notifications** that work even when the app tab is closed.
+
+### How It Works
+
+1. **Token Registration:** After the user grants notification permission, `initFCM()` requests an FCM token from Firebase Messaging
+2. **Token Storage:** The token is saved to the user's Firestore document (`users/{phone}.fcmToken`) via `saveFCMToken()`
+3. **Foreground Messages:** FCM's `onMessage` handler shows a toast/notification while the app is open
+4. **Background Messages:** The service worker's `push` event listener handles messages when the tab is closed:
+   ```js
+   self.addEventListener('push', function(e) {
+     var data = e.data ? e.data.json() : {};
+     self.registration.showNotification(title, options);
+   });
+   ```
+5. **Click Handling:** `notificationclick` listener focuses the existing tab or opens a new window
+
+### Server-Side Push
+
+The Cloud Function `POST /notify` endpoint sends push notifications:
+```json
+{
+  "phone": "9876543210",
+  "title": "Order Ready!",
+  "message": "Your order is ready for pickup"
+}
+```
+Looks up the user's FCM token and sends via `admin.messaging().send()`.
+
+See [16-cloud-functions.md](16-cloud-functions.md) for full endpoint documentation.
 
 ---
 
