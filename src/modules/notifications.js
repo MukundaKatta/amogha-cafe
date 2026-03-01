@@ -115,4 +115,30 @@ export function initNotifications() {
     setTimeout(initFCM, 8000);
 }
 
-Object.assign(window, { enableNotifications, dismissNotifBanner, sendPushNotification, initFCM });
+// ===== AI-POWERED SMART NOTIFICATIONS =====
+export async function sendSmartNotification(context) {
+    var user = null;
+    try { user = JSON.parse(localStorage.getItem('amoghaUser')); } catch(e) {}
+    if (!user) return;
+
+    var orderHistory = [];
+    try { var cached = JSON.parse(localStorage.getItem('amoghaMyOrders')); if (cached) orderHistory = cached.map(function(e) { return e.data; }); } catch(e) {}
+
+    try {
+        var resp = await fetch('/api/smart-notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: user.phone,
+                context: context || 'general',
+                orderHistory: orderHistory.slice(0, 5)
+            })
+        });
+        var data = await resp.json();
+        sendPushNotification(data.title || 'Amogha Cafe', data.body || 'Something delicious awaits!');
+    } catch(e) {
+        sendPushNotification('Amogha Cafe', 'We have something delicious waiting for you!');
+    }
+}
+
+Object.assign(window, { enableNotifications, dismissNotifBanner, sendPushNotification, initFCM, sendSmartNotification });

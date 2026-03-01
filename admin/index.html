@@ -2482,6 +2482,27 @@
                 <h3>Busiest Hours Heatmap</h3>
                 <div id="busiest-hours-heatmap"></div>
             </div>
+
+            <!-- AI Demand Forecast -->
+            <h3 class="analytics-section-title" style="margin-top:24px">AI-Powered Insights</h3>
+            <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+                <button class="ai-forecast-btn" onclick="loadForecast()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    Demand Forecast
+                </button>
+                <button class="ai-menu-btn" onclick="loadMenuInsights()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    Menu Optimization
+                </button>
+            </div>
+            <div id="forecast-panel" class="forecast-panel" style="display:none">
+                <div id="forecast-loading" class="insights-loading">Analyzing order patterns...</div>
+                <div id="forecast-content"></div>
+            </div>
+            <div id="menu-insights-panel" class="menu-insights-panel" style="display:none">
+                <div id="menu-insights-loading" class="insights-loading">Analyzing menu performance...</div>
+                <div id="menu-insights-content"></div>
+            </div>
         </div>
 
         <!-- Coupons Panel -->
@@ -2503,6 +2524,16 @@
                     <option value="highest">Highest Rated</option>
                     <option value="lowest">Lowest Rated</option>
                 </select>
+            </div>
+            <div style="margin-top:8px">
+                <button class="ai-insights-btn" onclick="loadReviewInsights()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    AI Review Insights
+                </button>
+            </div>
+            <div id="review-insights-panel" class="review-insights-panel" style="display:none">
+                <div class="insights-loading" id="insights-loading">Analyzing reviews with AI...</div>
+                <div id="insights-content"></div>
             </div>
             <div class="review-summary" id="review-summary"></div>
             <div class="reviews-admin-grid" id="reviews-admin-grid"></div>
@@ -5879,6 +5910,116 @@
             if (!confirm('Delete this pricing rule?')) return;
             pricingRules.splice(index, 1);
             savePricingRules();
+        }
+
+        // ===== AI REVIEW INSIGHTS =====
+        async function loadReviewInsights() {
+            var panel = document.getElementById('review-insights-panel');
+            var loading = document.getElementById('insights-loading');
+            var content = document.getElementById('insights-content');
+            panel.style.display = 'block';
+            loading.style.display = 'block';
+            content.innerHTML = '';
+            try {
+                var resp = await fetch('/api/summarize-reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+                var data = await resp.json();
+                loading.style.display = 'none';
+                var html = '<div class="insight-summary">' +
+                    '<div class="insight-sentiment ' + (data.sentiment || 'neutral') + '">' + (data.sentiment || 'neutral').toUpperCase() + '</div>' +
+                    '<p>' + (data.summary || 'No analysis available.') + '</p>' +
+                    '<div style="color:#D4A017;font-weight:700;margin-top:6px">Avg Rating: ' + (data.avgRating || 0).toFixed(1) + '/5</div></div>';
+                if (data.themes && data.themes.length > 0) {
+                    html += '<h4 style="color:#D4A017;font-size:.82rem;margin:12px 0 8px">Key Themes</h4><div class="insight-themes">';
+                    data.themes.forEach(function(t) { html += '<div class="insight-theme ' + (t.sentiment || '') + '"><strong>' + t.theme + '</strong> (' + (t.count || 0) + ' mentions)</div>'; });
+                    html += '</div>';
+                }
+                if (data.suggestions && data.suggestions.length > 0) {
+                    html += '<h4 style="color:#D4A017;font-size:.82rem;margin:12px 0 8px">AI Suggestions</h4><ul class="insight-suggestions">';
+                    data.suggestions.forEach(function(s) { html += '<li>' + s + '</li>'; });
+                    html += '</ul>';
+                }
+                content.innerHTML = html;
+            } catch (e) {
+                loading.style.display = 'none';
+                content.innerHTML = '<p style="color:#e74c3c;text-align:center;font-size:.85rem">Failed to load AI insights.</p>';
+            }
+        }
+
+        // ===== AI DEMAND FORECAST =====
+        async function loadForecast() {
+            var panel = document.getElementById('forecast-panel');
+            var loading = document.getElementById('forecast-loading');
+            var content = document.getElementById('forecast-content');
+            panel.style.display = 'block';
+            loading.style.display = 'block';
+            content.innerHTML = '';
+            try {
+                var resp = await fetch('/api/forecast', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+                var data = await resp.json();
+                loading.style.display = 'none';
+                var html = '<div class="forecast-stat"><strong>' + (data.totalExpectedOrders || '?') + '</strong><span>Expected Orders Tomorrow</span></div>';
+                if (data.predictions && data.predictions.length > 0) {
+                    html += '<table class="forecast-table"><thead><tr><th>Item</th><th>Expected Qty</th><th>Confidence</th></tr></thead><tbody>';
+                    data.predictions.forEach(function(p) { html += '<tr><td>' + p.item + '</td><td>' + p.expectedQty + '</td><td class="confidence-' + (p.confidence || 'low') + '">' + (p.confidence || 'low') + '</td></tr>'; });
+                    html += '</tbody></table>';
+                }
+                if (data.peakHours && data.peakHours.length > 0) {
+                    html += '<h4 style="color:#D4A017;font-size:.82rem;margin:16px 0 8px">Peak Hours</h4><div style="display:flex;gap:8px;flex-wrap:wrap">';
+                    data.peakHours.forEach(function(h) { html += '<div style="background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.12);border-radius:10px;padding:8px 14px;text-align:center"><strong style="color:#D4A017">' + h.hour + ':00</strong><br><span style="font-size:.75rem;color:#a09080">' + h.expectedOrders + ' orders</span></div>'; });
+                    html += '</div>';
+                }
+                if (data.insights && data.insights.length > 0) {
+                    html += '<div class="forecast-insights"><h4 style="color:#D4A017;font-size:.82rem;margin:16px 0 8px">Pattern Insights</h4>';
+                    data.insights.forEach(function(i) { html += '<p>' + i + '</p>'; });
+                    html += '</div>';
+                }
+                content.innerHTML = html;
+            } catch (e) {
+                loading.style.display = 'none';
+                content.innerHTML = '<p style="color:#e74c3c;text-align:center;font-size:.85rem">Forecast generation failed.</p>';
+            }
+        }
+
+        // ===== AI MENU OPTIMIZATION =====
+        async function loadMenuInsights() {
+            var panel = document.getElementById('menu-insights-panel');
+            var loading = document.getElementById('menu-insights-loading');
+            var content = document.getElementById('menu-insights-content');
+            panel.style.display = 'block';
+            loading.style.display = 'block';
+            content.innerHTML = '';
+            try {
+                var resp = await fetch('/api/menu-insights', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+                var data = await resp.json();
+                loading.style.display = 'none';
+                var html = '';
+                if (data.overallHealth) html += '<p style="color:#ede2d2;font-size:.88rem;margin-bottom:12px;line-height:1.5">' + data.overallHealth + '</p>';
+                if (data.insights && data.insights.length > 0) {
+                    html += '<h4 style="color:#D4A017;font-size:.82rem;margin-bottom:8px">Item Recommendations</h4>';
+                    var recColors = { keep: '#2ecc71', promote: '#3498db', reprice: '#f1c40f', retire: '#e74c3c' };
+                    data.insights.forEach(function(ins) {
+                        var color = recColors[ins.recommendation] || '#a09080';
+                        html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04)">' +
+                            '<span style="background:' + color + '22;color:' + color + ';padding:3px 10px;border-radius:8px;font-size:.7rem;font-weight:700;text-transform:uppercase;min-width:60px;text-align:center">' + ins.recommendation + '</span>' +
+                            '<span style="color:#ede2d2;font-size:.85rem;flex:1">' + ins.item + '</span>' +
+                            '<span style="color:#a09080;font-size:.75rem;max-width:200px">' + (ins.suggestedAction || ins.reason || '') + '</span></div>';
+                    });
+                }
+                if (data.combos && data.combos.length > 0) {
+                    html += '<h4 style="color:#D4A017;font-size:.82rem;margin:16px 0 8px">AI Combo Suggestions</h4><div class="ai-combo-grid">';
+                    data.combos.forEach(function(c) {
+                        html += '<div class="ai-combo-card"><div class="ai-combo-name">' + c.name + '</div>' +
+                            '<div class="ai-combo-items">' + c.items.join(' + ') + '</div>' +
+                            '<div class="ai-combo-pricing"><span class="ai-combo-price">&#8377;' + c.suggestedPrice + '</span></div>' +
+                            '<div class="ai-combo-reason">' + (c.reason || '') + '</div></div>';
+                    });
+                    html += '</div>';
+                }
+                content.innerHTML = html;
+            } catch (e) {
+                loading.style.display = 'none';
+                content.innerHTML = '<p style="color:#e74c3c;text-align:center;font-size:.85rem">Menu analysis failed.</p>';
+            }
         }
 
         function savePricingRules() {

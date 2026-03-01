@@ -511,6 +511,14 @@
         </div>
     </section>
 
+    <!-- AI Picks For You -->
+    <section id="ai-for-you" class="ai-for-you-section" style="display:none">
+        <div class="container">
+            <h2 class="section-title"><span class="ai-badge">AI</span> Picks For You</h2>
+            <div class="ai-for-you-cards" id="ai-for-you-cards"></div>
+        </div>
+    </section>
+
     <section id="menu" class="menu section-wipe">
         <div class="container">
             <h2>Our Menu</h2>
@@ -520,6 +528,7 @@
                 <button class="safe-for-me-toggle" id="safe-for-me-btn" onclick="toggleSafeForMe()">🛡️ Safe for Me</button>
                 <button onclick="createGroupCart()" style="padding:0.4rem 0.8rem;border-radius:20px;border:1px solid rgba(212,160,23,0.3);background:rgba(212,160,23,0.08);color:#D4A017;cursor:pointer;font-size:0.8rem;font-weight:600">👥 Group Order</button>
                 <button onclick="openSubscriptionModal()" style="padding:0.4rem 0.8rem;border-radius:20px;border:1px solid rgba(156,39,176,0.3);background:rgba(156,39,176,0.08);color:#CE93D8;cursor:pointer;font-size:0.8rem;font-weight:600">📋 Meal Plans</button>
+                <button onclick="openMealPlannerModal()" style="padding:0.4rem 0.8rem;border-radius:20px;border:1px solid rgba(39,174,96,0.3);background:rgba(39,174,96,0.08);color:#2ecc71;cursor:pointer;font-size:0.8rem;font-weight:600">🤖 AI Meal Planner</button>
             </div>
 
             <!-- Swiggy-style Category Carousel -->
@@ -599,7 +608,7 @@
 
             <!-- Menu Filter/Search -->
             <div class="menu-filters">
-                <input type="text" id="menu-search" placeholder="Search dishes..." class="menu-search-input">
+                <input type="text" id="menu-search" placeholder="Try: 'something spicy for dinner'..." class="menu-search-input">
                 <div class="filter-btns">
                     <button class="filter-btn active" data-filter="all">All</button>
                     <button class="filter-btn" data-filter="veg">🟢 Veg</button>

@@ -515,7 +515,8 @@ export function initVoiceOrdering() {
     voiceRecognition = new SpeechRecognition();
     voiceRecognition.continuous = false;
     voiceRecognition.interimResults = true;
-    voiceRecognition.lang = 'en-IN';
+    var langMap = { en: 'en-IN', hi: 'hi-IN', te: 'te-IN' };
+    voiceRecognition.lang = langMap[currentLang] || 'en-IN';
     voiceRecognition.onresult = function(event) {
         var transcript = '';
         for (var i = event.resultIndex; i < event.results.length; i++) {
@@ -588,6 +589,19 @@ function updateVoiceOverlay(text) {
 
 function processVoiceCommand(text) {
     text = text.toLowerCase().trim();
+
+    // "Order my usual" / "same as last time" — reorder last order
+    if (text.indexOf('my usual') !== -1 || text.indexOf('same as last') !== -1 || text.indexOf('last order') !== -1) {
+        var cached = null;
+        try { cached = JSON.parse(localStorage.getItem('amoghaMyOrders')); } catch(e) {}
+        if (cached && cached.length > 0 && cached[0].id) {
+            if (typeof window.reorderFromHistory === 'function') window.reorderFromHistory(cached[0].id);
+            showAuthToast('Reordering your last order!');
+            hideVoiceOverlay();
+            return;
+        }
+    }
+
     var qtyMatch = text.match(/^(?:add\s+)?(\d+)\s+/);
     var qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
     var searchText = text.replace(/^(?:add\s+)?(\d+\s+)?/, '').replace(/^add\s+/, '');
@@ -623,7 +637,23 @@ function processVoiceCommand(text) {
         if (typeof window.clearCart === 'function') window.clearCart();
         hideVoiceOverlay();
     } else {
-        showAuthToast('Could not find: "' + searchText + '". Try again.');
+        // Gemini AI fallback for complex/unrecognized voice commands
+        hideVoiceOverlay();
+        showAuthToast('AI is interpreting your request...');
+        fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, cart: [] })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.suggestedItems && data.suggestedItems.length > 0) {
+                data.suggestedItems.forEach(function(item) { addToCart(item.name, item.price); });
+                showAuthToast('Added ' + data.suggestedItems.length + ' item(s) via AI');
+            } else {
+                showAuthToast(data.reply || 'Could not understand. Try again.');
+            }
+        }).catch(function() {
+            showAuthToast('Could not find: "' + searchText + '". Try again.');
+        });
     }
 }
 
@@ -1415,3 +1445,187 @@ export function applyDynamicPricing() {
     });
 }
 window.applyDynamicPricing = applyDynamicPricing;
+
+// ===== AI PICKS FOR YOU SECTION =====
+export async function initAiForYou() {
+    var section = document.getElementById('ai-for-you');
+    var container = document.getElementById('ai-for-you-cards');
+    if (!section || !container) return;
+
+    // Check 30-minute cache
+    try {
+        var cached = JSON.parse(localStorage.getItem('ai_recommendations'));
+        if (cached && (Date.now() - cached.ts) < 1800000) {
+            renderAiForYou(section, container, cached.data);
+            return;
+        }
+    } catch(e) {}
+
+    var user = getCurrentUser();
+    var orderHistory = [];
+    try { var orders = JSON.parse(localStorage.getItem('amoghaMyOrders')); if (orders) orderHistory = orders.map(function(e) { return e.data; }); } catch(e) {}
+
+    try {
+        var resp = await fetch('/api/recommend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                orderHistory: orderHistory.slice(0, 10),
+                currentCart: cart.map(function(i) { return { name: i.name }; }),
+                timeOfDay: new Date().getHours(),
+                isVegOnly: user && (user.dietaryPrefs || []).includes('Vegetarian')
+            })
+        });
+        var data = await resp.json();
+        if (data.recommendations && data.recommendations.length > 0) {
+            renderAiForYou(section, container, data.recommendations);
+            try { localStorage.setItem('ai_recommendations', JSON.stringify({ ts: Date.now(), data: data.recommendations })); } catch(e) {}
+        }
+    } catch(e) { section.style.display = 'none'; }
+}
+
+function renderAiForYou(section, container, recs) {
+    var html = '';
+    recs.forEach(function(rec) {
+        html += '<div class="ai-rec-card">' +
+            '<div class="ai-rec-name">' + rec.name + '</div>' +
+            '<div class="ai-rec-reason">' + (rec.reason || '') + '</div>' +
+            '<div class="ai-rec-price">&#8377;' + rec.price + '</div>' +
+            '<button class="add-to-cart" onclick="addToCart(\'' + rec.name.replace(/'/g, "\\'") + '\', ' + rec.price + ', this)">Add to Order</button>' +
+        '</div>';
+    });
+    container.innerHTML = html;
+    section.style.display = 'block';
+}
+
+// ===== AI MEAL PLANNER MODAL =====
+export function openMealPlannerModal() {
+    var existing = document.getElementById('meal-planner-overlay');
+    if (existing) existing.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'meal-planner-overlay';
+    overlay.className = 'meal-planner-overlay';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    overlay.innerHTML =
+        '<div class="meal-planner-card">' +
+            '<div class="meal-planner-header">' +
+                '<h2><span class="ai-badge">AI</span> 7-Day Meal Planner</h2>' +
+                '<button onclick="closeMealPlanner()" style="background:none;border:none;color:#a09080;font-size:1.5rem;cursor:pointer">&times;</button>' +
+            '</div>' +
+            '<div class="meal-planner-controls">' +
+                '<select id="mp-dietary"><option value="all">All</option><option value="veg">Veg Only</option><option value="non-veg">Non-Veg Only</option></select>' +
+                '<input type="number" id="mp-budget" placeholder="Daily budget (Rs.)" min="100" max="5000" style="width:140px">' +
+                '<input type="number" id="mp-people" placeholder="People" min="1" max="10" value="1" style="width:80px">' +
+            '</div>' +
+            '<button class="meal-planner-generate" onclick="generateMealPlan()">Generate AI Meal Plan</button>' +
+            '<div id="meal-plan-result"></div>' +
+        '</div>';
+    document.body.appendChild(overlay);
+}
+
+export function closeMealPlanner() {
+    var overlay = document.getElementById('meal-planner-overlay');
+    if (overlay) overlay.remove();
+}
+
+export async function generateMealPlan() {
+    var resultEl = document.getElementById('meal-plan-result');
+    if (!resultEl) return;
+    resultEl.innerHTML = '<div class="insights-loading">Generating your personalized meal plan...</div>';
+
+    try {
+        var resp = await fetch('/api/meal-plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dietary: document.getElementById('mp-dietary').value,
+                budget: parseInt(document.getElementById('mp-budget').value) || 0,
+                people: parseInt(document.getElementById('mp-people').value) || 1
+            })
+        });
+        var data = await resp.json();
+
+        var html = '<div class="meal-plan-grid">';
+        if (data.days) {
+            data.days.forEach(function(day) {
+                html += '<div class="meal-day-card"><h4>' + day.day + '</h4>';
+                (day.meals || []).forEach(function(meal) {
+                    html += '<div style="font-size:.68rem;color:#D4A017;font-weight:600;text-transform:uppercase;margin-top:6px">' + meal.mealType + '</div>';
+                    (meal.items || []).forEach(function(item) {
+                        html += '<div class="meal-item">' + item.name + ' x' + (item.qty || 1) + ' — &#8377;' + item.price + '</div>';
+                    });
+                });
+                html += '</div>';
+            });
+        }
+        html += '</div>';
+
+        if (data.totalCost) {
+            html += '<div class="meal-plan-summary">' +
+                '<span>Total: &#8377;' + data.totalCost + '</span>' +
+                '<span>Daily avg: &#8377;' + (data.dailyAverage || Math.round(data.totalCost / 7)) + '</span>' +
+            '</div>';
+        }
+
+        if (data.tips && data.tips.length > 0) {
+            html += '<ul class="meal-plan-tips">';
+            data.tips.forEach(function(t) { html += '<li>' + t + '</li>'; });
+            html += '</ul>';
+        }
+
+        resultEl.innerHTML = html;
+    } catch(e) {
+        resultEl.innerHTML = '<p style="color:#e74c3c;font-size:.85rem;text-align:center">Failed to generate meal plan. Please try again.</p>';
+    }
+}
+
+// ===== AI SMART COMBOS =====
+export async function loadSmartCombos() {
+    var section = document.getElementById('ai-combo-section');
+    if (!section) return;
+
+    try {
+        var cached = JSON.parse(localStorage.getItem('ai_combos'));
+        if (cached && (Date.now() - cached.ts) < 3600000) {
+            renderSmartCombos(section, cached.data);
+            return;
+        }
+    } catch(e) {}
+
+    try {
+        var resp = await fetch('/api/smart-combo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        var data = await resp.json();
+        if (data.combos && data.combos.length > 0) {
+            renderSmartCombos(section, data.combos);
+            try { localStorage.setItem('ai_combos', JSON.stringify({ ts: Date.now(), data: data.combos })); } catch(e) {}
+        }
+    } catch(e) {}
+}
+
+function renderSmartCombos(section, combos) {
+    var html = '<h3 style="color:#D4A017;font-size:.85rem;display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="ai-badge">AI</span> Smart Combos</h3><div class="ai-combo-grid">';
+    combos.forEach(function(c) {
+        html += '<div class="ai-combo-card">' +
+            '<div class="ai-combo-name">' + c.name + '</div>' +
+            '<div class="ai-combo-items">' + c.items.join(' + ') + '</div>' +
+            '<div class="ai-combo-pricing">' +
+                '<span class="ai-combo-original">&#8377;' + c.originalPrice + '</span>' +
+                '<span class="ai-combo-price">&#8377;' + c.suggestedPrice + '</span>' +
+                '<span class="ai-combo-save">Save ' + c.discount + '%</span>' +
+            '</div>' +
+            '<div class="ai-combo-reason">' + (c.reason || '') + '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    section.innerHTML = html;
+    section.style.display = 'block';
+}
+
+window.openMealPlannerModal = openMealPlannerModal;
+window.closeMealPlanner = closeMealPlanner;
+window.generateMealPlan = generateMealPlan;

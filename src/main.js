@@ -19,6 +19,7 @@ import './modules/profile.js';
 import './modules/group.js';
 import './modules/splitbill.js';
 import './modules/subscriptions.js';
+import './modules/chatbot.js';
 
 // Named imports for initialization
 import { loadCart, initAddonCache, restoreButtonStates, updateCartFab, initCart, displayCart } from './modules/cart.js';
@@ -29,10 +30,11 @@ import { initAuth } from './modules/auth.js';
 import { initNotifications } from './modules/notifications.js';
 import { initReservations } from './modules/reservations.js';
 import { initLoyalty } from './modules/loyalty.js';
-import { initFeatures, showRecommendations, loadDailySpecial, initComboBuilder, showReorderToast, initLiveOrderTicker, initOrderAgainSection } from './modules/features.js';
+import { initFeatures, showRecommendations, loadDailySpecial, initComboBuilder, showReorderToast, initLiveOrderTicker, initOrderAgainSection, initAiForYou } from './modules/features.js';
 import { initProfile } from './modules/profile.js';
 import { initGroupOrdering } from './modules/group.js';
 import { updateFloatingCartBar } from './modules/cart.js';
+import { initChatbot } from './modules/chatbot.js';
 
 // Note: script is loaded as a module (deferred by default), DOM is already parsed
 
@@ -73,6 +75,12 @@ initOrderAgainSection();
 
 // Group ordering (check URL for ?group= parameter)
 initGroupOrdering();
+
+// AI Chatbot widget
+initChatbot();
+
+// AI For You recommendations (delayed to not block load)
+setTimeout(initAiForYou, 3000);
 
 // Init floating cart bar state
 updateFloatingCartBar();

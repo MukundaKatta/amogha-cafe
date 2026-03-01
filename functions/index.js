@@ -8,6 +8,48 @@ const cors      = require('cors');
 admin.initializeApp();
 const db = admin.firestore();
 
+// ===== GEMINI AI HELPER =====
+var _geminiModel = null;
+
+function getGeminiModel() {
+    if (!_geminiModel) {
+        var { VertexAI } = require('@google-cloud/vertexai');
+        var vertexAI = new VertexAI({ project: 'amogha-cafe', location: 'us-central1' });
+        _geminiModel = vertexAI.getGenerativeModel({ model: 'gemini-2.0-flash-001' });
+    }
+    return _geminiModel;
+}
+
+// In-memory menu cache (refreshes every 10 minutes)
+var _menuCache = { items: null, ts: 0 };
+
+async function getMenuData() {
+    if (_menuCache.items && (Date.now() - _menuCache.ts) < 600000) return _menuCache.items;
+    var snap = await db.collection('menu').get();
+    var items = [];
+    snap.forEach(function(doc) {
+        var d = doc.data();
+        items.push({
+            name: doc.id, category: d.category || '', price: d.price || 0,
+            description: d.description || '', isVeg: d.isVeg || false,
+            allergens: d.allergens || [], available: d.available !== false, badge: d.badge || ''
+        });
+    });
+    _menuCache = { items: items, ts: Date.now() };
+    return items;
+}
+
+async function callGemini(systemPrompt, userMessage) {
+    var model = getGeminiModel();
+    var result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: systemPrompt + '\n\nUser request:\n' + userMessage }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 2048, responseMimeType: 'application/json' }
+    });
+    var text = result.response.candidates[0].content.parts[0].text.trim();
+    if (text.startsWith('```')) text = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
+    return JSON.parse(text);
+}
+
 const FREE_DELIVERY_THRESHOLD = 500;
 const DELIVERY_FEE = 49;
 
@@ -341,5 +383,301 @@ app.post('/notify', async function(req, res) {
     } catch (e) {
         console.error('POST /notify error:', e);
         res.status(500).json({ error: 'Failed to send notification' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /chat — AI Chatbot (conversational ordering + FAQ)
+// -----------------------------------------------------------------------
+app.post('/chat', async function(req, res) {
+    try {
+        var body = req.body || {};
+        var message = (body.message || '').trim();
+        var cartItems = body.cart || [];
+        var userPrefs = body.preferences || {};
+        var history = body.history || [];
+
+        if (!message) return res.status(400).json({ error: 'message is required' });
+
+        var menuItems = await getMenuData();
+        var available = menuItems.filter(function(i) { return i.available; });
+
+        var systemPrompt = 'You are the AI assistant for Amogha Cafe & Restaurant in Hyderabad. ' +
+            'Help customers with ordering, FAQs, and recommendations.\n\n' +
+            'RESTAURANT INFO:\n' +
+            '- Hours: Mon-Thu 11AM-9:30PM, Fri-Sat 11AM-10:30PM, Sun 12PM-9PM\n' +
+            '- Address: Pragathi Nagar Rd, Kukatpally, Hyderabad 500085\n' +
+            '- Phone: +91 91210 04999\n' +
+            '- Free delivery over Rs.500, else Rs.49 delivery fee\n' +
+            '- Delivery area: within 5km of Kukatpally\n\n' +
+            'AVAILABLE MENU:\n' + JSON.stringify(available) + '\n\n' +
+            'CURRENT CART: ' + JSON.stringify(cartItems) + '\n' +
+            'USER PREFERENCES: ' + JSON.stringify(userPrefs) + '\n' +
+            'CONVERSATION HISTORY:\n' + history.map(function(h) { return h.role + ': ' + h.text; }).join('\n') + '\n\n' +
+            'Respond with JSON: { "reply": "your message", "suggestedItems": [{"name":"exact item name from menu","price":number}], "action": null|"addToCart"|"checkout"|"showMenu" }\n' +
+            'Keep replies friendly, concise (under 150 words). Use Rs. for prices. Only suggest items from the menu above.';
+
+        var parsed = await callGemini(systemPrompt, message);
+        res.json({
+            reply: parsed.reply || "I'm not sure about that. Would you like to see our menu?",
+            suggestedItems: Array.isArray(parsed.suggestedItems) ? parsed.suggestedItems : [],
+            action: parsed.action || null
+        });
+    } catch (e) {
+        console.error('POST /chat error:', e);
+        res.status(500).json({
+            reply: "Sorry, I'm having trouble right now. Browse our menu or call +91 91210 04999.",
+            suggestedItems: [], action: null
+        });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /smart-search — Natural language menu search
+// -----------------------------------------------------------------------
+app.post('/smart-search', async function(req, res) {
+    try {
+        var query = ((req.body || {}).query || '').trim();
+        if (!query) return res.status(400).json({ error: 'query is required' });
+
+        var available = (await getMenuData()).filter(function(i) { return i.available; });
+
+        var systemPrompt = 'You are a menu search engine for Amogha Cafe.\n' +
+            'Given a natural language query, return matching items ranked by relevance.\n\n' +
+            'MENU: ' + JSON.stringify(available) + '\n\n' +
+            'Return JSON: { "results": [{"name":"exact item name from menu","price":number,"relevance":"high|medium|low"}], "interpretation": "brief explanation" }\n' +
+            'Max 10 results. Only include items from the menu. For dietary queries filter by isVeg. For allergen queries check allergens array.';
+
+        var parsed = await callGemini(systemPrompt, 'Search: "' + query + '"');
+        res.json({
+            results: Array.isArray(parsed.results) ? parsed.results : [],
+            interpretation: parsed.interpretation || ''
+        });
+    } catch (e) {
+        console.error('POST /smart-search error:', e);
+        res.status(500).json({ error: 'Search failed', results: [], interpretation: '' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /recommend — Personalized AI recommendations
+// -----------------------------------------------------------------------
+app.post('/recommend', async function(req, res) {
+    try {
+        var body = req.body || {};
+        var orderHistory = body.orderHistory || [];
+        var currentCart = body.currentCart || [];
+        var timeOfDay = body.timeOfDay || new Date().getHours();
+        var isVegOnly = body.isVegOnly || false;
+
+        var available = (await getMenuData()).filter(function(i) { return i.available; });
+
+        var systemPrompt = 'You are a personalized food recommendation engine for Amogha Cafe.\n' +
+            'Analyze the user\'s history and context to suggest items they would enjoy.\n\n' +
+            'MENU: ' + JSON.stringify(available) + '\n' +
+            'ORDER HISTORY (recent): ' + JSON.stringify(orderHistory.slice(0, 10)) + '\n' +
+            'CURRENT CART: ' + JSON.stringify(currentCart) + '\n' +
+            'TIME: ' + timeOfDay + 'h, VEG ONLY: ' + isVegOnly + '\n\n' +
+            'Return JSON: { "recommendations": [{"name":"exact menu item","price":number,"reason":"brief personalized reason","score":0.0-1.0}] }\n' +
+            'Give 4-6 recommendations. Consider: time of day, past preferences, complementary items, variety.';
+
+        var parsed = await callGemini(systemPrompt, 'Generate recommendations');
+        res.json({ recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [] });
+    } catch (e) {
+        console.error('POST /recommend error:', e);
+        res.status(500).json({ recommendations: [] });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /summarize-reviews — AI review summary + sentiment
+// -----------------------------------------------------------------------
+app.post('/summarize-reviews', async function(req, res) {
+    try {
+        var itemName = (req.body || {}).itemName || null;
+        var query = db.collection('reviews');
+        if (itemName) query = query.where('itemName', '==', itemName);
+        var snap = await query.orderBy('createdAt', 'desc').limit(100).get();
+
+        var reviews = [];
+        snap.forEach(function(doc) {
+            var r = doc.data();
+            reviews.push({ rating: r.rating, text: r.text || '', item: r.itemName || '', user: r.userName || '' });
+        });
+
+        if (reviews.length === 0) {
+            return res.json({ summary: 'No reviews found.', sentiment: 'neutral', themes: [], avgRating: 0, suggestions: [] });
+        }
+
+        var systemPrompt = 'Analyze customer reviews for ' + (itemName || 'Amogha Cafe') + '.\n\n' +
+            'REVIEWS: ' + JSON.stringify(reviews) + '\n\n' +
+            'Return JSON: { "summary": "2-3 sentence overview", "sentiment": "positive|negative|mixed|neutral", ' +
+            '"themes": [{"theme":"name","sentiment":"positive|negative","count":number}], ' +
+            '"avgRating": number, "suggestions": ["actionable suggestion"] }';
+
+        var parsed = await callGemini(systemPrompt, 'Analyze reviews');
+        res.json(parsed);
+    } catch (e) {
+        console.error('POST /summarize-reviews error:', e);
+        res.status(500).json({ error: 'Review analysis failed' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /forecast — AI demand prediction
+// -----------------------------------------------------------------------
+app.post('/forecast', async function(req, res) {
+    try {
+        var since = new Date();
+        since.setDate(since.getDate() - 30);
+        var snap = await db.collection('orders').where('createdAt', '>=', since.toISOString()).orderBy('createdAt', 'desc').limit(500).get();
+
+        var orderData = [];
+        snap.forEach(function(doc) {
+            var o = doc.data();
+            orderData.push({
+                date: o.createdAt ? o.createdAt.split('T')[0] : '',
+                items: (o.items || []).map(function(i) { return { name: i.name, qty: i.qty || 1 }; }),
+                total: o.total || 0, dayOfWeek: new Date(o.createdAt).getDay()
+            });
+        });
+
+        var tomorrow = new Date(Date.now() + 86400000);
+        var systemPrompt = 'You are a restaurant demand forecasting AI for Amogha Cafe.\n' +
+            'Analyze 30 days of orders and predict tomorrow\'s demand.\n\n' +
+            'ORDER DATA: ' + JSON.stringify(orderData) + '\n' +
+            'Tomorrow: ' + tomorrow.toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' }) + '\n\n' +
+            'Return JSON: { "predictions": [{"item":"name","expectedQty":number,"confidence":"high|medium|low"}], ' +
+            '"totalExpectedOrders": number, "peakHours": [{"hour":number,"expectedOrders":number}], "insights": ["pattern insight"] }\n' +
+            'Top 15 items by expected quantity. Factor in day-of-week patterns.';
+
+        var parsed = await callGemini(systemPrompt, 'Generate forecast');
+        res.json(parsed);
+    } catch (e) {
+        console.error('POST /forecast error:', e);
+        res.status(500).json({ error: 'Forecast generation failed' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /menu-insights — AI menu optimization suggestions
+// -----------------------------------------------------------------------
+app.post('/menu-insights', async function(req, res) {
+    try {
+        var menuItems = await getMenuData();
+        var since = new Date();
+        since.setDate(since.getDate() - 30);
+        var orderSnap = await db.collection('orders').where('createdAt', '>=', since.toISOString()).limit(500).get();
+
+        var orderSummary = {};
+        var totalRevenue = 0;
+        orderSnap.forEach(function(doc) {
+            var o = doc.data();
+            totalRevenue += o.total || 0;
+            (o.items || []).forEach(function(item) {
+                if (!orderSummary[item.name]) orderSummary[item.name] = { qty: 0, revenue: 0 };
+                orderSummary[item.name].qty += (item.qty || 1);
+                orderSummary[item.name].revenue += (item.price || 0) * (item.qty || 1);
+            });
+        });
+
+        var systemPrompt = 'You are a restaurant menu optimization consultant for Amogha Cafe.\n\n' +
+            'MENU: ' + JSON.stringify(menuItems) + '\n' +
+            'SALES (30 days): ' + JSON.stringify(orderSummary) + '\n' +
+            'Revenue: Rs.' + totalRevenue + ', Orders: ' + orderSnap.size + '\n\n' +
+            'Return JSON: { "insights": [{"item":"name","recommendation":"keep|promote|reprice|retire","reason":"brief","suggestedAction":"specific action"}], ' +
+            '"combos": [{"name":"combo name","items":["item1","item2"],"suggestedPrice":number,"reason":"why"}], "overallHealth": "brief assessment" }';
+
+        var parsed = await callGemini(systemPrompt, 'Analyze menu performance');
+        res.json(parsed);
+    } catch (e) {
+        console.error('POST /menu-insights error:', e);
+        res.status(500).json({ error: 'Menu analysis failed' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /smart-notify — AI-generated personalized notification
+// -----------------------------------------------------------------------
+app.post('/smart-notify', async function(req, res) {
+    try {
+        var body = req.body || {};
+        var context = body.context || 'general';
+        var orderHistory = body.orderHistory || [];
+
+        var specials = [];
+        var specialsSnap = await db.collection('specials').get();
+        specialsSnap.forEach(function(doc) { specials.push(doc.data()); });
+
+        var systemPrompt = 'Write a push notification for an Amogha Cafe customer.\n\n' +
+            'CONTEXT: ' + context + '\n' +
+            'ORDER HISTORY: ' + JSON.stringify(orderHistory.slice(0, 5)) + '\n' +
+            'SPECIALS: ' + JSON.stringify(specials) + '\n' +
+            'Time: ' + new Date().toLocaleTimeString('en-IN') + '\n\n' +
+            'Return JSON: { "title": "short title (max 50 chars)", "body": "notification body (max 100 chars)", "bestTime": "HH:MM" }\n' +
+            'Be warm, personal. Use emojis. Reference their favorite items.';
+
+        var parsed = await callGemini(systemPrompt, 'Generate notification for: ' + context);
+        res.json(parsed);
+    } catch (e) {
+        console.error('POST /smart-notify error:', e);
+        res.status(500).json({ error: 'Notification generation failed' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /meal-plan — AI 7-day meal planner
+// -----------------------------------------------------------------------
+app.post('/meal-plan', async function(req, res) {
+    try {
+        var body = req.body || {};
+        var dietary = body.dietary || 'all';
+        var budget = body.budget || 0;
+        var people = body.people || 1;
+
+        var available = (await getMenuData()).filter(function(i) { return i.available; });
+
+        var systemPrompt = 'Create a 7-day meal plan using ONLY items from this menu.\n\n' +
+            'MENU: ' + JSON.stringify(available) + '\n\n' +
+            'Diet: ' + dietary + ', Budget/day: ' + (budget || 'no limit') + ', People: ' + people + '\n\n' +
+            'Return JSON: { "days": [{"day":"Monday","meals":[{"mealType":"lunch|dinner","items":[{"name":"exact menu item","price":number,"qty":number}]}]}], ' +
+            '"totalCost": number, "dailyAverage": number, "tips": ["tip"] }\n' +
+            'Ensure variety. Only use exact item names from the menu. If veg, only isVeg=true items.';
+
+        var parsed = await callGemini(systemPrompt, 'Generate 7-day meal plan');
+        res.json(parsed);
+    } catch (e) {
+        console.error('POST /meal-plan error:', e);
+        res.status(500).json({ error: 'Meal plan generation failed' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /smart-combo — AI-optimized combo suggestions
+// -----------------------------------------------------------------------
+app.post('/smart-combo', async function(req, res) {
+    try {
+        var available = (await getMenuData()).filter(function(i) { return i.available; });
+
+        var since = new Date();
+        since.setDate(since.getDate() - 30);
+        var snap = await db.collection('orders').where('createdAt', '>=', since.toISOString()).limit(300).get();
+
+        var baskets = [];
+        snap.forEach(function(doc) {
+            baskets.push((doc.data().items || []).map(function(i) { return i.name; }));
+        });
+
+        var systemPrompt = 'You are a combo meal optimizer for Amogha Cafe.\n\n' +
+            'MENU: ' + JSON.stringify(available) + '\n' +
+            'RECENT ORDER BASKETS: ' + JSON.stringify(baskets.slice(0, 100)) + '\n\n' +
+            'Return JSON: { "combos": [{"name":"creative combo name","items":["item1","item2","item3"],"originalPrice":number,"suggestedPrice":number,"discount":number,"reason":"why","isVeg":boolean}] }\n' +
+            'Suggest 5-8 combos (2-4 items each). Combos should make culinary sense. Discount 10-20%. Include 2+ veg combos.';
+
+        var parsed = await callGemini(systemPrompt, 'Generate smart combos');
+        res.json(parsed);
+    } catch (e) {
+        console.error('POST /smart-combo error:', e);
+        res.status(500).json({ error: 'Combo generation failed' });
     }
 });

@@ -321,6 +321,26 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
+    // CHAT HISTORY — AI chatbot conversation context
+    // -------------------------------------------------------------------------
+    match /chatHistory/{id} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // MEAL PLANS — AI-generated saved meal plans
+    // -------------------------------------------------------------------------
+    match /mealPlans/{id} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
     // DEFAULT DENY — all other paths
     // -------------------------------------------------------------------------
     match /{document=**} {

@@ -1042,6 +1042,53 @@ export function initUI() {
                 searchEl.blur();
             }
         });
+
+        // ===== AI-ENHANCED SEARCH (debounced, fires after 800ms) =====
+        var aiSearchTimer;
+        searchEl.addEventListener('input', function() {
+            clearTimeout(aiSearchTimer);
+            var query = searchEl.value.trim();
+            if (query.length < 4) { removeAiSearchResults(); return; }
+            aiSearchTimer = setTimeout(async function() {
+                try {
+                    var badge = document.getElementById('ai-search-badge');
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.id = 'ai-search-badge';
+                        badge.className = 'ai-search-badge';
+                        searchEl.parentElement.appendChild(badge);
+                    }
+                    badge.textContent = 'AI searching...';
+                    badge.style.display = 'inline-block';
+
+                    var resp = await fetch('/api/smart-search', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: query })
+                    });
+                    var data = await resp.json();
+                    badge.textContent = 'AI: ' + (data.interpretation || 'results');
+
+                    if (data.results && data.results.length > 0) {
+                        document.querySelectorAll('.menu-item-card').forEach(function(card) {
+                            card.classList.remove('ai-highlighted');
+                        });
+                        data.results.forEach(function(r) {
+                            var card = document.querySelector('.menu-item-card[data-id="' + r.name + '"]');
+                            if (card) { card.style.display = ''; card.classList.add('ai-highlighted'); }
+                        });
+                    }
+                } catch(e) { removeAiSearchResults(); }
+            }, 800);
+        });
+
+        function removeAiSearchResults() {
+            var badge = document.getElementById('ai-search-badge');
+            if (badge) badge.style.display = 'none';
+            document.querySelectorAll('.menu-item-card.ai-highlighted').forEach(function(c) {
+                c.classList.remove('ai-highlighted');
+            });
+        }
     })();
 
     // ===== LAZY IMAGE LOAD COMPLETION =====
