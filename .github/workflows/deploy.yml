@@ -1,0 +1,27 @@
+name: Deploy to Firebase
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --run
+
+      - name: Deploy to Firebase Hosting + Firestore rules
+        run: npx firebase-tools deploy --only hosting,firestore:rules --token "$FIREBASE_TOKEN" --project amogha-cafe
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
