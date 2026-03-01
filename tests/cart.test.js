@@ -197,13 +197,13 @@ describe('Cart — localStorage persistence', () => {
 });
 
 describe('Combo discount constant', () => {
-    it('COMBO_DISCOUNT is 15%', () => {
-        expect(COMBO_DISCOUNT).toBe(0.15);
+    it('COMBO_DISCOUNT is 20%', () => {
+        expect(COMBO_DISCOUNT).toBe(0.20);
     });
 
-    it('applying 15% discount reduces price correctly', () => {
+    it('applying 20% discount reduces price correctly', () => {
         const comboTotal = 249 + 200 + 40;  // biryani + starter + drink = 489
         const discounted = Math.round(comboTotal * (1 - COMBO_DISCOUNT));
-        expect(discounted).toBe(Math.round(489 * 0.85));
+        expect(discounted).toBe(Math.round(489 * 0.80));
     });
 });
