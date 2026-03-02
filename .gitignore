@@ -96,3 +96,10 @@ kiosk-dist/
 android/app/build/
 android/app/src/main/assets/public/
 android/app/src/main/assets/capacitor.config.json
+
+# Android SDK local install
+platforms/
+emulator/
+platform-tools/
+system-images/
+licenses/

@@ -7,6 +7,9 @@
 
 ---
 
+> 🚀 *New:* see [21-all-features.md](21-all-features.md) for a complete, consolidated
+> feature catalog covering every user‑visible and admin capability in one place.
+>
 ## Pages
 
 | Doc | Page | URL |
@@ -34,13 +37,37 @@
 | [18-customer-profile.md](18-customer-profile.md) | Customer Profile (DOB, Dietary Prefs, Addresses) |
 | [19-group-ordering.md](19-group-ordering.md) | Group Ordering (Shared Carts) |
 | [20-subscriptions.md](20-subscriptions.md) | Subscription Meal Plans |
+| [21-all-features.md](21-all-features.md) | Consolidated Feature Catalog (All Modules) |
+
+*The "All Features" document pulls together details from every other page and
+serves as the canonical index for new developers or reviewers.*
 
 ## Infrastructure
 
 | Doc | Feature |
 |-----|---------|
-| [16-cloud-functions.md](16-cloud-functions.md) | REST API & Cloud Functions (ChatGPT integration) |
+| [16-cloud-functions.md](16-cloud-functions.md) | REST API, AI Chatbot Endpoints & Cloud Functions Automation |
 | [17-ci-cd-and-seo.md](17-ci-cd-and-seo.md) | CI/CD (GitHub Actions), SEO, Firebase Config |
+
+## API Coverage Notes
+
+- **OpenAPI-documented endpoints (`openapi.json`):**
+  - `GET /menu`
+  - `GET /specials`
+  - `POST /order`
+  - `GET /order/{orderId}`
+- **Additional deployed endpoints in `functions/index.js`:**
+  - `POST /parse-bill`
+  - `POST /notify`
+  - `POST /chat`
+  - `POST /smart-search`
+  - `POST /recommend`
+  - `POST /summarize-reviews`
+  - `POST /forecast`
+  - `POST /menu-insights`
+  - `POST /smart-notify`
+  - `POST /meal-plan`
+  - `POST /smart-combo`
 
 ---
 
@@ -49,7 +76,7 @@
 - **Frontend:** Vanilla HTML / CSS / JS (no framework)
 - **Build:** Vite (ES modules → bundled `script.js`)
 - **Backend:** Firebase — Firestore, Cloud Functions, Storage, Hosting
-- **AI:** Google Gemini 2.0 Flash (Vertex AI) for bill parsing
+- **AI:** Google Gemini 2.0 Flash (Vertex AI) for bill parsing, chatbot replies, menu insights, and smart notifications
 - **Payments:** Razorpay (UPI, Cards, Net Banking, Wallets) + Split Bill via UPI deep links
 - **Maps:** Leaflet.js + OpenStreetMap (live delivery tracking)
 - **Charts:** Chart.js 4.4 (admin analytics dashboard)
@@ -96,6 +123,7 @@ amogha-cafe/
 │       ├── notifications.js
 │       ├── payment.js
 │       ├── profile.js         # Customer profile (DOB, dietary, addresses)
+│       ├── chatbot.js         # AI chat assistant (conversational ordering + FAQ)
 │       ├── reservations.js
 │       ├── splitbill.js       # Post-checkout split bill
 │       ├── subscriptions.js   # Subscription meal plans
@@ -138,7 +166,9 @@ amogha-cafe/
 | groupCarts | Shared group ordering carts |
 | subscriptionPlans | Meal plan definitions (admin-managed) |
 | subscriptions | Customer subscription records |
-| branches | Multi-branch locations (future) |
+| branches | Multi-branch locations (future – schema already in place) |
+| chatHistory | AI chatbot conversation history/context |
+| mealPlans | AI-generated saved meal plans |
 
 ## Quick Commands
 
