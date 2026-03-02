@@ -1084,6 +1084,16 @@ firebase.initializeApp({
 });
 var db = firebase.firestore();
 
+// ── Capacitor Native App Detection ──────────────────────────────
+var isCapacitorApp = typeof window.Capacitor !== 'undefined';
+if (isCapacitorApp) {
+    // Hide fullscreen button (native app is always fullscreen)
+    var fsBtn = document.querySelector('.fs-btn');
+    if (fsBtn) fsBtn.style.display = 'none';
+    // Flag to skip SW registration
+    window.__SKIP_SW = true;
+}
+
 // ── Translations ───────────────────────────────────────────────
 var TR = {
     en: {
@@ -1731,7 +1741,11 @@ function placeOrderToFirestore(payMethod, paymentId, status) {
     db.collection('orders').add(orderData).then(function(docRef) {
         document.getElementById('loader').classList.remove('show');
         closeCheckout();
-        document.getElementById('success-track').href = window.location.origin + '/track/index.html?id=' + docRef.id;
+        if (isCapacitorApp) {
+            document.getElementById('success-track').style.display = 'none';
+        } else {
+            document.getElementById('success-track').href = window.location.origin + '/track/index.html?id=' + docRef.id;
+        }
         document.getElementById('soc-id').textContent = '#' + docRef.id.slice(-6).toUpperCase();
         document.getElementById('soc-items').textContent = count + (count === 1 ? ' item' : ' items');
         document.getElementById('soc-total').textContent = '\u20B9' + finalTotal;
@@ -1753,9 +1767,32 @@ function placeOrderToFirestore(payMethod, paymentId, status) {
         startAutoReset();
     }).catch(function(err) {
         document.getElementById('loader').classList.remove('show');
-        showToast('Failed to place order. Please try again.');
+        if (isCapacitorApp) {
+            // Queue order for retry when back online
+            var queue = JSON.parse(localStorage.getItem('kiosk_order_queue') || '[]');
+            queue.push(orderData);
+            localStorage.setItem('kiosk_order_queue', JSON.stringify(queue));
+            showToast('Order saved — will sync when online.');
+            closeCheckout();
+            document.getElementById('success-screen').classList.add('show');
+            cart = []; updateCartBar(); renderMenu(); startAutoReset();
+        } else {
+            showToast('Failed to place order. Please try again.');
+        }
         console.error('Order error:', err);
     });
+}
+
+// Retry queued offline orders (Capacitor only)
+if (isCapacitorApp) {
+    setInterval(function() {
+        var queue = JSON.parse(localStorage.getItem('kiosk_order_queue') || '[]');
+        if (queue.length === 0) return;
+        db.collection('orders').add(queue[0]).then(function() {
+            queue.shift();
+            localStorage.setItem('kiosk_order_queue', JSON.stringify(queue));
+        }).catch(function() {});
+    }, 30000);
 }
 
 // ── Confetti ───────────────────────────────────────────────────
@@ -2211,7 +2248,7 @@ function showWaitTime(mins) {
 
 // ── WHATSAPP RECEIPT ──────────────────────────────────────────
 function showWhatsAppBtn(orderId, phone, items, total, payMethod) {
-    if (!phone) return;
+    if (!phone || isCapacitorApp) return;
     var msg = '*Amogha Cafe - Order Receipt*\n';
     msg += 'Order: #' + orderId.slice(-6).toUpperCase() + '\n\n';
     items.forEach(function(i) {
@@ -2373,7 +2410,7 @@ setTimeout(loadPopularItems, 2000);
 
 <!-- Service Worker -->
 <script>
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && !window.__SKIP_SW) {
     navigator.serviceWorker.register('./sw.js').then(function(reg) { reg.update(); });
 }
 </script>
