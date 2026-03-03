@@ -310,12 +310,7 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
 /* ── Responsive ───────────────────────────────────────────── */
 @media(max-width:900px){
     .pos-menu-grid{grid-template-columns:repeat(2,1fr)}
-    .pos-order-col.has-items{width:280px}
-}
-@media(max-width:640px){
-    .pos-cats{width:80px}
-    .pos-cat-btn{font-size:10px;padding:8px 4px}
-    .pos-menu-grid{grid-template-columns:repeat(2,1fr);gap:8px;padding:8px}
+    /* iPad portrait + tablets: use fullscreen overlay (same as mobile) */
     .pos-order-col,.pos-order-col.has-items{
         position:fixed;inset:0;width:100%;overflow:hidden;border-left:none;
         z-index:300;transform:translateY(100%);
@@ -324,6 +319,11 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
     .pos-cart-bar{display:block}
     .pos-body{padding-bottom:70px}
     .pos-recent-panel{width:100%}
+}
+@media(max-width:640px){
+    .pos-cats{width:80px}
+    .pos-cat-btn{font-size:10px;padding:8px 4px}
+    .pos-menu-grid{gap:8px;padding:8px}
     .pos-recent-btn span{display:none}
 }
 </style>
