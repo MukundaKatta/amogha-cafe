@@ -50,7 +50,7 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
     color:var(--red);border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;transition:all .2s}
 .pos-logout:hover{background:rgba(231,76,60,.22)}
 
-.pos-body{display:flex;flex:1;overflow:hidden}
+.pos-body{display:flex;flex:1;overflow:hidden;min-height:0}
 
 /* ── Category Column ──────────────────────────────────────── */
 .pos-cats{width:110px;flex-shrink:0;overflow-y:auto;background:var(--bg2);
@@ -111,7 +111,8 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 /* ── Order Column ─────────────────────────────────────────── */
 .pos-order-col{width:0;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;
     border-left:none;background:var(--bg2);transition:width .25s cubic-bezier(.4,0,.2,1)}
-.pos-order-col.has-items{width:320px;border-left:1px solid rgba(255,255,255,.06);overflow:hidden}
+.pos-order-col.has-items{width:320px;border-left:1px solid rgba(255,255,255,.06);
+    overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .pos-order-header{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06);
     display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .pos-order-title{font-size:.95rem;font-weight:700;color:var(--txt)}
@@ -136,7 +137,8 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 .pos-qty-btn.plus:hover{background:rgba(39,174,96,.25)}
 .pos-qty-num{min-width:22px;text-align:center;font-size:.85rem;font-weight:700;color:var(--txt)}
 
-.pos-order-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.pos-order-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;
+    position:sticky;bottom:0;background:var(--bg2);z-index:2}
 .pos-customer-row{display:flex;gap:8px;margin-bottom:8px}
 .pos-customer-row input{flex:1;padding:8px 10px;background:var(--bg3);border:1px solid rgba(255,255,255,.08);
     border-radius:8px;color:var(--txt);font-size:.8rem;outline:none}
@@ -284,7 +286,8 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
 .pos-mode-btn:hover{border-color:var(--gold);color:var(--gold)}
 
 /* ── Proceed to Checkout bar ──────────────────────────────── */
-.pos-checkout-bar{padding:12px 16px;flex-shrink:0;cursor:pointer}
+.pos-checkout-bar{padding:12px 16px;flex-shrink:0;cursor:pointer;
+    position:sticky;bottom:0;background:var(--bg2);z-index:2}
 .pos-checkout-bar-inner{display:flex;align-items:center;justify-content:space-between;
     background:linear-gradient(135deg,var(--gold),var(--gold-d));
     border-radius:12px;padding:13px 18px;transition:opacity .15s}
