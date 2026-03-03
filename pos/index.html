@@ -196,6 +196,68 @@ body.light-mode .pos-cart-bar{background:linear-gradient(to top,rgba(244,239,230
 body.light-mode .pos-header-time{color:var(--txt2)}
 body.light-mode html,body.light-mode body{background:var(--bg)}
 
+/* ── Recent Orders Panel ───────────────────────────────────── */
+.pos-recent-btn{padding:6px 12px;background:rgba(212,160,23,.1);border:1.5px solid rgba(212,160,23,.25);
+    color:var(--gold);border-radius:8px;cursor:pointer;font-size:.78rem;font-weight:600;
+    display:flex;align-items:center;gap:5px;transition:all .2s;flex-shrink:0;white-space:nowrap}
+.pos-recent-btn:hover{background:rgba(212,160,23,.2)}
+.pos-recent-panel{position:fixed;top:0;right:0;height:100vh;width:380px;
+    background:var(--bg2);border-left:1px solid rgba(212,160,23,.15);
+    display:flex;flex-direction:column;z-index:400;
+    transform:translateX(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);
+    box-shadow:-8px 0 32px rgba(0,0,0,.3)}
+.pos-recent-panel.open{transform:translateX(0)}
+.pos-recent-head{display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
+.pos-recent-title{font-size:1rem;font-weight:700;color:var(--txt)}
+.pos-recent-close{background:none;border:none;color:var(--txt2);font-size:1.4rem;
+    cursor:pointer;padding:0 4px;line-height:1}
+.pos-recent-close:hover{color:var(--txt)}
+.pos-recent-filters{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
+.pos-rf-btn{padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.1);
+    background:none;color:var(--txt2);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s}
+.pos-rf-btn.active{background:rgba(212,160,23,.15);border-color:var(--gold);color:var(--gold)}
+.pos-recent-list{flex:1;min-height:0;overflow-y:auto;padding:10px 12px;
+    display:flex;flex-direction:column;gap:8px;scrollbar-width:thin;
+    scrollbar-color:rgba(212,160,23,.2) transparent}
+.pos-ro-card{background:var(--bg3);border:1px solid rgba(255,255,255,.06);
+    border-radius:12px;padding:12px 14px;cursor:default;transition:border-color .2s}
+.pos-ro-card:hover{border-color:rgba(212,160,23,.2)}
+.pos-ro-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.pos-ro-id{font-size:.78rem;font-weight:700;color:var(--gold);font-family:monospace}
+.pos-ro-time{font-size:.72rem;color:var(--txt3)}
+.pos-ro-customer{font-size:.85rem;font-weight:600;color:var(--txt);margin-bottom:4px}
+.pos-ro-items{font-size:.75rem;color:var(--txt3);margin-bottom:8px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pos-ro-bottom{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pos-ro-total{font-size:.9rem;font-weight:700;color:var(--txt);margin-right:auto}
+.pos-ro-status{padding:3px 8px;border-radius:20px;font-size:.68rem;font-weight:700}
+.pos-ro-status.pending{background:rgba(243,156,18,.15);color:#f39c12}
+.pos-ro-status.confirmed{background:rgba(52,152,219,.15);color:#3498db}
+.pos-ro-status.preparing{background:rgba(155,89,182,.15);color:#9b59b6}
+.pos-ro-status.ready{background:rgba(39,174,96,.15);color:#27ae60}
+.pos-ro-status.delivered{background:rgba(127,140,141,.15);color:#7f8c8d}
+.pos-ro-status.cancelled{background:rgba(231,76,60,.15);color:#e74c3c}
+.pos-ro-pay{padding:3px 8px;border-radius:20px;font-size:.68rem;font-weight:600;
+    background:rgba(255,255,255,.06);color:var(--txt2)}
+.pos-ro-type{padding:3px 7px;border-radius:20px;font-size:.66rem;font-weight:600;
+    background:rgba(52,152,219,.12);color:#3498db}
+.pos-ro-reprint{padding:4px 10px;border-radius:6px;border:1px solid rgba(212,160,23,.3);
+    background:none;color:var(--gold);font-size:.72rem;font-weight:600;cursor:pointer;
+    transition:all .15s;margin-left:auto}
+.pos-ro-reprint:hover{background:rgba(212,160,23,.15)}
+.pos-recent-empty{flex:1;display:flex;align-items:center;justify-content:center;
+    color:var(--txt3);font-size:.85rem;text-align:center;padding:40px 20px}
+.pos-recent-loading{flex:1;display:flex;align-items:center;justify-content:center;
+    color:var(--txt3);font-size:.85rem}
+/* light mode overrides */
+body.light-mode .pos-recent-panel{background:var(--bg2);border-color:rgba(0,0,0,.1);
+    box-shadow:-8px 0 32px rgba(0,0,0,.12)}
+body.light-mode .pos-recent-head{border-color:rgba(0,0,0,.07)}
+body.light-mode .pos-ro-card{background:var(--bg3);border-color:rgba(0,0,0,.07)}
+body.light-mode .pos-ro-card:hover{border-color:rgba(212,160,23,.3)}
+body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
+
 /* ── Mode Toggle Button ────────────────────────────────────── */
 .pos-mode-btn{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(212,160,23,.3);
     background:var(--bg3);color:var(--txt2);font-size:1rem;cursor:pointer;
@@ -247,6 +309,8 @@ body.light-mode html,body.light-mode body{background:var(--bg)}
     .pos-order-col.mobile-open{transform:translateY(0)}
     .pos-cart-bar{display:block}
     .pos-body{padding-bottom:70px}
+    .pos-recent-panel{width:100%}
+    .pos-recent-btn span{display:none}
 }
 </style>
 </head>
@@ -275,6 +339,7 @@ body.light-mode html,body.light-mode body{background:var(--bg)}
             <div style="font-size:.7rem;color:var(--txt2)">POS Terminal</div>
         </div>
         <div class="pos-header-time" id="pos-clock"></div>
+        <button class="pos-recent-btn" onclick="toggleRecentOrders()">📋 <span>Recent Orders</span></button>
         <button class="pos-mode-btn" id="pos-mode-btn" onclick="togglePosMode()" title="Toggle light/dark mode">☾</button>
         <button class="pos-logout" onclick="posLogout()">Logout</button>
     </div>
@@ -335,6 +400,23 @@ body.light-mode html,body.light-mode body{background:var(--bg)}
             <span class="pos-cart-bar-label" id="pos-cart-bar-label">View Cart</span>
             <span class="pos-cart-bar-total" id="pos-cart-bar-total">₹0</span>
         </div>
+    </div>
+</div>
+
+<!-- Recent Orders Panel -->
+<div class="pos-recent-panel" id="pos-recent-panel">
+    <div class="pos-recent-head">
+        <div class="pos-recent-title">Recent Orders</div>
+        <button class="pos-recent-close" onclick="toggleRecentOrders()">&times;</button>
+    </div>
+    <div class="pos-recent-filters">
+        <button class="pos-rf-btn active" onclick="setRecentFilter('all',this)">All</button>
+        <button class="pos-rf-btn" onclick="setRecentFilter('pos',this)">POS Only</button>
+        <button class="pos-rf-btn" onclick="setRecentFilter('today',this)">Today</button>
+        <button class="pos-rf-btn" onclick="setRecentFilter('pending',this)">Pending</button>
+    </div>
+    <div class="pos-recent-list" id="pos-recent-list">
+        <div class="pos-recent-loading">Loading orders...</div>
     </div>
 </div>
 
@@ -699,6 +781,90 @@ function newOrder() {
 
 function escH(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Recent Orders ─────────────────────────────────────────────
+var recentOrders = [];
+var recentUnsubscribe = null;
+var recentFilter = 'all';
+var recentPanelOpen = false;
+
+function toggleRecentOrders() {
+    recentPanelOpen = !recentPanelOpen;
+    document.getElementById('pos-recent-panel').classList.toggle('open', recentPanelOpen);
+    if (recentPanelOpen && recentUnsubscribe === null) startRecentOrdersListener();
+}
+
+function startRecentOrdersListener() {
+    if (!shopId) return;
+    recentUnsubscribe = db.collection('orders')
+        .where('shopId', '==', shopId)
+        .orderBy('createdAt', 'desc')
+        .limit(50)
+        .onSnapshot(function(snap) {
+            recentOrders = [];
+            snap.forEach(function(doc) { recentOrders.push({ id: doc.id, ...doc.data() }); });
+            renderRecentOrders();
+        }, function(err) { console.error('Recent orders error:', err); });
+}
+
+function setRecentFilter(f, btn) {
+    recentFilter = f;
+    document.querySelectorAll('.pos-rf-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    renderRecentOrders();
+}
+
+function renderRecentOrders() {
+    var todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    var filtered = recentOrders.filter(function(o) {
+        if (recentFilter === 'pos') return o.orderType === 'pos';
+        if (recentFilter === 'today') return new Date(o.createdAt) >= todayStart;
+        if (recentFilter === 'pending') return o.status === 'pending' || o.status === 'confirmed' || o.status === 'preparing';
+        return true;
+    }).slice(0, 30);
+
+    var list = document.getElementById('pos-recent-list');
+    if (!filtered.length) {
+        list.innerHTML = '<div class="pos-recent-empty">No orders found</div>';
+        return;
+    }
+
+    list.innerHTML = filtered.map(function(o) {
+        var d = new Date(o.createdAt);
+        var timeStr = d.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
+        var dateStr = d.toLocaleDateString('en-IN', {day:'2-digit', month:'short'});
+        var isToday = d >= (function(){ var t=new Date(); t.setHours(0,0,0,0); return t; })();
+        var displayTime = isToday ? timeStr : dateStr + ' ' + timeStr;
+        var itemsSummary = (o.items || []).map(function(i){ return escH(i.name) + (i.qty > 1 ? ' ×'+i.qty : ''); }).join(', ');
+        var status = (o.status || 'pending').toLowerCase();
+        var statusLabel = {pending:'Pending', confirmed:'Confirmed', preparing:'Preparing',
+            ready:'Ready', delivered:'Delivered', cancelled:'Cancelled'}[status] || status;
+        var typeHtml = o.orderType === 'pos' ? '<span class="pos-ro-type">POS</span>' : '';
+        var escapedId = o.id.replace(/'/g,"\\'");
+        return '<div class="pos-ro-card">' +
+            '<div class="pos-ro-top">' +
+                '<span class="pos-ro-id">#' + o.id.slice(-6).toUpperCase() + '</span>' +
+                '<span class="pos-ro-time">' + displayTime + '</span>' +
+            '</div>' +
+            '<div class="pos-ro-customer">' + escH(o.customer || 'Walk-in') +
+                (o.tableNumber ? ' · Table ' + escH(o.tableNumber) : '') + '</div>' +
+            '<div class="pos-ro-items">' + (itemsSummary || '—') + '</div>' +
+            '<div class="pos-ro-bottom">' +
+                '<span class="pos-ro-total">₹' + (o.total || 0) + '</span>' +
+                typeHtml +
+                '<span class="pos-ro-status ' + status + '">' + statusLabel + '</span>' +
+                '<span class="pos-ro-pay">' + escH(o.payment || 'Cash') + '</span>' +
+                '<button class="pos-ro-reprint" onclick="reprintOrder(\'' + escapedId + '\')">🖨 Reprint</button>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function reprintOrder(orderId) {
+    var o = recentOrders.find(function(r){ return r.id === orderId; });
+    if (!o) return;
+    showBill(o.id, o);
 }
 </script>
 </body>
