@@ -1041,7 +1041,7 @@
 </div>
 
 <!-- Addon Picker Overlay -->
-<div class="addon-overlay" id="addon-overlay" onclick="if(event.target===this)confirmAddons()">
+<div class="addon-overlay" id="addon-overlay" onclick="if(event.target===this)cancelAddons()">
     <div class="addon-sheet">
         <div class="addon-header">
             <h3 data-i18n="addExtras">Add Extras</h3>
@@ -1607,6 +1607,11 @@ function updateAddonTotal() {
 function confirmAddons() {
     document.getElementById('addon-overlay').classList.remove('open');
     finalizeCartAdd();
+}
+function cancelAddons() {
+    document.getElementById('addon-overlay').classList.remove('open');
+    pendingItem = null;
+    selectedAddons = [];
 }
 function finalizeCartAdd() {
     if (!pendingItem) return;

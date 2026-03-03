@@ -452,6 +452,8 @@
         }
         .status-delivered::before { background: #27ae60; box-shadow: 0 0 6px rgba(39, 174, 96, 0.5); }
 
+        .status-pos-pending { background: rgba(155, 89, 182, 0.15); color: #9b59b6; border: 1px solid rgba(155, 89, 182, 0.3); }
+        .status-pos-pending::before { background: #9b59b6; }
         .status-cancelled {
             background: rgba(231, 76, 60, 0.1);
             color: #e74c3c;
@@ -482,6 +484,11 @@
             font-size: 0.75rem;
         }
 
+        .order-type-badge {
+            font-size: 0.68rem; font-weight: 600; padding: 1px 6px; border-radius: 8px;
+            background: rgba(155,89,182,0.15); color: #9b59b6;
+            border: 1px solid rgba(155,89,182,0.3); margin-left: 0.5rem;
+        }
         .order-address {
             font-size: 0.78rem;
             color: var(--text-dim);
@@ -2353,6 +2360,7 @@
             <button class="filter-btn" onclick="filterOrders('preparing', this)">Preparing</button>
             <button class="filter-btn" onclick="filterOrders('delivered', this)">Delivered</button>
             <button class="filter-btn" onclick="filterOrders('cancelled', this)">Cancelled</button>
+            <button class="filter-btn" onclick="filterOrders('pos', this)" title="POS terminal orders">🖥 POS</button>
             <button class="filter-btn export-btn" onclick="exportOrdersCSV()" title="Export filtered orders as CSV">Export CSV</button>
         </div>
 
@@ -3371,7 +3379,9 @@
 
         function renderOrders() {
             var container = document.getElementById('orders-container');
-            var filtered = currentFilter === 'all' ? allOrders : allOrders.filter(function(o) { return o.status === currentFilter; });
+            var filtered = currentFilter === 'all' ? allOrders
+                : currentFilter === 'pos' ? allOrders.filter(function(o) { return o.orderType === 'pos'; })
+                : allOrders.filter(function(o) { return o.status === currentFilter; });
 
             if (filtered.length === 0) {
                 container.innerHTML = '<div class="empty-state"><div class="icon">\uD83D\uDCCB</div><p>No ' + (currentFilter === 'all' ? '' : currentFilter + ' ') + 'orders yet</p><p class="sub">Orders will appear here in real-time</p></div>';
@@ -3401,7 +3411,7 @@
                         '<span class="order-time">' + escHtml(timeStr) + '</span>' +
                         '<span class="order-status status-' + safeStatus + '">' + safeStatus + '</span>' +
                     '</div>' +
-                    '<div class="order-customer"><strong>' + escHtml(order.customer || 'Unknown') + '</strong><span class="phone">' + escHtml(order.phone || '') + '</span></div>' +
+                    '<div class="order-customer"><strong>' + escHtml(order.customer || 'Unknown') + '</strong><span class="phone">' + escHtml(order.phone && order.phone !== 'pos' ? order.phone : '') + '</span>' + (order.orderType === 'pos' ? '<span class="order-type-badge">🖥 POS</span>' : '') + '</div>' +
                     (order.address ? '<div class="order-address">' + escHtml(order.address) + '</div>' : '') +
                     notesHtml +
                     '<div class="order-items">' + itemsHtml + '</div>' +
@@ -3416,6 +3426,7 @@
                             '<option value="preparing"' + (order.status === 'preparing' ? ' selected' : '') + '>Preparing</option>' +
                             '<option value="delivered"' + (order.status === 'delivered' ? ' selected' : '') + '>Delivered</option>' +
                             '<option value="cancelled"' + (order.status === 'cancelled' ? ' selected' : '') + '>Cancelled</option>' +
+                            (order.status === 'pos-pending' ? '<option value="pos-pending" selected>POS Pending</option>' : '') +
                         '</select>' +
                         '<a class="wa-update-btn" href="https://wa.me/' + waPhone + '?text=' + encodeURIComponent(waMsg) + '" target="_blank" rel="noopener" title="Send WhatsApp update">WhatsApp</a>' +
                         '<button class="order-print-btn" onclick="printOrder(\'' + escHtml(order.id) + '\')">Print</button>' +
@@ -4792,7 +4803,9 @@
 
         // ─── EXPORT CSV ───
         function exportOrdersCSV() {
-            var filtered = currentFilter === 'all' ? allOrders : allOrders.filter(function(o) { return o.status === currentFilter; });
+            var filtered = currentFilter === 'all' ? allOrders
+                : currentFilter === 'pos' ? allOrders.filter(function(o) { return o.orderType === 'pos'; })
+                : allOrders.filter(function(o) { return o.status === currentFilter; });
             if (filtered.length === 0) { alert('No orders to export'); return; }
             var rows = [['Order ID','Date','Customer','Phone','Address','Items','Subtotal','Delivery Fee','Total','Payment','Status']];
             filtered.forEach(function(o) {

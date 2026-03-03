@@ -426,6 +426,7 @@ export function displayCart() {
 
 // Update quantity
 export function updateQuantity(index, change) {
+    if (!cart[index]) return;
     const itemName = cart[index].name;
     cart[index].quantity += change;
 
@@ -442,6 +443,7 @@ export function updateQuantity(index, change) {
 
 // Remove item
 export function removeItem(index) {
+    if (!cart[index]) return;
     const itemName = cart[index].name;
     cart.splice(index, 1);
     updateCartCount();

@@ -251,6 +251,7 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
             <div class="pos-order-footer" id="pos-order-footer" style="display:none">
                 <div class="pos-customer-row">
                     <input type="text" id="pos-cust-name" placeholder="Customer name (optional)">
+                    <input type="tel" id="pos-cust-phone" placeholder="Phone (optional)" style="max-width:130px" maxlength="10" inputmode="numeric">
                     <input type="text" id="pos-table" placeholder="Table #" style="max-width:80px">
                 </div>
                 <div class="pos-pay-methods">
@@ -533,15 +534,16 @@ function placeOrder() {
     var btn = document.getElementById('pos-place-btn');
     btn.disabled = true; btn.textContent = 'Placing...';
     var name = document.getElementById('pos-cust-name').value.trim() || 'Walk-in';
+    var phone = document.getElementById('pos-cust-phone').value.trim();
     var table = document.getElementById('pos-table').value.trim();
     var total = cart.reduce(function(s,c){ return s + c.price*c.qty; }, 0);
     var orderData = {
         customer: name,
-        phone: 'pos',
+        phone: phone || 'pos',
         items: cart.map(function(c){ return { name:c.name, qty:c.qty, price:c.price }; }),
         total: total,
         subtotal: total,
-        status: 'pos-pending',
+        status: 'pending',
         orderType: 'pos',
         shopId: shopId,
         payment: payMethod,
@@ -574,6 +576,7 @@ function showBill(orderId, data) {
         '<div class="bill-row label"><span>Order</span><span>#' + orderId.slice(-6).toUpperCase() + '</span></div>' +
         '<div class="bill-row label"><span>Date</span><span>' + dateStr + '</span></div>' +
         (data.customer && data.customer !== 'Walk-in' ? '<div class="bill-row label"><span>Customer</span><span>' + escH(data.customer) + '</span></div>' : '') +
+        (data.phone && data.phone !== 'pos' ? '<div class="bill-row label"><span>Phone</span><span>' + escH(data.phone) + '</span></div>' : '') +
         (data.tableNumber ? '<div class="bill-row label"><span>Table</span><span>' + escH(data.tableNumber) + '</span></div>' : '') +
         '<hr class="bill-divider">' +
         itemRows +
@@ -593,6 +596,7 @@ function newOrder() {
     document.getElementById('pos-bill-overlay').classList.remove('show');
     cart = [];
     document.getElementById('pos-cust-name').value = '';
+    document.getElementById('pos-cust-phone').value = '';
     document.getElementById('pos-table').value = '';
     payMethod = 'Cash';
     document.querySelectorAll('.pos-pay-btn').forEach(function(b,i){ b.classList.toggle('active', i===0); });

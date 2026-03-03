@@ -54,7 +54,7 @@ service cloud.firestore {
                     && isString(request.resource.data.phone)
                     && isString(request.resource.data.pin)
                     && request.resource.data.phone == phone;
-      allow update: if true;  // loyalty points, tier, order history, preferences
+      allow update: if !request.resource.data.diff(resource.data).affectedKeys().hasAny(['phone', 'pin']);  // protect PIN and phone; loyalty/prefs/tier freely updatable
       allow delete: if false;
     }
 
@@ -83,7 +83,9 @@ service cloud.firestore {
     match /menu/{itemId} {
       allow read: if true;
       allow create, delete: if false;
-      allow update: if true;
+      // Admin panel writes from client — validate price is positive to prevent tampering
+      allow update: if !request.resource.data.keys().hasAny(['price'])
+                    || (isNumber(request.resource.data.price) && request.resource.data.price > 0);
     }
 
     // -------------------------------------------------------------------------
@@ -280,7 +282,9 @@ service cloud.firestore {
                     && isString(request.resource.data.description)
                     && isNumber(request.resource.data.amount)
                     && request.resource.data.amount > 0;
-      allow update: if true;
+      allow update: if hasFields(['date', 'category', 'amount', 'description'])
+                    && isNumber(request.resource.data.amount)
+                    && request.resource.data.amount > 0;
       allow delete: if true;
     }
 
