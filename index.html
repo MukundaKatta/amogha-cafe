@@ -1351,7 +1351,8 @@
         var db = firebase.firestore();
         var analytics = firebase.analytics();
     </script>
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/script.js?v=20260303"></script>
+    <script nomodule src="/script-legacy.js?v=20260303"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(function(reg) {
