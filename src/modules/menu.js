@@ -184,123 +184,157 @@ function applyFlameBadges() {
     });
 }
 
-// ===== FIRESTORE MENU OVERLAY =====
-// Syncs availability & prices from Firestore onto hardcoded menu HTML
+// ===== DYNAMIC MENU RENDERER =====
+// Category display order (priority list; anything not here goes alphabetically after)
+var CATEGORY_ORDER = [
+    'Tiffins',
+    'Non-veg Biryani', 'Veg Biryani', 'Biryanis',
+    'Non-veg Starters', 'Veg Starters', 'Starters',
+    'Non-veg Curries', 'Veg Curries', 'Curries',
+    'Non-veg Rice', 'Veg Rice',
+    'Non-veg Noodles', 'Veg Noodles', 'Noodles & Fried Rice',
+    'Non-veg Pulao', 'Veg Pulao',
+    'Non-veg Soups', 'Veg Soups',
+    'Rice Bowls', 'Non-veg Rolls', 'Veg Rolls',
+    'Kebabs & Grill', 'Rotis & Naan', 'Rotis/Naans',
+    'French Fries', 'Omelette', 'Fried Egg', 'Boiled Egg',
+    'Beverages', 'Sweets', 'Extras', 'Others'
+];
+
+var CATEGORY_EMOJI = {
+    'Tiffins':'🍱','Non-veg Biryani':'🍛','Veg Biryani':'🍚','Biryanis':'🍛',
+    'Non-veg Starters':'🍗','Veg Starters':'🥗','Starters':'🍢',
+    'Non-veg Curries':'🍲','Veg Curries':'🫕','Curries':'🍲',
+    'Non-veg Rice':'🍛','Veg Rice':'🍚','Non-veg Noodles':'🍜','Veg Noodles':'🍜','Noodles & Fried Rice':'🍜',
+    'Non-veg Pulao':'🍛','Veg Pulao':'🍚','Non-veg Soups':'🍲','Veg Soups':'🥣',
+    'Rice Bowls':'🫙','Non-veg Rolls':'🌯','Veg Rolls':'🌯',
+    'Kebabs & Grill':'🔥','Rotis & Naan':'🫓','Rotis/Naans':'🫓',
+    'French Fries':'🍟','Omelette':'🍳','Fried Egg':'🍳','Boiled Egg':'🥚',
+    'Beverages':'🧃','Sweets':'🍬','Extras':'🫙','Others':'🍽️'
+};
+
+var CATEGORY_IMAGES = {
+    'Starters':'pics/Gemini_Generated_Image_wnzsqxwnzsqxwnzs.png',
+    'Curries':'pics/Gemini_Generated_Image_tu348stu348stu34.png',
+    'Biryanis':'pics/Gemini_Generated_Image_h1vezgh1vezgh1ve.png',
+    'Kebabs & Grill':'pics/Gemini_Generated_Image_5jdcgq5jdcgq5jdc.png',
+    'Noodles & Fried Rice':'pics/Gemini_Generated_Image_1ojbou1ojbou1ojb.png',
+    'Rotis & Naan':'pics/Gemini_Generated_Image_6lqqu6lqqu6lqqu6.png'
+};
+
+function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function catSlug(cat) { return cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g,''); }
+
+function renderItemCard(item) {
+    var isVeg = item.type === 'veg' || item.isVeg === true;
+    var badge = isVeg ? '<span class="veg-badge">🟢</span>' : '<span class="nonveg-badge">🔴</span>';
+    var imgHtml = item.imageUrl
+        ? '<div class="menu-item-img-wrap has-image"><img class="menu-item-img loaded" src="' + escH(item.imageUrl) + '" alt="" loading="lazy"></div>'
+        : '';
+    var allergens = (item.allergens || []).join(',');
+    var unavailCls = item.available === false ? ' item-unavailable' : '';
+    var unavailStyle = item.available === false ? ' style="opacity:.45;pointer-events:none;filter:grayscale(.3)"' : '';
+    var descHtml = item.description ? '<p class="item-description">' + escH(item.description) + '</p>' : '';
+    var allergenMeta = {nuts:'🥜',dairy:'🥛',gluten:'🌾',eggs:'🥚',soy:'🫘',shellfish:'🦐',sesame:'⚪',fish:'🐟'};
+    var allergenHtml = '';
+    if (item.allergens && item.allergens.length) {
+        allergenHtml = '<div class="menu-allergen-icons">' +
+            item.allergens.map(function(a){ return '<span class="allergen-icon">'+(allergenMeta[a]||'')+' '+escH(a)+'</span>'; }).join('') +
+            '</div>';
+    }
+    return '<div class="menu-item-card' + unavailCls + '" data-id="' + escH(item.name) + '" data-allergens="' + escH(allergens) + '"' + unavailStyle + '>' +
+        imgHtml +
+        '<div class="item-header">' + badge + '<h4>' + escH(item.name) + '</h4><span class="price">&#8377;' + (item.price || 0) + '</span></div>' +
+        descHtml + allergenHtml +
+        '<div class="spice-selector"><span class="label">Spice:</span>' +
+        '<span class="spice-level active" onclick="selectSpice(this)">Mild</span>' +
+        '<span class="spice-level" onclick="selectSpice(this)">Medium</span>' +
+        '<span class="spice-level" onclick="selectSpice(this)">Spicy</span></div>' +
+        '<button class="add-to-cart" data-item="' + escH(item.name) + '" data-price="' + (item.price || 0) + '">Add to Order</button>' +
+        '</div>';
+}
+
+function renderMenuCategories(menuData) {
+    // Group items by category
+    var groups = {};
+    Object.keys(menuData).forEach(function(name) {
+        var item = menuData[name];
+        var cat = (item.category || 'Others').trim() || 'Others';
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(Object.assign({ name: name }, item));
+    });
+
+    // Sort categories
+    var cats = Object.keys(groups).sort(function(a, b) {
+        var ai = CATEGORY_ORDER.indexOf(a), bi = CATEGORY_ORDER.indexOf(b);
+        if (ai === -1 && bi === -1) return a.localeCompare(b);
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+    });
+
+    // Sort items within each category by sortOrder then name
+    cats.forEach(function(cat) {
+        groups[cat].sort(function(a, b) {
+            var so = (a.sortOrder || 999) - (b.sortOrder || 999);
+            return so !== 0 ? so : (a.name || '').localeCompare(b.name || '');
+        });
+    });
+
+    // Render category sections
+    var container = document.getElementById('dynamic-menu-container');
+    if (container) {
+        container.innerHTML = cats.map(function(cat) {
+            var slug = catSlug(cat);
+            return '<div class="menu-category" id="cat-' + slug + '">' +
+                '<h3 class="category-title">' + escH(cat) + '</h3>' +
+                '<div class="menu-items">' + groups[cat].map(renderItemCard).join('') + '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    // Render category carousel
+    var carousel = document.getElementById('category-carousel');
+    if (carousel) {
+        carousel.innerHTML = cats.map(function(cat) {
+            var slug = catSlug(cat);
+            var img = CATEGORY_IMAGES[cat];
+            var emoji = CATEGORY_EMOJI[cat] || '🍽️';
+            var visual = img
+                ? '<div class="category-img-wrap"><img src="' + escH(img) + '" alt="' + escH(cat) + '" loading="lazy"></div>'
+                : '<div class="category-img-wrap" style="display:flex;align-items:center;justify-content:center;font-size:2rem;background:rgba(212,160,23,.08)">' + emoji + '</div>';
+            return '<a href="#cat-' + slug + '" class="category-item" data-category="' + escH(cat) + '">' +
+                visual + '<span class="category-name">' + escH(cat) + '</span></a>';
+        }).join('');
+    }
+
+    applyFlameBadges();
+    if (window._safeForMeActive) applySafeForMeFilter();
+}
+
+// ===== FIRESTORE MENU SYNC (fully dynamic) =====
 export function initMenuSync() {
     var db = getDb();
     if (!db) return;
 
-    // Show skeletons immediately while waiting for Firestore
-    showMenuSkeletons();
-
-    // Helper: ensure image wrapper exists on a menu card
-    function ensureImageWrap(card) {
-        var wrap = card.querySelector('.menu-item-img-wrap');
-        if (wrap) return wrap;
-        wrap = document.createElement('div');
-        wrap.className = 'menu-item-img-wrap';
-        var img = document.createElement('img');
-        img.className = 'menu-item-img';
-        img.alt = '';
-        img.loading = 'lazy';
-        var ph = document.createElement('div');
-        ph.className = 'menu-item-img-placeholder';
-        ph.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Image coming soon</span>';
-        wrap.appendChild(img);
-        wrap.appendChild(ph);
-        card.insertBefore(wrap, card.firstChild);
-        return wrap;
+    // Skeleton while loading
+    var container = document.getElementById('dynamic-menu-container');
+    if (container) {
+        var sk = '<div class="menu-category"><h3 class="category-title"><div class="skeleton-line w-60" style="height:1.2rem;border-radius:6px;background:#2a2a3a;width:160px;margin-bottom:1rem"></div></h3><div class="menu-items">' +
+            Array(4).fill('<div class="menu-skeleton-card"><div class="skeleton-line h-img"></div><div class="skeleton-line w-60"></div><div class="skeleton-line w-100"></div><div class="skeleton-btn"></div></div>').join('') +
+            '</div></div>';
+        container.innerHTML = sk + sk;
     }
 
-    // 1. Menu items — overlay availability, price & image updates
+    // 1. Menu items — live listener, full re-render on change
     db.collection('menu').onSnapshot(function(snapshot) {
-        removeMenuSkeletons();
         var menuData = {};
-        snapshot.forEach(function(doc) {
-            menuData[doc.id] = doc.data();
-        });
-
-        document.querySelectorAll('.menu-item-card[data-id]').forEach(function(card) {
-            var itemId = card.dataset.id;
-            var item = menuData[itemId];
-
-            // Hide card if item was deleted from Firestore
-            if (!item) {
-                card.style.display = 'none';
-                return;
-            }
-            card.style.display = '';
-
-            // Availability
-            if (!item.available) {
-                card.classList.add('item-unavailable');
-                card.style.opacity = '0.45';
-                card.style.pointerEvents = 'none';
-                card.style.filter = 'grayscale(0.3)';
-            } else {
-                card.classList.remove('item-unavailable');
-                card.style.opacity = '';
-                card.style.pointerEvents = '';
-                card.style.filter = '';
-            }
-
-            // Price sync
-            var btn = card.querySelector('.add-to-cart');
-            if (btn && item.price !== parseInt(btn.dataset.price)) {
-                btn.dataset.price = item.price;
-                var priceEl = card.querySelector('.price');
-                if (priceEl) priceEl.innerHTML = '&#8377;' + item.price;
-            }
-
-            // Image sync
-            var imgWrap = ensureImageWrap(card);
-            var imgEl = imgWrap.querySelector('.menu-item-img');
-            if (item.imageUrl) {
-                if (imgEl.dataset.currentUrl !== item.imageUrl) {
-                    imgEl.dataset.currentUrl = item.imageUrl;
-                    imgEl.src = item.imageUrl;
-                    imgEl.onload = function() {
-                        imgEl.classList.add('loaded');
-                        imgWrap.classList.add('has-image');
-                    };
-                    imgEl.onerror = function() {
-                        imgEl.classList.remove('loaded');
-                        imgWrap.classList.remove('has-image');
-                        imgEl.src = '';
-                    };
-                }
-                card.dataset.imageUrl = item.imageUrl;
-            } else {
-                imgEl.classList.remove('loaded');
-                imgWrap.classList.remove('has-image');
-                imgEl.src = '';
-                imgEl.dataset.currentUrl = '';
-                delete card.dataset.imageUrl;
-            }
-
-            // Allergen icons
-            var allergens = item.allergens || [];
-            card.dataset.allergens = allergens.join(',');
-            var existingAllergenRow = card.querySelector('.menu-allergen-icons');
-            if (existingAllergenRow) existingAllergenRow.remove();
-            if (allergens.length > 0) {
-                var allergenMeta = { nuts: '🥜', dairy: '🥛', gluten: '🌾', eggs: '🥚', soy: '🫘', shellfish: '🦐', sesame: '⚪', fish: '🐟' };
-                var allergenHtml = '<div class="menu-allergen-icons">';
-                allergens.forEach(function(a) { allergenHtml += '<span class="allergen-icon">' + (allergenMeta[a] || '') + ' ' + a + '</span>'; });
-                allergenHtml += '</div>';
-                var desc = card.querySelector('.item-description') || card.querySelector('.price');
-                if (desc) desc.insertAdjacentHTML('afterend', allergenHtml);
-            }
-        });
-
-        // Apply flame badges after menu data is loaded
-        applyFlameBadges();
-
-        // Re-apply Safe for Me filter if active
-        if (window._safeForMeActive) applySafeForMeFilter();
+        snapshot.forEach(function(doc) { menuData[doc.id] = doc.data(); });
+        renderMenuCategories(menuData);
     }, function(error) {
         console.error('Menu listener error:', error);
-        removeMenuSkeletons();
+        if (container) container.innerHTML = '<p style="text-align:center;color:#9a9ab0;padding:40px">Could not load menu. Please refresh.</p>';
     });
 
     // 2. Specials — cached .get() (changes rarely, saves reads vs onSnapshot)
