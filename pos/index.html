@@ -88,9 +88,23 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 .pos-item-type.nv{color:var(--red)}
 .pos-item-meta{display:flex;align-items:center;font-size:.7rem;color:var(--txt3)}
 .pos-item.in-cart{border-color:rgba(212,160,23,.5);background:rgba(212,160,23,.05)}
-.pos-cart-badge{position:absolute;top:-6px;right:-6px;background:var(--gold);color:#080604;
-    border-radius:50%;width:20px;height:20px;font-size:.65rem;font-weight:700;
-    display:flex;align-items:center;justify-content:center}
+.pos-item-footer{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.pos-item-add{width:30px;height:30px;border-radius:50%;border:none;
+    background:linear-gradient(135deg,var(--gold),var(--gold-d));
+    color:#080604;font-size:1.2rem;font-weight:700;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s,box-shadow .15s;flex-shrink:0}
+.pos-item-add:hover{transform:scale(1.12);box-shadow:0 2px 8px rgba(212,160,23,.4)}
+.pos-item-add:active{transform:scale(.95)}
+.pos-item-qc{display:flex;align-items:center;gap:4px}
+.pos-item-qc button{width:28px;height:28px;border-radius:8px;border:none;cursor:pointer;
+    font-size:.95rem;font-weight:700;display:flex;align-items:center;justify-content:center;
+    transition:all .12s}
+.pos-item-qc .piq-minus{background:rgba(231,76,60,.14);color:var(--red)}
+.pos-item-qc .piq-minus:hover{background:rgba(231,76,60,.28)}
+.pos-item-qc .piq-plus{background:rgba(39,174,96,.14);color:var(--grn)}
+.pos-item-qc .piq-plus:hover{background:rgba(39,174,96,.28)}
+.pos-item-qc .piq-num{min-width:24px;text-align:center;font-size:.88rem;font-weight:700;color:var(--gold)}
 .pos-empty{grid-column:1/-1;text-align:center;color:var(--txt3);padding:40px 20px;font-size:.9rem}
 
 /* ── Order Column ─────────────────────────────────────────── */
@@ -589,17 +603,25 @@ function renderPosMenu() {
     } else {
         items.forEach(function(item) {
             var qty = cartQty(item.name);
-            var inCart = qty > 0;
-            html += '<div class="pos-item' + (inCart?' in-cart':'') + '" onclick="addPosItem(\'' +
-                    item.name.replace(/'/g,"\\'") + '\',' + item.price + ')">' +
-                    (qty > 0 ? '<div class="pos-cart-badge">' + qty + '</div>' : '') +
+            var sn = item.name.replace(/'/g,"\\'");
+            var ctrl = qty > 0
+                ? '<div class="pos-item-qc" onclick="event.stopPropagation()">' +
+                  '<button class="piq-minus" onclick="changeQty(\'' + sn + '\',-1)">−</button>' +
+                  '<span class="piq-num">' + qty + '</span>' +
+                  '<button class="piq-plus" onclick="addPosItem(\'' + sn + '\',' + item.price + ')">+</button>' +
+                  '</div>'
+                : '<button class="pos-item-add" onclick="event.stopPropagation();addPosItem(\'' + sn + '\',' + item.price + ')">+</button>';
+            html += '<div class="pos-item' + (qty>0?' in-cart':'') + '">' +
                     (item.img ? '<img class="pos-item-img" src="' + item.img + '" alt="" loading="lazy">' : '') +
                     '<div class="pos-item-name">' + escH(item.name) + '</div>' +
-                    '<div style="display:flex;align-items:center;justify-content:space-between">' +
+                    '<div class="pos-item-footer">' +
+                    '<div>' +
                     '<div class="pos-item-price">₹' + item.price + '</div>' +
                     '<div class="pos-item-meta"><span class="pos-item-type ' + (item.type==='non-veg'?'nv':'veg') + '"></span>' +
                     (item.badge ? '<span style="font-size:.65rem;background:rgba(212,160,23,.15);color:var(--gold);padding:1px 5px;border-radius:4px">' + escH(item.badge) + '</span>' : '') +
-                    '</div></div></div>';
+                    '</div></div>' +
+                    ctrl +
+                    '</div></div>';
         });
     }
     document.getElementById('pos-menu-grid').innerHTML = html;
