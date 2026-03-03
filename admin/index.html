@@ -956,6 +956,31 @@
             color: #e74c3c;
         }
 
+        /* ─── BULK EDIT ─── */
+        .bulk-toggle-btn{padding:6px 14px;background:rgba(212,160,23,.12);color:var(--gold);
+            border:1px solid rgba(212,160,23,.3);border-radius:8px;font-size:.82rem;font-weight:600;
+            cursor:pointer;transition:all .2s;margin-left:8px}
+        .bulk-toggle-btn:hover{background:rgba(212,160,23,.25)}
+        .bulk-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;
+            background:rgba(212,160,23,.06);border:1px solid rgba(212,160,23,.25);
+            border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+        .bulk-select-label{display:flex;align-items:center;gap:6px;cursor:pointer;
+            font-size:.88rem;user-select:none}
+        .bulk-select-label input{width:15px;height:15px;accent-color:var(--gold);cursor:pointer}
+        #bulk-count{color:var(--muted);font-size:.82rem}
+        .bulk-actions{display:flex;gap:8px;margin-left:auto}
+        .bulk-btn{padding:6px 16px;border:none;border-radius:6px;font-weight:600;
+            font-size:.82rem;cursor:pointer;transition:opacity .15s}
+        .bulk-btn:disabled{opacity:.35;cursor:default}
+        .bulk-btn.enable{background:#27ae60;color:#fff}
+        .bulk-btn.disable{background:#e74c3c;color:#fff}
+        .bulk-cancel-btn{background:none;border:1px solid rgba(255,255,255,.15);color:var(--muted);
+            padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.82rem}
+        .mac{position:relative}
+        .mac-check-wrap{position:absolute;top:10px;right:10px;z-index:5}
+        .mac-check{width:17px;height:17px;accent-color:var(--gold);cursor:pointer}
+        .mac.bulk-selected{border-color:rgba(212,160,23,.5);background:rgba(212,160,23,.07)}
+
         /* ─── MENU IMAGE UPLOAD ─── */
         .mac-image-section {
             margin: 0.6rem 0;
@@ -2374,7 +2399,19 @@
         <div id="menu-panel" class="admin-panel" style="display:none;">
             <div class="panel-header">
                 <h2 class="panel-title">Menu Items</h2>
+                <button class="bulk-toggle-btn" id="bulk-toggle-btn" onclick="toggleBulkMode(true)">☑ Bulk Edit</button>
                 <button class="add-special-btn" onclick="showAddMenuItem()">+ Add Item</button>
+            </div>
+            <div class="bulk-bar" id="bulk-bar" style="display:none">
+                <label class="bulk-select-label">
+                    <input type="checkbox" id="bulk-select-all" onchange="toggleSelectAll(this.checked)">
+                    <span id="bulk-count">0 selected</span>
+                </label>
+                <div class="bulk-actions">
+                    <button class="bulk-btn enable" id="bulk-enable-btn" onclick="bulkEnable()" disabled>Enable</button>
+                    <button class="bulk-btn disable" id="bulk-disable-btn" onclick="bulkDisable()" disabled>Disable</button>
+                </div>
+                <button class="bulk-cancel-btn" onclick="toggleBulkMode(false)">Cancel</button>
             </div>
             <div class="menu-category-filters" id="menu-cat-filters">
                 <!-- Dynamically populated with category filter chips -->
@@ -3526,6 +3563,65 @@
         // ─── MENU MANAGEMENT ───
         var allMenuItems = [];
         var menuCatFilter = 'all';
+        var bulkMode = false;
+        var selectedIds = new Set();
+
+        function toggleBulkMode(on) {
+            bulkMode = on;
+            selectedIds.clear();
+            document.getElementById('bulk-bar').style.display = on ? 'flex' : 'none';
+            document.getElementById('bulk-toggle-btn').style.display = on ? 'none' : '';
+            renderMenuAdmin();
+        }
+
+        function toggleSelectAll(checked) {
+            var items = menuCatFilter === 'all' ? allMenuItems : allMenuItems.filter(function(i){ return i.category === menuCatFilter; });
+            items.forEach(function(item){ if(checked) selectedIds.add(item.id); else selectedIds.delete(item.id); });
+            renderMenuAdmin();
+            updateBulkBar();
+        }
+
+        function toggleItemSelect(id, checked) {
+            if(checked) selectedIds.add(id); else selectedIds.delete(id);
+            updateBulkBar();
+            // keep select-all in sync
+            var items = menuCatFilter === 'all' ? allMenuItems : allMenuItems.filter(function(i){ return i.category === menuCatFilter; });
+            document.getElementById('bulk-select-all').checked = items.length > 0 && items.every(function(i){ return selectedIds.has(i.id); });
+        }
+
+        function updateBulkBar() {
+            var n = selectedIds.size;
+            document.getElementById('bulk-count').textContent = n + ' selected';
+            document.getElementById('bulk-enable-btn').disabled = n === 0;
+            document.getElementById('bulk-disable-btn').disabled = n === 0;
+        }
+
+        function bulkEnable() { bulkSetAvailable(true); }
+        function bulkDisable() { bulkSetAvailable(false); }
+
+        function bulkSetAvailable(available) {
+            if (!selectedIds.size) return;
+            var ids = Array.from(selectedIds);
+            var btn = available ? document.getElementById('bulk-enable-btn') : document.getElementById('bulk-disable-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            // Firestore batch limit is 500; chunk if needed
+            var chunks = [];
+            for (var i = 0; i < ids.length; i += 400) chunks.push(ids.slice(i, i + 400));
+            var promises = chunks.map(function(chunk) {
+                var batch = db.batch();
+                chunk.forEach(function(id) { batch.update(db.collection('menu').doc(id), { available: available }); });
+                return batch.commit();
+            });
+            Promise.all(promises).then(function() {
+                btn.textContent = available ? 'Enable' : 'Disable';
+                updateBulkBar();
+            }).catch(function(err) {
+                alert('Bulk update failed: ' + err.message);
+                btn.textContent = available ? 'Enable' : 'Disable';
+                btn.disabled = false;
+            });
+        }
 
         function loadMenuItems() {
             db.collection('menu').where('shopId', '==', currentShopId).onSnapshot(function(snapshot) {
@@ -3576,7 +3672,11 @@
                 var safeKey = item.id.replace(/[^a-zA-Z0-9]/g, '_');
                 var escapedId = item.id.replace(/'/g, "\\'");
 
-                return '<div class="mac' + unavailClass + '" data-id="' + escHtml(item.id) + '">' +
+                var bulkCheckHtml = bulkMode ? '<div class="mac-check-wrap"><input type="checkbox" class="mac-check" ' + (selectedIds.has(item.id) ? 'checked' : '') + ' onchange="toggleItemSelect(\'' + escapedId + '\', this.checked)"></div>' : '';
+                var bulkSelClass = bulkMode && selectedIds.has(item.id) ? ' bulk-selected' : '';
+
+                return '<div class="mac' + unavailClass + bulkSelClass + '" data-id="' + escHtml(item.id) + '">' +
+                    bulkCheckHtml +
                     '<div class="mac-top">' +
                         '<span class="mac-type ' + typeClass + '"></span>' +
                         '<span class="mac-name">' + escHtml(item.name) + '</span>' +
@@ -3683,6 +3783,7 @@
                     '</div>' +
                 '</div>';
             }).join('');
+            if (bulkMode) updateBulkBar();
         }
 
         function togglePriceEdit(itemId) {
