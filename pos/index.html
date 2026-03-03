@@ -159,6 +159,48 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 .bill-new-btn{flex:1;padding:10px;background:var(--gold);color:#080604;border:none;border-radius:8px;
     font-weight:700;cursor:pointer;font-size:.85rem}
 
+/* ── Light Mode ───────────────────────────────────────────── */
+body.light-mode{
+    --bg:#f4efe6;--bg2:#fffaf3;--bg3:#ede6da;
+    --txt:#1a1208;--txt2:#5a4a30;--txt3:#9a8870;
+}
+body.light-mode #pos-login{background:var(--bg)}
+body.light-mode .login-box{background:var(--bg2);border-color:rgba(212,160,23,.3);
+    box-shadow:0 4px 24px rgba(0,0,0,.08)}
+body.light-mode .pin-input{background:var(--bg3);border-color:rgba(212,160,23,.3);color:var(--txt)}
+body.light-mode .pos-header{background:var(--bg2);border-color:rgba(212,160,23,.2)}
+body.light-mode .pos-cats{background:var(--bg2);border-color:rgba(0,0,0,.08)}
+body.light-mode .pos-cat-btn:hover{background:rgba(0,0,0,.06)}
+body.light-mode .pos-cat-btn.active{background:rgba(212,160,23,.18);color:var(--gold-d)}
+body.light-mode .pos-search-bar{border-color:rgba(0,0,0,.07)}
+body.light-mode .pos-search-bar input{background:var(--bg3);border-color:rgba(0,0,0,.1);color:var(--txt)}
+body.light-mode .pos-item{background:var(--bg2);border-color:rgba(0,0,0,.08)}
+body.light-mode .pos-item:hover{background:#fff;border-color:rgba(212,160,23,.4)}
+body.light-mode .pos-item.in-cart{border-color:rgba(212,160,23,.6);background:rgba(212,160,23,.06)}
+body.light-mode .pos-item-name{color:var(--txt)}
+body.light-mode .pos-order-col{background:var(--bg2);border-color:rgba(0,0,0,.08)}
+body.light-mode .pos-order-header{border-color:rgba(0,0,0,.07)}
+body.light-mode .pos-order-title{color:var(--txt)}
+body.light-mode .pos-cart-item{border-color:rgba(0,0,0,.05)}
+body.light-mode .pos-cart-item:hover{background:rgba(0,0,0,.03)}
+body.light-mode .pos-ci-name{color:var(--txt)}
+body.light-mode .pos-qty-num{color:var(--txt)}
+body.light-mode .pos-order-footer{border-color:rgba(0,0,0,.07)}
+body.light-mode .pos-customer-row input{background:var(--bg3);border-color:rgba(0,0,0,.1);color:var(--txt)}
+body.light-mode .pos-pay-btn{background:var(--bg3);border-color:rgba(0,0,0,.1);color:var(--txt2)}
+body.light-mode .pos-pay-btn.active{border-color:var(--gold);color:var(--gold-d);background:rgba(212,160,23,.1)}
+body.light-mode .pos-total-row{border-color:rgba(0,0,0,.07)}
+body.light-mode .pos-cart-bar{background:linear-gradient(to top,rgba(244,239,230,.98),rgba(244,239,230,.9));
+    border-color:rgba(212,160,23,.25)}
+body.light-mode .pos-header-time{color:var(--txt2)}
+body.light-mode html,body.light-mode body{background:var(--bg)}
+
+/* ── Mode Toggle Button ────────────────────────────────────── */
+.pos-mode-btn{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(212,160,23,.3);
+    background:var(--bg3);color:var(--txt2);font-size:1rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.pos-mode-btn:hover{border-color:var(--gold);color:var(--gold)}
+
 /* ── Print styles ─────────────────────────────────────────── */
 @media print{
     body *{visibility:hidden}
@@ -221,6 +263,7 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
             <div style="font-size:.7rem;color:var(--txt2)">POS Terminal</div>
         </div>
         <div class="pos-header-time" id="pos-clock"></div>
+        <button class="pos-mode-btn" id="pos-mode-btn" onclick="togglePosMode()" title="Toggle light/dark mode">☀</button>
         <button class="pos-logout" onclick="posLogout()">Logout</button>
     </div>
 
@@ -310,6 +353,21 @@ var cart = [];
 var activeCat = 'All';
 var categories = ['All'];
 var payMethod = 'Cash';
+
+// ── Light / Dark Mode ────────────────────────────────────────
+(function() {
+    var saved = localStorage.getItem('pos_mode');
+    if (saved === 'light') {
+        document.body.classList.add('light-mode');
+        var btn = document.getElementById('pos-mode-btn');
+        if (btn) btn.textContent = '☾';
+    }
+})();
+function togglePosMode() {
+    var isLight = document.body.classList.toggle('light-mode');
+    document.getElementById('pos-mode-btn').textContent = isLight ? '☾' : '☀';
+    localStorage.setItem('pos_mode', isLight ? 'light' : 'dark');
+}
 
 // ── Clock ────────────────────────────────────────────────────
 function updateClock() {
