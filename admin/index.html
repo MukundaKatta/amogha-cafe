@@ -2321,8 +2321,8 @@
         <div class="login-box">
             <img src="../amogha-logo.png" alt="Amogha" class="login-logo">
             <h2>Admin Panel</h2>
-            <p>Enter admin PIN to access orders</p>
-            <input type="password" id="admin-pin" placeholder="Enter PIN" maxlength="6" inputmode="numeric" autofocus>
+            <p id="admin-login-sub">Enter admin password to continue</p>
+            <input type="password" id="admin-pin" placeholder="Password" maxlength="100" autofocus>
             <button class="login-btn" onclick="adminLogin()">Access Dashboard</button>
             <p id="login-error" class="login-error"></p>
         </div>
@@ -2376,6 +2376,7 @@
             <button class="admin-tab" data-tab="marketing" onclick="switchTab('marketing',this)">Marketing</button>
             <button class="admin-tab" data-tab="pricing" onclick="switchTab('pricing',this)">Pricing</button>
             <button class="admin-tab" data-tab="shops" onclick="switchTab('shops',this);loadShopsAdmin()">Shops</button>
+            <button class="admin-tab" data-tab="kiosks" onclick="switchTab('kiosks',this);loadKiosks()">Kiosks</button>
         </div>
 
         <div class="filters">
@@ -2972,6 +2973,51 @@
             </div>
         </div>
 
+        <!-- Kiosks Panel -->
+        <div id="kiosks-panel" class="admin-panel" style="display:none;">
+            <div class="panel-header">
+                <h2 class="panel-title">Kiosk Terminals</h2>
+            </div>
+            <p style="color:#9a9ab0;margin-bottom:1.5rem;font-size:.9rem">Each kiosk device logs in with its own username &amp; password. Assign a shop to each terminal.</p>
+
+            <!-- Change Admin Password -->
+            <div style="background:#1a1d27;border:1px solid rgba(212,160,23,.15);border-radius:12px;padding:1.2rem 1.5rem;max-width:440px;margin-bottom:2rem">
+                <h3 style="color:#D4A017;margin:0 0 .8rem;font-size:.95rem">🔑 Admin Password</h3>
+                <div style="display:flex;gap:.5rem">
+                    <input type="password" id="new-admin-password" placeholder="New admin password" maxlength="100"
+                        style="flex:1;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none">
+                    <button onclick="changeAdminPassword()"
+                        style="padding:9px 16px;background:#D4A017;color:#080604;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.85rem;white-space:nowrap">
+                        Update
+                    </button>
+                </div>
+                <p id="admin-pw-msg" style="font-size:.78rem;margin:.5rem 0 0;min-height:16px"></p>
+            </div>
+
+            <!-- Kiosk list -->
+            <div id="kiosks-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:2rem"></div>
+
+            <!-- Add kiosk form -->
+            <div style="background:#1a1d27;border:1px solid rgba(212,160,23,.15);border-radius:12px;padding:1.5rem;max-width:480px">
+                <h3 style="color:#D4A017;margin:0 0 1rem;font-size:.95rem">➕ Add New Kiosk</h3>
+                <input type="text" id="new-kiosk-name" placeholder="Display name (e.g. Main Counter)"
+                    style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:.5rem">
+                <input type="text" id="new-kiosk-username" placeholder="Username (e.g. counter1)"
+                    style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:.5rem"
+                    autocapitalize="off" autocorrect="off">
+                <input type="password" id="new-kiosk-password" placeholder="Password"
+                    style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:.5rem">
+                <select id="new-kiosk-shop"
+                    style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:1rem">
+                </select>
+                <button onclick="addKiosk()"
+                    style="width:100%;padding:11px;background:#D4A017;color:#080604;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9rem">
+                    Create Kiosk
+                </button>
+                <p id="kiosk-add-msg" style="font-size:.78rem;margin:.5rem 0 0;min-height:16px"></p>
+            </div>
+        </div>
+
         <!-- Shops Panel -->
         <div id="shops-panel" class="admin-panel" style="display:none;">
             <div class="panel-header">
@@ -3187,8 +3233,9 @@
             if (removeBtn) removeBtn.style.display = 'none';
         }
 
-        // Admin PIN (change this!)
-        var ADMIN_PIN = '240124';
+        // Admin password — stored in Firestore settings/adminConfig
+        // First login: any password sets the admin account (first-come-first-serve setup)
+        var ADMIN_PIN = ''; // kept for variable reference only — no longer used
         var currentShopId = 'amogha';
         var allShops = [];
 
@@ -3286,23 +3333,43 @@
         var currentFilter = 'all';
 
         function adminLogin() {
-            var pin = document.getElementById('admin-pin').value;
-            if (pin === ADMIN_PIN) {
-                document.getElementById('admin-login').style.display = 'none';
-                var dash = document.getElementById('admin-dashboard');
-                dash.style.display = 'block';
-                dash.classList.add('dashboard-enter');
-                loadOrders();
-                loadShops();
-            } else {
-                var errEl = document.getElementById('login-error');
-                errEl.textContent = 'Invalid PIN. Access denied.';
-                // Shake the login box
-                var box = document.querySelector('.login-box');
-                box.style.animation = 'none';
-                box.offsetHeight; // reflow
-                box.style.animation = 'shake 0.4s ease';
-            }
+            var password = document.getElementById('admin-pin').value;
+            if (!password) return;
+            var btn = document.querySelector('#admin-login .login-btn');
+            btn.disabled = true; btn.textContent = 'Checking…';
+
+            db.collection('settings').doc('adminConfig').get().then(function(doc) {
+                if (!doc.exists) {
+                    // First-time setup: save the entered password as the admin password
+                    document.getElementById('admin-login-sub').textContent = '✅ First-time setup — your password has been saved.';
+                    return db.collection('settings').doc('adminConfig').set({
+                        adminPassword: password, createdAt: new Date().toISOString()
+                    }).then(function() { proceedAdminLogin(); });
+                }
+                if (doc.data().adminPassword === password) {
+                    proceedAdminLogin();
+                } else {
+                    btn.disabled = false; btn.textContent = 'Access Dashboard';
+                    var errEl = document.getElementById('login-error');
+                    errEl.textContent = 'Invalid password. Access denied.';
+                    var box = document.querySelector('.login-box');
+                    box.style.animation = 'none'; box.offsetHeight;
+                    box.style.animation = 'shake 0.4s ease';
+                    document.getElementById('admin-pin').value = '';
+                }
+            }).catch(function() {
+                btn.disabled = false; btn.textContent = 'Access Dashboard';
+                document.getElementById('login-error').textContent = 'Connection error. Try again.';
+            });
+        }
+
+        function proceedAdminLogin() {
+            document.getElementById('admin-login').style.display = 'none';
+            var dash = document.getElementById('admin-dashboard');
+            dash.style.display = 'block';
+            dash.classList.add('dashboard-enter');
+            loadOrders();
+            loadShops();
         }
 
         function adminLogout() {
@@ -3316,6 +3383,95 @@
         document.getElementById('admin-pin').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') adminLogin();
         });
+
+        // ── Kiosk Management ─────────────────────────────────────────────────
+        var allKiosks = [];
+
+        function loadKiosks() {
+            db.collection('kiosks').orderBy('createdAt', 'desc').get().then(function(snap) {
+                allKiosks = [];
+                snap.forEach(function(doc) { allKiosks.push({ id: doc.id, ...doc.data() }); });
+                renderKioskList();
+                populateKioskShopSelector();
+            }).catch(function() {});
+        }
+
+        function populateKioskShopSelector() {
+            var sel = document.getElementById('new-kiosk-shop');
+            if (!sel) return;
+            sel.innerHTML = allShops.length
+                ? allShops.map(function(s) { return '<option value="' + s.id + '">' + (s.name || s.id) + '</option>'; }).join('')
+                : '<option value="amogha">Amogha Cafe</option>';
+        }
+
+        function renderKioskList() {
+            var container = document.getElementById('kiosks-list');
+            if (!container) return;
+            if (!allKiosks.length) {
+                container.innerHTML = '<p style="color:#9a9ab0;font-size:.9rem">No kiosks yet. Create one below.</p>';
+                return;
+            }
+            container.innerHTML = allKiosks.map(function(k) {
+                var statusColor = k.active ? '#27ae60' : '#e74c3c';
+                var statusLabel = k.active ? 'Active' : 'Disabled';
+                return '<div style="background:#1a1d27;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1rem 1.2rem">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">' +
+                    '<div><div style="font-weight:700;color:#e8e8f0;margin-bottom:2px">' + escH(k.name || k.username) + '</div>' +
+                    '<div style="font-size:.78rem;color:#9a9ab0">@' + escH(k.username) + ' · ' + escH(k.shopId) + '</div></div>' +
+                    '<span style="font-size:.72rem;font-weight:700;color:' + statusColor + ';background:' + statusColor + '22;padding:3px 8px;border-radius:20px">' + statusLabel + '</span>' +
+                    '</div>' +
+                    '<div style="display:flex;gap:.4rem;margin-top:.8rem;flex-wrap:wrap">' +
+                    '<button onclick="toggleKioskActive(\'' + k.id + '\',' + !k.active + ')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#9a9ab0;cursor:pointer;font-size:.78rem">' +
+                    (k.active ? 'Disable' : 'Enable') + '</button>' +
+                    '<button onclick="promptKioskPassword(\'' + k.id + '\')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(212,160,23,.3);background:rgba(212,160,23,.06);color:#D4A017;cursor:pointer;font-size:.78rem">Reset Password</button>' +
+                    '<button onclick="deleteKiosk(\'' + k.id + '\',\'' + escH(k.name || k.username) + '\')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(231,76,60,.3);background:rgba(231,76,60,.06);color:#e74c3c;cursor:pointer;font-size:.78rem">Delete</button>' +
+                    '</div></div>';
+            }).join('');
+        }
+
+        function addKiosk() {
+            var name = (document.getElementById('new-kiosk-name').value || '').trim();
+            var username = (document.getElementById('new-kiosk-username').value || '').trim().toLowerCase();
+            var password = document.getElementById('new-kiosk-password').value;
+            var shopId = document.getElementById('new-kiosk-shop').value;
+            var msg = document.getElementById('kiosk-add-msg');
+            if (!name || !username || !password || !shopId) { msg.style.color='#e74c3c'; msg.textContent='All fields are required.'; return; }
+            if (allKiosks.some(function(k){ return k.username === username; })) { msg.style.color='#e74c3c'; msg.textContent='Username already taken.'; return; }
+            db.collection('kiosks').add({ name:name, username:username, password:password, shopId:shopId, active:true, createdAt:new Date().toISOString() })
+                .then(function() {
+                    msg.style.color='#27ae60'; msg.textContent='Kiosk created!';
+                    document.getElementById('new-kiosk-name').value='';
+                    document.getElementById('new-kiosk-username').value='';
+                    document.getElementById('new-kiosk-password').value='';
+                    loadKiosks();
+                }).catch(function(e){ msg.style.color='#e74c3c'; msg.textContent='Error: '+e.message; });
+        }
+
+        function toggleKioskActive(id, active) {
+            db.collection('kiosks').doc(id).update({ active: active }).then(loadKiosks).catch(function(){});
+        }
+
+        function promptKioskPassword(id) {
+            var np = prompt('Enter new password for this kiosk:');
+            if (!np || !np.trim()) return;
+            db.collection('kiosks').doc(id).update({ password: np.trim() })
+                .then(function(){ alert('Password updated.'); })
+                .catch(function(e){ alert('Error: '+e.message); });
+        }
+
+        function deleteKiosk(id, name) {
+            if (!confirm('Delete kiosk "' + name + '"? This cannot be undone.')) return;
+            db.collection('kiosks').doc(id).delete().then(loadKiosks).catch(function(){});
+        }
+
+        function changeAdminPassword() {
+            var np = (document.getElementById('new-admin-password').value || '').trim();
+            var msg = document.getElementById('admin-pw-msg');
+            if (!np) { msg.style.color='#e74c3c'; msg.textContent='Enter a new password.'; return; }
+            db.collection('settings').doc('adminConfig').set({ adminPassword: np }, { merge: true })
+                .then(function(){ msg.style.color='#27ae60'; msg.textContent='Password updated!'; document.getElementById('new-admin-password').value=''; })
+                .catch(function(e){ msg.style.color='#e74c3c'; msg.textContent='Error: '+e.message; });
+        }
 
         // ─── SEASONAL THEME ───
         function setSeasonalTheme(theme) {

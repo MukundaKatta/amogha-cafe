@@ -54,7 +54,7 @@ const FREE_DELIVERY_THRESHOLD = 500;
 const DELIVERY_FEE = 49;
 
 const app = express();
-app.use(cors({ origin: true }));
+app.use(cors({ origin: ['https://amogha-cafe.web.app', 'https://amogha-cafe.firebaseapp.com'] }));
 app.use(express.json({ limit: '4mb' }));
 
 // Normalize path: strip /api prefix so both

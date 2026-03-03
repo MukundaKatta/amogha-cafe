@@ -130,12 +130,25 @@ service cloud.firestore {
 
     // -------------------------------------------------------------------------
     // SETTINGS — readable by all, writable by admin panel
+    // Only known document IDs (global, adminConfig, etc.) may be created/updated
     // -------------------------------------------------------------------------
     match /settings/{docId} {
       allow read: if true;
-      allow create, update: if true;
+      allow create, update: if docId in ['global', 'adminConfig', 'delivery', 'loyalty', 'theme', 'kiosk'];
       allow delete: if false;
     }
+
+    // -------------------------------------------------------------------------
+    // KIOSKS — login credentials for POS terminals (read for auth, admin manages)
+    // -------------------------------------------------------------------------
+    match /kiosks/{kioskId} {
+      allow read: if true;
+      allow create, update: if hasFields(['username', 'shopId', 'active'])
+                            && isString(request.resource.data.username)
+                            && isString(request.resource.data.shopId);
+      allow delete: if true;
+    }
+
 
     // -------------------------------------------------------------------------
     // COUPONS

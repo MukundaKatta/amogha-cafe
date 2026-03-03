@@ -8,7 +8,7 @@ service firebase.storage {
       allow write: if request.resource != null
                    && request.resource.size < 2 * 1024 * 1024
                    && request.resource.contentType.matches('image/(jpeg|png|webp)');
-      allow delete: if true;
+      allow delete: if false;
     }
 
     // Block everything else

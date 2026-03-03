@@ -28,10 +28,11 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
     object-fit:contain;margin:0 auto 16px}
 .login-title{font-size:1.3rem;font-weight:700;color:var(--gold);margin-bottom:4px}
 .login-sub{font-size:.85rem;color:var(--txt2);margin-bottom:24px}
-.pin-input{width:100%;padding:14px 16px;background:var(--bg3);border:1.5px solid rgba(212,160,23,.2);
-    border-radius:var(--r);color:var(--txt);font-size:1.1rem;text-align:center;letter-spacing:.3em;
-    font-family:monospace;outline:none;transition:border-color .2s}
-.pin-input:focus{border-color:var(--gold)}
+.login-input{width:100%;padding:12px 16px;background:var(--bg3);border:1.5px solid rgba(212,160,23,.2);
+    border-radius:var(--r);color:var(--txt);font-size:.95rem;outline:none;transition:border-color .2s;
+    box-sizing:border-box;margin-bottom:10px}
+.login-input:focus{border-color:var(--gold)}
+.login-input::placeholder{color:var(--txt3)}
 .login-btn{width:100%;margin-top:14px;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-d));
     color:#080604;font-weight:700;font-size:1rem;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .2s}
 .login-btn:hover{opacity:.9}
@@ -339,10 +340,14 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
     <div class="login-box">
         <img class="login-logo" src="../amogha-logo.png" alt="Logo">
         <div class="login-title">POS Terminal</div>
-        <div class="login-sub">Enter your shop PIN to continue</div>
-        <input class="pin-input" type="password" id="pos-pin" maxlength="10" placeholder="••••••"
+        <div class="login-sub">Sign in to your kiosk terminal</div>
+        <input class="login-input" type="text" id="pos-username" placeholder="Username"
+            autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false"
+            onkeydown="if(event.key==='Enter')document.getElementById('pos-password').focus()">
+        <input class="login-input" type="password" id="pos-password" placeholder="Password"
+            autocomplete="current-password"
             onkeydown="if(event.key==='Enter')posLogin()">
-        <button class="login-btn" onclick="posLogin()">Login</button>
+        <button class="login-btn" id="pos-login-btn" onclick="posLogin()">Login</button>
         <div class="login-err" id="pos-login-err"></div>
     </div>
 </div>
@@ -499,33 +504,60 @@ setInterval(updateClock, 1000); updateClock();
 
 // ── Login ────────────────────────────────────────────────────
 function posLogin() {
-    var pin = document.getElementById('pos-pin').value.trim();
-    if (!pin) return;
+    var username = (document.getElementById('pos-username').value || '').trim().toLowerCase();
+    var password = document.getElementById('pos-password').value;
+    if (!username || !password) {
+        document.getElementById('pos-login-err').textContent = 'Enter username and password.';
+        return;
+    }
+    var btn = document.getElementById('pos-login-btn');
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
     document.getElementById('pos-login-err').textContent = '';
-    // Check PIN against all shops
-    db.collection('shops').get().then(function(snap) {
-        var matched = null;
-        snap.forEach(function(doc) {
-            if (doc.data().adminPin === pin) matched = { id: doc.id, ...doc.data() };
-        });
-        // Also check URL param override (master access)
-        if (!matched && shopId) {
+
+    db.collection('kiosks')
+        .where('username', '==', username)
+        .where('active', '==', true)
+        .get()
+        .then(function(snap) {
+            var matched = null;
             snap.forEach(function(doc) {
-                if (doc.id === shopId && pin === '240124') matched = { id: doc.id, ...doc.data() };
+                var d = doc.data();
+                if (d.password === password) matched = { id: doc.id, ...d };
             });
-        }
-        if (matched) {
-            shopId = matched.id;
-            shopConfig = matched;
-            startPOS();
-        } else {
-            document.getElementById('pos-login-err').textContent = 'Invalid PIN. Please try again.';
-            document.getElementById('pos-pin').value = '';
-            document.getElementById('pos-pin').focus();
-        }
-    }).catch(function() {
-        document.getElementById('pos-login-err').textContent = 'Connection error. Try again.';
-    });
+            if (matched) {
+                db.collection('shops').doc(matched.shopId).get().then(function(shopDoc) {
+                    shopId = matched.shopId;
+                    shopConfig = shopDoc.exists
+                        ? { id: shopDoc.id, ...shopDoc.data() }
+                        : { id: matched.shopId, name: matched.name || matched.shopId };
+                    startPOS();
+                });
+            } else {
+                // Legacy fallback: shopId as username + adminPin as password (migration path)
+                db.collection('shops').get().then(function(shopsSnap) {
+                    var legacy = null;
+                    shopsSnap.forEach(function(doc) {
+                        if (doc.id === username && doc.data().adminPin === password) legacy = { id: doc.id, ...doc.data() };
+                    });
+                    if (legacy) {
+                        shopId = legacy.id;
+                        shopConfig = legacy;
+                        startPOS();
+                    } else {
+                        btn.disabled = false;
+                        btn.textContent = 'Login';
+                        document.getElementById('pos-login-err').textContent = 'Invalid username or password.';
+                        document.getElementById('pos-password').value = '';
+                        document.getElementById('pos-password').focus();
+                    }
+                });
+            }
+        }).catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Login';
+            document.getElementById('pos-login-err').textContent = 'Connection error. Try again.';
+        });
 }
 
 function posLogout() {
