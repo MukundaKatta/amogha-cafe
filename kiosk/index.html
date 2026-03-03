@@ -1660,7 +1660,10 @@ function updateCartBar() {
     document.getElementById('bar-total').textContent = '\u20B9' + total;
     document.getElementById('bar-label').textContent = count === 1 ? t('oneItem') : count + ' ' + t('itemsInCart');
     var bar = document.getElementById('cart-bar');
-    if (count > 0) { bar.classList.add('visible'); } else { bar.classList.remove('visible'); }
+    if (count > 0) { bar.classList.add('visible'); } else {
+        bar.classList.remove('visible');
+        if (document.getElementById('co-sheet').classList.contains('open')) closeCheckout();
+    }
 }
 function updatePayBtn() {
     var total = 0; cart.forEach(function(c) { total += (c.price + (c.addonTotal || 0)) * c.qty; });

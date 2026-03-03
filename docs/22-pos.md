@@ -18,7 +18,9 @@ A staff-facing Point-of-Sale terminal for fast counter-side order entry. Staff l
 
 ---
 
-## Layout (three-column)
+## Layout
+
+### Tablet / Desktop (>640px) — three-column
 
 ```
 [ Categories ] [ Menu Grid + Search ] [ Order Cart ]
@@ -32,7 +34,7 @@ A staff-facing Point-of-Sale terminal for fast counter-side order entry. Staff l
 
 ### Center — Menu Grid + Search
 - Search bar at top
-- 3-column card grid with item name and price
+- 3-column card grid with item name and price (2-column on narrow screens)
 - Click a card to add one unit to the cart
 - Cards show running qty badge when in cart
 
@@ -44,6 +46,15 @@ A staff-facing Point-of-Sale terminal for fast counter-side order entry. Staff l
 - **Payment method** selector: Cash / UPI / Card
 - **Place Order** button → saves to Firestore, shows bill overlay
 - **Clear** button empties the cart
+- Footer (customer fields, payment, total, Place Order) hides automatically when cart is empty
+
+### Mobile (≤640px) — full-width menu + bottom drawer cart
+
+- Cart column is hidden; menu fills the full screen
+- When items are added, a gold **"View Cart"** bar slides up from the bottom showing item count and total
+- Tapping the bar opens the cart as a **full-screen drawer** that slides up
+- The drawer has an **×** close button to slide it back down
+- Clearing the cart hides the bar and closes the drawer automatically
 
 ---
 
