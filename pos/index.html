@@ -263,7 +263,7 @@ body.light-mode html,body.light-mode body{background:var(--bg)}
             <div style="font-size:.7rem;color:var(--txt2)">POS Terminal</div>
         </div>
         <div class="pos-header-time" id="pos-clock"></div>
-        <button class="pos-mode-btn" id="pos-mode-btn" onclick="togglePosMode()" title="Toggle light/dark mode">☀</button>
+        <button class="pos-mode-btn" id="pos-mode-btn" onclick="togglePosMode()" title="Toggle light/dark mode">☾</button>
         <button class="pos-logout" onclick="posLogout()">Logout</button>
     </div>
 
@@ -354,14 +354,16 @@ var activeCat = 'All';
 var categories = ['All'];
 var payMethod = 'Cash';
 
-// ── Light / Dark Mode ────────────────────────────────────────
+// ── Light / Dark Mode (default: light) ──────────────────────
 (function() {
     var saved = localStorage.getItem('pos_mode');
-    if (saved === 'light') {
+    if (saved !== 'dark') {
         document.body.classList.add('light-mode');
-        var btn = document.getElementById('pos-mode-btn');
-        if (btn) btn.textContent = '☾';
     }
+    document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('pos-mode-btn');
+        if (btn) btn.textContent = document.body.classList.contains('light-mode') ? '☾' : '☀';
+    });
 })();
 function togglePosMode() {
     var isLight = document.body.classList.toggle('light-mode');
