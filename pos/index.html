@@ -537,7 +537,7 @@ function placeOrder() {
     var total = cart.reduce(function(s,c){ return s + c.price*c.qty; }, 0);
     var orderData = {
         customer: name,
-        phone: '',
+        phone: 'pos',
         items: cart.map(function(c){ return { name:c.name, qty:c.qty, price:c.price }; }),
         total: total,
         subtotal: total,
