@@ -173,6 +173,10 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
     font-weight:700;cursor:pointer;font-size:.85rem}
 .bill-new-btn{flex:1;padding:10px;background:var(--gold);color:#080604;border:none;border-radius:8px;
     font-weight:700;cursor:pointer;font-size:.85rem}
+.bill-close-btn{position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.4rem;
+    color:#777;cursor:pointer;line-height:1;padding:4px}
+.bill-close-btn:hover{color:#111}
+.pos-bill-box{position:relative}
 
 /* ── Light Mode ───────────────────────────────────────────── */
 body.light-mode{
@@ -757,14 +761,21 @@ function placeOrder() {
 }
 
 // ── Bill ─────────────────────────────────────────────────────
-function showBill(orderId, data) {
+function showBill(orderId, data, isReprint) {
     var shopName = (shopConfig && shopConfig.name) || 'Amogha Cafe';
     var now = new Date();
     var dateStr = now.toLocaleDateString('en-IN') + '  ' + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
     var itemRows = data.items.map(function(i) {
         return '<div class="bill-row"><span>' + escH(i.name) + ' x' + i.qty + '</span><span>₹' + (i.price*i.qty) + '</span></div>';
     }).join('');
+    var actions = isReprint
+        ? '<div class="bill-actions"><button class="bill-print-btn" onclick="window.print()">🖨 Reprint Bill</button></div>'
+        : '<div class="bill-actions"><button class="bill-print-btn" onclick="window.print()">🖨 Print Bill</button><button class="bill-new-btn" onclick="newOrder()">+ New Order</button></div>';
+    var closeBtn = isReprint
+        ? '<button class="bill-close-btn" onclick="document.getElementById(\'pos-bill-overlay\').classList.remove(\'show\')" title="Close">&times;</button>'
+        : '';
     document.getElementById('pos-bill-content').innerHTML =
+        closeBtn +
         '<div class="bill-header">' +
         '<div class="bill-shop">' + escH(shopName) + '</div>' +
         '<div class="bill-sub">Self-Service POS</div>' +
@@ -782,10 +793,7 @@ function showBill(orderId, data) {
         '<div class="bill-row label" style="margin-top:4px"><span>Payment</span><span>' + escH(data.payment) + '</span></div>' +
         '<hr class="bill-divider">' +
         '<div style="text-align:center;font-size:.7rem;color:#777;margin-top:8px">Thank you! Visit again</div>' +
-        '<div class="bill-actions">' +
-        '<button class="bill-print-btn" onclick="window.print()">🖨 Print Bill</button>' +
-        '<button class="bill-new-btn" onclick="newOrder()">+ New Order</button>' +
-        '</div>';
+        actions;
     document.getElementById('pos-bill-overlay').classList.add('show');
 }
 
@@ -886,7 +894,7 @@ function renderRecentOrders() {
 function reprintOrder(orderId) {
     var o = recentOrders.find(function(r){ return r.id === orderId; });
     if (!o) return;
-    showBill(o.id, o);
+    showBill(o.id, o, true);
 }
 </script>
 </body>
