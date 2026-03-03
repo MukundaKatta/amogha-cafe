@@ -1,9 +1,41 @@
 # Self-Service Kiosk
 
 **URL:** https://amoghahotels.com/kiosk/
-**File:** `kiosk/index.html` (~2,384 lines)
+**File:** `kiosk/index.html` (~2,400 lines)
 
 A premium self-service ordering kiosk designed for tablets and touchscreens placed at the restaurant counter or tables. Customers browse the menu, customize items with spice levels and add-ons, and pay — all without staff assistance.
+
+---
+
+## Multi-Tenant / Multi-Shop
+
+The kiosk supports multiple independent shops on a single deployment. Each shop has its own menu, branding, categories, and admin PIN.
+
+**URL routing:**
+```
+/kiosk/              → Amogha Cafe & Restaurant (default)
+/kiosk/?shop=teashop → Tea Shop (separate menu + branding)
+```
+
+**How it works:**
+1. `shopId` is read from the `?shop=` URL query param (defaults to `amogha`)
+2. Shop config is loaded from the Firestore `shops` collection
+3. All Firestore queries (menu, orders) are filtered by `shopId`
+4. Shop name, logo, tagline, and theme are applied dynamically
+
+**Shop config document (`shops/{shopId}`):**
+```json
+{
+  "name": "Tea Shop",
+  "tagline": "Fresh Teas & Snacks",
+  "adminPin": "teapin",
+  "categories": ["Teas & Chai", "Snacks", "Cigarettes"],
+  "theme": { "gold": "#c8902a", "bg": "#050302" },
+  "logo": "https://..."
+}
+```
+
+**Adding a new shop:** Go to Admin → Shops tab → "Create Shop" form.
 
 ---
 
@@ -25,8 +57,8 @@ A premium self-service ordering kiosk designed for tablets and touchscreens plac
 
 **Menu Grid:**
 - Mobile: 2-column grid with horizontal category tabs
-- Tablet (768px+): Sticky sidebar with category buttons + 3-column grid
-- Desktop (1024px+): Sidebar + 4-column grid
+- Tablet (768px+): Sticky sidebar (100px) with **circular category icons** (food photo or emoji fallback) + 3-column grid
+- Desktop (1024px+): Wider sidebar (110px, 66px icons) + 4-column grid
 
 **Floating Cart Bar:**
 - Fixed to bottom, slides up when cart has items
@@ -239,8 +271,9 @@ Cards: rgba(18,15,12,0.82) (dark), rgba(255,252,248,0.92) (light)
 ## Light / Dark Mode
 
 - Toggle in header (persists to localStorage)
-- Dark mode (default): deep black/brown backgrounds, gold accents, cream text
-- Light mode: warm white backgrounds, darker text, preserved gold accents
+- **Light mode is the default** — warm bamboo-texture background (`#c4b88a`) with vertical reed-stripe CSS gradient
+- Dark mode: deep black/brown backgrounds, gold accents, cream text
+- Shop-specific dark background colour stored in `document.documentElement.dataset.darkBg` and applied only when toggling to dark
 
 ---
 
@@ -269,7 +302,7 @@ All UI labels, buttons, placeholders, and category names switch. Menu item names
 ## PWA
 
 - Service worker (`kiosk/sw.js`) — network-first for HTML/JS, cache-first for images
-- Cache name: `amogha-kiosk-v2`
+- Cache name: `amogha-kiosk-v3`
 - Web App Manifest (`kiosk/manifest.json`):
   - Display: fullscreen
   - Orientation: portrait
@@ -282,13 +315,13 @@ All UI labels, buttons, placeholders, and category names switch. Menu item names
 
 | Collection | Usage |
 |------------|-------|
-| menu | Load menu items (name, price, category, type, badge, imageUrl, description) |
+| shops | Load shop config (name, logo, categories, theme, adminPin) |
+| menu | Load items filtered by `shopId` + `available: true` |
 | addons | Load add-on options (name, category, price) |
 | reviews | Aggregate item ratings (avg stars, count) |
-| orders | Place orders, query recent orders for loyalty/reorder, estimate wait time |
+| orders | Place orders (tagged with `shopId`), query recent orders for loyalty/reorder, estimate wait time |
 | users | Loyalty points lookup by phone |
 | notifications | Staff call button creates notification docs |
-| reviews | Post-order feedback saved with `source: 'kiosk'` |
 
 ---
 

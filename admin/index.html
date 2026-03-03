@@ -2315,6 +2315,9 @@
                     <option value="holi">Holi</option>
                     <option value="christmas">Christmas</option>
                 </select>
+                <select id="shop-selector" onchange="switchShop(this.value)" style="background:#1a1a2e;color:#D4A017;border:1px solid #D4A01766;border-radius:6px;padding:6px 10px;font-size:13px;cursor:pointer;display:none">
+                    <option value="amogha">Amogha Cafe</option>
+                </select>
                 <button class="logout-btn" onclick="adminLogout()">Logout</button>
                 <div class="admin-stats">
                     <span class="stat-badge"><span class="label">Orders </span><span class="num" id="stat-total">0</span></span>
@@ -2340,6 +2343,7 @@
             <button class="admin-tab" data-tab="calendar" onclick="switchTab('calendar',this)">Calendar</button>
             <button class="admin-tab" data-tab="marketing" onclick="switchTab('marketing',this)">Marketing</button>
             <button class="admin-tab" data-tab="pricing" onclick="switchTab('pricing',this)">Pricing</button>
+            <button class="admin-tab" data-tab="shops" onclick="switchTab('shops',this);loadShopsAdmin()">Shops</button>
         </div>
 
         <div class="filters">
@@ -2923,6 +2927,22 @@
             </div>
         </div>
 
+        <!-- Shops Panel -->
+        <div id="shops-panel" class="admin-panel" style="display:none;">
+            <div class="panel-header">
+                <h2 class="panel-title">Shops</h2>
+            </div>
+            <div id="shops-list" style="display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:2rem"></div>
+            <div style="background:#111;border-radius:12px;padding:1.5rem;max-width:480px">
+                <h3 style="color:#D4A017;margin:0 0 1rem">Add New Shop</h3>
+                <input type="text" id="new-shop-id" placeholder="Shop ID (e.g. teashop, bakery)" style="margin-bottom:0.5rem">
+                <input type="text" id="new-shop-name" placeholder="Shop Name" style="margin-bottom:0.5rem">
+                <input type="text" id="new-shop-tagline" placeholder="Tagline (e.g. Fresh Teas & Snacks)" style="margin-bottom:0.5rem">
+                <input type="text" id="new-shop-pin" placeholder="Admin PIN (6 digits)" style="margin-bottom:0.5rem">
+                <button class="add-special-confirm" onclick="addShop()">Create Shop</button>
+            </div>
+        </div>
+
     </div>
 
     <!-- Add Coupon Modal -->
@@ -3124,6 +3144,86 @@
 
         // Admin PIN (change this!)
         var ADMIN_PIN = '240124';
+        var currentShopId = 'amogha';
+        var allShops = [];
+
+        function loadShops() {
+            db.collection('shops').get().then(function(snap) {
+                allShops = [];
+                snap.forEach(function(doc) { allShops.push({ id: doc.id, ...doc.data() }); });
+                var sel = document.getElementById('shop-selector');
+                sel.innerHTML = allShops.map(function(s) {
+                    return '<option value="' + s.id + '"' + (s.id === currentShopId ? ' selected' : '') + '>' + (s.name || s.id) + '</option>';
+                }).join('');
+                sel.style.display = allShops.length > 1 ? 'inline-block' : 'none';
+            }).catch(function() {});
+        }
+
+        function switchShop(shopId) {
+            currentShopId = shopId;
+            allOrders = [];
+            allMenuItems = [];
+            loadOrders();
+            loadMenuItems();
+        }
+
+        function loadShopsAdmin() {
+            var container = document.getElementById('shops-list');
+            if (!container) return;
+            if (allShops.length === 0) {
+                db.collection('shops').get().then(function(snap) {
+                    allShops = [];
+                    snap.forEach(function(doc) { allShops.push({ id: doc.id, ...doc.data() }); });
+                    renderShopCards();
+                });
+            } else { renderShopCards(); }
+        }
+
+        function renderShopCards() {
+            var container = document.getElementById('shops-list');
+            if (!container) return;
+            container.innerHTML = allShops.map(function(s) {
+                var isActive = s.id === currentShopId;
+                return '<div style="background:#111;border-radius:12px;padding:1.25rem;min-width:200px;border:2px solid ' + (isActive ? '#D4A017' : '#D4A01733') + '">' +
+                    '<div style="font-size:1.1rem;font-weight:700;color:#D4A017;margin-bottom:0.25rem">' + escHtml(s.name || s.id) + '</div>' +
+                    '<div style="color:#aaa;font-size:0.85rem;margin-bottom:0.25rem">ID: ' + escHtml(s.id) + '</div>' +
+                    '<div style="color:#888;font-size:0.8rem;margin-bottom:0.75rem">' + escHtml(s.tagline || '') + '</div>' +
+                    '<div style="display:flex;gap:0.5rem;flex-wrap:wrap">' +
+                    '<button onclick="selectShopAndManage(\'' + s.id + '\')" style="background:#D4A017;color:#000;border:none;border-radius:6px;padding:5px 12px;font-size:0.8rem;font-weight:600;cursor:pointer">' + (isActive ? '✓ Managing' : 'Manage Menu') + '</button>' +
+                    '<a href="/kiosk/?shop=' + encodeURIComponent(s.id) + '" target="_blank" style="display:inline-flex;align-items:center;color:#D4A017;font-size:0.8rem;text-decoration:none;border:1px solid #D4A01766;border-radius:6px;padding:5px 10px">Kiosk &#8599;</a>' +
+                    '</div>' +
+                    '</div>';
+            }).join('');
+        }
+
+        function selectShopAndManage(shopId) {
+            currentShopId = shopId;
+            allOrders = [];
+            allMenuItems = [];
+            var sel = document.getElementById('shop-selector');
+            if (sel) sel.value = shopId;
+            loadOrders();
+            loadMenuItems();
+            renderShopCards();
+            switchTab('menu');
+        }
+
+        function addShop() {
+            var id = (document.getElementById('new-shop-id').value || '').trim().toLowerCase().replace(/\s+/g, '-');
+            var name = (document.getElementById('new-shop-name').value || '').trim();
+            var tagline = (document.getElementById('new-shop-tagline').value || '').trim();
+            var pin = (document.getElementById('new-shop-pin').value || '').trim();
+            if (!id || !name || !pin) { alert('Shop ID, Name and PIN are required.'); return; }
+            db.collection('shops').doc(id).set({
+                name: name, tagline: tagline, adminPin: pin,
+                categories: [], theme: { gold: '#D4A017', bg: '#080604' },
+                createdAt: new Date().toISOString()
+            }, { merge: true }).then(function() {
+                ['new-shop-id','new-shop-name','new-shop-tagline','new-shop-pin'].forEach(function(fid) { document.getElementById(fid).value = ''; });
+                loadShops();
+                loadShopsAdmin();
+            }).catch(function(err) { alert('Error: ' + err.message); });
+        }
 
         // Theme toggle
         (function() {
@@ -3148,6 +3248,7 @@
                 dash.style.display = 'block';
                 dash.classList.add('dashboard-enter');
                 loadOrders();
+                loadShops();
             } else {
                 var errEl = document.getElementById('login-error');
                 errEl.textContent = 'Invalid PIN. Access denied.';
@@ -3236,7 +3337,7 @@
         }
 
         function loadOrders() {
-            db.collection('orders').orderBy('createdAt', 'desc').onSnapshot(function(snapshot) {
+            db.collection('orders').where('shopId', '==', currentShopId).orderBy('createdAt', 'desc').onSnapshot(function(snapshot) {
                 allOrders = [];
                 snapshot.forEach(function(doc) {
                     allOrders.push({ id: doc.id, ...doc.data() });
@@ -3388,6 +3489,7 @@
             document.getElementById('calendar-panel').style.display = tab === 'calendar' ? 'block' : 'none';
             document.getElementById('marketing-panel').style.display = tab === 'marketing' ? 'block' : 'none';
             document.getElementById('pricing-panel').style.display = tab === 'pricing' ? 'block' : 'none';
+            document.getElementById('shops-panel').style.display = tab === 'shops' ? 'block' : 'none';
 
             // Load data if needed
             if (tab === 'menu' && allMenuItems.length === 0) { loadMenuItems(); loadAddons(); }
@@ -3415,11 +3517,12 @@
         var menuCatFilter = 'all';
 
         function loadMenuItems() {
-            db.collection('menu').orderBy('sortOrder').onSnapshot(function(snapshot) {
+            db.collection('menu').where('shopId', '==', currentShopId).onSnapshot(function(snapshot) {
                 allMenuItems = [];
                 snapshot.forEach(function(doc) {
                     allMenuItems.push({ id: doc.id, ...doc.data() });
                 });
+                allMenuItems.sort(function(a, b) { return (a.sortOrder || 0) - (b.sortOrder || 0); });
                 renderMenuCatFilters();
                 renderMenuAdmin();
             }, function(err) { console.error('Menu snapshot error:', err); });
@@ -3725,9 +3828,16 @@
         function showAddMenuItem() {
             document.getElementById('menu-item-name').value = '';
             document.getElementById('menu-item-price').value = '';
-            document.getElementById('menu-item-category').value = '';
             document.getElementById('menu-item-type').value = 'veg';
             document.getElementById('menu-item-badge').value = '';
+            // Populate categories from current shop config
+            var shop = allShops.find(function(s) { return s.id === currentShopId; });
+            var cats = (shop && shop.categories && shop.categories.length)
+                ? shop.categories
+                : ['Starters','Curries','Biryanis','Kebabs & Grill','Noodles','Fried Rice','Rotis & Naan','Beverages'];
+            var sel = document.getElementById('menu-item-category');
+            sel.innerHTML = '<option value="">Select category...</option>' +
+                cats.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
             document.getElementById('add-menu-modal').style.display = 'flex';
             document.getElementById('menu-item-name').focus();
         }
@@ -3753,13 +3863,14 @@
 
             var maxSort = allMenuItems.reduce(function(max, item) { return Math.max(max, item.sortOrder || 0); }, 0);
 
-            db.collection('menu').doc(name).set({
+            db.collection('menu').doc(currentShopId === 'amogha' ? name : currentShopId + '__' + name).set({
                 name: name,
                 price: price,
                 category: category,
                 type: type,
                 badge: badge || '',
                 available: true,
+                shopId: currentShopId,
                 sortOrder: maxSort + 1,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()

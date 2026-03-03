@@ -392,6 +392,37 @@ Track restaurant operating expenses.
 
 ---
 
+### 23. Shops
+
+Manage multiple shop tenants on the same deployment.
+
+**Shop selector (header dropdown):**
+- Visible after login when more than one shop exists
+- Switches the active shop — all panels (Orders, Menu) filter to that shop
+
+**Shop cards:**
+- Gold border highlights the currently managed shop
+- **Manage Menu** button — switches active shop and opens Menu tab directly
+- **Kiosk ↗** link — opens that shop's kiosk in a new tab
+
+**Add New Shop form:**
+| Field | Notes |
+|-------|-------|
+| Shop ID | Lowercase, no spaces (e.g. `teashop`). Used in `?shop=` URL param |
+| Shop Name | Display name shown in kiosk header |
+| Tagline | Sub-header text (e.g. "Fresh Teas & Snacks") |
+| Admin PIN | 6-digit PIN for kiosk admin access and POS login |
+
+- Creates a document in Firestore `shops/{shopId}`
+- Categories are added by editing the doc or via seed script
+
+**Menu tab with shop context:**
+- Categories dropdown in "Add Item" modal dynamically shows the active shop's categories
+- Item document ID is prefixed with shop ID for non-Amogha shops (e.g. `teashop__Masala Chai`)
+- All items are tagged with `shopId` field
+
+---
+
 ## Key Notes
 
 - All changes are **live immediately** — Firestore real-time sync pushes updates to customers without page reload

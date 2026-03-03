@@ -1,4 +1,4 @@
-var CACHE_NAME = 'amogha-kiosk-v2';
+var CACHE_NAME = 'amogha-kiosk-v3';
 var ASSETS = [
   './',
   './index.html',

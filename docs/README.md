@@ -20,8 +20,9 @@
 | [04-order-tracking.md](04-order-tracking.md) | Order Tracking | https://amoghahotels.com/track/ |
 | [05-qr-ordering.md](05-qr-ordering.md) | QR Dine-In Ordering | https://amoghahotels.com/qr/ |
 | [06-display-board.md](06-display-board.md) | Restaurant Display Board | https://amoghahotels.com/display/ |
-| [14-kiosk.md](14-kiosk.md) | Self-Service Kiosk | https://amoghahotels.com/kiosk/ |
+| [14-kiosk.md](14-kiosk.md) | Self-Service Kiosk (multi-tenant) | https://amoghahotels.com/kiosk/ |
 | [15-delivery.md](15-delivery.md) | Delivery Management | https://amoghahotels.com/delivery/ |
+| [22-pos.md](22-pos.md) | POS Terminal | https://amoghahotels.com/pos/ |
 
 ## Features
 
@@ -102,6 +103,7 @@ amogha-cafe/
 │   ├── manifest.json
 │   └── sw.js
 ├── delivery/index.html     # Delivery driver app
+├── pos/index.html          # Staff POS terminal
 ├── functions/              # Firebase Cloud Functions (REST API)
 │   ├── index.js
 │   └── package.json
@@ -161,6 +163,7 @@ amogha-cafe/
 | settings | Site-wide configuration |
 | cateringInquiries | Catering request forms |
 | deliveryPersons | Delivery driver accounts |
+| shops | Multi-tenant shop configs (name, logo, categories, adminPin, theme) |
 | expenses | Restaurant expense tracking (admin) |
 | staff | Staff members, roles, shifts, schedules |
 | groupCarts | Shared group ordering carts |

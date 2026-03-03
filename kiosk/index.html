@@ -71,7 +71,7 @@
         ::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--gold-l),var(--gold),var(--gold-l))}
 
         /* ── Preloader ─────────────────────────────────────────── */
-        .preloader{position:fixed;inset:0;z-index:10000;background:#080604;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .6s var(--ease-luxe),filter .6s}
+        .preloader{position:fixed;inset:0;z-index:10000;background:#c4b88a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .6s var(--ease-luxe),filter .6s}
         .preloader.done{opacity:0;filter:blur(8px);pointer-events:none}
         .preloader-logo{width:100px;height:100px;border-radius:50%;object-fit:contain;
             background:#d4a017;padding:4px;
@@ -168,23 +168,27 @@
         .kiosk-body{display:flex;gap:0;position:relative}
 
         /* Category Sidebar (tablet ≥768px) */
-        .cat-sidebar{display:none;width:175px;flex-shrink:0;position:sticky;top:70px;
-            height:calc(100vh - 70px);overflow-y:auto;padding:8px 0 80px 8px;
-            border-right:1px solid rgba(212,160,23,.08);scrollbar-width:none}
+        .cat-sidebar{display:none;width:100px;flex-shrink:0;position:sticky;top:70px;
+            height:calc(100vh - 70px);overflow-y:auto;padding:10px 0 80px;
+            border-right:1px solid rgba(212,160,23,.08);scrollbar-width:none;background:transparent}
         .cat-sidebar::-webkit-scrollbar{display:none}
-        .cat-item{display:flex;align-items:center;gap:8px;padding:13px 14px;margin:2px 4px;position:relative;
-            border-radius:12px;font-size:13px;font-weight:500;color:var(--txt2);cursor:pointer;
-            transition:all .3s var(--ease-out);user-select:none;border:none;background:none;width:100%;text-align:left;
-            overflow:hidden}
-        .cat-item::before{content:'';position:absolute;left:0;top:20%;height:60%;width:3px;border-radius:0 3px 3px 0;
-            background:var(--gold);opacity:0;transform:scaleY(.5);transition:all .3s var(--ease-spring)}
-        .cat-item:hover{background:rgba(212,160,23,.05)}
-        .cat-item.active{background:rgba(212,160,23,.1);color:var(--gold);font-weight:600;
-            box-shadow:0 0 20px rgba(212,160,23,.06)}
-        .cat-item.active::before{opacity:1;transform:scaleY(1)}
-        .cat-item .cat-count{margin-left:auto;font-size:11px;font-weight:400;
-            background:rgba(212,160,23,.08);padding:2px 7px;border-radius:10px;color:var(--txt3)}
-        .cat-item.active .cat-count{background:rgba(212,160,23,.15);color:var(--gold)}
+        .cat-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;margin:3px 4px;
+            position:relative;border-radius:16px;cursor:pointer;
+            transition:all .25s var(--ease-out);user-select:none;border:none;background:none;width:calc(100% - 8px);text-align:center}
+        .cat-item::before{display:none}
+        .cat-item:hover{background:rgba(0,0,0,.05)}
+        .cat-item.active{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+        .cat-item-img{width:58px;height:58px;border-radius:50%;overflow:hidden;flex-shrink:0;
+            border:2px solid rgba(212,160,23,.2);
+            background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;
+            transition:all .25s var(--ease-out)}
+        .cat-item-img img{width:100%;height:100%;object-fit:cover}
+        .cat-emoji{font-size:26px;line-height:1}
+        .cat-item.active .cat-item-img{border-color:var(--gold);border-width:2.5px;
+            box-shadow:0 0 0 3px rgba(212,160,23,.15)}
+        .cat-item-name{font-size:11px;font-weight:600;color:var(--txt2);line-height:1.2;
+            word-break:break-word;max-width:84px;transition:color .25s}
+        .cat-item.active .cat-item-name{color:var(--gold);font-weight:700}
 
         /* Category Tabs (phone <768px) */
         .cat-tabs{display:flex;gap:8px;padding:0 16px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -498,7 +502,9 @@
         }
         @media(min-width:1024px){
             .item-grid{grid-template-columns:repeat(4,1fr);gap:16px}
-            .cat-sidebar{width:200px}
+            .cat-sidebar{width:110px}
+            .cat-item-img{width:66px;height:66px}
+            .cat-item-name{font-size:12px}
         }
 
         /* ── Spice Picker Overlay ────────────────────────────────── */
@@ -576,7 +582,7 @@
         .item-rating-count{font-size:10px;color:var(--txt3)}
 
         /* ── Screensaver ─────────────────────────────────────────── */
-        .screensaver{position:fixed;inset:0;z-index:9000;background:#080604;
+        .screensaver{position:fixed;inset:0;z-index:9000;background:#c4b88a;
             display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;
             opacity:0;pointer-events:none;transition:opacity .8s var(--ease-luxe)}
         .screensaver.show{opacity:1;pointer-events:auto}
@@ -652,21 +658,67 @@
         .staff-call-btn svg{width:16px;height:16px;stroke:var(--gold)}
 
         /* ── Light Mode ──────────────────────────────────────────── */
-        body.light-mode{--bg:#f5f0e8;--bg2:rgba(245,240,232,.94);--bg-card:rgba(255,252,248,.92);
-            --txt:#1a1610;--txt2:#5a5040;--txt3:#8a7a68;--txt4:#bab0a0;
-            --shadow-s:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.05);
-            --shadow-m:0 2px 8px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.06)}
-        body.light-mode::after{opacity:.015}
-        body.light-mode::before{background:radial-gradient(ellipse at 30% 0%,rgba(212,160,23,.06) 0%,transparent 50%),
-            radial-gradient(ellipse at 70% 100%,rgba(139,26,26,.04) 0%,transparent 50%)}
-        body.light-mode .header{background:linear-gradient(135deg,rgba(245,240,232,.97),rgba(235,228,216,.97))}
-        body.light-mode .item-card{border-color:rgba(0,0,0,.08)}
-        body.light-mode .item-card::before{background:linear-gradient(90deg,transparent,rgba(212,160,23,.1),transparent)}
-        body.light-mode .cart-bar{background:linear-gradient(to top,rgba(245,240,232,.98),rgba(245,240,232,.9))}
-        body.light-mode .co-sheet{background:linear-gradient(180deg,rgba(255,252,248,.98),rgba(245,240,232,.98))}
-        body.light-mode .success-screen{background:rgba(245,240,232,.97)}
-        body.light-mode .screensaver{background:#f5f0e8}
-        body.light-mode .ap{background:radial-gradient(circle,rgba(212,160,23,.1),transparent 70%)}
+        body.light-mode{
+            --bg:#c8bc96;--bg2:rgba(200,188,150,.97);--bg-card:rgba(255,253,248,.97);
+            --txt:#1c1710;--txt2:#4a3e28;--txt3:#7a6e58;--txt4:#b0a48c;
+            --shadow-s:0 1px 4px rgba(0,0,0,.10),0 4px 14px rgba(0,0,0,.08);
+            --shadow-m:0 2px 12px rgba(0,0,0,.10),0 10px 32px rgba(0,0,0,.09),0 0 0 1px rgba(0,0,0,.05);
+            --shadow-glow:0 0 24px rgba(180,140,40,.14),0 0 48px rgba(180,140,40,.07)}
+        /* Bamboo vertical stripe background — matches reference image */
+        body.light-mode{
+            background-color:#c4b88a;
+            background-image:
+                repeating-linear-gradient(
+                    90deg,
+                    rgba(255,248,220,.18)  0px,
+                    rgba(255,248,220,.18)  14px,
+                    rgba(160,140,80,.10)   14px,
+                    rgba(160,140,80,.10)   16px,
+                    rgba(200,185,130,.12)  16px,
+                    rgba(200,185,130,.12)  30px,
+                    rgba(120,105,60,.08)   30px,
+                    rgba(120,105,60,.08)   32px
+                ),
+                repeating-linear-gradient(
+                    180deg,
+                    transparent            0px,
+                    transparent            60px,
+                    rgba(0,0,0,.015)       60px,
+                    rgba(0,0,0,.015)       62px
+                )}
+        body.light-mode::after{opacity:0}
+        body.light-mode::before{
+            background:radial-gradient(ellipse 100% 40% at 50% 0%,rgba(255,240,180,.18) 0%,transparent 70%)}
+        body.light-mode .header{
+            background:linear-gradient(135deg,rgba(255,253,248,.97) 0%,rgba(245,240,225,.97) 100%);
+            box-shadow:0 1px 0 rgba(160,130,50,.15),0 4px 24px rgba(0,0,0,.08)}
+        body.light-mode .featured-strip::before{background:linear-gradient(90deg,#c4b88a,transparent)}
+        body.light-mode .featured-strip::after{background:linear-gradient(-90deg,#c4b88a,transparent)}
+        body.light-mode .item-card{background:rgba(255,253,248,.97);border-color:rgba(0,0,0,.08);
+            box-shadow:0 1px 4px rgba(0,0,0,.08),0 6px 18px rgba(0,0,0,.07)}
+        body.light-mode .item-card:hover{box-shadow:0 4px 18px rgba(0,0,0,.12),0 14px 36px rgba(0,0,0,.09)}
+        body.light-mode .item-card::before{background:linear-gradient(90deg,transparent,rgba(212,160,23,.07),transparent)}
+        body.light-mode .cat-item:hover{background:rgba(0,0,0,.06)}
+        body.light-mode .cat-item.active{background:#fff;box-shadow:0 3px 16px rgba(0,0,0,.13)}
+        body.light-mode .cat-item-name{color:#2a1f0a;font-size:13px;font-weight:700;text-shadow:0 1px 2px rgba(255,255,255,.6)}
+        body.light-mode .cat-item.active .cat-item-name{color:#8a6000}
+        body.light-mode .cat-tab{background:rgba(255,252,240,.75);color:#4a3e28;border-color:rgba(160,130,50,.2)}
+        body.light-mode .cat-tab.active{color:#1c1710}
+        body.light-mode .search-bar input{background:rgba(255,253,248,.95);border-color:rgba(0,0,0,.12);color:#1c1710}
+        body.light-mode .search-bar input::placeholder{color:#7a6e58}
+        body.light-mode .cart-bar{
+            background:linear-gradient(to top,rgba(255,253,248,.99),rgba(255,252,240,.95));
+            box-shadow:0 -2px 20px rgba(0,0,0,.09),0 -1px 0 rgba(0,0,0,.07)}
+        body.light-mode .co-sheet{background:linear-gradient(180deg,rgba(255,253,248,.99),rgba(248,244,230,.99))}
+        body.light-mode .success-screen{background:rgba(255,253,248,.98)}
+        body.light-mode .screensaver{background-color:#c4b88a;
+            background-image:repeating-linear-gradient(90deg,rgba(255,248,220,.18) 0px,rgba(255,248,220,.18) 14px,rgba(160,140,80,.10) 14px,rgba(160,140,80,.10) 16px,rgba(200,185,130,.12) 16px,rgba(200,185,130,.12) 30px,rgba(120,105,60,.08) 30px,rgba(120,105,60,.08) 32px)}
+        body.light-mode .preloader{background-color:#c4b88a}
+        body.light-mode .ap{background:radial-gradient(circle,rgba(212,160,23,.06),transparent 70%)}
+        body.light-mode .filter-chip{background:rgba(255,252,240,.8);border-color:rgba(160,130,50,.2);color:#4a3e28}
+        body.light-mode .filter-chip.active{border-color:var(--gold);color:var(--gold)}
+        body.light-mode ::-webkit-scrollbar-track{background:rgba(180,165,110,.3)}
+        body.light-mode ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(160,130,50,.4),rgba(160,130,50,.2),rgba(160,130,50,.4))}
         .mode-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(212,160,23,.15);
             background:rgba(212,160,23,.06);color:var(--gold);cursor:pointer;flex-shrink:0;
             display:flex;align-items:center;justify-content:center;transition:all .3s var(--ease-spring);font-size:16px}
@@ -757,7 +809,7 @@
         .table-input-row input{flex:1}
     </style>
 </head>
-<body>
+<body class="light-mode">
 
 <!-- Ambient Floating Particles -->
 <div class="ambient-particles" aria-hidden="true">
@@ -1084,6 +1136,44 @@ firebase.initializeApp({
 });
 var db = firebase.firestore();
 
+// ── Multi-Tenant Shop Support ────────────────────────────────────
+var shopId = (new URLSearchParams(window.location.search)).get('shop') || 'amogha';
+var shopConfig = null;
+
+function loadShopConfig(cb) {
+    db.collection('shops').doc(shopId).get().then(function(doc) {
+        if (doc.exists) {
+            shopConfig = doc.data();
+            applyShopConfig();
+        }
+        cb();
+    }).catch(function() { cb(); });
+}
+
+function applyShopConfig() {
+    if (!shopConfig) return;
+    // Update header shop name
+    var h1El = document.querySelector('.header-info h1');
+    if (h1El && shopConfig.name) h1El.textContent = shopConfig.name;
+    // Update page title
+    document.title = (shopConfig.name || 'Kiosk') + ' — Self-Service Ordering';
+    // Update tagline
+    var taglineEl = document.querySelector('[data-i18n="selfService"]');
+    if (taglineEl && shopConfig.tagline) taglineEl.textContent = shopConfig.tagline;
+    // Apply theme colors
+    if (shopConfig.theme) {
+        if (shopConfig.theme.gold) document.documentElement.style.setProperty('--gold', shopConfig.theme.gold);
+        // Store dark bg for when user switches to dark mode; don't apply in light mode
+        if (shopConfig.theme.bg) document.documentElement.dataset.darkBg = shopConfig.theme.bg;
+    }
+    // Update logo
+    if (shopConfig.logo) {
+        document.querySelectorAll('.header-logo, .preloader-logo, .screensaver-logo').forEach(function(el) {
+            el.src = shopConfig.logo;
+        });
+    }
+}
+
 // ── Capacitor Native App Detection ──────────────────────────────
 var isCapacitorApp = typeof window.Capacitor !== 'undefined';
 if (isCapacitorApp) {
@@ -1222,17 +1312,23 @@ var catMap = {'Noodles':'Noodles','Fried Rice':'Fried Rice','Rotis & Naan':'Brea
 
 function loadMenuFromFirestore() {
     if (typeof db === 'undefined') { useFallbackMenu(); return; }
-    db.collection('menu').onSnapshot(function(snapshot) {
+    db.collection('menu').where('shopId', '==', shopId).where('available', '==', true).onSnapshot(function(snapshot) {
         menu = [];
         snapshot.forEach(function(doc) {
             var d = doc.data();
-            if (!d.available) return;
             menu.push({ name: d.name, price: d.price, cat: catMap[d.category] || d.category,
                 type: d.type === 'non-veg' ? 'nv' : 'veg', best: d.badge === 'Bestseller',
                 chef: d.badge === "Chef's Pick", img: d.imageUrl || '', desc: d.description || '', badge: d.badge || '' });
         });
         categories = ['All'];
         menu.forEach(function(item) { if (categories.indexOf(item.cat) === -1) categories.push(item.cat); });
+        // Apply shopConfig category ordering
+        if (shopConfig && shopConfig.categories && shopConfig.categories.length > 0) {
+            var ordered = ['All'];
+            shopConfig.categories.forEach(function(c) { var mapped = catMap[c] || c; if (categories.indexOf(mapped) !== -1 && ordered.indexOf(mapped) === -1) ordered.push(mapped); });
+            categories.forEach(function(c) { if (ordered.indexOf(c) === -1) ordered.push(c); });
+            categories = ordered;
+        }
         menuLoaded = true;
         renderCatTabs(); renderCatSidebar(); renderMenu(); renderFeatured();
     }, function(err) { console.error('Menu error:', err); useFallbackMenu(); });
@@ -1289,7 +1385,7 @@ function useFallbackMenu() {
     menuLoaded = true;
     renderCatTabs(); renderCatSidebar(); renderMenu(); renderFeatured();
 }
-loadMenuFromFirestore();
+loadShopConfig(function() { loadMenuFromFirestore(); loadRatings(); });
 
 // ── State ──────────────────────────────────────────────────────
 var cart = [];
@@ -1389,13 +1485,27 @@ function renderCatTabs() {
     });
     document.getElementById('cat-tabs').innerHTML = html;
 }
+var CAT_EMOJI = { 'All':'🍽️', 'Starters':'🥗', 'Biryanis':'🍚', 'Curries':'🍛', 'Kebabs & Grill':'🍖',
+    'Kebabs':'🍖', 'Noodles':'🍜', 'Fried Rice':'🍳', 'Breads':'🫓', 'Beverages':'🥤',
+    'Teas & Chai':'☕', 'Snacks':'🧆', 'Cigarettes':'🚬', 'Desserts':'🍮', 'Soups':'🍲' };
 function renderCatSidebar() {
     var html = '';
     categories.forEach(function(cat) {
         var count = getCatCount(cat);
-        html += '<button class="cat-item' + (cat === activeCat ? ' active' : '') +
+        var firstImg = '';
+        if (cat !== 'All') {
+            var found = menu.find(function(m) { return m.cat === cat && m.img; });
+            if (found) firstImg = found.img;
+        }
+        var emoji = CAT_EMOJI[cat] || '🍽️';
+        var isActive = cat === activeCat;
+        html += '<button class="cat-item' + (isActive ? ' active' : '') +
                 '" onclick="setCat(\'' + escHtml(cat) + '\',this)">' +
-                escHtml(catName(cat)) + '<span class="cat-count">' + count + '</span></button>';
+                '<div class="cat-item-img' + (isActive ? ' active' : '') + '">' +
+                (firstImg ? '<img src="' + firstImg + '" alt="" loading="lazy">' : '<span class="cat-emoji">' + emoji + '</span>') +
+                '</div>' +
+                '<span class="cat-item-name">' + escHtml(catName(cat)) + '</span>' +
+                '</button>';
     });
     document.getElementById('cat-sidebar').innerHTML = html;
 }
@@ -1574,7 +1684,9 @@ function renderMenu() {
     items.forEach(function(item) { if (!grouped[item.cat]) grouped[item.cat] = []; grouped[item.cat].push(item); });
 
     var html = '';
-    catOrder.forEach(function(cat) {
+    var renderOrder = categories.filter(function(c) { return c !== 'All'; });
+    Object.keys(grouped).forEach(function(c) { if (renderOrder.indexOf(c) === -1) renderOrder.push(c); });
+    renderOrder.forEach(function(cat) {
         if (!grouped[cat]) return;
         html += '<div class="menu-section" id="sec-' + cat.replace(/\s/g, '-') + '">';
         html += '<div class="section-title">' + escHtml(catName(cat)) + '</div>';
@@ -1682,8 +1794,8 @@ function initiatePayment() {
     var rzp = new Razorpay({
         key: 'rzp_test_1DP5mmOlF5G5ag',
         amount: Math.round(total * 100), currency: 'INR',
-        name: 'AMOGHA CAFE & RESTAURANT',
-        description: 'Kiosk Order - Amogha Cafe',
+        name: (shopConfig && shopConfig.name) ? shopConfig.name.toUpperCase() : 'AMOGHA CAFE & RESTAURANT',
+        description: 'Kiosk Order - ' + ((shopConfig && shopConfig.name) || 'Amogha Cafe'),
         image: window.location.origin + '/amogha-logo.png',
         handler: function(r) { btn.disabled = false; placeOrderToFirestore('Razorpay', r.razorpay_payment_id, 'paid'); },
         prefill: { name: name, contact: phone, method: 'upi' },
@@ -1730,7 +1842,7 @@ function placeOrderToFirestore(payMethod, paymentId, status) {
     }
 
     var orderData = { customer: name, phone: phone, items: orderItems, subtotal: subtotal, total: finalTotal,
-        orderType: 'kiosk', notes: notes, status: status, createdAt: new Date().toISOString(), payment: payMethod };
+        orderType: 'kiosk', shopId: shopId, notes: notes, status: status, createdAt: new Date().toISOString(), payment: payMethod };
     if (table) orderData.tableNumber = table;
     if (paymentId) orderData.paymentId = paymentId;
     if (loyaltyRedeemActive && loyaltyRedeemAmount > 0) orderData.loyaltyDiscount = loyaltyRedeemAmount;
@@ -2193,7 +2305,7 @@ document.getElementById('co-phone').addEventListener('input', debounce(function(
 // ── RECENTLY ORDERED ──────────────────────────────────────────
 function lookupRecentOrders(phone) {
     if (typeof db === 'undefined') return;
-    db.collection('orders').where('phone', '==', phone).orderBy('createdAt', 'desc').limit(3).get().then(function(snap) {
+    db.collection('orders').where('shopId', '==', shopId).where('phone', '==', phone).orderBy('createdAt', 'desc').limit(3).get().then(function(snap) {
         if (snap.empty) { document.getElementById('recent-section').classList.remove('show'); return; }
         var itemSet = {};
         snap.forEach(function(doc) {
@@ -2234,7 +2346,7 @@ function reorderAll() {
 function estimateWaitTime() {
     if (typeof db === 'undefined') { showWaitTime(15); return; }
     var thirtyMinAgo = new Date(Date.now() - 30 * 60000).toISOString();
-    db.collection('orders').where('status', 'in', ['pending', 'paid', 'preparing', 'cod-pending'])
+    db.collection('orders').where('shopId', '==', shopId).where('status', 'in', ['pending', 'paid', 'preparing', 'cod-pending'])
       .where('createdAt', '>=', thirtyMinAgo).get().then(function(snap) {
         var ahead = snap.size;
         var mins = 10 + Math.min(ahead, 10) * 3;
@@ -2283,10 +2395,17 @@ function toggleLightMode() {
     document.body.classList.toggle('light-mode');
     var isLight = document.body.classList.contains('light-mode');
     document.getElementById('mode-toggle').innerHTML = isLight ? '&#9789;' : '&#9788;';
+    // Apply/remove shop's dark background
+    var darkBg = document.documentElement.dataset.darkBg;
+    if (darkBg) document.documentElement.style.setProperty('--bg', isLight ? '' : darkBg);
     try { localStorage.setItem('kiosk_light', isLight ? '1' : '0'); } catch(e) {}
 }
-// Restore light mode preference
-try { if (localStorage.getItem('kiosk_light') === '1') { document.body.classList.add('light-mode'); document.getElementById('mode-toggle').innerHTML = '&#9789;'; } } catch(e) {}
+// Restore theme preference (default: light)
+try {
+    var savedTheme = localStorage.getItem('kiosk_light');
+    if (savedTheme === '0') { document.body.classList.remove('light-mode'); document.getElementById('mode-toggle').innerHTML = '&#9788;'; }
+    else { document.getElementById('mode-toggle').innerHTML = '&#9789;'; }
+} catch(e) { document.getElementById('mode-toggle').innerHTML = '&#9789;'; }
 
 // ── ACCESSIBILITY MODE ────────────────────────────────────────
 function toggleAccessibility() {
@@ -2404,7 +2523,6 @@ function loadPopularItems() {
 // ── Init ───────────────────────────────────────────────────────
 updateCartBar();
 loadAddons();
-loadRatings();
 setTimeout(loadPopularItems, 2000);
 </script>
 

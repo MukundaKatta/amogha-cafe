@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POS | Amogha Cafe</title>
+<meta name="theme-color" content="#0f1117">
+<link rel="icon" type="image/png" href="../amogha-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+    --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+    --gold:#D4A017;--gold-d:#b8860b;
+    --txt:#e8e8f0;--txt2:#9a9ab0;--txt3:#5a5a70;
+    --grn:#27ae60;--red:#e74c3c;--blue:#3498db;
+    --r:10px;--ease:cubic-bezier(.4,0,.2,1)
+}
+html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased}
+
+/* ── Login Screen ─────────────────────────────────────────── */
+#pos-login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:var(--bg);z-index:1000}
+.login-box{background:var(--bg2);border:1px solid rgba(212,160,23,.15);border-radius:20px;
+    padding:40px;width:340px;text-align:center}
+.login-logo{width:70px;height:70px;border-radius:50%;background:#D4A017;padding:4px;
+    object-fit:contain;margin:0 auto 16px}
+.login-title{font-size:1.3rem;font-weight:700;color:var(--gold);margin-bottom:4px}
+.login-sub{font-size:.85rem;color:var(--txt2);margin-bottom:24px}
+.pin-input{width:100%;padding:14px 16px;background:var(--bg3);border:1.5px solid rgba(212,160,23,.2);
+    border-radius:var(--r);color:var(--txt);font-size:1.1rem;text-align:center;letter-spacing:.3em;
+    font-family:monospace;outline:none;transition:border-color .2s}
+.pin-input:focus{border-color:var(--gold)}
+.login-btn{width:100%;margin-top:14px;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-d));
+    color:#080604;font-weight:700;font-size:1rem;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .2s}
+.login-btn:hover{opacity:.9}
+.login-err{color:var(--red);font-size:.82rem;margin-top:10px;min-height:18px}
+
+/* ── Main POS Layout ──────────────────────────────────────── */
+#pos-main{display:none;height:100vh;display:none;flex-direction:column}
+#pos-main.show{display:flex}
+.pos-header{display:flex;align-items:center;gap:12px;padding:10px 16px;
+    background:var(--bg2);border-bottom:1px solid rgba(212,160,23,.1);flex-shrink:0}
+.pos-header-logo{width:36px;height:36px;border-radius:50%;background:var(--gold);padding:3px;object-fit:contain}
+.pos-shop-name{font-size:1rem;font-weight:700;color:var(--gold)}
+.pos-header-time{margin-left:auto;font-size:.8rem;color:var(--txt2);font-family:monospace}
+.pos-logout{padding:6px 14px;background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.25);
+    color:var(--red);border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;transition:all .2s}
+.pos-logout:hover{background:rgba(231,76,60,.22)}
+
+.pos-body{display:flex;flex:1;overflow:hidden}
+
+/* ── Category Column ──────────────────────────────────────── */
+.pos-cats{width:110px;flex-shrink:0;overflow-y:auto;background:var(--bg2);
+    border-right:1px solid rgba(255,255,255,.06);padding:8px 6px;scrollbar-width:none}
+.pos-cats::-webkit-scrollbar{display:none}
+.pos-cat-btn{width:100%;padding:10px 6px;border:none;background:none;color:var(--txt2);
+    font-size:11.5px;font-weight:500;border-radius:10px;cursor:pointer;transition:all .2s;
+    text-align:center;margin-bottom:2px;line-height:1.3}
+.pos-cat-btn:hover{background:rgba(255,255,255,.06);color:var(--txt)}
+.pos-cat-btn.active{background:rgba(212,160,23,.15);color:var(--gold);font-weight:700}
+.pos-cat-count{display:block;font-size:10px;color:var(--txt3);margin-top:2px}
+.pos-cat-btn.active .pos-cat-count{color:rgba(212,160,23,.7)}
+
+/* ── Menu Column ──────────────────────────────────────────── */
+.pos-menu-col{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.pos-search-bar{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
+.pos-search-bar input{width:100%;padding:9px 14px;background:var(--bg3);border:1px solid rgba(255,255,255,.08);
+    border-radius:8px;color:var(--txt);font-size:.9rem;outline:none;transition:border-color .2s}
+.pos-search-bar input::placeholder{color:var(--txt3)}
+.pos-search-bar input:focus{border-color:rgba(212,160,23,.4)}
+.pos-menu-grid{flex:1;overflow-y:auto;padding:10px 12px;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-content:start}
+.pos-item{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:12px;
+    padding:12px 10px;cursor:pointer;transition:all .15s;user-select:none;position:relative;
+    display:flex;flex-direction:column;gap:6px}
+.pos-item:hover{background:var(--bg3);border-color:rgba(212,160,23,.3);transform:translateY(-1px)}
+.pos-item:active{transform:scale(.97)}
+.pos-item-img{width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:2px}
+.pos-item-name{font-size:.82rem;font-weight:600;color:var(--txt);line-height:1.3}
+.pos-item-price{font-size:.95rem;font-weight:700;color:var(--gold)}
+.pos-item-badge{position:absolute;top:8px;right:8px;font-size:.6rem;padding:2px 6px;border-radius:6px;
+    font-weight:700;background:var(--gold);color:#080604}
+.pos-item-type{width:10px;height:10px;border-radius:50%;flex-shrink:0;
+    border:1.5px solid currentColor;display:inline-block;margin-right:4px}
+.pos-item-type.veg{color:var(--grn)}
+.pos-item-type.nv{color:var(--red)}
+.pos-item-meta{display:flex;align-items:center;font-size:.7rem;color:var(--txt3)}
+.pos-item.in-cart{border-color:rgba(212,160,23,.5);background:rgba(212,160,23,.05)}
+.pos-cart-badge{position:absolute;top:-6px;right:-6px;background:var(--gold);color:#080604;
+    border-radius:50%;width:20px;height:20px;font-size:.65rem;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
+.pos-empty{grid-column:1/-1;text-align:center;color:var(--txt3);padding:40px 20px;font-size:.9rem}
+
+/* ── Order Column ─────────────────────────────────────────── */
+.pos-order-col{width:320px;flex-shrink:0;display:flex;flex-direction:column;
+    border-left:1px solid rgba(255,255,255,.06);background:var(--bg2)}
+.pos-order-header{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06);
+    display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pos-order-title{font-size:.95rem;font-weight:700;color:var(--txt)}
+.pos-clear-btn{padding:4px 10px;background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.2);
+    color:var(--red);border-radius:6px;cursor:pointer;font-size:.75rem;font-weight:600}
+.pos-clear-btn:hover{background:rgba(231,76,60,.2)}
+.pos-cart-list{flex:1;overflow-y:auto;padding:8px;scrollbar-width:thin;
+    scrollbar-color:rgba(212,160,23,.2) transparent}
+.pos-cart-empty{display:flex;align-items:center;justify-content:center;height:100%;
+    color:var(--txt3);font-size:.85rem;text-align:center;padding:20px}
+.pos-cart-item{display:flex;align-items:center;gap:8px;padding:9px 8px;border-radius:10px;
+    border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s}
+.pos-cart-item:hover{background:rgba(255,255,255,.03)}
+.pos-ci-name{flex:1;font-size:.82rem;font-weight:500;color:var(--txt);line-height:1.3}
+.pos-ci-price{font-size:.8rem;color:var(--txt2);min-width:50px;text-align:right}
+.pos-qty-ctrl{display:flex;align-items:center;gap:4px}
+.pos-qty-btn{width:26px;height:26px;border-radius:6px;border:none;cursor:pointer;
+    font-size:.9rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.pos-qty-btn.minus{background:rgba(231,76,60,.12);color:var(--red)}
+.pos-qty-btn.minus:hover{background:rgba(231,76,60,.25)}
+.pos-qty-btn.plus{background:rgba(39,174,96,.12);color:var(--grn)}
+.pos-qty-btn.plus:hover{background:rgba(39,174,96,.25)}
+.pos-qty-num{min-width:22px;text-align:center;font-size:.85rem;font-weight:700;color:var(--txt)}
+
+.pos-order-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.pos-customer-row{display:flex;gap:8px;margin-bottom:8px}
+.pos-customer-row input{flex:1;padding:8px 10px;background:var(--bg3);border:1px solid rgba(255,255,255,.08);
+    border-radius:8px;color:var(--txt);font-size:.8rem;outline:none}
+.pos-customer-row input:focus{border-color:rgba(212,160,23,.4)}
+.pos-customer-row input::placeholder{color:var(--txt3)}
+.pos-total-row{display:flex;justify-content:space-between;align-items:center;
+    padding:8px 0;border-top:1px solid rgba(255,255,255,.06);margin-bottom:10px}
+.pos-total-label{font-size:.85rem;color:var(--txt2)}
+.pos-total-amount{font-size:1.3rem;font-weight:700;color:var(--gold)}
+.pos-pay-methods{display:flex;gap:6px;margin-bottom:10px}
+.pos-pay-btn{flex:1;padding:9px 6px;border-radius:8px;border:1.5px solid rgba(255,255,255,.1);
+    background:var(--bg3);color:var(--txt2);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+.pos-pay-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(212,160,23,.1)}
+.pos-place-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-d));
+    color:#080604;font-weight:700;font-size:1rem;border:none;border-radius:var(--r);cursor:pointer;
+    transition:opacity .2s;letter-spacing:.02em}
+.pos-place-btn:hover{opacity:.9}
+.pos-place-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── Success / Bill ───────────────────────────────────────── */
+#pos-bill-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;
+    display:none;align-items:center;justify-content:center}
+#pos-bill-overlay.show{display:flex}
+.pos-bill-box{background:#fff;color:#111;border-radius:12px;width:320px;max-height:90vh;
+    overflow-y:auto;padding:24px 20px;font-family:monospace}
+.bill-header{text-align:center;margin-bottom:16px}
+.bill-shop{font-size:1.1rem;font-weight:700;margin-bottom:2px}
+.bill-sub{font-size:.75rem;color:#555}
+.bill-divider{border:none;border-top:1px dashed #ccc;margin:10px 0}
+.bill-row{display:flex;justify-content:space-between;font-size:.8rem;padding:2px 0}
+.bill-row.total{font-weight:700;font-size:.95rem;border-top:1px solid #ccc;padding-top:8px;margin-top:4px}
+.bill-row.label{color:#555;font-size:.72rem}
+.bill-actions{display:flex;gap:8px;margin-top:16px}
+.bill-print-btn{flex:1;padding:10px;background:#111;color:#fff;border:none;border-radius:8px;
+    font-weight:700;cursor:pointer;font-size:.85rem}
+.bill-new-btn{flex:1;padding:10px;background:var(--gold);color:#080604;border:none;border-radius:8px;
+    font-weight:700;cursor:pointer;font-size:.85rem}
+
+/* ── Print styles ─────────────────────────────────────────── */
+@media print{
+    body *{visibility:hidden}
+    .pos-bill-box,.pos-bill-box *{visibility:visible}
+    .pos-bill-box{position:fixed;top:0;left:0;width:80mm;border-radius:0;
+        box-shadow:none;padding:8mm 6mm;max-height:none;overflow:visible}
+    .bill-actions{display:none}
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media(max-width:900px){
+    .pos-menu-grid{grid-template-columns:repeat(2,1fr)}
+    .pos-order-col{width:280px}
+}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="pos-login">
+    <div class="login-box">
+        <img class="login-logo" src="../amogha-logo.png" alt="Logo">
+        <div class="login-title">POS Terminal</div>
+        <div class="login-sub">Enter your shop PIN to continue</div>
+        <input class="pin-input" type="password" id="pos-pin" maxlength="10" placeholder="••••••"
+            onkeydown="if(event.key==='Enter')posLogin()">
+        <button class="login-btn" onclick="posLogin()">Login</button>
+        <div class="login-err" id="pos-login-err"></div>
+    </div>
+</div>
+
+<!-- Main POS -->
+<div id="pos-main">
+    <!-- Header -->
+    <div class="pos-header">
+        <img class="pos-header-logo" src="../amogha-logo.png" id="pos-logo" alt="">
+        <div>
+            <div class="pos-shop-name" id="pos-shop-name">Loading...</div>
+            <div style="font-size:.7rem;color:var(--txt2)">POS Terminal</div>
+        </div>
+        <div class="pos-header-time" id="pos-clock"></div>
+        <button class="pos-logout" onclick="posLogout()">Logout</button>
+    </div>
+
+    <div class="pos-body">
+        <!-- Categories -->
+        <div class="pos-cats" id="pos-cats"></div>
+
+        <!-- Menu -->
+        <div class="pos-menu-col">
+            <div class="pos-search-bar">
+                <input type="text" id="pos-search" placeholder="🔍  Search items..." oninput="renderPosMenu()">
+            </div>
+            <div class="pos-menu-grid" id="pos-menu-grid"></div>
+        </div>
+
+        <!-- Order -->
+        <div class="pos-order-col">
+            <div class="pos-order-header">
+                <div class="pos-order-title">Order <span id="pos-item-count" style="color:var(--txt2);font-weight:500;font-size:.8rem"></span></div>
+                <button class="pos-clear-btn" onclick="clearCart()">Clear</button>
+            </div>
+            <div class="pos-cart-list" id="pos-cart-list">
+                <div class="pos-cart-empty">Cart is empty<br>Tap items to add</div>
+            </div>
+            <div class="pos-order-footer">
+                <div class="pos-customer-row">
+                    <input type="text" id="pos-cust-name" placeholder="Customer name (optional)">
+                    <input type="text" id="pos-table" placeholder="Table #" style="max-width:80px">
+                </div>
+                <div class="pos-pay-methods">
+                    <button class="pos-pay-btn active" onclick="selectPay('Cash',this)">💵 Cash</button>
+                    <button class="pos-pay-btn" onclick="selectPay('UPI',this)">📲 UPI</button>
+                    <button class="pos-pay-btn" onclick="selectPay('Card',this)">💳 Card</button>
+                </div>
+                <div class="pos-total-row">
+                    <span class="pos-total-label">Total</span>
+                    <span class="pos-total-amount" id="pos-total">₹0</span>
+                </div>
+                <button class="pos-place-btn" id="pos-place-btn" onclick="placeOrder()" disabled>Place Order</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bill Overlay -->
+<div id="pos-bill-overlay">
+    <div class="pos-bill-box" id="pos-bill-content">
+        <!-- filled by JS -->
+        <div class="bill-actions">
+            <button class="bill-print-btn" onclick="window.print()">🖨 Print Bill</button>
+            <button class="bill-new-btn" onclick="newOrder()">+ New Order</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+    apiKey: "AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",
+    authDomain: "amogha-cafe.firebaseapp.com",
+    projectId: "amogha-cafe",
+    storageBucket: "amogha-cafe.firebasestorage.app",
+    messagingSenderId: "1000994409697",
+    appId: "1:1000994409697:web:983214bafab529d6a2fba0"
+});
+var db = firebase.firestore();
+
+// ── State ────────────────────────────────────────────────────
+var shopId = (new URLSearchParams(location.search)).get('shop') || null;
+var shopConfig = null;
+var allMenu = [];
+var cart = [];
+var activeCat = 'All';
+var categories = ['All'];
+var payMethod = 'Cash';
+
+// ── Clock ────────────────────────────────────────────────────
+function updateClock() {
+    var now = new Date();
+    document.getElementById('pos-clock').textContent =
+        now.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ── Login ────────────────────────────────────────────────────
+function posLogin() {
+    var pin = document.getElementById('pos-pin').value.trim();
+    if (!pin) return;
+    document.getElementById('pos-login-err').textContent = '';
+    // Check PIN against all shops
+    db.collection('shops').get().then(function(snap) {
+        var matched = null;
+        snap.forEach(function(doc) {
+            if (doc.data().adminPin === pin) matched = { id: doc.id, ...doc.data() };
+        });
+        // Also check URL param override (master access)
+        if (!matched && shopId) {
+            snap.forEach(function(doc) {
+                if (doc.id === shopId && pin === '240124') matched = { id: doc.id, ...doc.data() };
+            });
+        }
+        if (matched) {
+            shopId = matched.id;
+            shopConfig = matched;
+            startPOS();
+        } else {
+            document.getElementById('pos-login-err').textContent = 'Invalid PIN. Please try again.';
+            document.getElementById('pos-pin').value = '';
+            document.getElementById('pos-pin').focus();
+        }
+    }).catch(function() {
+        document.getElementById('pos-login-err').textContent = 'Connection error. Try again.';
+    });
+}
+
+function posLogout() {
+    if (!cart.length || confirm('Logout? Current order will be cleared.')) {
+        location.reload();
+    }
+}
+
+// ── Start POS ────────────────────────────────────────────────
+function startPOS() {
+    document.getElementById('pos-login').style.display = 'none';
+    document.getElementById('pos-main').classList.add('show');
+    // Apply shop branding
+    if (shopConfig) {
+        document.getElementById('pos-shop-name').textContent = shopConfig.name || shopId;
+        document.title = 'POS | ' + (shopConfig.name || shopId);
+        if (shopConfig.logo) document.getElementById('pos-logo').src = shopConfig.logo;
+        if (shopConfig.theme && shopConfig.theme.gold)
+            document.documentElement.style.setProperty('--gold', shopConfig.theme.gold);
+    }
+    loadPOSMenu();
+}
+
+// ── Load Menu ────────────────────────────────────────────────
+function loadPOSMenu() {
+    db.collection('menu').where('shopId','==',shopId).where('available','==',true)
+      .onSnapshot(function(snap) {
+        allMenu = [];
+        snap.forEach(function(doc) {
+            var d = doc.data();
+            allMenu.push({ name:d.name, price:d.price, category:d.category,
+                type:d.type, badge:d.badge||'', img:d.imageUrl||'', sortOrder:d.sortOrder||999 });
+        });
+        allMenu.sort(function(a,b){ return a.sortOrder - b.sortOrder; });
+        // Build categories from shop config or menu
+        var cats = ['All'];
+        if (shopConfig && shopConfig.categories && shopConfig.categories.length) {
+            shopConfig.categories.forEach(function(c) {
+                if (allMenu.some(function(m){ return m.category===c; }) && cats.indexOf(c)===-1) cats.push(c);
+            });
+        }
+        allMenu.forEach(function(m) { if (cats.indexOf(m.category)===-1) cats.push(m.category); });
+        categories = cats;
+        renderPOSCats();
+        renderPosMenu();
+    }, function(err){ console.error(err); });
+}
+
+// ── Render Categories ────────────────────────────────────────
+function renderPOSCats() {
+    var html = '';
+    categories.forEach(function(cat) {
+        var count = cat === 'All' ? allMenu.length : allMenu.filter(function(m){ return m.category===cat; }).length;
+        html += '<button class="pos-cat-btn' + (cat===activeCat?' active':'') +
+                '" onclick="setPosCat(\'' + cat.replace(/'/g,"\\'") + '\')">' +
+                escH(cat) + '<span class="pos-cat-count">' + count + '</span></button>';
+    });
+    document.getElementById('pos-cats').innerHTML = html;
+}
+
+function setPosCat(cat) {
+    activeCat = cat;
+    document.getElementById('pos-search').value = '';
+    renderPOSCats();
+    renderPosMenu();
+}
+
+// ── Render Menu ──────────────────────────────────────────────
+function renderPosMenu() {
+    var q = document.getElementById('pos-search').value.trim().toLowerCase();
+    var items = allMenu.filter(function(m) {
+        if (activeCat !== 'All' && m.category !== activeCat) return false;
+        if (q && m.name.toLowerCase().indexOf(q) === -1) return false;
+        return true;
+    });
+    var html = '';
+    if (!items.length) {
+        html = '<div class="pos-empty">No items found</div>';
+    } else {
+        items.forEach(function(item) {
+            var qty = cartQty(item.name);
+            var inCart = qty > 0;
+            html += '<div class="pos-item' + (inCart?' in-cart':'') + '" onclick="addPosItem(\'' +
+                    item.name.replace(/'/g,"\\'") + '\',' + item.price + ')">' +
+                    (qty > 0 ? '<div class="pos-cart-badge">' + qty + '</div>' : '') +
+                    (item.img ? '<img class="pos-item-img" src="' + item.img + '" alt="" loading="lazy">' : '') +
+                    '<div class="pos-item-name">' + escH(item.name) + '</div>' +
+                    '<div style="display:flex;align-items:center;justify-content:space-between">' +
+                    '<div class="pos-item-price">₹' + item.price + '</div>' +
+                    '<div class="pos-item-meta"><span class="pos-item-type ' + (item.type==='non-veg'?'nv':'veg') + '"></span>' +
+                    (item.badge ? '<span style="font-size:.65rem;background:rgba(212,160,23,.15);color:var(--gold);padding:1px 5px;border-radius:4px">' + escH(item.badge) + '</span>' : '') +
+                    '</div></div></div>';
+        });
+    }
+    document.getElementById('pos-menu-grid').innerHTML = html;
+}
+
+// ── Cart ─────────────────────────────────────────────────────
+function cartQty(name) {
+    var f = cart.find(function(c){ return c.name===name; });
+    return f ? f.qty : 0;
+}
+
+function addPosItem(name, price) {
+    var f = cart.find(function(c){ return c.name===name; });
+    if (f) f.qty++; else cart.push({ name:name, price:price, qty:1 });
+    renderCart();
+    renderPosMenu();
+}
+
+function changeQty(name, delta) {
+    var idx = cart.findIndex(function(c){ return c.name===name; });
+    if (idx === -1) return;
+    cart[idx].qty += delta;
+    if (cart[idx].qty <= 0) cart.splice(idx, 1);
+    renderCart();
+    renderPosMenu();
+}
+
+function clearCart() {
+    cart = [];
+    renderCart();
+    renderPosMenu();
+}
+
+function renderCart() {
+    var total = 0;
+    cart.forEach(function(c){ total += c.price * c.qty; });
+    document.getElementById('pos-total').textContent = '₹' + total;
+    var count = cart.reduce(function(s,c){ return s+c.qty; }, 0);
+    document.getElementById('pos-item-count').textContent = count ? '(' + count + ' items)' : '';
+    document.getElementById('pos-place-btn').disabled = cart.length === 0;
+    if (!cart.length) {
+        document.getElementById('pos-cart-list').innerHTML = '<div class="pos-cart-empty">Cart is empty<br>Tap items to add</div>';
+        return;
+    }
+    var html = '';
+    cart.forEach(function(c) {
+        html += '<div class="pos-cart-item">' +
+            '<div class="pos-ci-name">' + escH(c.name) + '</div>' +
+            '<div class="pos-qty-ctrl">' +
+            '<button class="pos-qty-btn minus" onclick="changeQty(\'' + c.name.replace(/'/g,"\\'") + '\',-1)">−</button>' +
+            '<span class="pos-qty-num">' + c.qty + '</span>' +
+            '<button class="pos-qty-btn plus" onclick="changeQty(\'' + c.name.replace(/'/g,"\\'") + '\',1)">+</button>' +
+            '</div>' +
+            '<div class="pos-ci-price">₹' + (c.price * c.qty) + '</div>' +
+            '</div>';
+    });
+    document.getElementById('pos-cart-list').innerHTML = html;
+}
+
+function selectPay(method, btn) {
+    payMethod = method;
+    document.querySelectorAll('.pos-pay-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+}
+
+// ── Place Order ───────────────────────────────────────────────
+function placeOrder() {
+    if (!cart.length) return;
+    var btn = document.getElementById('pos-place-btn');
+    btn.disabled = true; btn.textContent = 'Placing...';
+    var name = document.getElementById('pos-cust-name').value.trim() || 'Walk-in';
+    var table = document.getElementById('pos-table').value.trim();
+    var total = cart.reduce(function(s,c){ return s + c.price*c.qty; }, 0);
+    var orderData = {
+        customer: name,
+        phone: '',
+        items: cart.map(function(c){ return { name:c.name, qty:c.qty, price:c.price }; }),
+        total: total,
+        subtotal: total,
+        status: 'pos-pending',
+        orderType: 'pos',
+        shopId: shopId,
+        payment: payMethod,
+        createdAt: new Date().toISOString()
+    };
+    if (table) orderData.tableNumber = table;
+    db.collection('orders').add(orderData).then(function(ref) {
+        showBill(ref.id, orderData);
+        btn.disabled = false; btn.textContent = 'Place Order';
+    }).catch(function(err) {
+        alert('Order failed: ' + err.message);
+        btn.disabled = false; btn.textContent = 'Place Order';
+    });
+}
+
+// ── Bill ─────────────────────────────────────────────────────
+function showBill(orderId, data) {
+    var shopName = (shopConfig && shopConfig.name) || 'Amogha Cafe';
+    var now = new Date();
+    var dateStr = now.toLocaleDateString('en-IN') + '  ' + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+    var itemRows = data.items.map(function(i) {
+        return '<div class="bill-row"><span>' + escH(i.name) + ' x' + i.qty + '</span><span>₹' + (i.price*i.qty) + '</span></div>';
+    }).join('');
+    document.getElementById('pos-bill-content').innerHTML =
+        '<div class="bill-header">' +
+        '<div class="bill-shop">' + escH(shopName) + '</div>' +
+        '<div class="bill-sub">Self-Service POS</div>' +
+        '</div>' +
+        '<hr class="bill-divider">' +
+        '<div class="bill-row label"><span>Order</span><span>#' + orderId.slice(-6).toUpperCase() + '</span></div>' +
+        '<div class="bill-row label"><span>Date</span><span>' + dateStr + '</span></div>' +
+        (data.customer && data.customer !== 'Walk-in' ? '<div class="bill-row label"><span>Customer</span><span>' + escH(data.customer) + '</span></div>' : '') +
+        (data.tableNumber ? '<div class="bill-row label"><span>Table</span><span>' + escH(data.tableNumber) + '</span></div>' : '') +
+        '<hr class="bill-divider">' +
+        itemRows +
+        '<hr class="bill-divider">' +
+        '<div class="bill-row total"><span>TOTAL</span><span>₹' + data.total + '</span></div>' +
+        '<div class="bill-row label" style="margin-top:4px"><span>Payment</span><span>' + escH(data.payment) + '</span></div>' +
+        '<hr class="bill-divider">' +
+        '<div style="text-align:center;font-size:.7rem;color:#777;margin-top:8px">Thank you! Visit again</div>' +
+        '<div class="bill-actions">' +
+        '<button class="bill-print-btn" onclick="window.print()">🖨 Print Bill</button>' +
+        '<button class="bill-new-btn" onclick="newOrder()">+ New Order</button>' +
+        '</div>';
+    document.getElementById('pos-bill-overlay').classList.add('show');
+}
+
+function newOrder() {
+    document.getElementById('pos-bill-overlay').classList.remove('show');
+    cart = [];
+    document.getElementById('pos-cust-name').value = '';
+    document.getElementById('pos-table').value = '';
+    payMethod = 'Cash';
+    document.querySelectorAll('.pos-pay-btn').forEach(function(b,i){ b.classList.toggle('active', i===0); });
+    renderCart();
+    renderPosMenu();
+}
+
+function escH(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

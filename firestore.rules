@@ -148,6 +148,15 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
+    // SHOPS — Multi-tenant shop config (readable by kiosk, writable by admin)
+    // -------------------------------------------------------------------------
+    match /shops/{shopId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
     // GIFT CARDS
     // -------------------------------------------------------------------------
     match /giftCards/{code} {
