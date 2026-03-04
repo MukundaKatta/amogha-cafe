@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Loyalty Points | Amogha Cafe</title>
+<meta name="theme-color" content="#0f1117">
+<link rel="icon" type="image/png" href="../amogha-logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#D4A017;--gold-d:#b8860b;--bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;--txt:#e8e8f0;--txt2:#9a9ab0;--grn:#4caf50;--r:14px}
+body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:'Poppins',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:24px 16px 48px;-webkit-font-smoothing:antialiased}
+.logo{width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:10px;box-shadow:0 4px 16px rgba(212,160,23,.3)}
+.shop-name{font-size:1.15rem;font-weight:700;color:var(--gold);margin-bottom:4px}
+.page-title{font-size:.85rem;color:var(--txt2);margin-bottom:28px}
+.card{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:24px;width:100%;max-width:400px;margin-bottom:16px}
+.input-group{display:flex;gap:10px;margin-bottom:4px}
+.phone-input{flex:1;padding:13px 16px;background:var(--bg3);border:1.5px solid rgba(255,255,255,.1);border-radius:10px;color:var(--txt);font-size:1rem;font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s}
+.phone-input:focus{border-color:var(--gold)}
+.phone-input::placeholder{color:var(--txt2)}
+.check-btn{padding:13px 20px;background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#080604;font-weight:700;font-size:.9rem;border:none;border-radius:10px;cursor:pointer;white-space:nowrap;transition:opacity .2s;font-family:'Poppins',sans-serif}
+.check-btn:hover{opacity:.88}
+.hint{font-size:.73rem;color:var(--txt2);text-align:center;margin-top:6px}
+
+/* Result card */
+.result{display:none}
+.cust-name{font-size:1.3rem;font-weight:800;color:var(--txt);margin-bottom:2px}
+.cust-sub{font-size:.8rem;color:var(--txt2);margin-bottom:20px}
+.pts-display{text-align:center;padding:20px 0}
+.pts-number{font-size:3.5rem;font-weight:900;color:var(--gold);line-height:1}
+.pts-label{font-size:.8rem;color:var(--txt2);margin-top:4px;font-weight:500}
+.progress-wrap{margin:20px 0 8px}
+.progress-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--txt2);margin-bottom:6px}
+.progress-bar{height:10px;background:var(--bg3);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-d));border-radius:99px;transition:width .8s ease}
+.reward-msg{text-align:center;font-size:.82rem;padding:12px 16px;border-radius:10px;margin-top:12px;font-weight:600}
+.reward-ready{background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.3);color:var(--grn)}
+.reward-progress{background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.2);color:var(--gold)}
+.divider{border:none;border-top:1px solid rgba(255,255,255,.07);margin:16px 0}
+.stats-row{display:flex;gap:12px}
+.stat{flex:1;text-align:center;background:var(--bg3);border-radius:10px;padding:12px 8px}
+.stat-val{font-size:1.1rem;font-weight:700;color:var(--txt)}
+.stat-lbl{font-size:.68rem;color:var(--txt2);margin-top:2px}
+.how-it-works{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:20px;width:100%;max-width:400px}
+.how-title{font-size:.85rem;font-weight:700;color:var(--gold);margin-bottom:12px}
+.how-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;font-size:.8rem;color:var(--txt2)}
+.how-icon{font-size:1.1rem;flex-shrink:0;margin-top:-1px}
+.error-msg{text-align:center;color:#e57373;font-size:.85rem;padding:16px 0;display:none}
+.loading-msg{text-align:center;color:var(--txt2);font-size:.85rem;padding:16px 0;display:none}
+</style>
+</head>
+<body>
+
+<img src="../amogha-logo.png" class="logo" onerror="this.style.display='none'">
+<div class="shop-name" id="shop-name">Amogha Cafe</div>
+<div class="page-title">⭐ Loyalty Points Balance</div>
+
+<div class="card">
+  <div class="input-group">
+    <input type="tel" class="phone-input" id="phone-input" placeholder="Enter your phone number" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+    <button class="check-btn" onclick="checkPoints()">Check</button>
+  </div>
+  <div class="hint">Enter the phone number you gave at the counter</div>
+  <div class="loading-msg" id="loading-msg">Looking up your points...</div>
+  <div class="error-msg" id="error-msg">No account found for this number. Visit us and share your phone to start earning!</div>
+
+  <div class="result" id="result">
+    <hr class="divider">
+    <div class="cust-name" id="cust-name"></div>
+    <div class="cust-sub" id="cust-sub"></div>
+
+    <div class="pts-display">
+      <div class="pts-number" id="pts-number">0</div>
+      <div class="pts-label">Loyalty Points</div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="prog-label-left">0 pts</span>
+        <span id="prog-label-right">100 pts = ₹100 off</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="reward-msg" id="reward-msg"></div>
+
+    <hr class="divider">
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val" id="stat-visits">0</div><div class="stat-lbl">Visits</div></div>
+      <div class="stat"><div class="stat-val" id="stat-spent">₹0</div><div class="stat-lbl">Total Spent</div></div>
+      <div class="stat"><div class="stat-val" id="stat-last">—</div><div class="stat-lbl">Last Visit</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="how-it-works">
+  <div class="how-title">How it works</div>
+  <div class="how-row"><span class="how-icon">🛍️</span><span>Spend <strong>₹2000</strong> across visits to earn <strong>100 points</strong></span></div>
+  <div class="how-row"><span class="how-icon">🎁</span><span>Redeem <strong>100 points</strong> for <strong>₹100 off</strong> on your next order of ₹250+</span></div>
+  <div class="how-row"><span class="how-icon">📱</span><span>Always share your phone number when ordering to earn points</span></div>
+  <div class="how-row"><span class="how-icon">⭐</span><span>Points never expire — keep collecting!</span></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+    apiKey: "AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",
+    authDomain: "amogha-cafe.firebaseapp.com",
+    projectId: "amogha-cafe",
+    storageBucket: "amogha-cafe.firebasestorage.app",
+    messagingSenderId: "1000994409697",
+    appId: "1:1000994409697:web:5b0b7b0b0b0b0b0b0b0b0b"
+});
+var db = firebase.firestore();
+var REDEEM_POINTS = 100;
+
+// Load shop config for name/logo
+db.collection('shops').limit(1).get().then(function(snap) {
+    if (!snap.empty) {
+        var s = snap.docs[0].data();
+        if (s.name) document.getElementById('shop-name').textContent = s.name;
+    }
+}).catch(function(){});
+
+// Auto-check if phone in URL param
+var urlPhone = new URLSearchParams(location.search).get('phone');
+if (urlPhone) {
+    document.getElementById('phone-input').value = urlPhone.replace(/\D/g,'').slice(0,10);
+    setTimeout(checkPoints, 300);
+}
+
+// Allow Enter key
+document.getElementById('phone-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkPoints();
+});
+
+function checkPoints() {
+    var ph = document.getElementById('phone-input').value.replace(/\D/g,'').slice(0,10);
+    if (ph.length < 10) {
+        document.getElementById('phone-input').focus();
+        return;
+    }
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('error-msg').style.display = 'none';
+    document.getElementById('loading-msg').style.display = 'block';
+
+    db.collection('users').doc(ph).get().then(function(doc) {
+        document.getElementById('loading-msg').style.display = 'none';
+        if (!doc.exists) {
+            document.getElementById('error-msg').style.display = 'block';
+            return;
+        }
+        var d = doc.data();
+        var pts = d.loyaltyPoints || 0;
+        var visits = d.visits || 0;
+        var spent = d.totalSpent || 0;
+        var lastDate = d.lastOrderAt ? new Date(d.lastOrderAt).toLocaleDateString('en-IN', {day:'numeric',month:'short'}) : '—';
+
+        document.getElementById('cust-name').textContent = d.name || 'Welcome!';
+        document.getElementById('cust-sub').textContent = 'Member since ' + (d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-IN', {month:'long',year:'numeric'}) : 'recently');
+        document.getElementById('pts-number').textContent = pts;
+        document.getElementById('stat-visits').textContent = visits;
+        document.getElementById('stat-spent').textContent = '₹' + spent.toLocaleString('en-IN');
+        document.getElementById('stat-last').textContent = lastDate;
+        document.getElementById('prog-label-left').textContent = pts + ' pts';
+
+        // Progress bar — capped at 100%
+        var pct = Math.min(100, Math.round((pts / REDEEM_POINTS) * 100));
+        document.getElementById('progress-fill').style.width = pct + '%';
+
+        // Reward message
+        var rewardEl = document.getElementById('reward-msg');
+        if (pts >= REDEEM_POINTS) {
+            rewardEl.className = 'reward-msg reward-ready';
+            rewardEl.innerHTML = '🎉 You have enough points!<br>Ask the cashier to redeem <strong>₹100 off</strong> on your next order of ₹250+';
+        } else {
+            var needed = REDEEM_POINTS - pts;
+            var rupees = Math.ceil(needed / (100 / 2000));
+            rewardEl.className = 'reward-msg reward-progress';
+            rewardEl.innerHTML = 'Spend <strong>₹' + rupees.toLocaleString('en-IN') + ' more</strong> to earn <strong>' + needed + ' pts</strong> and get ₹100 off!';
+        }
+
+        document.getElementById('result').style.display = 'block';
+    }).catch(function() {
+        document.getElementById('loading-msg').style.display = 'none';
+        document.getElementById('error-msg').style.display = 'block';
+        document.getElementById('error-msg').textContent = 'Something went wrong. Please try again.';
+    });
+}
+</script>
+</body>
+</html>

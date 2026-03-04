@@ -49,12 +49,11 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /users/{phone} {
       allow read: if true;
-      allow create: if hasFields(['name', 'phone', 'pin', 'createdAt'])
+      allow create: if hasFields(['name', 'phone', 'createdAt'])
                     && isString(request.resource.data.name)
                     && isString(request.resource.data.phone)
-                    && isString(request.resource.data.pin)
                     && request.resource.data.phone == phone;
-      allow update: if !request.resource.data.diff(resource.data).affectedKeys().hasAny(['phone', 'pin']);  // protect PIN and phone; loyalty/prefs/tier freely updatable
+      allow update: if !request.resource.data.diff(resource.data).affectedKeys().hasAny(['phone', 'pin']);
       allow delete: if false;
     }
 

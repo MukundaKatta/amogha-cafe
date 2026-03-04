@@ -62,6 +62,8 @@ Reference docs:
 - Review reward points
 - Achievement badges (10 badge types) with badge gallery
 - Subscription meal plans (browse, subscribe, cancel)
+- **POS loyalty** — earn 100 pts per ₹2,000; redeem 100 pts = ₹100 off (min ₹250 order); points reversed on void
+- **Loyalty balance page** at `/loyalty/` — customers check points by phone number
 
 ---
 
@@ -102,8 +104,24 @@ Reference docs:
 - [11-reservations.md](11-reservations.md)
 - [15-delivery.md](15-delivery.md)
 
+### POS terminal (`/pos/`)
+Reference: [22-pos.md](22-pos.md)
+- Staff PIN login — PIN validated against `shops` collection
+- 3-column layout on tablet/desktop; bottom-drawer cart on mobile
+- Customer CRM lookup by phone — auto-fills name, loads loyalty balance
+- Loyalty earn + redeem flow in cart (redeem button when ≥ 100 pts + ≥ ₹250 order)
+- Sequential daily token numbers (T1, T2…) — persisted in localStorage
+- Auto KOT print 300 ms after order (non-blocking)
+- Thermal bill print with loyalty footer and fortune cookie quote
+- WhatsApp bill — desktop popup window; mobile opens app
+- Back-patch phone to order if entered at payment time
+- **Void bill** from recent orders panel — reverses loyalty points, flags order as `voided`
+- Admin analytics exclude voided orders from revenue and count totals
+- Recent orders panel with Reprint + Void actions; filter by All / POS / Today / Pending
+
 ### Admin dashboard
 - Order management (status changes, filtering, search)
+- Voided orders excluded from all revenue and count analytics
 - Menu/add-on/specials CRUD flows
 - Inventory management with thresholds
 - Tables and reservations management
@@ -188,6 +206,8 @@ Reference docs:
 
 | Area | Primary Doc |
 |------|-------------|
+| POS terminal | [22-pos.md](22-pos.md) |
+| Loyalty balance page | [09-loyalty-and-referrals.md](09-loyalty-and-referrals.md) |
 | Main customer site | [01-main-page.md](01-main-page.md) |
 | Ordering & cart | [07-ordering-and-cart.md](07-ordering-and-cart.md) |
 | Payments | [08-payments.md](08-payments.md) |

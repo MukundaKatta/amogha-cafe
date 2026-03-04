@@ -23,6 +23,7 @@
 | [14-kiosk.md](14-kiosk.md) | Self-Service Kiosk (multi-tenant) | https://amoghahotels.com/kiosk/ |
 | [15-delivery.md](15-delivery.md) | Delivery Management | https://amoghahotels.com/delivery/ |
 | [22-pos.md](22-pos.md) | POS Terminal | https://amoghahotels.com/pos/ |
+| [09-loyalty-and-referrals.md](09-loyalty-and-referrals.md) | Loyalty Balance Check | https://amogha-cafe.web.app/loyalty/ |
 
 ## Features
 

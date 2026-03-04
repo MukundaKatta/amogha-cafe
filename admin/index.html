@@ -3276,16 +3276,75 @@
             if (!container) return;
             container.innerHTML = allShops.map(function(s) {
                 var isActive = s.id === currentShopId;
+                var p = s.printer || {};
+                var btName = escHtml(p.btName || '');
+                var paperWidth = p.paperWidth || 58;
+                var kotBtName = escHtml(p.kotBtName || '');
+                var kotPaperWidth = p.kotPaperWidth || 58;
+                var footer = escHtml(p.footer || 'Thank you! Visit again');
+                var billOk = p.btName ? '&#x25CF; Set' : '&#x25CB; Not set';
+                var kotOk  = p.kotBtName ? '&#x25CF; Set' : '&#x25CB; Not set';
+                var billColor = p.btName ? '#4caf50' : '#888';
+                var kotColor  = p.kotBtName ? '#4caf50' : '#888';
+                var inStyle = 'background:#1a1a2e;color:#eee;border:1px solid #D4A01744;border-radius:6px;padding:6px 9px;font-size:0.8rem;width:100%;box-sizing:border-box';
+                var selStyle = 'background:#1a1a2e;color:#eee;border:1px solid #D4A01744;border-radius:6px;padding:5px 8px;font-size:0.8rem;flex:1';
                 return '<div style="background:#111;border-radius:12px;padding:1.25rem;min-width:200px;border:2px solid ' + (isActive ? '#D4A017' : '#D4A01733') + '">' +
                     '<div style="font-size:1.1rem;font-weight:700;color:#D4A017;margin-bottom:0.25rem">' + escHtml(s.name || s.id) + '</div>' +
                     '<div style="color:#aaa;font-size:0.85rem;margin-bottom:0.25rem">ID: ' + escHtml(s.id) + '</div>' +
                     '<div style="color:#888;font-size:0.8rem;margin-bottom:0.75rem">' + escHtml(s.tagline || '') + '</div>' +
-                    '<div style="display:flex;gap:0.5rem;flex-wrap:wrap">' +
+                    '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">' +
                     '<button onclick="selectShopAndManage(\'' + s.id + '\')" style="background:#D4A017;color:#000;border:none;border-radius:6px;padding:5px 12px;font-size:0.8rem;font-weight:600;cursor:pointer">' + (isActive ? '✓ Managing' : 'Manage Menu') + '</button>' +
                     '<a href="/kiosk/?shop=' + encodeURIComponent(s.id) + '" target="_blank" style="display:inline-flex;align-items:center;color:#D4A017;font-size:0.8rem;text-decoration:none;border:1px solid #D4A01766;border-radius:6px;padding:5px 10px">Kiosk &#8599;</a>' +
                     '</div>' +
+                    '<div style="border-top:1px solid #D4A01733;padding-top:0.75rem;display:grid;gap:0.75rem">' +
+                    // Bill Printer
+                    '<div>' +
+                    '<div style="font-size:0.78rem;font-weight:600;color:#D4A017;margin-bottom:0.4rem">🖨 Bill Printer (Counter) &nbsp;<span style="color:' + billColor + ';font-weight:400">' + billOk + '</span></div>' +
+                    '<div style="display:grid;gap:0.4rem">' +
+                    '<input id="bt-name-' + s.id + '" value="' + btName + '" placeholder="Bluetooth name (e.g. XP-58-IIA9B2)" style="' + inStyle + '">' +
+                    '<div style="display:flex;gap:0.4rem;align-items:center">' +
+                    '<label style="color:#aaa;font-size:0.78rem;white-space:nowrap">Paper:</label>' +
+                    '<select id="bt-width-' + s.id + '" style="' + selStyle + '">' +
+                    '<option value="58"' + (paperWidth===58?' selected':'') + '>58mm</option>' +
+                    '<option value="80"' + (paperWidth===80?' selected':'') + '>80mm</option>' +
+                    '</select></div>' +
+                    '<input id="bt-footer-' + s.id + '" value="' + footer + '" placeholder="Receipt footer text" style="' + inStyle + '">' +
+                    '</div></div>' +
+                    // KOT Printer
+                    '<div>' +
+                    '<div style="font-size:0.78rem;font-weight:600;color:#e67e22;margin-bottom:0.4rem">🍳 KOT Printer (Kitchen) &nbsp;<span style="color:' + kotColor + ';font-weight:400">' + kotOk + '</span></div>' +
+                    '<div style="display:grid;gap:0.4rem">' +
+                    '<input id="bt-kot-name-' + s.id + '" value="' + kotBtName + '" placeholder="Kitchen printer Bluetooth name" style="' + inStyle + '">' +
+                    '<div style="display:flex;gap:0.4rem;align-items:center">' +
+                    '<label style="color:#aaa;font-size:0.78rem;white-space:nowrap">Paper:</label>' +
+                    '<select id="bt-kot-width-' + s.id + '" style="' + selStyle + '">' +
+                    '<option value="58"' + (kotPaperWidth===58?' selected':'') + '>58mm</option>' +
+                    '<option value="80"' + (kotPaperWidth===80?' selected':'') + '>80mm</option>' +
+                    '</select></div>' +
+                    '</div></div>' +
+                    // Save button
+                    '<button onclick="savePrinterConfig(\'' + s.id + '\')" style="background:#1a472a;color:#4caf50;border:1px solid #4caf5066;border-radius:6px;padding:7px 12px;font-size:0.8rem;font-weight:600;cursor:pointer;width:100%">💾 Save Printer Config</button>' +
+                    '</div>' +
                     '</div>';
             }).join('');
+        }
+
+        function savePrinterConfig(shopId) {
+            var btName      = (document.getElementById('bt-name-' + shopId).value || '').trim();
+            var paperWidth  = parseInt(document.getElementById('bt-width-' + shopId).value) || 58;
+            var footer      = (document.getElementById('bt-footer-' + shopId).value || '').trim();
+            var kotBtName   = (document.getElementById('bt-kot-name-' + shopId).value || '').trim();
+            var kotPaperWidth = parseInt(document.getElementById('bt-kot-width-' + shopId).value) || 58;
+            var config = {
+                btName: btName, paperWidth: paperWidth,
+                footer: footer || 'Thank you! Visit again',
+                kotBtName: kotBtName, kotPaperWidth: kotPaperWidth
+            };
+            db.collection('shops').doc(shopId).set({ printer: config }, { merge: true }).then(function() {
+                var shop = allShops.find(function(s){ return s.id === shopId; });
+                if (shop) shop.printer = config;
+                renderShopCards();
+            }).catch(function(err) { alert('Error saving printer config: ' + err.message); });
         }
 
         function selectShopAndManage(shopId) {
@@ -3551,7 +3610,7 @@
         function updateStats() {
             var today = new Date().toISOString().split('T')[0];
             var todayOrders = allOrders.filter(function(o) { return o.createdAt && o.createdAt.startsWith(today); });
-            var revenue = allOrders.filter(function(o) { return o.status !== 'cancelled'; }).reduce(function(sum, o) { return sum + (o.total || 0); }, 0);
+            var revenue = allOrders.filter(function(o) { return o.status !== 'cancelled' && o.status !== 'voided'; }).reduce(function(sum, o) { return sum + (o.total || 0); }, 0);
 
             animateCount('stat-total', allOrders.length);
             animateCount('stat-today', todayOrders.length);
@@ -5098,7 +5157,7 @@
                 var cutoff = new Date(now.getTime() - range * 24 * 60 * 60 * 1000).toISOString();
                 filtered = allOrders.filter(function(o) { return o.createdAt && o.createdAt >= cutoff; });
             }
-            var active = filtered.filter(function(o) { return o.status !== 'cancelled'; });
+            var active = filtered.filter(function(o) { return o.status !== 'cancelled' && o.status !== 'voided'; });
 
             // Summary cards
             var totalRevenue = active.reduce(function(s, o) { return s + (o.total || 0); }, 0);
@@ -5238,7 +5297,7 @@
                 var cutoff = new Date(now.getTime() - range * 24 * 60 * 60 * 1000).toISOString();
                 filtered = allOrders.filter(function(o) { return o.createdAt && o.createdAt >= cutoff; });
             }
-            return filtered.filter(function(o) { return o.status !== 'cancelled'; });
+            return filtered.filter(function(o) { return o.status !== 'cancelled' && o.status !== 'voided'; });
         }
 
         function switchRevenueTrendView(view, btn) {
@@ -5755,20 +5814,29 @@
                 var usersMap = {};
                 userSnap.forEach(function(doc) {
                     var d = doc.data();
-                    usersMap[doc.id] = { phone: doc.id, name: d.name || 'Unknown', loyaltyPoints: d.loyaltyPoints || 0, orderCount: 0, totalSpent: 0, lastOrder: null };
+                    usersMap[doc.id] = {
+                        phone: doc.id, name: d.name || 'Unknown',
+                        loyaltyPoints: d.loyaltyPoints || 0,
+                        visits: d.visits || 0,
+                        lastOrderItems: d.lastOrderItems || '',
+                        orderCount: 0, totalSpent: 0, lastOrder: d.lastOrderAt || null
+                    };
                 });
-                // Aggregate from orders
+                // Aggregate from orders — also creates entries for phone-only records
                 allOrders.forEach(function(o) {
-                    var phone = o.phone || o.userId;
-                    if (phone && usersMap[phone]) {
-                        usersMap[phone].orderCount++;
-                        if (o.status !== 'cancelled') usersMap[phone].totalSpent += (o.total || 0);
-                        if (!usersMap[phone].lastOrder || (o.createdAt && o.createdAt > usersMap[phone].lastOrder)) {
-                            usersMap[phone].lastOrder = o.createdAt;
-                        }
+                    var phone = (o.phone || o.userId || '').replace(/\D/g,'');
+                    if (!phone || phone === 'pos' || phone.length < 10) return;
+                    if (!usersMap[phone]) {
+                        usersMap[phone] = { phone: phone, name: o.customer || 'Unknown', loyaltyPoints: 0, visits: 0, lastOrderItems: '', orderCount: 0, totalSpent: 0, lastOrder: null };
+                    }
+                    usersMap[phone].orderCount++;
+                    if (o.status !== 'cancelled' && o.status !== 'voided') usersMap[phone].totalSpent += (o.total || 0);
+                    if (!usersMap[phone].lastOrder || (o.createdAt && o.createdAt > usersMap[phone].lastOrder)) {
+                        usersMap[phone].lastOrder = o.createdAt;
+                        if (o.customer && o.customer !== 'Walk-in') usersMap[phone].name = o.customer;
                     }
                 });
-                crmCustomers = Object.values(usersMap);
+                crmCustomers = Object.values(usersMap).filter(function(c){ return c.phone && c.phone.length >= 10; });
                 renderCRM();
             }).catch(function(err) { console.error('CRM error:', err); });
         }
@@ -5810,6 +5878,10 @@
                         '<span>\u20B9' + c.totalSpent.toLocaleString('en-IN') + ' spent</span>' +
                         '<span>Last: ' + lastDate + '</span>' +
                         '<span>' + c.loyaltyPoints + ' pts</span>' +
+                    '</div>' +
+                    (c.lastOrderItems ? '<div style="font-size:0.72rem;color:#888;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Last ordered: ' + escHtml(c.lastOrderItems) + '</div>' : '') +
+                    '<div style="margin-top:6px;display:flex;gap:6px">' +
+                    '<a href="https://wa.me/91' + escHtml(c.phone) + '" target="_blank" style="font-size:0.75rem;color:#25d366;text-decoration:none;border:1px solid #25d36644;border-radius:5px;padding:2px 8px" onclick="event.stopPropagation()">&#x1F4AC; WhatsApp</a>' +
                     '</div>' +
                     '<div class="crm-detail" style="display:none">' + getCrmOrderHistory(c.phone) + '</div>' +
                 '</div>';
@@ -6135,7 +6207,7 @@
                         var phone = o.phone || o.userId;
                         if (phone && usersMap[phone]) {
                             usersMap[phone].orderCount++;
-                            if (o.status !== 'cancelled') usersMap[phone].totalSpent += (o.total || 0);
+                            if (o.status !== 'cancelled' && o.status !== 'voided') usersMap[phone].totalSpent += (o.total || 0);
                             if (!usersMap[phone].lastOrder || (o.createdAt && o.createdAt > usersMap[phone].lastOrder)) {
                                 usersMap[phone].lastOrder = o.createdAt;
                             }

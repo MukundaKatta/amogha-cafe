@@ -1,10 +1,54 @@
 # Loyalty Points & Referral Program
 
-**Files:** `src/modules/loyalty.js`, `src/modules/features.js`, `src/modules/badges.js`
+---
+
+## POS Loyalty System (Counter / Staff)
+
+The POS terminal has a fully integrated loyalty earn-and-redeem flow for walk-in customers.
+
+### Earning Points (POS)
+
+| Spend | Points Earned |
+|-------|--------------|
+| ₹2,000 | 100 points |
+| ₹1,000 | 50 points |
+| ₹500 | 25 points |
+
+- Rate: **100 points per ₹2,000** (0.05 pts/₹)
+- Calculated automatically at order placement from the order total
+- Saved as `pointsEarned` on the order doc
+- Added to `loyaltyPoints` on the customer's `users/{phone}` doc
+
+### Redeeming Points (POS)
+
+- **100 points = ₹100 off** on any order of ₹250 or more
+- Redeem button appears in the cart when the customer has ≥ 100 pts and subtotal ≥ ₹250
+- On redemption, 100 points are deducted from the customer's balance
+- Saved as `pointsRedeemed: true` + `discount: 100` on the order doc
+
+### Points Reversal on Void
+
+If a POS order is voided after placement:
+- Earned points are **subtracted** from the customer's balance
+- Redeemed points are **restored** to the customer's balance
+- Ensures the balance is always consistent with actual completed sales
+
+### Loyalty Balance Check Page
+
+**URL:** `https://amogha-cafe.web.app/loyalty/`
+**File:** `loyalty/index.html`
+
+Customers can check their own balance:
+- Enter phone number → shows name, points balance, progress bar, reward message
+- Stats: visits, total spent, last visit date
+- "How it works" panel explaining the earn/redeem rules
+- Supports `?phone=XXXXXXXXXX` URL param (linked directly from WhatsApp bills)
 
 ---
 
-## Loyalty Program
+## Online Ordering Loyalty (Web App)
+
+**Files:** `src/modules/loyalty.js`, `src/modules/features.js`, `src/modules/badges.js`
 
 ### Earning Points
 

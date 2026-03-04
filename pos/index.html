@@ -143,11 +143,24 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 
 .pos-order-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;
     position:sticky;bottom:0;background:var(--bg2);z-index:2}
-.pos-customer-row{display:flex;gap:8px;margin-bottom:8px}
+.pos-customer-row{display:flex;gap:8px;margin-bottom:6px}
 .pos-customer-row input{flex:1;padding:8px 10px;background:var(--bg3);border:1px solid rgba(255,255,255,.08);
     border-radius:8px;color:var(--txt);font-size:.8rem;outline:none}
 .pos-customer-row input:focus{border-color:rgba(212,160,23,.4)}
 .pos-customer-row input::placeholder{color:var(--txt3)}
+.pos-cust-badge{min-height:20px;margin-bottom:8px;font-size:.75rem}
+.pos-cust-badge .badge-found{color:#4caf50;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.2);
+    padding:3px 10px;border-radius:12px;display:inline-block}
+.pos-cust-badge .badge-new{color:#D4A017;background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.2);
+    padding:3px 10px;border-radius:12px;display:inline-block}
+.pos-cust-badge .badge-loading{color:#888;font-style:italic}
+.pos-loyalty-row{margin-bottom:8px;display:none}
+.pos-redeem-btn{width:100%;padding:9px 12px;background:linear-gradient(135deg,#4caf50,#388e3c);color:#fff;
+    border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+.pos-redeem-btn:hover{opacity:.88}
+.pos-redeemed-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(76,175,80,.12);
+    border:1px solid rgba(76,175,80,.3);color:#4caf50;padding:6px 12px;border-radius:8px;font-size:.8rem;font-weight:600;width:100%;justify-content:space-between}
+.pos-redeemed-tag button{background:none;border:none;color:#e57373;cursor:pointer;font-size:.85rem;padding:0}
 .pos-total-row{display:flex;justify-content:space-between;align-items:center;
     padding:8px 0;border-top:1px solid rgba(255,255,255,.06);margin-bottom:10px}
 .pos-total-label{font-size:.85rem;color:var(--txt2)}
@@ -178,11 +191,12 @@ body.light-mode .pos-place-footer{background:var(--bg2);border-color:rgba(0,0,0,
 .bill-row{display:flex;justify-content:space-between;font-size:.8rem;padding:2px 0}
 .bill-row.total{font-weight:700;font-size:.95rem;border-top:1px solid #ccc;padding-top:8px;margin-top:4px}
 .bill-row.label{color:#555;font-size:.72rem}
-.bill-actions{display:flex;gap:8px;margin-top:16px}
-.bill-print-btn{flex:1;padding:10px;background:#111;color:#fff;border:none;border-radius:8px;
-    font-weight:700;cursor:pointer;font-size:.85rem}
-.bill-new-btn{flex:1;padding:10px;background:var(--gold);color:#080604;border:none;border-radius:8px;
-    font-weight:700;cursor:pointer;font-size:.85rem}
+.bill-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.bill-print-btn,.bill-new-btn,.bill-wa-btn{flex:1 1 calc(50% - 4px);min-width:calc(50% - 4px);
+    padding:10px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.82rem;text-align:center}
+.bill-print-btn{background:#111;color:#fff}
+.bill-new-btn{background:var(--gold);color:#080604}
+.bill-wa-btn{background:#25d366;color:#fff}
 .bill-close-btn{position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.4rem;
     color:#777;cursor:pointer;line-height:1;padding:4px}
 .bill-close-btn:hover{color:#111}
@@ -266,6 +280,11 @@ body.light-mode html,body.light-mode body{background:var(--bg)}
 .pos-ro-status.ready{background:rgba(39,174,96,.15);color:#27ae60}
 .pos-ro-status.delivered{background:rgba(127,140,141,.15);color:#7f8c8d}
 .pos-ro-status.cancelled{background:rgba(231,76,60,.15);color:#e74c3c}
+.pos-ro-status.voided{background:rgba(150,50,50,.15);color:#c0392b}
+.pos-ro-void{padding:4px 10px;border-radius:6px;border:1px solid rgba(231,76,60,.3);
+    background:none;color:#e74c3c;font-size:.72rem;font-weight:600;cursor:pointer;
+    transition:all .15s;margin-left:4px}
+.pos-ro-void:hover{background:rgba(231,76,60,.12)}
 .pos-ro-pay{padding:3px 8px;border-radius:20px;font-size:.68rem;font-weight:600;
     background:rgba(255,255,255,.06);color:var(--txt2)}
 .pos-ro-type{padding:3px 7px;border-radius:20px;font-size:.66rem;font-weight:600;
@@ -303,12 +322,12 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
 .pos-checkout-cta{font-size:.85rem;font-weight:700;color:#080604}
 
 /* ── Print styles ─────────────────────────────────────────── */
+#print-area{display:none}
 @media print{
     body *{visibility:hidden}
-    .pos-bill-box,.pos-bill-box *{visibility:visible}
-    .pos-bill-box{position:fixed;top:0;left:0;width:80mm;border-radius:0;
-        box-shadow:none;padding:8mm 6mm;max-height:none;overflow:visible}
-    .bill-actions{display:none}
+    #print-area,#print-area *{visibility:visible}
+    #print-area{display:block!important;position:fixed;top:0;left:0;width:80mm;
+        padding:8mm 6mm;font-family:monospace;color:#000;background:#fff}
 }
 
 /* ── Mobile cart bar ──────────────────────────────────────── */
@@ -412,9 +431,13 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
                 </div>
                 <div class="pos-order-footer" id="pos-order-footer" style="display:none">
                     <div class="pos-customer-row">
-                        <input type="text" id="pos-cust-name" placeholder="Customer name (optional)">
-                        <input type="tel" id="pos-cust-phone" placeholder="Phone (optional)" style="max-width:130px" maxlength="10" inputmode="numeric">
-                        <input type="text" id="pos-table" placeholder="Table #" style="max-width:80px">
+                        <input type="tel" id="pos-cust-phone" placeholder="Phone (for WhatsApp bill)" maxlength="10" inputmode="numeric" oninput="lookupCustomer(this.value)">
+                        <input type="text" id="pos-table" placeholder="Table #" style="max-width:72px">
+                    </div>
+                    <div class="pos-cust-badge" id="pos-cust-badge"></div>
+                    <div class="pos-loyalty-row" id="pos-loyalty-row"></div>
+                    <div class="pos-customer-row" style="margin-bottom:8px">
+                        <input type="text" id="pos-cust-name" placeholder="Customer name">
                     </div>
                     <div class="pos-pay-methods">
                         <button class="pos-pay-btn active" onclick="selectPay('Cash',this)">💵 Cash</button>
@@ -460,12 +483,14 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
     </div>
 </div>
 
+<div id="print-area"></div>
+
 <!-- Bill Overlay -->
 <div id="pos-bill-overlay">
     <div class="pos-bill-box" id="pos-bill-content">
         <!-- filled by JS -->
         <div class="bill-actions">
-            <button class="bill-print-btn" onclick="window.print()">🖨 Print Bill</button>
+            <button class="bill-print-btn" onclick="printBill()">🖨 Print Bill</button>
             <button class="bill-new-btn" onclick="newOrder()">+ New Order</button>
         </div>
     </div>
@@ -488,11 +513,30 @@ var db = firebase.firestore();
 // ── State ────────────────────────────────────────────────────
 var shopId = (new URLSearchParams(location.search)).get('shop') || null;
 var shopConfig = null;
+var todayTokenKey = 'posToken_' + new Date().toISOString().slice(0,10); // resets daily
+var currentToken = parseInt(localStorage.getItem(todayTokenKey) || '0');
+
+function nextToken() {
+    currentToken++;
+    localStorage.setItem(todayTokenKey, currentToken);
+    // Clean up old token keys
+    Object.keys(localStorage).forEach(function(k) {
+        if (k.startsWith('posToken_') && k !== todayTokenKey) localStorage.removeItem(k);
+    });
+    return currentToken;
+}
 var allMenu = [];
 var cart = [];
 var activeCat = 'All';
 var categories = ['All'];
 var payMethod = 'Cash';
+// Loyalty state
+var custPoints = 0;
+var pointsRedeemed = false;
+var POINTS_PER_RUPEE = 100 / 2000; // 100 pts per ₹2000 = 0.05 pts/₹
+var REDEEM_POINTS = 100;
+var REDEEM_DISCOUNT = 100;
+var REDEEM_MIN_ORDER = 250;
 
 // ── Light / Dark Mode (default: light) ──────────────────────
 (function() {
@@ -709,9 +753,13 @@ function clearCart() {
 }
 
 function renderCart() {
-    var total = 0;
-    cart.forEach(function(c){ total += c.price * c.qty; });
-    document.getElementById('pos-total').textContent = '₹' + total;
+    var subtotal = 0;
+    cart.forEach(function(c){ subtotal += c.price * c.qty; });
+    var discount = (pointsRedeemed && subtotal >= REDEEM_MIN_ORDER) ? REDEEM_DISCOUNT : 0;
+    if (pointsRedeemed && subtotal < REDEEM_MIN_ORDER) { pointsRedeemed = false; discount = 0; }
+    var total = Math.max(0, subtotal - discount);
+    var totalDisplay = discount > 0 ? '₹' + total + ' <span style="font-size:.75rem;color:#4caf50">(-₹' + discount + ')</span>' : '₹' + total;
+    document.getElementById('pos-total').innerHTML = totalDisplay;
     var count = cart.reduce(function(s,c){ return s+c.qty; }, 0);
     document.getElementById('pos-item-count').textContent = count ? '(' + count + ' items)' : '';
     document.getElementById('pos-place-btn').disabled = cart.length === 0;
@@ -719,18 +767,16 @@ function renderCart() {
     var placeFooter = document.getElementById('pos-place-footer');
     var checkoutBar = document.getElementById('pos-checkout-bar');
     document.getElementById('pos-checkout-total').textContent = '₹' + total;
+    updateLoyaltyUI(subtotal);
     if (cart.length === 0) {
         footer.style.display = 'none';
         placeFooter.style.display = 'none';
         checkoutBar.style.display = 'none';
-    } else if (window.innerWidth > 640) {
-        // Tablet/desktop side panel: show full footer + pinned Place Order
+    } else {
+        // All screens: show phone/name/payment immediately
         checkoutBar.style.display = 'none';
         footer.style.display = 'block';
         placeFooter.style.display = 'block';
-    } else if (footer.style.display !== 'block') {
-        // Phone overlay: show compact checkout bar first, tap to expand
-        checkoutBar.style.display = 'block';
     }
     document.getElementById('pos-order-col').classList.toggle('has-items', cart.length > 0);
     // Mobile cart bar
@@ -780,6 +826,109 @@ function showPosCheckout() {
     document.getElementById('pos-place-footer').style.display = 'block';
 }
 
+// ── Customer Lookup ───────────────────────────────────────────
+var custLookupTimer = null;
+
+function lookupCustomer(val) {
+    var badge = document.getElementById('pos-cust-badge');
+    val = val.replace(/\D/g, '').slice(0, 10);
+    if (val.length < 10) {
+        badge.innerHTML = '';
+        custPoints = 0;
+        pointsRedeemed = false;
+        updateLoyaltyUI(0);
+        return;
+    }
+    badge.innerHTML = '<span class="badge-loading">Looking up...</span>';
+    clearTimeout(custLookupTimer);
+    custLookupTimer = setTimeout(function() {
+        db.collection('users').doc(val).get().then(function(doc) {
+            var nameInput = document.getElementById('pos-cust-name');
+            if (doc.exists) {
+                var d = doc.data();
+                custPoints = d.loyaltyPoints || 0;
+                if (!nameInput.value.trim()) nameInput.value = d.name || '';
+                var visits = d.visits || 0;
+                var spent = '₹' + (d.totalSpent || 0).toLocaleString('en-IN');
+                var lastItems = d.lastOrderItems ? ' &nbsp;&bull;&nbsp; Last: ' + escH(d.lastOrderItems.split(',').slice(0,2).join(', ')) : '';
+                var pts = custPoints > 0 ? ' &nbsp;&bull;&nbsp; 🌟 ' + custPoints + ' pts' : '';
+                badge.innerHTML = '<span class="badge-found">&#x2713; ' + escH(d.name || 'Customer') + ' &nbsp;&bull;&nbsp; ' + visits + ' visits &nbsp;&bull;&nbsp; ' + spent + pts + lastItems + '</span>';
+            } else {
+                custPoints = 0;
+                badge.innerHTML = '<span class="badge-new">&#x2B; New customer &mdash; will be saved</span>';
+            }
+            // Refresh loyalty UI with current cart subtotal
+            var subtotal = cart.reduce(function(s,c){ return s + c.price*c.qty; }, 0);
+            updateLoyaltyUI(subtotal);
+        }).catch(function() { badge.innerHTML = ''; });
+    }, 400);
+}
+
+function updateLoyaltyUI(subtotal) {
+    var row = document.getElementById('pos-loyalty-row');
+    if (!row) return;
+    if (custPoints >= REDEEM_POINTS) {
+        row.style.display = 'block';
+        if (pointsRedeemed) {
+            row.innerHTML = '<div class="pos-redeemed-tag">🎁 ₹100 loyalty discount applied! <button onclick="cancelRedeem()">✕ Remove</button></div>';
+        } else if (subtotal >= REDEEM_MIN_ORDER) {
+            row.innerHTML = '<button class="pos-redeem-btn" onclick="redeemPoints()">🎁 Redeem ' + REDEEM_POINTS + ' pts → ₹' + REDEEM_DISCOUNT + ' off this order</button>';
+        } else {
+            row.innerHTML = '<div style="font-size:.75rem;color:#888;text-align:center">🌟 ' + custPoints + ' pts available — add ₹' + (REDEEM_MIN_ORDER - subtotal) + ' more to redeem ₹100 off</div>';
+        }
+    } else {
+        row.style.display = 'none';
+    }
+}
+
+function redeemPoints() {
+    pointsRedeemed = true;
+    renderCart();
+}
+
+function cancelRedeem() {
+    pointsRedeemed = false;
+    renderCart();
+}
+
+function upsertCustomer(name, phone, orderData) {
+    var ph = (phone || '').replace(/\D/g, '').slice(0, 10);
+    if (!ph || ph.length < 10) return;
+    var now = new Date().toISOString();
+    var itemNames = (orderData.items || []).map(function(i){ return i.name; }).join(', ');
+    var ref = db.collection('users').doc(ph);
+    var earned = orderData.pointsEarned || 0;
+    var redeemed = orderData.pointsRedeemed || 0;
+    ref.get().then(function(doc) {
+        if (doc.exists) {
+            var d = doc.data();
+            var newPts = Math.max(0, (d.loyaltyPoints || 0) - redeemed + earned);
+            ref.update({
+                name: (name && name !== 'Walk-in') ? name : (d.name || 'Unknown'),
+                visits: (d.visits || 0) + 1,
+                totalSpent: (d.totalSpent || 0) + (orderData.subtotal || orderData.total || 0),
+                lastOrderAt: now,
+                lastOrderItems: itemNames,
+                loyaltyPoints: newPts,
+                updatedAt: now
+            });
+        } else {
+            ref.set({
+                name: (name && name !== 'Walk-in') ? name : 'Unknown',
+                phone: ph,
+                visits: 1,
+                totalSpent: orderData.subtotal || orderData.total || 0,
+                lastOrderAt: now,
+                lastOrderItems: itemNames,
+                shopId: shopId,
+                loyaltyPoints: earned,
+                createdAt: now,
+                updatedAt: now
+            });
+        }
+    }).catch(function(err){ console.warn('Customer upsert failed:', err); });
+}
+
 function selectPay(method, btn) {
     payMethod = method;
     document.querySelectorAll('.pos-pay-btn').forEach(function(b){ b.classList.remove('active'); });
@@ -794,23 +943,42 @@ function placeOrder() {
     var name = document.getElementById('pos-cust-name').value.trim() || 'Walk-in';
     var phone = document.getElementById('pos-cust-phone').value.trim();
     var table = document.getElementById('pos-table').value.trim();
-    var total = cart.reduce(function(s,c){ return s + c.price*c.qty; }, 0);
+    var subtotal = cart.reduce(function(s,c){ return s + c.price*c.qty; }, 0);
+    var discount = (pointsRedeemed && subtotal >= REDEEM_MIN_ORDER) ? REDEEM_DISCOUNT : 0;
+    var total = Math.max(0, subtotal - discount);
+    var token = nextToken();
+    var pointsEarned = Math.floor(subtotal * POINTS_PER_RUPEE);
     var orderData = {
         customer: name,
         phone: phone || 'pos',
         items: cart.map(function(c){ return { name:c.name, qty:c.qty, price:c.price }; }),
         total: total,
-        subtotal: total,
+        subtotal: subtotal,
+        discount: discount,
+        pointsEarned: pointsEarned,
+        pointsRedeemed: discount > 0 ? REDEEM_POINTS : 0,
         status: 'pending',
         orderType: 'pos',
         shopId: shopId,
         payment: payMethod,
+        tokenNumber: token,
         createdAt: new Date().toISOString()
     };
     if (table) orderData.tableNumber = table;
     db.collection('orders').add(orderData).then(function(ref) {
-        showBill(ref.id, orderData);
         btn.disabled = false; btn.textContent = 'Place Order';
+        currentBillOrderId = ref.id;
+        currentBillData = orderData;
+        // Save/update customer record for CRM
+        upsertCustomer(name, phone, orderData);
+        var ph = orderData.phone && orderData.phone !== 'pos' ? orderData.phone.replace(/\D/g,'') : '';
+        if (ph.length >= 10) {
+            showOrderConfirm(ref.id, orderData, ph);
+        } else {
+            showBill(ref.id, orderData);
+        }
+        // Print KOT after bill screen is shown so print dialog doesn't block UI
+        setTimeout(function() { printKOT(); }, 300);
     }).catch(function(err) {
         alert('Order failed: ' + err.message);
         btn.disabled = false; btn.textContent = 'Place Order';
@@ -818,16 +986,21 @@ function placeOrder() {
 }
 
 // ── Bill ─────────────────────────────────────────────────────
+var currentBillOrderId = null, currentBillData = null;
+
 function showBill(orderId, data, isReprint) {
+    currentBillOrderId = orderId;
+    currentBillData = data;
     var shopName = (shopConfig && shopConfig.name) || 'Amogha Cafe';
     var now = new Date();
     var dateStr = now.toLocaleDateString('en-IN') + '  ' + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
     var itemRows = data.items.map(function(i) {
         return '<div class="bill-row"><span>' + escH(i.name) + ' x' + i.qty + '</span><span>₹' + (i.price*i.qty) + '</span></div>';
     }).join('');
+    var waBtn = '<button class="bill-wa-btn" onclick="sendWhatsAppBill()">&#x1F4AC; WhatsApp Bill</button>';
     var actions = isReprint
-        ? '<div class="bill-actions"><button class="bill-print-btn" onclick="window.print()">🖨 Reprint Bill</button></div>'
-        : '<div class="bill-actions"><button class="bill-print-btn" onclick="window.print()">🖨 Print Bill</button><button class="bill-new-btn" onclick="newOrder()">+ New Order</button></div>';
+        ? '<div class="bill-actions"><button class="bill-print-btn" onclick="printBill()">&#x1F5A8; Reprint Bill</button>' + waBtn + '</div>'
+        : '<div class="bill-actions"><button class="bill-print-btn" onclick="printBill()">&#x1F5A8; Print Bill</button>' + waBtn + '<button class="bill-new-btn" onclick="newOrder()">+ New Order</button></div>';
     var closeBtn = isReprint
         ? '<button class="bill-close-btn" onclick="document.getElementById(\'pos-bill-overlay\').classList.remove(\'show\')" title="Close">&times;</button>'
         : '';
@@ -849,25 +1022,339 @@ function showBill(orderId, data, isReprint) {
         '<div class="bill-row total"><span>TOTAL</span><span>₹' + data.total + '</span></div>' +
         '<div class="bill-row label" style="margin-top:4px"><span>Payment</span><span>' + escH(data.payment) + '</span></div>' +
         '<hr class="bill-divider">' +
-        '<div style="text-align:center;font-size:.7rem;color:#777;margin-top:8px">Thank you! Visit again</div>' +
+        '<div style="text-align:center;font-size:.7rem;color:#777;margin-top:8px;font-style:italic">' + escH(randomBillQuote()) + '</div>' +
         actions;
+    document.getElementById('pos-bill-overlay').classList.add('show');
+}
+
+
+// Order confirm screen — phone available, cashier taps Send WhatsApp
+function showOrderConfirm(orderId, data, ph) {
+    currentBillOrderId = orderId;
+    currentBillData = data;
+    var custName = (data.customer && data.customer !== 'Walk-in') ? data.customer : '';
+    document.getElementById('pos-bill-content').innerHTML =
+        '<div style="text-align:center;padding:1.25rem 0.5rem 0.75rem">' +
+        '<div style="font-size:2.2rem;margin-bottom:0.4rem">&#x2705;</div>' +
+        '<div style="font-size:1.1rem;font-weight:700;color:#111;margin-bottom:0.2rem">Order Placed!</div>' +
+        '<div style="font-size:0.85rem;color:#555">#' + orderId.slice(-6).toUpperCase() + ' &nbsp;&middot;&nbsp; Rs.' + data.total + ' &nbsp;&middot;&nbsp; ' + data.payment + '</div>' +
+        (custName ? '<div style="font-size:0.82rem;color:#777;margin-top:0.2rem">' + escH(custName) + ' &nbsp;&middot;&nbsp; +91 ' + escH(ph) + '</div>' : '<div style="font-size:0.82rem;color:#777;margin-top:0.2rem">+91 ' + escH(ph) + '</div>') +
+        '</div>' +
+        '<div class="bill-actions">' +
+        '<button class="bill-wa-btn" style="flex:1 1 100%;font-size:.95rem;padding:13px" onclick="sendWhatsAppBill()">&#x1F4AC; Send WhatsApp Bill</button>' +
+        '<button class="bill-print-btn" onclick="printBill()">&#x1F5A8; Print Bill</button>' +
+        '<button class="bill-new-btn" onclick="newOrder()">+ New Order</button>' +
+        '</div>';
     document.getElementById('pos-bill-overlay').classList.add('show');
 }
 
 function newOrder() {
     document.getElementById('pos-bill-overlay').classList.remove('show');
     cart = [];
+    custPoints = 0;
+    pointsRedeemed = false;
     document.getElementById('pos-cust-name').value = '';
     document.getElementById('pos-cust-phone').value = '';
     document.getElementById('pos-table').value = '';
+    document.getElementById('pos-cust-badge').innerHTML = '';
+    var lr = document.getElementById('pos-loyalty-row');
+    if (lr) { lr.style.display = 'none'; lr.innerHTML = ''; }
     payMethod = 'Cash';
     document.querySelectorAll('.pos-pay-btn').forEach(function(b,i){ b.classList.toggle('active', i===0); });
     renderCart();
     renderPosMenu();
 }
 
+function doPrint(html) {
+    var area = document.getElementById('print-area');
+    area.innerHTML = html;
+    // Reset layout after print dialog closes (fixes iPad Safari viewport bug)
+    var afterPrint = function() {
+        area.innerHTML = '';
+        // Force viewport reset — Safari changes zoom/layout during print
+        var vp = document.querySelector('meta[name=viewport]');
+        if (vp) { var c = vp.content; vp.content = ''; vp.content = c; }
+        window.removeEventListener('afterprint', afterPrint);
+    };
+    window.addEventListener('afterprint', afterPrint);
+    setTimeout(function() { window.print(); }, 100);
+}
+
+function printBill() {
+    var data = currentBillData, orderId = currentBillOrderId;
+    if (!data) return;
+    var shopName = (shopConfig && shopConfig.name) || 'Amogha Cafe';
+    var printerConfig = (shopConfig && shopConfig.printer) || {};
+    var footer = printerConfig.footer || randomBillQuote();
+    var now = new Date();
+    var dateStr = now.toLocaleDateString('en-IN') + '  ' + now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
+    var itemRows = data.items.map(function(i) {
+        return '<div style="display:flex;justify-content:space-between;padding:2px 0">' +
+            '<span>' + escH(i.name) + ' x' + i.qty + '</span><span>Rs.' + (i.price*i.qty) + '</span></div>';
+    }).join('');
+    doPrint(
+        '<div style="text-align:center;font-weight:700;font-size:1.1em;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px">' + escH(shopName) + '</div>' +
+        '<div style="font-size:.8em;color:#555;text-align:center;margin-bottom:8px">POS Receipt</div>' +
+        '<div style="border-top:1px dashed #000;margin:6px 0"></div>' +
+        '<div style="display:flex;justify-content:space-between"><span>Order</span><span>#' + orderId.slice(-6).toUpperCase() + '</span></div>' +
+        '<div style="display:flex;justify-content:space-between"><span>Date</span><span>' + dateStr + '</span></div>' +
+        (data.customer && data.customer !== 'Walk-in' ? '<div style="display:flex;justify-content:space-between"><span>Customer</span><span>' + escH(data.customer) + '</span></div>' : '') +
+        (data.phone && data.phone !== 'pos' ? '<div style="display:flex;justify-content:space-between"><span>Phone</span><span>' + escH(data.phone) + '</span></div>' : '') +
+        (data.tableNumber ? '<div style="display:flex;justify-content:space-between"><span>Table</span><span>' + escH(data.tableNumber) + '</span></div>' : '') +
+        '<div style="border-top:1px dashed #000;margin:6px 0"></div>' +
+        itemRows +
+        '<div style="border-top:2px solid #000;margin:6px 0"></div>' +
+        '<div style="display:flex;justify-content:space-between;font-weight:700;font-size:1.05em"><span>TOTAL</span><span>Rs.' + data.total + '</span></div>' +
+        (data.discount > 0 ? '<div style="font-size:.8em;color:#555">Loyalty discount: -Rs.' + data.discount + '</div>' : '') +
+        '<div style="font-size:.8em;color:#555">Payment: ' + escH(data.payment) + '</div>' +
+        (function() {
+            if (!data.phone || data.phone === 'pos') return '';
+            var earned = data.pointsEarned || 0;
+            var newBal = Math.max(0, custPoints - (data.pointsRedeemed || 0) + earned);
+            var needed = Math.max(0, REDEEM_POINTS - newBal);
+            var loyaltyUrl = location.origin + '/loyalty/';
+            return '<div style="border-top:1px dashed #000;margin:6px 0"></div>' +
+                '<div style="text-align:center;font-size:.78em;font-weight:700">⭐ LOYALTY POINTS</div>' +
+                '<div style="display:flex;justify-content:space-between;font-size:.78em"><span>Earned this visit</span><span>+' + earned + ' pts</span></div>' +
+                (data.pointsRedeemed > 0 ? '<div style="display:flex;justify-content:space-between;font-size:.78em"><span>Redeemed</span><span>-' + data.pointsRedeemed + ' pts</span></div>' : '') +
+                '<div style="display:flex;justify-content:space-between;font-size:.78em;font-weight:700"><span>Your balance</span><span>' + newBal + ' pts</span></div>' +
+                (needed > 0
+                    ? '<div style="font-size:.72em;color:#555;text-align:center;margin-top:2px">Earn ' + needed + ' more pts for Rs.100 off!</div>'
+                    : '<div style="font-size:.72em;font-weight:700;text-align:center;margin-top:2px">🎉 Redeem Rs.100 off on next visit!</div>') +
+                '<div style="font-size:.68em;color:#777;text-align:center;margin-top:3px">Check balance: ' + loyaltyUrl + '</div>';
+        })() +
+        '<div style="border-top:1px dashed #000;margin:6px 0"></div>' +
+        '<div style="text-align:center;font-size:.75em;color:#555;margin-top:6px">' + escH(footer) + '</div>'
+    );
+    // Note: KOT to separate kitchen printer is handled natively in the Android app
+}
+
+function printKOT() {
+    var data = currentBillData, orderId = currentBillOrderId;
+    if (!data) return;
+    var shopName = (shopConfig && shopConfig.name) || 'Amogha Cafe';
+    var now = new Date();
+    var timeStr = now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
+    var itemRows = data.items.map(function(i) {
+        return '<div style="font-size:1.1em;padding:5px 0;font-weight:700;border-bottom:1px dotted #000">[' + i.qty + ']  ' + escH(i.name) + '</div>';
+    }).join('');
+    var token = data.tokenNumber || '';
+    doPrint(
+        '<div style="text-align:center;font-weight:700;font-size:1.2em;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px">KOT — ' + escH(shopName) + '</div>' +
+        (token ? '<div style="text-align:center;font-size:2.5em;font-weight:900;letter-spacing:2px;margin:6px 0">T' + token + '</div>' : '') +
+        '<div style="text-align:center;border-bottom:2px dashed #000;margin-bottom:8px;padding-bottom:6px;font-size:.85em">' + timeStr +
+        (data.tableNumber ? ' &nbsp;|&nbsp; Table ' + escH(data.tableNumber) : '') +
+        (data.customer && data.customer !== 'Walk-in' ? ' &nbsp;|&nbsp; ' + escH(data.customer) : '') +
+        '</div>' +
+        itemRows +
+        '<div style="border-top:2px dashed #000;margin-top:10px;padding-top:6px;text-align:center;font-size:.75em">--- END ---</div>'
+    );
+}
+
+function sendWhatsAppBill() {
+    var data = currentBillData, orderId = currentBillOrderId;
+    if (!data) return;
+    var ph = (data.phone && data.phone !== 'pos') ? data.phone.replace(/\D/g,'') : '';
+    var phoneWasNew = false;
+    if (!ph || ph.length < 10) {
+        ph = prompt('Enter customer phone number (10 digits):');
+        if (!ph) return;
+        ph = ph.replace(/\D/g,'');
+        phoneWasNew = true;
+    }
+    if (ph.length === 10) {
+        if (phoneWasNew) {
+            // Link phone back to the order in Firestore + save customer record
+            db.collection('orders').doc(orderId).update({ phone: ph });
+            currentBillData.phone = ph;
+            upsertCustomer(data.customer || 'Walk-in', ph, data);
+        }
+        ph = '91' + ph;
+    }
+    var shopName = (shopConfig && shopConfig.name) || 'Amogha Cafe';
+    var now = new Date();
+    var dateStr = now.toLocaleDateString('en-IN') + ', ' + now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
+
+    // Beautiful WhatsApp bill using WA markdown
+    var divider = '━━━━━━━━━━━━━━━━━━━━';
+    var lines = [
+        '🧾 *' + shopName + '*',
+        divider
+    ];
+    if (data.customer && data.customer !== 'Walk-in') lines.push('👤 ' + data.customer);
+    if (data.tableNumber) lines.push('🪑 Table ' + data.tableNumber);
+    lines.push('🕐 ' + dateStr);
+    lines.push('📋 Order #' + orderId.slice(-6).toUpperCase());
+    lines.push(divider);
+    data.items.forEach(function(i) {
+        var amt = '₹' + (i.price * i.qty);
+        var itemLine = '• ' + i.name + ' × ' + i.qty;
+        // right-align amount using spaces
+        var pad = 22 - itemLine.length;
+        lines.push(itemLine + (pad > 0 ? ' '.repeat(pad) : '  ') + amt);
+    });
+    lines.push(divider);
+    if (data.discount > 0) lines.push('🎁 Loyalty discount: -₹' + data.discount);
+    lines.push('💳 *TOTAL: ₹' + data.total + '*');
+    lines.push('💰 Payment: ' + data.payment);
+    lines.push(divider);
+    if (data.pointsEarned > 0) lines.push('⭐ Points earned this visit: +' + data.pointsEarned);
+    if (data.pointsRedeemed > 0) lines.push('🎁 Points redeemed: -' + data.pointsRedeemed);
+    lines.push('🙏 Thank you! Visit us again.');
+
+    var waUrl = 'https://wa.me/' + ph + '?text=' + encodeURIComponent(lines.join('\n'));
+    var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+    if (isMobile) {
+        // Mobile: open WhatsApp app, auto-reset POS after 3s when cashier returns
+        window.open(waUrl, '_blank');
+        var content = document.getElementById('pos-bill-content');
+        if (content) {
+            content.innerHTML =
+                '<div style="text-align:center;padding:2rem 1rem">' +
+                '<div style="font-size:2.5rem">💬</div>' +
+                '<div style="font-size:1.1rem;font-weight:700;margin-top:0.5rem">WhatsApp Opened!</div>' +
+                '<div style="font-size:0.85rem;color:#666;margin-top:0.3rem">Send message, then come back</div>' +
+                '<button class="bill-new-btn" style="margin-top:1.5rem;width:100%" onclick="newOrder()">✓ Done — New Order</button>' +
+                '</div>';
+        }
+    } else {
+        // Desktop: open small popup — cashier stays on POS, sends from popup, closes it
+        var sw = screen.width, sh = screen.height;
+        var pw = 480, popH = 700;
+        var left = Math.round((sw - pw) / 2), top = Math.round((sh - popH) / 2);
+        window.open(waUrl, 'wabill', 'width=' + pw + ',height=' + popH + ',left=' + left + ',top=' + top + ',toolbar=no,menubar=no,scrollbars=yes');
+        // Auto-reset order screen immediately — popup handles WhatsApp
+        setTimeout(function() { newOrder(); }, 800);
+    }
+}
+
 function escH(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+var billQuotes = [
+    // Food & happiness
+    "Good food is the foundation of genuine happiness.",
+    "Life is short — eat the good stuff first!",
+    "A meal shared is a memory made.",
+    "Every bite tells a story. Thank you for being part of ours.",
+    "Food tastes better when eaten with love.",
+    "You don't need a silver fork to eat good food.",
+    "The secret ingredient is always love.",
+    "A full stomach makes a happy heart.",
+    "Great food is like great love — it nourishes the soul.",
+    "Eat well, laugh often, live fully.",
+    "Behind every great meal is a great kitchen. 🍳",
+    "Food is our common ground, a universal experience.",
+    "The best memories are made around a table.",
+    "One cannot think well, love well, sleep well — if one has not dined well.",
+    "Today's treat is tomorrow's energy. Enjoy!",
+    "Happiness is homemade — and so is our food.",
+    "Your smile is the best review we can get. 😊",
+    "Cooked with care. Served with love.",
+    "May your next visit be even more delicious!",
+    "A good meal is a good mood. Come back soon!",
+    // Fortune cookie style
+    "The finest things in life are shared over a meal.",
+    "A belly full of good food leads to a heart full of joy.",
+    "Every meal is a chance to start fresh.",
+    "Good things come to those who eat well.",
+    "Nourish your body, feed your soul.",
+    "The table is the only place where no one is in a hurry.",
+    "Taste the moment. Savour the memory.",
+    "Life is a banquet — don't leave hungry!",
+    "A recipe has no soul. The cook must bring it. You tasted ours. 🙏",
+    "Great meals end with a smile — we hope yours does too.",
+    // Indian / warm
+    "Atithi Devo Bhava — You are our honoured guest.",
+    "Khana khao, khush raho! 😄",
+    "Aana milna, paas rehna — come again, stay close.",
+    "Food made with care fills more than just the stomach.",
+    "Every visit is special. Every order is made with heart.",
+    "From our kitchen to your heart — with love.",
+    "You chose us today. We are grateful. Come back soon!",
+    "Taste is a memory. Let this one be a good one.",
+    "Here, every plate is made like family is eating.",
+    "Good food. Good company. Good life.",
+    // Witty / fun
+    "Calories? Never heard of them. Enjoy! 😏",
+    "Diet starts tomorrow. Today was delicious!",
+    "You had us at 'one more plate'.",
+    "Warning: Our food may cause uncontrollable happiness.",
+    "Scientifically proven: Our food makes Mondays better.",
+    "No leftovers? That's the best compliment. Thank you!",
+    "Our chef saw you finish your plate. They're smiling. 😊",
+    "Food is cheaper than therapy and tastier too!",
+    "We put our heart into every dish. Hope you tasted it.",
+    "You fuel our passion by letting us fuel your hunger.",
+    // Fortune telling / lucky
+    "🌟 Today is your lucky day — great things are coming your way!",
+    "🍀 Fortune favours the well-fed. Luck is on your side today!",
+    "✨ The stars say: something wonderful is about to happen to you.",
+    "🌙 Your next big opportunity is closer than you think. Stay ready!",
+    "🔮 A surprise will bring a smile to your face before the day ends.",
+    "💫 Lucky numbers for you today: 7, 3, 21. Use them wisely!",
+    "🌈 Good fortune follows good food. Expect a beautiful day ahead!",
+    "🪄 Someone is thinking good thoughts about you right now.",
+    "🎯 Trust your instincts today — you are closer to success than ever.",
+    "☀️ Today's meal has charged you with positive energy. Go conquer!",
+    "🦋 A change you've been waiting for is just around the corner.",
+    "🌺 Happiness is knocking at your door — make sure to open it.",
+    "⭐ You will achieve something great before this week is over.",
+    "🎁 An unexpected gift — big or small — is headed your way.",
+    "💰 Prosperity follows those who enjoy the little things. Like this meal!",
+    "🙏 The universe heard your wish. Keep believing.",
+    "🌻 Your patience will be rewarded — sooner than you expect.",
+    "🏆 You are destined for great things. This meal is just the beginning.",
+    "🌊 Go with the flow today — the current is in your favour.",
+    "💎 The best is yet to come. Today is just a preview.",
+];
+
+// Fortune generator — combines templates + word banks for millions of unique quotes
+var _fq = {
+    openers:   ["Today,","Right now,","At this moment,","The stars say:","Fortune whispers:","The universe reveals:","Your destiny shows:","A wise voice says:","Ancient wisdom says:","The cosmos declares:"],
+    traits:    ["your kindness","your patience","your hard work","your warm heart","your generosity","your perseverance","your positive energy","your strong spirit","your gentle soul","your bright mind","your determination","your courage","your optimism"],
+    verbs:     ["is attracting","will bring","has opened the door to","is creating","is leading you toward","will soon unlock","is quietly building","is drawing closer","has already set in motion","is blossoming into"],
+    goods:     ["great success","unexpected joy","new opportunities","a wonderful surprise","lasting happiness","good fortune","positive change","a beautiful beginning","abundance and peace","love and laughter","a lucky breakthrough","something truly special","a moment of triumph","the recognition you deserve","an exciting new chapter"],
+    closers:   ["","— embrace it!","— stay open!","— believe it!","— it is certain.","— the signs are clear.","— trust the journey.","— your time is now.","— keep going!","— wonderful things await."],
+    luckyNums: [["3","7","21"],["1","8","33"],["5","12","44"],["2","9","17"],["6","11","28"],["4","13","36"],["7","14","42"],["3","18","27"],["8","22","31"],["1","5","19"]],
+    colors:    ["Gold 🌟","Green 🍀","Blue 💙","Red ❤️","Yellow ☀️","White 🤍","Orange 🧡","Purple 💜","Pink 🌸","Silver ✨"],
+    dirs:      ["North","South","East","West","your heart"],
+    times:     ["today","very soon","before this week ends","when you least expect it","in the days ahead","sooner than you think","this very evening","before the month is over"],
+    foods:     ["A meal shared is a memory made.","Good food is the foundation of genuine happiness.","Life is short — eat the good stuff first!","The secret ingredient is always love.","Cooked with care. Served with love.","Eat well, laugh often, live fully.","A full stomach makes a happy heart.","Food is our common ground, a universal experience.","Every bite tells a story. Thank you for being part of ours.","The best memories are made around a table.","Happiness is homemade — and so is our food.","Great food is like great love — it nourishes the soul."],
+    funny:     ["Calories? Never heard of them. Enjoy! 😏","Diet starts tomorrow. Today was delicious!","Warning: Our food may cause uncontrollable happiness.","Scientifically proven: Our food makes Mondays better.","Food is cheaper than therapy and tastier too!","You had us at 'one more plate'. 😄","Our chef saw you finish your plate. They're smiling. 😊"],
+    indian:    ["Atithi Devo Bhava — You are our honoured guest. 🙏","Khana khao, khush raho! 😄","From our kitchen to your heart — with love.","Here, every plate is made like family is eating.","You chose us today. We are grateful. Come back soon!"]
+};
+
+function _pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function randomBillQuote() {
+    // 6 types, weighted: fortune (40%), food (20%), funny (15%), indian (10%), lucky nums (10%), lucky color/dir (5%)
+    var r = Math.random();
+    if (r < 0.40) {
+        // Dynamic fortune sentence — billions of combos
+        var opener = _pick(_fq.openers);
+        var trait  = _pick(_fq.traits);
+        var verb   = _pick(_fq.verbs);
+        var good   = _pick(_fq.goods);
+        var time   = _pick(_fq.times);
+        var closer = _pick(_fq.closers);
+        return opener + ' ' + trait + ' ' + verb + ' ' + good + ' ' + time + closer;
+    } else if (r < 0.60) {
+        return _pick(_fq.foods);
+    } else if (r < 0.75) {
+        return _pick(_fq.funny);
+    } else if (r < 0.85) {
+        return _pick(_fq.indian);
+    } else if (r < 0.95) {
+        var nums = _pick(_fq.luckyNums);
+        return '🍀 Lucky numbers for you today: ' + nums.join(', ') + '. Good fortune is near!';
+    } else {
+        var color = _pick(_fq.colors);
+        var dir   = _pick(_fq.dirs);
+        return '✨ Your lucky color today is ' + color + ' · Lucky direction: ' + dir + '. Wear it, feel it, own it!';
+    }
 }
 
 // ── Recent Orders ─────────────────────────────────────────────
@@ -926,7 +1413,7 @@ function renderRecentOrders() {
         var itemsSummary = (o.items || []).map(function(i){ return escH(i.name) + (i.qty > 1 ? ' ×'+i.qty : ''); }).join(', ');
         var status = (o.status || 'pending').toLowerCase();
         var statusLabel = {pending:'Pending', confirmed:'Confirmed', preparing:'Preparing',
-            ready:'Ready', delivered:'Delivered', cancelled:'Cancelled'}[status] || status;
+            ready:'Ready', delivered:'Delivered', cancelled:'Cancelled', voided:'Voided'}[status] || status;
         var typeHtml = o.orderType === 'pos' ? '<span class="pos-ro-type">POS</span>' : '';
         var escapedId = o.id.replace(/'/g,"\\'");
         return '<div class="pos-ro-card">' +
@@ -943,6 +1430,7 @@ function renderRecentOrders() {
                 '<span class="pos-ro-status ' + status + '">' + statusLabel + '</span>' +
                 '<span class="pos-ro-pay">' + escH(o.payment || 'Cash') + '</span>' +
                 '<button class="pos-ro-reprint" onclick="reprintOrder(\'' + escapedId + '\')">🖨 Reprint</button>' +
+                (status !== 'voided' && status !== 'cancelled' ? '<button class="pos-ro-void" onclick="voidOrder(\'' + escapedId + '\')">🚫 Void</button>' : '') +
             '</div>' +
         '</div>';
     }).join('');
@@ -952,6 +1440,38 @@ function reprintOrder(orderId) {
     var o = recentOrders.find(function(r){ return r.id === orderId; });
     if (!o) return;
     showBill(o.id, o, true);
+}
+
+function voidOrder(orderId) {
+    var o = recentOrders.find(function(r){ return r.id === orderId; });
+    if (!o) return;
+    var label = '#' + orderId.slice(-6).toUpperCase() + ' — ₹' + (o.total || 0);
+    if (!confirm('Void order ' + label + '?\n\nThis will mark it as voided and reverse any loyalty points.')) return;
+
+    db.collection('orders').doc(orderId).update({
+        status: 'voided',
+        voidedAt: new Date().toISOString()
+    }).then(function() {
+        // Reverse loyalty points if applicable
+        var phone = o.phone;
+        var earned = o.pointsEarned || 0;
+        var redeemed = o.pointsRedeemed || 0;
+        if (phone && (earned > 0 || redeemed > 0)) {
+            db.collection('users').doc(phone).get().then(function(doc) {
+                if (!doc.exists) return;
+                var curPts = doc.data().loyaltyPoints || 0;
+                // Reverse: subtract earned points, restore redeemed points
+                var newPts = Math.max(0, curPts - earned + redeemed);
+                db.collection('users').doc(phone).update({ loyaltyPoints: newPts });
+            });
+        }
+        // Update local list
+        var idx = recentOrders.findIndex(function(r){ return r.id === orderId; });
+        if (idx !== -1) { recentOrders[idx].status = 'voided'; }
+        renderRecentOrders();
+    }).catch(function(err) {
+        alert('Failed to void order: ' + err.message);
+    });
 }
 </script>
 </body>
