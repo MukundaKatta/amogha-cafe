@@ -119,8 +119,12 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 .pos-clear-btn{padding:4px 10px;background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.2);
     color:var(--red);border-radius:6px;cursor:pointer;font-size:.75rem;font-weight:600}
 .pos-clear-btn:hover{background:rgba(231,76,60,.2)}
-.pos-cart-list{flex:1;min-height:0;overflow-y:auto;padding:8px;scrollbar-width:thin;
-    scrollbar-color:rgba(212,160,23,.2) transparent}
+/* Scrollable wrapper: cart list + footer scroll together; footer sticks to bottom */
+.pos-order-scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;
+    scrollbar-width:thin;scrollbar-color:rgba(212,160,23,.2) transparent}
+.pos-order-scroll::-webkit-scrollbar{width:4px}
+.pos-order-scroll::-webkit-scrollbar-thumb{background:rgba(212,160,23,.2);border-radius:2px}
+.pos-cart-list{flex:1;padding:8px}
 .pos-cart-empty{display:flex;align-items:center;justify-content:center;height:100%;
     color:var(--txt3);font-size:.85rem;text-align:center;padding:20px}
 .pos-cart-item{display:flex;align-items:center;gap:8px;padding:9px 8px;border-radius:10px;
@@ -138,7 +142,7 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 .pos-qty-num{min-width:22px;text-align:center;font-size:.85rem;font-weight:700;color:var(--txt)}
 
 .pos-order-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;
-    background:var(--bg2);z-index:2}
+    position:sticky;bottom:0;background:var(--bg2);z-index:2}
 .pos-customer-row{display:flex;gap:8px;margin-bottom:8px}
 .pos-customer-row input{flex:1;padding:8px 10px;background:var(--bg3);border:1px solid rgba(255,255,255,.08);
     border-radius:8px;color:var(--txt);font-size:.8rem;outline:none}
@@ -287,7 +291,7 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
 
 /* ── Proceed to Checkout bar ──────────────────────────────── */
 .pos-checkout-bar{padding:12px 16px;flex-shrink:0;cursor:pointer;
-    position:sticky;bottom:0;background:var(--bg2);z-index:2}
+    position:sticky;bottom:0;background:var(--bg2);z-index:2;margin-top:auto}
 .pos-checkout-bar-inner{display:flex;align-items:center;justify-content:space-between;
     background:linear-gradient(135deg,var(--gold),var(--gold-d));
     border-radius:12px;padding:13px 18px;transition:opacity .15s}
@@ -393,31 +397,33 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
                     <button onclick="closeMobileCart()" style="background:none;border:none;color:var(--txt2);font-size:1.3rem;cursor:pointer;padding:0 4px;line-height:1" title="Close">&times;</button>
                 </div>
             </div>
-            <div class="pos-cart-list" id="pos-cart-list">
-                <div class="pos-cart-empty">Cart is empty<br>Tap items to add</div>
-            </div>
-            <div class="pos-checkout-bar" id="pos-checkout-bar" style="display:none" onclick="showPosCheckout()">
-                <div class="pos-checkout-bar-inner">
-                    <span class="pos-checkout-total" id="pos-checkout-total">₹0</span>
-                    <span class="pos-checkout-cta">Proceed to Checkout →</span>
+            <div class="pos-order-scroll">
+                <div class="pos-cart-list" id="pos-cart-list">
+                    <div class="pos-cart-empty">Cart is empty<br>Tap items to add</div>
                 </div>
-            </div>
-            <div class="pos-order-footer" id="pos-order-footer" style="display:none">
-                <div class="pos-customer-row">
-                    <input type="text" id="pos-cust-name" placeholder="Customer name (optional)">
-                    <input type="tel" id="pos-cust-phone" placeholder="Phone (optional)" style="max-width:130px" maxlength="10" inputmode="numeric">
-                    <input type="text" id="pos-table" placeholder="Table #" style="max-width:80px">
+                <div class="pos-checkout-bar" id="pos-checkout-bar" style="display:none" onclick="showPosCheckout()">
+                    <div class="pos-checkout-bar-inner">
+                        <span class="pos-checkout-total" id="pos-checkout-total">₹0</span>
+                        <span class="pos-checkout-cta">Proceed to Checkout →</span>
+                    </div>
                 </div>
-                <div class="pos-pay-methods">
-                    <button class="pos-pay-btn active" onclick="selectPay('Cash',this)">💵 Cash</button>
-                    <button class="pos-pay-btn" onclick="selectPay('UPI',this)">📲 UPI</button>
-                    <button class="pos-pay-btn" onclick="selectPay('Card',this)">💳 Card</button>
+                <div class="pos-order-footer" id="pos-order-footer" style="display:none">
+                    <div class="pos-customer-row">
+                        <input type="text" id="pos-cust-name" placeholder="Customer name (optional)">
+                        <input type="tel" id="pos-cust-phone" placeholder="Phone (optional)" style="max-width:130px" maxlength="10" inputmode="numeric">
+                        <input type="text" id="pos-table" placeholder="Table #" style="max-width:80px">
+                    </div>
+                    <div class="pos-pay-methods">
+                        <button class="pos-pay-btn active" onclick="selectPay('Cash',this)">💵 Cash</button>
+                        <button class="pos-pay-btn" onclick="selectPay('UPI',this)">📲 UPI</button>
+                        <button class="pos-pay-btn" onclick="selectPay('Card',this)">💳 Card</button>
+                    </div>
+                    <div class="pos-total-row">
+                        <span class="pos-total-label">Total</span>
+                        <span class="pos-total-amount" id="pos-total">₹0</span>
+                    </div>
+                    <button class="pos-place-btn" id="pos-place-btn" onclick="placeOrder()" disabled>Place Order</button>
                 </div>
-                <div class="pos-total-row">
-                    <span class="pos-total-label">Total</span>
-                    <span class="pos-total-amount" id="pos-total">₹0</span>
-                </div>
-                <button class="pos-place-btn" id="pos-place-btn" onclick="placeOrder()" disabled>Place Order</button>
             </div>
         </div>
     </div>
