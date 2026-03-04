@@ -39,7 +39,7 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 .login-err{color:var(--red);font-size:.82rem;margin-top:10px;min-height:18px}
 
 /* ── Main POS Layout ──────────────────────────────────────── */
-#pos-main{display:none;height:100vh;display:none;flex-direction:column}
+#pos-main{display:none;position:fixed;inset:0;flex-direction:column}
 #pos-main.show{display:flex}
 .pos-header{display:flex;align-items:center;gap:12px;padding:10px 16px;
     background:var(--bg2);border-bottom:1px solid rgba(212,160,23,.1);flex-shrink:0}
@@ -156,6 +156,9 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 .pos-pay-btn{flex:1;padding:9px 6px;border-radius:8px;border:1.5px solid rgba(255,255,255,.1);
     background:var(--bg3);color:var(--txt2);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
 .pos-pay-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(212,160,23,.1)}
+.pos-place-footer{padding:10px 14px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;
+    background:var(--bg2);padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+body.light-mode .pos-place-footer{background:var(--bg2);border-color:rgba(0,0,0,.07)}
 .pos-place-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-d));
     color:#080604;font-weight:700;font-size:1rem;border:none;border-radius:var(--r);cursor:pointer;
     transition:opacity .2s;letter-spacing:.02em}
@@ -422,8 +425,11 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
                         <span class="pos-total-label">Total</span>
                         <span class="pos-total-amount" id="pos-total">₹0</span>
                     </div>
-                    <button class="pos-place-btn" id="pos-place-btn" onclick="placeOrder()" disabled>Place Order</button>
                 </div>
+            </div>
+            <!-- Place Order pinned at bottom of column, always visible -->
+            <div class="pos-place-footer" id="pos-place-footer" style="display:none">
+                <button class="pos-place-btn" id="pos-place-btn" onclick="placeOrder()" disabled>Place Order</button>
             </div>
         </div>
     </div>
@@ -710,15 +716,18 @@ function renderCart() {
     document.getElementById('pos-item-count').textContent = count ? '(' + count + ' items)' : '';
     document.getElementById('pos-place-btn').disabled = cart.length === 0;
     var footer = document.getElementById('pos-order-footer');
+    var placeFooter = document.getElementById('pos-place-footer');
     var checkoutBar = document.getElementById('pos-checkout-bar');
     document.getElementById('pos-checkout-total').textContent = '₹' + total;
     if (cart.length === 0) {
         footer.style.display = 'none';
+        placeFooter.style.display = 'none';
         checkoutBar.style.display = 'none';
     } else if (window.innerWidth > 640) {
-        // Tablet/desktop side panel: show full footer directly
+        // Tablet/desktop side panel: show full footer + pinned Place Order
         checkoutBar.style.display = 'none';
         footer.style.display = 'block';
+        placeFooter.style.display = 'block';
     } else if (footer.style.display !== 'block') {
         // Phone overlay: show compact checkout bar first, tap to expand
         checkoutBar.style.display = 'block';
@@ -768,6 +777,7 @@ function closeMobileCart() {
 function showPosCheckout() {
     document.getElementById('pos-checkout-bar').style.display = 'none';
     document.getElementById('pos-order-footer').style.display = 'block';
+    document.getElementById('pos-place-footer').style.display = 'block';
 }
 
 function selectPay(method, btn) {
