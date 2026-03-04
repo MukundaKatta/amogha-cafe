@@ -713,7 +713,7 @@ function renderCart() {
     }
     document.getElementById('pos-order-col').classList.toggle('has-items', cart.length > 0);
     // Mobile cart bar
-    var isMobile = window.innerWidth <= 640;
+    var isMobile = window.innerWidth <= 900;
     var cartBar = document.getElementById('pos-cart-bar');
     if (isMobile) {
         if (cart.length) {
