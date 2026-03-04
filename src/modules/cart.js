@@ -197,12 +197,9 @@ export function updateAddonTotal() {
 
 export function closeAddonPicker() {
     document.getElementById('addon-picker-overlay').style.display = 'none';
-    // If user closes without confirming, add item without addons
-    if (pendingAddonItem) {
-        finalizeAddToCart(pendingAddonItem.name, pendingAddonItem.price, pendingAddonItem.spiceLevel, []);
-        pendingAddonItem = null;
-        selectedAddons.length = 0;
-    }
+    // Cancel the pending add — user dismissed without confirming
+    pendingAddonItem = null;
+    selectedAddons.length = 0;
 }
 
 export function confirmAddonSelection() {

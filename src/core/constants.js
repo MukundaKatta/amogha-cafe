@@ -4,7 +4,7 @@
 // STEP 1: Sign up at https://dashboard.razorpay.com/signup and complete KYC
 // STEP 2: Go to Settings → API Keys → Generate Key
 // STEP 3: Replace the test key below with your live key (rzp_live_...)
-export const RAZORPAY_KEY = 'rzp_test_1DP5mmOlF5G5ag';
+export const RAZORPAY_KEY = 'rzp_live_bfHYCYWDyoSHFn';
 
 export const WHATSAPP_NUMBER = '+919121004999';
 export const MERCHANT_NAME = 'AMOGHA CAFE & RESTAURANT';

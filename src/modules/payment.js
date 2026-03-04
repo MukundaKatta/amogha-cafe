@@ -9,6 +9,7 @@ import { getDb } from '../core/firebase.js';
 export let selectedPayment = 'razorpay';
 export var appliedCoupon = null;
 export var appliedGiftCard = null;
+var appliedCouponCode = '';
 var selectedGcAmount = 500;
 
 // Keep a module-level reference that cart.getCheckoutTotal can access via window
@@ -136,6 +137,7 @@ export function openCheckout() {
     var couponMsg = document.getElementById('coupon-msg');
     if (currentUser && !currentUser.usedWelcomeBonus) {
         appliedCoupon = { discount: 25, type: 'percent', label: '25% off (Welcome Bonus!)' };
+        appliedCouponCode = 'WELCOME25';
         couponInput.value = 'WELCOME25';
         couponMsg.textContent = 'Welcome bonus applied! You get 25% off!';
         couponMsg.className = 'coupon-msg success';
@@ -145,6 +147,7 @@ export function openCheckout() {
         document.getElementById('co-total').textContent = '\u20B9' + discountedTotal.toFixed(0);
     } else {
         appliedCoupon = null;
+        appliedCouponCode = '';
         couponInput.value = '';
         couponMsg.textContent = '';
         couponMsg.className = 'coupon-msg';
@@ -374,6 +377,13 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
                 '</div>';
         }
 
+        // Count coupon usage only after successful order placement
+        if (appliedCouponCode) {
+            db.collection('coupons').doc(appliedCouponCode).update({
+                usedCount: firebase.firestore.FieldValue.increment(1)
+            }).catch(function(e) { console.error('Coupon usage update error:', e); });
+        }
+
         // Mark welcome bonus as used
         if (currentUser && !currentUser.usedWelcomeBonus && appliedCoupon && appliedCoupon.label && appliedCoupon.label.indexOf('Welcome') !== -1) {
             currentUser.usedWelcomeBonus = true;
@@ -381,6 +391,7 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
             db.collection('users').doc(currentUser.phone).update({ usedWelcomeBonus: true }).catch(function(e) { console.error('Bonus update error:', e); });
         }
         appliedCoupon = null;
+        appliedCouponCode = '';
 
         // Deduct gift card balance if used
         if (appliedGiftCard && appliedGiftCard.code) {
@@ -486,8 +497,9 @@ export function applyCoupon() {
         'WELCOME25': { discount: 25, type: 'percent', label: '25% off (Welcome Bonus!)' }
     };
 
-    function applyCouponData(coupon) {
+    function applyCouponData(coupon, codeValue) {
         appliedCoupon = coupon;
+        appliedCouponCode = codeValue || '';
         msg.textContent = 'Coupon applied! ' + coupon.label;
         msg.className = 'coupon-msg success';
         var subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -508,25 +520,27 @@ export function applyCoupon() {
                     msg.textContent = validation.reason;
                     msg.className = 'coupon-msg error';
                     appliedCoupon = null;
+                    appliedCouponCode = '';
                     return;
                 }
-                applyCouponData(c);
-                db.collection('coupons').doc(code).update({ usedCount: firebase.firestore.FieldValue.increment(1) });
+                applyCouponData(c, code);
             } else if (fallbackCoupons[code]) {
-                applyCouponData(fallbackCoupons[code]);
+                applyCouponData(fallbackCoupons[code], code);
             } else {
                 appliedCoupon = null;
+                appliedCouponCode = '';
                 msg.textContent = 'Invalid coupon code. Please check and try again.';
                 msg.className = 'coupon-msg error';
             }
         }).catch(function() {
-            if (fallbackCoupons[code]) applyCouponData(fallbackCoupons[code]);
-            else { appliedCoupon = null; msg.textContent = 'Invalid coupon code.'; msg.className = 'coupon-msg error'; }
+            if (fallbackCoupons[code]) applyCouponData(fallbackCoupons[code], code);
+            else { appliedCoupon = null; appliedCouponCode = ''; msg.textContent = 'Invalid coupon code.'; msg.className = 'coupon-msg error'; }
         });
     } else if (fallbackCoupons[code]) {
-        applyCouponData(fallbackCoupons[code]);
+        applyCouponData(fallbackCoupons[code], code);
     } else {
         appliedCoupon = null;
+        appliedCouponCode = '';
         msg.textContent = 'Invalid coupon code. Please check and try again.';
         msg.className = 'coupon-msg error';
     }
@@ -534,6 +548,7 @@ export function applyCoupon() {
 
 export function removeCoupon() {
     appliedCoupon = null;
+    appliedCouponCode = '';
     var input = document.getElementById('coupon-code');
     var msg = document.getElementById('coupon-msg');
     if (input) input.value = '';

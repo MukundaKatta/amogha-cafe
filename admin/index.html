@@ -1756,6 +1756,34 @@
         .status-bg-cancelled { background: #e74c3c; }
         .sb-val { font-size: 0.68rem; color: var(--text-muted); min-width: 60px; text-align: right; }
 
+        /* ─── ANALYTICS QUERY BOX ─── */
+        .aq-wrap{background:rgba(26,15,8,.6);border:1px solid rgba(212,160,23,.18);border-radius:var(--radius);padding:1.1rem 1.2rem;margin-bottom:1.4rem}
+        .aq-title{font-size:.8rem;color:var(--gold);font-weight:600;margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem}
+        .aq-row{display:flex;gap:.6rem}
+        .aq-input{flex:1;padding:.65rem 1rem;background:rgba(255,255,255,.05);border:1.5px solid rgba(212,160,23,.2);border-radius:8px;color:var(--cream);font-size:.85rem;font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s}
+        .aq-input:focus{border-color:var(--gold)}
+        .aq-input::placeholder{color:var(--text-muted)}
+        .aq-btn{padding:.65rem 1.1rem;background:linear-gradient(135deg,var(--gold),var(--primary));color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Poppins',sans-serif;transition:opacity .2s}
+        .aq-btn:hover{opacity:.85}
+        .aq-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.7rem}
+        .aq-chip{padding:.28rem .7rem;background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.18);border-radius:20px;font-size:.72rem;color:var(--text-muted);cursor:pointer;transition:all .15s}
+        .aq-chip:hover{background:rgba(212,160,23,.18);color:var(--gold)}
+        .aq-result{margin-top:.9rem;display:none}
+        .aq-answer{font-size:1.1rem;font-weight:700;color:var(--gold);margin-bottom:.25rem;line-height:1.4}
+        .aq-desc{font-size:.82rem;color:var(--text-muted);margin-bottom:.8rem}
+        .aq-breakdown{display:flex;flex-direction:column;gap:.3rem}
+        .aq-br-row{display:flex;align-items:center;gap:.5rem;font-size:.78rem}
+        .aq-br-name{flex:1;color:var(--cream)}
+        .aq-br-bar{flex:2;height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
+        .aq-br-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--primary));border-radius:99px}
+        .aq-br-val{width:70px;text-align:right;color:var(--text-muted);font-size:.75rem}
+        .aq-no-result{font-size:.85rem;color:var(--text-muted);padding:.5rem 0}
+        .aq-chart-wrap{margin-top:.8rem;position:relative;max-height:220px}
+        .aq-chart-wrap canvas{max-height:220px}
+        .aq-stat-big{text-align:center;padding:1rem 0}
+        .aq-stat-num{font-size:2.8rem;font-weight:900;color:var(--gold);line-height:1}
+        .aq-stat-unit{font-size:.8rem;color:var(--text-muted);margin-top:.25rem}
+
         /* ─── ENHANCED ANALYTICS CHARTS ─── */
         .analytics-section-title {
             font-family: 'Playfair Display', serif;
@@ -2496,6 +2524,31 @@
                     <option value="0">All Time</option>
                 </select>
             </div>
+            <!-- Natural Language Query -->
+            <div class="aq-wrap">
+                <div class="aq-title">🔍 Ask anything about your sales</div>
+                <div class="aq-row">
+                    <input class="aq-input" id="aq-input" placeholder="e.g. how many cokes sold today, biryani revenue this week…" onkeydown="if(event.key==='Enter')runAnalyticsQuery()">
+                    <button class="aq-btn" onclick="runAnalyticsQuery()">Ask</button>
+                </div>
+                <div class="aq-chips">
+                    <span class="aq-chip" onclick="askChip(this)">coke sold today</span>
+                    <span class="aq-chip" onclick="askChip(this)">biryani this week</span>
+                    <span class="aq-chip" onclick="askChip(this)">total revenue today</span>
+                    <span class="aq-chip" onclick="askChip(this)">orders this month</span>
+                    <span class="aq-chip" onclick="askChip(this)">top item last 7 days</span>
+                    <span class="aq-chip" onclick="askChip(this)">cash orders today</span>
+                </div>
+                <div class="aq-result" id="aq-result">
+                    <div class="aq-answer" id="aq-answer"></div>
+                    <div class="aq-desc" id="aq-desc"></div>
+                    <div class="aq-chart-wrap" id="aq-chart-wrap" style="display:none">
+                        <canvas id="aq-chart"></canvas>
+                    </div>
+                    <div class="aq-breakdown" id="aq-breakdown"></div>
+                </div>
+            </div>
+
             <div class="analytics-summary" id="analytics-summary"></div>
             <div class="analytics-charts">
                 <div class="chart-box"><h3>Revenue by Day</h3><canvas id="revenue-chart" height="220"></canvas></div>
@@ -2657,7 +2710,8 @@
             </div>
             <div id="expenses-summary"></div>
             <div class="expenses-filter-bar" id="expenses-filter-bar">
-                <input type="month" id="exp-month-input" onchange="expMonthFilter=this.value;expDateFrom='';expDateTo='';document.getElementById('exp-date-from').value='';document.getElementById('exp-date-to').value='';renderExpenses()">
+                <label style="font-size:0.75rem;color:var(--gold);font-weight:600;white-space:nowrap">📅 Month</label>
+                <input type="month" id="exp-month-input" onchange="expMonthFilter=this.value;expDateFrom='';expDateTo='';document.getElementById('exp-date-from').value='';document.getElementById('exp-date-to').value='';renderExpenses()" style="padding:0.4rem 0.7rem;background:rgba(212,160,23,0.1);border:1.5px solid rgba(212,160,23,0.5);border-radius:8px;color:var(--cream);font-size:0.85rem;font-weight:600">
                 <label style="font-size:0.75rem;color:var(--text-dim);margin-left:0.5rem">From</label>
                 <input type="date" id="exp-date-from" onchange="expDateFrom=this.value;expMonthFilter='';document.getElementById('exp-month-input').value='';renderExpenses()" style="padding:0.4rem 0.6rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.25);border-radius:8px;color:var(--cream);font-size:0.8rem">
                 <label style="font-size:0.75rem;color:var(--text-dim)">To</label>
@@ -4630,6 +4684,10 @@
         var EXP_CATEGORIES = ['Ingredients','Utilities','Staff','Equipment','Rent','Marketing','Other'];
 
         function loadExpenses() {
+            // Sync month picker with default JS filter
+            var picker = document.getElementById('exp-month-input');
+            if (picker && !picker.value) picker.value = expMonthFilter;
+
             db.collection('expenses').orderBy('date', 'desc').onSnapshot(function(snapshot) {
                 allExpenses = [];
                 snapshot.forEach(function(doc) { allExpenses.push(Object.assign({ id: doc.id }, doc.data())); });
@@ -4638,14 +4696,26 @@
             }, function(err) { console.error('Expenses load error:', err); });
         }
 
+        function expDateStr(e) {
+            if (!e.date) return '';
+            // Plain YYYY-MM-DD string
+            if (typeof e.date === 'string') return e.date.slice(0, 10);
+            // Firestore Timestamp object (from Firebase Console / Admin SDK)
+            if (e.date && typeof e.date.toDate === 'function') return e.date.toDate().toISOString().slice(0, 10);
+            // Firestore Timestamp with seconds
+            if (e.date && e.date.seconds) return new Date(e.date.seconds * 1000).toISOString().slice(0, 10);
+            return String(e.date).slice(0, 10);
+        }
+
         function getFilteredExpenses() {
             return allExpenses.filter(function(e) {
+                var ds = expDateStr(e);
                 var dateMatch = true;
                 if (expMonthFilter) {
-                    dateMatch = e.date && e.date.startsWith(expMonthFilter);
+                    dateMatch = ds.startsWith(expMonthFilter);
                 } else {
-                    if (expDateFrom) dateMatch = dateMatch && e.date >= expDateFrom;
-                    if (expDateTo) dateMatch = dateMatch && e.date <= expDateTo;
+                    if (expDateFrom) dateMatch = dateMatch && ds >= expDateFrom;
+                    if (expDateTo) dateMatch = dateMatch && ds <= expDateTo;
                 }
                 var catMatch = expCatFilter === 'all' || e.category === expCatFilter;
                 return dateMatch && catMatch;
@@ -4674,7 +4744,8 @@
                 return;
             }
             list.innerHTML = filtered.map(function(e) {
-                var dateStr = e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                var ds = expDateStr(e);
+                var dateStr = ds ? new Date(ds + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                 var badgeClass = 'exp-badge exp-badge-' + (e.category || 'Other');
                 var billHtml = e.billImageUrl
                     ? '<img class="exp-bill-thumb" src="' + escHtml(e.billImageUrl) + '" alt="Bill" onclick="viewBillImage(\'' + escHtml(e.billImageUrl) + '\')" loading="lazy">'
@@ -4707,7 +4778,8 @@
             }
             var total = filtered.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
             var rows = filtered.map(function(e, i) {
-                var dateStr = e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                var ds = expDateStr(e);
+                var dateStr = ds ? new Date(ds + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                 var badgeClass = 'exp-badge exp-badge-' + (e.category || 'Other');
                 return '<tr>' +
                     '<td>' + (i + 1) + '</td>' +
@@ -4775,7 +4847,7 @@
             });
             var label;
             if (expMonthFilter) {
-                label = new Date(expMonthFilter + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+                var _p = expMonthFilter.split('-'); label = new Date(parseInt(_p[0]), parseInt(_p[1]) - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
             } else if (expDateFrom || expDateTo) {
                 label = (expDateFrom || '...') + ' to ' + (expDateTo || '...');
             } else {
@@ -5138,6 +5210,275 @@
             a.href = url; a.download = 'amogha-orders-' + new Date().toISOString().split('T')[0] + '.csv';
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        // ─── ANALYTICS NATURAL LANGUAGE QUERY ───
+        var aqChart = null;
+
+        function renderAqChart(chart) {
+            var wrap = document.getElementById('aq-chart-wrap');
+            if (!chart || !chart.type || chart.type === 'stat') { wrap.style.display = 'none'; return; }
+            wrap.style.display = 'block';
+            var canvas = document.getElementById('aq-chart');
+            if (aqChart) { aqChart.destroy(); aqChart = null; }
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+
+            var isRupee = (chart.unit || '') === '₹';
+            var colors = ['#D4A017','#8B1A1A','#27ae60','#3498db','#9b59b6','#e67e22','#1abc9c','#e74c3c','#e8c547','#2ecc71'];
+
+            var cfg = {};
+            if (chart.type === 'bar') {
+                cfg = {
+                    type: 'bar',
+                    data: {
+                        labels: chart.labels,
+                        datasets: [{ data: chart.values, backgroundColor: colors.slice(0, chart.values.length), borderRadius: 5, borderSkipped: false }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: true,
+                        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return isRupee ? '₹'+c.parsed.y.toLocaleString('en-IN') : c.parsed.y + ' ' + (chart.unit||''); } } } },
+                        scales: {
+                            x: { ticks: { color:'#6a5a4a', font:{ size:10 }, maxRotation:40 }, grid: { display:false } },
+                            y: { beginAtZero:true, ticks: { color:'#6a5a4a', font:{size:10}, callback: function(v){ return isRupee?'₹'+v.toLocaleString('en-IN'):v; } }, grid: { color:'rgba(212,160,23,.06)' } }
+                        }
+                    }
+                };
+            } else if (chart.type === 'line') {
+                cfg = {
+                    type: 'line',
+                    data: {
+                        labels: chart.labels,
+                        datasets: [{ data: chart.values, borderColor:'#D4A017', backgroundColor:'rgba(212,160,23,.1)', borderWidth:2.5, pointRadius:3, tension:0.35, fill:true }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: true,
+                        plugins: { legend: { display:false }, tooltip: { callbacks: { label: function(c) { return isRupee ? '₹'+c.parsed.y.toLocaleString('en-IN') : c.parsed.y + ' '+(chart.unit||''); } } } },
+                        scales: {
+                            x: { ticks: { color:'#6a5a4a', font:{size:10}, maxRotation:45, autoSkip:true, maxTicksLimit:12 }, grid:{ color:'rgba(212,160,23,.06)' } },
+                            y: { beginAtZero:true, ticks:{ color:'#6a5a4a', font:{size:10}, callback: function(v){ return isRupee?'₹'+v.toLocaleString('en-IN'):v; } }, grid:{ color:'rgba(212,160,23,.06)' } }
+                        }
+                    }
+                };
+            } else if (chart.type === 'donut') {
+                cfg = {
+                    type: 'doughnut',
+                    data: {
+                        labels: chart.labels,
+                        datasets: [{ data: chart.values, backgroundColor: colors.slice(0, chart.values.length), borderColor:'rgba(15,10,7,.8)', borderWidth:2, hoverOffset:6 }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: true, cutout:'55%',
+                        plugins: {
+                            legend: { position:'bottom', labels:{ color:'#e8dcc8', font:{size:11}, padding:10, usePointStyle:true } },
+                            tooltip: { callbacks: { label: function(c) { var pct = Math.round(c.parsed/c.dataset.data.reduce(function(a,b){return a+b;},0)*100); return c.label+': '+(isRupee?'₹'+c.parsed.toLocaleString('en-IN'):c.parsed)+' ('+pct+'%)'; } } }
+                        }
+                    }
+                };
+            }
+            if (cfg.type) aqChart = new Chart(canvas.getContext('2d'), cfg);
+        }
+
+        function askChip(el) {
+            document.getElementById('aq-input').value = el.textContent.trim();
+            runAnalyticsQuery();
+        }
+
+        function runAnalyticsQuery() {
+            var q = (document.getElementById('aq-input').value || '').toLowerCase().trim();
+            if (!q) return;
+
+            // Show loading state
+            var showResult = document.getElementById('aq-result');
+            var answerEl   = document.getElementById('aq-answer');
+            var descEl     = document.getElementById('aq-desc');
+            var brkEl      = document.getElementById('aq-breakdown');
+            answerEl.textContent = '...';
+            descEl.innerHTML = '<span class="aq-no-result">Asking AI...</span>';
+            brkEl.innerHTML = '';
+            showResult.style.display = 'block';
+
+            // Determine days range from analytics selector
+            var days = parseInt(document.getElementById('analytics-range').value) || 90;
+            if (days === 0) days = 365;
+
+            fetch('/api/analytics-query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: q, days: days })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) { runAnalyticsQueryLocal(q); return; }
+                // Handle stat type — show big number instead of text
+                if (data.chart && data.chart.type === 'stat' && data.chart.values && data.chart.values.length) {
+                    var val = data.chart.values[0];
+                    var isRupee = (data.chart.unit || '') === '₹';
+                    answerEl.innerHTML = '<div class="aq-stat-big"><div class="aq-stat-num">'+(isRupee?'₹':'')+Number(val).toLocaleString('en-IN')+'</div><div class="aq-stat-unit">'+(data.chart.title||'')+'</div></div>';
+                } else {
+                    answerEl.textContent = data.answer || '—';
+                }
+                descEl.innerHTML = '';
+                renderAqChart(data.chart);
+                brkEl.innerHTML = (data.highlights || []).map(function(h) {
+                    return '<div class="aq-br-row" style="border:none"><span class="aq-br-name" style="color:var(--text-muted)">· '+escHtml(h)+'</span></div>';
+                }).join('');
+            })
+            .catch(function() { runAnalyticsQueryLocal(q); });
+        }
+
+        function runAnalyticsQueryLocal(q) {
+            document.getElementById('aq-chart-wrap').style.display = 'none';
+            if (aqChart) { aqChart.destroy(); aqChart = null; }
+
+            // ── 1. Detect time window ──────────────────────────────
+            var now = new Date();
+            var windowLabel, cutoff;
+            if (/\btoday\b/.test(q)) {
+                cutoff = new Date(now); cutoff.setHours(0,0,0,0);
+                windowLabel = 'today';
+            } else if (/\byesterday\b/.test(q)) {
+                var y = new Date(now); y.setDate(y.getDate()-1); y.setHours(0,0,0,0);
+                var ye = new Date(y); ye.setHours(23,59,59,999);
+                cutoff = y; windowLabel = 'yesterday';
+            } else if (/this week|7 days|last 7/.test(q)) {
+                cutoff = new Date(now.getTime() - 7*86400000); windowLabel = 'this week';
+            } else if (/this month|30 days|last 30/.test(q)) {
+                cutoff = new Date(now.getTime() - 30*86400000); windowLabel = 'this month';
+            } else if (/last month/.test(q)) {
+                cutoff = new Date(now.getTime() - 60*86400000);
+                var end30 = new Date(now.getTime() - 30*86400000);
+                windowLabel = 'last month';
+            } else {
+                cutoff = null; windowLabel = 'all time';
+            }
+
+            // Filter orders by time
+            var orders = allOrders.filter(function(o) {
+                if (o.status === 'cancelled' || o.status === 'voided') return false;
+                if (!cutoff) return true;
+                var t = new Date(o.createdAt);
+                if (windowLabel === 'yesterday') {
+                    return t >= cutoff && t <= ye;
+                }
+                if (windowLabel === 'last month') {
+                    return t >= cutoff && t <= end30;
+                }
+                return t >= cutoff;
+            });
+
+            // ── 2. Detect metric ───────────────────────────────────
+            var wantRevenue = /revenue|earning|money|rupee|₹|income|sale amount|how much/.test(q);
+            var wantOrders  = /\border(s)?\b|\bcount\b|\bmany order/.test(q) && !/item|sold|unit/.test(q);
+            var wantAvg     = /average|avg/.test(q);
+            var wantPayment = /cash|upi|card/.test(q) && !q.match(/\b(sold|item|coke|biryani|chai|coffee|tea|dosa|rice|roti|noodle|bread|burger|pizza|sandwich|juice|water|lassi|shake|paratha|idli|vada|puri|halwa|sweet)\b/);
+
+            // ── 3. Detect payment method filter ───────────────────
+            var payFilter = null;
+            if (/\bcash\b/.test(q)) payFilter = 'cash';
+            else if (/\bupi\b/.test(q)) payFilter = 'upi';
+            else if (/\bcard\b/.test(q)) payFilter = 'card';
+
+            if (payFilter) {
+                orders = orders.filter(function(o){ return (o.payment||'cash').toLowerCase() === payFilter; });
+            }
+
+            // ── 4. Check for "top item" query ──────────────────────
+            var wantTop = /top|best|most (sold|popular|ordered)/.test(q);
+
+            // ── 5. Extract item keyword (everything that isn't a time/metric word) ──
+            var stopWords = /\b(how|many|much|sold|today|yesterday|this|last|week|month|days|revenue|total|orders|sales|show|give|me|the|a|an|of|for|in|and|or|earned|earning|earnings|cash|upi|card|top|best|most|popular|ordered|item|items|all|what|is|are|was|were|average|avg)\b/g;
+            var itemQuery = q.replace(stopWords, ' ').replace(/\s+/g,' ').trim();
+
+            // ── 6. Search items in orders ──────────────────────────
+            var showResult = document.getElementById('aq-result');
+            var answerEl   = document.getElementById('aq-answer');
+            var descEl     = document.getElementById('aq-desc');
+            var brkEl      = document.getElementById('aq-breakdown');
+
+            // ── 7a. TOTAL revenue / orders (no specific item) ──────
+            if (!itemQuery || wantOrders || wantAvg || (wantRevenue && !itemQuery)) {
+                var rev = orders.reduce(function(s,o){ return s+(o.total||0); },0);
+                var cnt = orders.length;
+                var avg = cnt ? Math.round(rev/cnt) : 0;
+
+                if (wantTop && !wantOrders && !wantRevenue) {
+                    // "top item" — show item breakdown
+                    var ic = {}; orders.forEach(function(o){ (o.items||[]).forEach(function(it){ ic[it.name]=(ic[it.name]||0)+(parseInt(it.qty)||1); }); });
+                    var top = Object.keys(ic).map(function(n){ return {name:n,qty:ic[n]}; }).sort(function(a,b){ return b.qty-a.qty; }).slice(0,5);
+                    if (!top.length) { showNoResult('No orders found for '+windowLabel); return; }
+                    var mx = top[0].qty;
+                    answerEl.textContent = top[0].name;
+                    descEl.textContent = 'Best selling item '+windowLabel+' — '+top[0].qty+' sold';
+                    brkEl.innerHTML = top.map(function(t){ return '<div class="aq-br-row"><span class="aq-br-name">'+escHtml(t.name)+'</span><div class="aq-br-bar"><div class="aq-br-fill" style="width:'+Math.round(t.qty/mx*100)+'%"></div></div><span class="aq-br-val">'+t.qty+' sold</span></div>'; }).join('');
+                } else if (wantAvg) {
+                    answerEl.textContent = '₹'+avg.toLocaleString('en-IN');
+                    descEl.textContent = 'Average order value '+windowLabel+' ('+cnt+' orders)';
+                    brkEl.innerHTML = '';
+                } else if (wantOrders) {
+                    answerEl.textContent = cnt+' orders';
+                    descEl.textContent = 'Total orders '+windowLabel+(payFilter?' via '+payFilter.toUpperCase():'')+' — ₹'+rev.toLocaleString('en-IN')+' revenue';
+                    brkEl.innerHTML = '';
+                } else {
+                    answerEl.textContent = '₹'+rev.toLocaleString('en-IN');
+                    descEl.textContent = 'Total revenue '+windowLabel+(payFilter?' via '+payFilter.toUpperCase():'')+' from '+cnt+' orders';
+                    brkEl.innerHTML = '';
+                }
+                showResult.style.display = 'block';
+                return;
+            }
+
+            // ── 7b. ITEM-SPECIFIC query ────────────────────────────
+            var keywords = itemQuery.split(/\s+/).filter(function(w){ return w.length > 1; });
+            var itemTotals = {};
+            orders.forEach(function(o) {
+                (o.items||[]).forEach(function(it) {
+                    var nameLo = it.name.toLowerCase();
+                    var match = keywords.some(function(kw){ return nameLo.includes(kw); });
+                    if (!match) return;
+                    if (!itemTotals[it.name]) itemTotals[it.name] = {qty:0, rev:0};
+                    itemTotals[it.name].qty += parseInt(it.qty)||1;
+                    itemTotals[it.name].rev += (it.price||0)*(parseInt(it.qty)||1);
+                });
+            });
+
+            var matched = Object.keys(itemTotals).map(function(n){ return {name:n, qty:itemTotals[n].qty, rev:itemTotals[n].rev}; })
+                .sort(function(a,b){ return b.qty-a.qty; });
+
+            if (!matched.length) {
+                showNoResult('No sales found for "'+itemQuery+'" '+windowLabel);
+                return;
+            }
+
+            var totalQty = matched.reduce(function(s,m){ return s+m.qty; },0);
+            var totalRev = matched.reduce(function(s,m){ return s+m.rev; },0);
+            var maxQty   = matched[0].qty;
+
+            if (wantRevenue) {
+                answerEl.textContent = '₹'+totalRev.toLocaleString('en-IN');
+                descEl.textContent = '"'+itemQuery+'" revenue '+windowLabel+' — '+totalQty+' units across '+matched.length+' variant(s)';
+            } else {
+                answerEl.textContent = totalQty+' sold';
+                descEl.textContent = '"'+itemQuery+'" '+windowLabel+(matched.length>1?' ('+matched.length+' variants)':'')+'  ·  ₹'+totalRev.toLocaleString('en-IN')+' revenue';
+            }
+
+            brkEl.innerHTML = matched.slice(0,8).map(function(m){
+                var pct = Math.round(m.qty/maxQty*100);
+                return '<div class="aq-br-row">'+
+                    '<span class="aq-br-name">'+escHtml(m.name)+'</span>'+
+                    '<div class="aq-br-bar"><div class="aq-br-fill" style="width:'+pct+'%"></div></div>'+
+                    '<span class="aq-br-val">'+(wantRevenue?'₹'+m.rev.toLocaleString('en-IN'):m.qty+' sold')+'</span>'+
+                '</div>';
+            }).join('');
+
+            showResult.style.display = 'block';
+        }
+
+        function showNoResult(msg) {
+            var showResult = document.getElementById('aq-result');
+            document.getElementById('aq-answer').textContent = '—';
+            document.getElementById('aq-desc').innerHTML = '<span class="aq-no-result">'+escHtml(msg)+'</span>';
+            document.getElementById('aq-breakdown').innerHTML = '';
+            showResult.style.display = 'block';
         }
 
         // ─── ANALYTICS ───

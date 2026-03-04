@@ -1800,7 +1800,7 @@ function initiatePayment() {
     var btn = document.getElementById('pay-btn'); btn.disabled = true;
 
     var rzp = new Razorpay({
-        key: 'rzp_test_1DP5mmOlF5G5ag',
+        key: 'rzp_live_bfHYCYWDyoSHFn',
         amount: Math.round(total * 100), currency: 'INR',
         name: (shopConfig && shopConfig.name) ? shopConfig.name.toUpperCase() : 'AMOGHA CAFE & RESTAURANT',
         description: 'Kiosk Order - ' + ((shopConfig && shopConfig.name) || 'Amogha Cafe'),

@@ -224,7 +224,7 @@ app.post('/parse-bill', async function(req, res) {
         }
 
         if (fileData.length > 4 * 1024 * 1024) {
-            return res.status(413).json({ error: 'File too large. Maximum 2MB.' });
+            return res.status(413).json({ error: 'File too large. Maximum 4MB.' });
         }
 
         var { VertexAI } = require('@google-cloud/vertexai');
@@ -293,6 +293,8 @@ app.post('/parse-bill', async function(req, res) {
 });
 
 exports.api = functions.https.onRequest(app);
+// Export bare Express app for unit testing
+exports._app = app;
 
 // -----------------------------------------------------------------------
 // SCHEDULED: Birthday Auto-Rewards — runs daily at 8 AM IST
@@ -649,6 +651,145 @@ app.post('/meal-plan', async function(req, res) {
     } catch (e) {
         console.error('POST /meal-plan error:', e);
         res.status(500).json({ error: 'Meal plan generation failed' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /analytics-query — Natural language analytics Q&A via Gemini
+// -----------------------------------------------------------------------
+app.post('/analytics-query', async function(req, res) {
+    try {
+        var body = req.body || {};
+        var question = (body.question || '').trim();
+        var days = parseInt(body.days) || 90;
+        if (!question) return res.status(400).json({ error: 'question is required' });
+
+        // Fetch recent orders
+        var since = new Date();
+        since.setDate(since.getDate() - days);
+        var snap = await db.collection('orders')
+            .where('createdAt', '>=', since.toISOString())
+            .orderBy('createdAt', 'desc')
+            .limit(2000)
+            .get();
+
+        // Build compact summary
+        var dailyRevenue = {};
+        var itemStats = {};
+        var categoryStats = {};
+        var paymentStats = {};
+        var hourStats = new Array(24).fill(0);
+        var totalRevenue = 0;
+        var totalOrders = 0;
+        var cancelledCount = 0;
+
+        snap.forEach(function(doc) {
+            var o = doc.data();
+            if (o.status === 'cancelled' || o.status === 'voided') { cancelledCount++; return; }
+            totalOrders++;
+            var amt = o.total || 0;
+            totalRevenue += amt;
+
+            // Daily
+            if (o.createdAt) {
+                var day = o.createdAt.split('T')[0];
+                dailyRevenue[day] = (dailyRevenue[day] || 0) + amt;
+                hourStats[new Date(o.createdAt).getHours()]++;
+            }
+
+            // Payment
+            var pay = (o.payment || 'Cash').toLowerCase();
+            paymentStats[pay] = (paymentStats[pay] || 0) + 1;
+
+            // Items + categories
+            (o.items || []).forEach(function(it) {
+                var qty = parseInt(it.qty) || 1;
+                var rev = (it.price || 0) * qty;
+                if (!itemStats[it.name]) itemStats[it.name] = { qty: 0, revenue: 0 };
+                itemStats[it.name].qty += qty;
+                itemStats[it.name].revenue += rev;
+
+                var cat = it.category || 'Other';
+                if (!categoryStats[cat]) categoryStats[cat] = { qty: 0, revenue: 0 };
+                categoryStats[cat].qty += qty;
+                categoryStats[cat].revenue += rev;
+            });
+        });
+
+        // Top 30 items sorted by qty
+        var topItems = Object.keys(itemStats)
+            .map(function(n) { return { name: n, qty: itemStats[n].qty, revenue: itemStats[n].revenue }; })
+            .sort(function(a, b) { return b.qty - a.qty; })
+            .slice(0, 30);
+
+        // Daily array (sorted)
+        var dailyArray = Object.keys(dailyRevenue).sort().map(function(d) {
+            return { date: d, revenue: dailyRevenue[d] };
+        });
+
+        // Busiest hours (top 5)
+        var busiestHours = hourStats
+            .map(function(c, h) { return { hour: h, orders: c }; })
+            .sort(function(a, b) { return b.orders - a.orders; })
+            .slice(0, 5);
+
+        var summary = {
+            period: days + ' days',
+            totalOrders: totalOrders,
+            cancelledOrVoided: cancelledCount,
+            totalRevenue: totalRevenue,
+            avgOrderValue: totalOrders ? Math.round(totalRevenue / totalOrders) : 0,
+            topItems: topItems,
+            categoryBreakdown: categoryStats,
+            paymentBreakdown: paymentStats,
+            dailyRevenue: dailyArray.slice(-30), // last 30 days
+            busiestHours: busiestHours
+        };
+
+        var model = getGeminiModel();
+        var prompt = 'You are an analytics assistant for Amogha Cafe & Restaurant in Hyderabad.\n' +
+            'Here is a summary of the sales data for the last ' + days + ' days:\n\n' +
+            JSON.stringify(summary, null, 2) + '\n\n' +
+            'Answer the following question clearly and concisely. ' +
+            'Give specific numbers from the data. Use ₹ for currency. ' +
+            'If the data does not have enough info to answer precisely, say so honestly.\n\n' +
+            'Question: ' + question + '\n\n' +
+            'Return JSON with this exact structure:\n' +
+            '{\n' +
+            '  "answer": "1-3 sentence answer with specific numbers",\n' +
+            '  "highlights": ["short fact 1", "short fact 2", "short fact 3"],\n' +
+            '  "chart": {\n' +
+            '    "type": "bar|line|donut|stat",\n' +
+            '    "title": "chart title",\n' +
+            '    "labels": ["label1", "label2"],\n' +
+            '    "values": [100, 200],\n' +
+            '    "unit": "₹|orders|units"\n' +
+            '  }\n' +
+            '}\n\n' +
+            'Chart type rules:\n' +
+            '- "bar": item comparisons, top items, category comparisons (max 10 bars)\n' +
+            '- "line": daily/weekly/monthly trends over time (labels=dates, values=amounts)\n' +
+            '- "donut": percentage breakdowns like payment method, category share (max 6 slices)\n' +
+            '- "stat": single number answer (total revenue, one metric) — labels=[], values=[theNumber]\n' +
+            'Always include chart. Pick the most useful type for the question.\n' +
+            'highlights: 2-4 bullet facts, each under 10 words.';
+
+        var result = await model.generateContent({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.2, maxOutputTokens: 512, responseMimeType: 'application/json' }
+        });
+        var text = result.response.candidates[0].content.parts[0].text.trim();
+        if (text.startsWith('```')) text = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
+        var parsed = JSON.parse(text);
+
+        res.json({
+            answer: parsed.answer || '',
+            highlights: Array.isArray(parsed.highlights) ? parsed.highlights : [],
+            chart: parsed.chart || null
+        });
+    } catch (e) {
+        console.error('POST /analytics-query error:', e);
+        res.status(500).json({ error: 'Analytics query failed. Please try again.' });
     }
 });
 
