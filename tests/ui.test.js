@@ -2423,7 +2423,7 @@ describe('initUI — blur-up image reveal on load', () => {
     });
 
     it('reveals dynamically added lazy images via MutationObserver', () => {
-        setupDOM('');
+        setupDOM('<div id="dynamic-menu-container"></div>');
         initUI();
         // Create a new lazy image and simulate MutationObserver detecting it
         const newImg = document.createElement('img');
