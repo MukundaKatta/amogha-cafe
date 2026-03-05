@@ -1,6 +1,6 @@
 # End-to-End Test Plan for Amogha Cafe
 
-This document outlines scenarios that should be covered by the Playwright end-to-end suite (and associated unit tests) to bring the application closer to full functional coverage. The existing tests (23 scenarios) are primarily smoke checks; the items below target the business logic and user journeys that deliver value.
+This document outlines scenarios that should be covered by the Playwright end-to-end suite (and associated unit tests) to bring the application closer to full functional coverage. The unit/integration suite now contains 2,059 Vitest tests across 30 files. The items below target additional E2E browser scenarios covering business logic and user journeys that deliver value.
 
 ---
 

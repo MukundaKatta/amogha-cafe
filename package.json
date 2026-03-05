@@ -1,4 +1,7 @@
 {
+  "name": "amogha-cafe",
+  "version": "1.0.0",
+  "description": "Multi-surface restaurant platform — online ordering, POS, kiosk, kitchen display, delivery, and admin dashboard built on Firebase",
   "type": "module",
   "scripts": {
     "dev": "vite",
