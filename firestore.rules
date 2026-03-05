@@ -165,7 +165,10 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /shops/{shopId} {
       allow read: if true;
-      allow create, update: if true;
+      allow create: if hasFields(['name', 'createdAt'])
+                    && isString(request.resource.data.name);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['name', 'address', 'phone', 'hours', 'logo', 'settings', 'updatedAt']);
       allow delete: if false;
     }
 
@@ -299,25 +302,31 @@ service cloud.firestore {
       allow update: if hasFields(['date', 'category', 'amount', 'description'])
                     && isNumber(request.resource.data.amount)
                     && request.resource.data.amount > 0;
-      allow delete: if true;
+      allow delete: if false;  // Expense deletion restricted — use admin console
     }
 
     // -------------------------------------------------------------------------
-    // STAFF — managed by admin panel
+    // STAFF — managed by admin panel (validate required fields)
     // -------------------------------------------------------------------------
     match /staff/{staffId} {
       allow read: if true;
-      allow create, update: if true;
+      allow create: if hasFields(['name', 'role'])
+                    && isString(request.resource.data.name)
+                    && isString(request.resource.data.role);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['name', 'role', 'phone', 'active', 'shift', 'updatedAt']);
       allow delete: if false;
     }
 
     // -------------------------------------------------------------------------
-    // GROUP CARTS — shared ordering
+    // GROUP CARTS — shared ordering (validate structure)
     // -------------------------------------------------------------------------
     match /groupCarts/{cartId} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
+      allow create: if hasFields(['hostPhone', 'status', 'createdAt'])
+                    && isString(request.resource.data.hostPhone);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['participants', 'status']);
       allow delete: if false;
     }
 
@@ -334,8 +343,11 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /subscriptions/{subId} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
+      allow create: if hasFields(['planId', 'userPhone', 'createdAt'])
+                    && isString(request.resource.data.planId)
+                    && isString(request.resource.data.userPhone);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'renewedAt', 'cancelledAt', 'remainingDeliveries']);
       allow delete: if false;
     }
 
@@ -352,8 +364,9 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /chatHistory/{id} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
+      allow create: if hasFields(['userPhone', 'createdAt']);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['messages', 'updatedAt']);
       allow delete: if false;
     }
 

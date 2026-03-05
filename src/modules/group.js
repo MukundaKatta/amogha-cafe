@@ -18,6 +18,13 @@ export function initGroupOrdering() {
     if (gid) {
         joinGroupCart(gid);
     }
+    // Clean up Firebase listener when page unloads to prevent memory leak
+    window.addEventListener('beforeunload', function() {
+        if (groupUnsubscribe) {
+            groupUnsubscribe();
+            groupUnsubscribe = null;
+        }
+    });
 }
 
 export function createGroupCart() {

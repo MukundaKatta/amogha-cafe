@@ -142,8 +142,11 @@ export function initLoyalty() {
 export function checkBirthdayRewards(user) {
     if (!user || !user.dob) return false;
     var now = new Date();
-    var dobDate = new Date(user.dob);
-    return now.getMonth() === dobDate.getMonth();
+    // Parse DOB parts directly to avoid UTC vs local timezone mismatch
+    var dobParts = user.dob.split('-');
+    if (dobParts.length < 2) return false;
+    var dobMonth = parseInt(dobParts[1], 10) - 1; // 0-indexed month
+    return now.getMonth() === dobMonth;
 }
 
 export function showBirthdayBanner(user) {

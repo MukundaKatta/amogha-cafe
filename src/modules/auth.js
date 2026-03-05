@@ -183,15 +183,16 @@ export function handleSignIn() {
         var user = doc.data();
         var storedPin = user.pin || user.password || '';
         var hashedInput = await hashPin(password);
-        // Support both hashed PINs (new) and legacy plain-text PINs
-        if (storedPin !== hashedInput && storedPin !== password) {
-            msg.textContent = 'Incorrect PIN. Please try again.';
-            msg.className = 'auth-msg error';
-            return;
-        }
-        // Migrate legacy plain-text PIN to hashed on successful login
-        if (storedPin === password && storedPin !== hashedInput) {
-            db.collection('users').doc(phone).update({ pin: hashedInput }).catch(function(e) { console.error('PIN migration error:', e); });
+        // Only accept hashed PINs (plain-text fallback removed for security)
+        if (storedPin !== hashedInput) {
+            // One-time migration: if legacy plain-text PIN matches, migrate and allow login
+            if (storedPin === password && storedPin.length === 4 && /^\d{4}$/.test(storedPin)) {
+                db.collection('users').doc(phone).update({ pin: hashedInput, password: null }).catch(function(e) { console.error('PIN migration error:', e); });
+            } else {
+                msg.textContent = 'Incorrect PIN. Please try again.';
+                msg.className = 'auth-msg error';
+                return;
+            }
         }
         try {
             setCurrentUser(user);
@@ -421,9 +422,10 @@ export function initAuth() {
     }, 1000);
 
     // User profile dropdown (My Orders + Referral)
+    // Only create if not already present (updateSignInUI also creates one)
     setTimeout(function() {
         var signinBtn = document.getElementById('signin-btn');
-        if (!signinBtn) return;
+        if (!signinBtn || document.getElementById('user-dropdown')) return;
         var dropdown = document.createElement('div');
         dropdown.id = 'user-dropdown';
         dropdown.className = 'user-dropdown';

@@ -73,7 +73,7 @@ self.addEventListener('fetch', function(e) {
   if (isDocument || isStyle || isScript) {
     e.respondWith(
       fetch(e.request).then(function(response) {
-        if (response.ok) {
+        if (response.ok && response.type !== 'opaque') {
           var clone = response.clone();
           caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
         }

@@ -116,9 +116,10 @@ export async function sendChatMessage(presetMsg) {
         if (data.suggestedItems && data.suggestedItems.length > 0) {
             html += '<div class="ai-chat-items">';
             data.suggestedItems.forEach(function(item) {
+                var safeNameAttr = escapeHtml(item.name).replace(/'/g, '&#39;').replace(/\\/g, '&#92;');
                 html += '<button class="ai-item-btn" onclick="addToCart(\'' +
-                    item.name.replace(/'/g, "\\'") + '\', ' + item.price +
-                    '); showAuthToast(\'Added ' + item.name.replace(/'/g, "\\'") + ' to cart\');">' +
+                    safeNameAttr + '\', ' + item.price +
+                    '); showAuthToast(\'Added ' + safeNameAttr + ' to cart\');">' +
                     escapeHtml(item.name) + ' — &#8377;' + item.price + ' <span class="ai-add">+</span></button>';
             });
             html += '</div>';
