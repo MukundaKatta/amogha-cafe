@@ -1,0 +1,60 @@
+name: Build POS APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'pos/**'
+      - 'android/**'
+      - 'capacitor.config.ts'
+      - 'scripts/build-pos.sh'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build POS web content
+        run: sh scripts/build-pos.sh
+
+      - name: Patch Capacitor config for POS
+        run: |
+          sed -i "s|webDir: 'kiosk-dist'|webDir: 'pos-dist'|g" capacitor.config.ts
+          sed -i "s|appName: 'Amogha Kiosk'|appName: 'Amogha POS'|g" capacitor.config.ts
+
+      - name: Patch Android app name for POS
+        run: |
+          sed -i 's|<string name="app_name">Amogha Kiosk</string>|<string name="app_name">Amogha POS</string>|g' android/app/src/main/res/values/strings.xml
+          sed -i 's|<string name="title_activity_main">Amogha Kiosk</string>|<string name="title_activity_main">Amogha POS</string>|g' android/app/src/main/res/values/strings.xml
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amogha-pos-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30

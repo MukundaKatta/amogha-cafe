@@ -139,7 +139,9 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 .pos-qty-btn.minus:hover{background:rgba(231,76,60,.25)}
 .pos-qty-btn.plus{background:rgba(39,174,96,.12);color:var(--grn)}
 .pos-qty-btn.plus:hover{background:rgba(39,174,96,.25)}
-.pos-qty-num{min-width:22px;text-align:center;font-size:.85rem;font-weight:700;color:var(--txt)}
+.pos-qty-num{min-width:28px;width:28px;text-align:center;font-size:.85rem;font-weight:700;color:var(--txt);background:none;border:none;border-bottom:1.5px solid rgba(212,160,23,0.3);border-radius:0;padding:0;cursor:text;font-family:'Poppins',sans-serif;-moz-appearance:textfield;}
+.pos-qty-num::-webkit-inner-spin-button,.pos-qty-num::-webkit-outer-spin-button{-webkit-appearance:none;}
+.pos-qty-num:focus{outline:none;border-bottom-color:var(--gold);}
 
 .pos-order-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;
     position:sticky;bottom:0;background:var(--bg2);z-index:2}
@@ -169,7 +171,11 @@ html,body{height:100%;overflow:hidden;font-family:'Poppins',sans-serif;backgroun
 .pos-pay-btn{flex:1;padding:9px 6px;border-radius:8px;border:1.5px solid rgba(255,255,255,.1);
     background:var(--bg3);color:var(--txt2);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
 .pos-pay-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(212,160,23,.1)}
-.pos-place-footer{padding:10px 14px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;
+.pos-notes-row{margin-top:6px}
+        .pos-notes-row input{width:100%;padding:7px 10px;background:var(--bg2);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:var(--txt);font-size:.8rem;font-family:'Poppins',sans-serif;box-sizing:border-box}
+        .pos-notes-row input:focus{outline:none;border-color:rgba(212,160,23,0.5)}
+        .pos-sales-counter{cursor:default;gap:1px}
+        .pos-place-footer{padding:10px 14px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;
     background:var(--bg2);padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 body.light-mode .pos-place-footer{background:var(--bg2);border-color:rgba(0,0,0,.07)}
 .pos-place-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-d));
@@ -393,6 +399,10 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
             <div style="font-size:.7rem;color:var(--txt2)">POS Terminal</div>
         </div>
         <div class="pos-header-time" id="pos-clock"></div>
+        <div class="pos-sales-counter" id="pos-sales-counter" style="display:none">
+            <div id="pos-sales-total" style="font-size:.8rem;font-weight:700;color:var(--gold)">₹0</div>
+            <div style="font-size:.6rem;color:var(--txt2);line-height:1">today</div>
+        </div>
         <button class="pos-recent-btn" onclick="toggleRecentOrders()">📋 <span>Recent Orders</span></button>
         <button class="pos-mode-btn" id="pos-mode-btn" onclick="togglePosMode()" title="Toggle light/dark mode">☾</button>
         <button class="pos-logout" onclick="posLogout()">Logout</button>
@@ -405,7 +415,7 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
         <!-- Menu -->
         <div class="pos-menu-col">
             <div class="pos-search-bar">
-                <input type="text" id="pos-search" placeholder="🔍  Search items..." oninput="renderPosMenu()">
+                <input type="text" id="pos-search" placeholder="🔍  Search items..." oninput="debouncedRenderMenu()">
             </div>
             <div class="pos-menu-grid" id="pos-menu-grid"></div>
         </div>
@@ -443,6 +453,9 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
                         <button class="pos-pay-btn active" onclick="selectPay('Cash',this)">💵 Cash</button>
                         <button class="pos-pay-btn" onclick="selectPay('UPI',this)">📲 UPI</button>
                         <button class="pos-pay-btn" onclick="selectPay('Card',this)">💳 Card</button>
+                    </div>
+                    <div class="pos-notes-row">
+                        <input type="text" id="pos-order-notes" placeholder="📝 Notes (extra spicy, no onion…)" maxlength="120">
                     </div>
                     <div class="pos-total-row">
                         <span class="pos-total-label">Total</span>
@@ -526,6 +539,7 @@ function nextToken() {
     return currentToken;
 }
 var allMenu = [];
+var itemFrequency = {};
 var cart = [];
 var activeCat = 'All';
 var categories = ['All'];
@@ -640,6 +654,7 @@ function startPOS() {
             document.documentElement.style.setProperty('--gold', shopConfig.theme.gold);
     }
     loadPOSMenu();
+    startSalesCounter();
 }
 
 // ── Load Menu ────────────────────────────────────────────────
@@ -653,8 +668,9 @@ function loadPOSMenu() {
                 type:d.type, badge:d.badge||'', img:d.imageUrl||'', sortOrder:d.sortOrder||999 });
         });
         allMenu.sort(function(a,b){ return a.sortOrder - b.sortOrder; });
+        loadItemFrequency();
         // Build categories from shop config or menu
-        var cats = ['All'];
+        var cats = ['All', '🔥 Popular'];
         if (shopConfig && shopConfig.categories && shopConfig.categories.length) {
             shopConfig.categories.forEach(function(c) {
                 if (allMenu.some(function(m){ return m.category===c; }) && cats.indexOf(c)===-1) cats.push(c);
@@ -665,6 +681,43 @@ function loadPOSMenu() {
         renderPOSCats();
         renderPosMenu();
     }, function(err){ console.error(err); });
+}
+
+// ── Item Frequency (for Popular tab) ─────────────────────────
+var FREQ_CACHE_KEY = 'posFreq_' + (shopId || 'default');
+var FREQ_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+function loadItemFrequency() {
+    if (!shopId) return;
+    // Use cached value if still fresh
+    try {
+        var cached = JSON.parse(sessionStorage.getItem(FREQ_CACHE_KEY) || 'null');
+        if (cached && (Date.now() - cached.ts) < FREQ_CACHE_TTL) {
+            itemFrequency = cached.data;
+            renderPosMenu();
+            return;
+        }
+    } catch(e) {}
+
+    db.collection('orders')
+      .where('shopId', '==', shopId)
+      .orderBy('createdAt', 'desc')
+      .limit(300)
+      .get()
+      .then(function(snap) {
+          var freq = {};
+          snap.forEach(function(doc) {
+              var d = doc.data();
+              if (d.status === 'voided' || d.status === 'cancelled') return;
+              (d.items || []).forEach(function(item) {
+                  freq[item.name] = (freq[item.name] || 0) + (item.qty || 1);
+              });
+          });
+          itemFrequency = freq;
+          try { sessionStorage.setItem(FREQ_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: freq })); } catch(e) {}
+          renderPosMenu();
+      })
+      .catch(function(err) { console.warn('Frequency load failed:', err); });
 }
 
 // ── Render Categories ────────────────────────────────────────
@@ -687,13 +740,31 @@ function setPosCat(cat) {
 }
 
 // ── Render Menu ──────────────────────────────────────────────
+var _renderMenuTimer = null;
+function debouncedRenderMenu() {
+    clearTimeout(_renderMenuTimer);
+    _renderMenuTimer = setTimeout(renderPosMenu, 150);
+}
+
 function renderPosMenu() {
     var q = document.getElementById('pos-search').value.trim().toLowerCase();
-    var items = allMenu.filter(function(m) {
-        if (activeCat !== 'All' && m.category !== activeCat) return false;
-        if (q && m.name.toLowerCase().indexOf(q) === -1) return false;
-        return true;
-    });
+    var items;
+    if (activeCat === '🔥 Popular' && !q) {
+        items = allMenu.slice().sort(function(a, b) {
+            return (itemFrequency[b.name] || 0) - (itemFrequency[a.name] || 0);
+        }).slice(0, 12);
+    } else {
+        items = allMenu.filter(function(m) {
+            if (activeCat !== 'All' && activeCat !== '🔥 Popular' && m.category !== activeCat) return false;
+            if (q && m.name.toLowerCase().indexOf(q) === -1) return false;
+            return true;
+        });
+        if (activeCat === '🔥 Popular' && q) {
+            items.sort(function(a, b) {
+                return (itemFrequency[b.name] || 0) - (itemFrequency[a.name] || 0);
+            });
+        }
+    }
     var html = '';
     if (!items.length) {
         html = '<div class="pos-empty">No items found</div>';
@@ -708,6 +779,10 @@ function renderPosMenu() {
                   '<button class="piq-plus" onclick="addPosItem(\'' + sn + '\',' + item.price + ')">+</button>' +
                   '</div>'
                 : '<button class="pos-item-add" onclick="event.stopPropagation();addPosItem(\'' + sn + '\',' + item.price + ')">+</button>';
+            var freq = itemFrequency[item.name] || 0;
+            var freqBadge = (activeCat === '🔥 Popular' && freq > 0)
+                ? '<span style="font-size:.65rem;background:rgba(212,160,23,.15);color:var(--gold);padding:1px 5px;border-radius:4px">×' + freq + ' sold</span>'
+                : '';
             html += '<div class="pos-item' + (qty>0?' in-cart':'') + '">' +
                     (item.img ? '<img class="pos-item-img" src="' + item.img + '" alt="" loading="lazy">' : '') +
                     '<div class="pos-item-name">' + escH(item.name) + '</div>' +
@@ -716,6 +791,7 @@ function renderPosMenu() {
                     '<div class="pos-item-price">₹' + item.price + '</div>' +
                     '<div class="pos-item-meta"><span class="pos-item-type ' + (item.type==='non-veg'?'nv':'veg') + '"></span>' +
                     (item.badge ? '<span style="font-size:.65rem;background:rgba(212,160,23,.15);color:var(--gold);padding:1px 5px;border-radius:4px">' + escH(item.badge) + '</span>' : '') +
+                    freqBadge +
                     '</div></div>' +
                     ctrl +
                     '</div></div>';
@@ -742,6 +818,15 @@ function changeQty(name, delta) {
     if (idx === -1) return;
     cart[idx].qty += delta;
     if (cart[idx].qty <= 0) cart.splice(idx, 1);
+    renderCart();
+    renderPosMenu();
+}
+
+function setCartQty(name, qty) {
+    var idx = cart.findIndex(function(c){ return c.name===name; });
+    if (idx === -1) return;
+    if (qty <= 0) cart.splice(idx, 1);
+    else cart[idx].qty = qty;
     renderCart();
     renderPosMenu();
 }
@@ -800,12 +885,16 @@ function renderCart() {
     }
     var html = '';
     cart.forEach(function(c) {
+        var sn = c.name.replace(/'/g,"\\'");
         html += '<div class="pos-cart-item">' +
             '<div class="pos-ci-name">' + escH(c.name) + '</div>' +
             '<div class="pos-qty-ctrl">' +
-            '<button class="pos-qty-btn minus" onclick="changeQty(\'' + c.name.replace(/'/g,"\\'") + '\',-1)">−</button>' +
-            '<span class="pos-qty-num">' + c.qty + '</span>' +
-            '<button class="pos-qty-btn plus" onclick="changeQty(\'' + c.name.replace(/'/g,"\\'") + '\',1)">+</button>' +
+            '<button class="pos-qty-btn minus" onclick="changeQty(\'' + sn + '\',-1)">−</button>' +
+            '<input class="pos-qty-num" type="number" value="' + c.qty + '" min="1" max="99" ' +
+                'onclick="this.select()" ' +
+                'onchange="setCartQty(\'' + sn + '\',parseInt(this.value)||1)" ' +
+                'onkeydown="if(event.key===\'Enter\')this.blur()">' +
+            '<button class="pos-qty-btn plus" onclick="changeQty(\'' + sn + '\',1)">+</button>' +
             '</div>' +
             '<div class="pos-ci-price">₹' + (c.price * c.qty) + '</div>' +
             '</div>';
@@ -847,12 +936,17 @@ function lookupCustomer(val) {
             if (doc.exists) {
                 var d = doc.data();
                 custPoints = d.loyaltyPoints || 0;
-                if (!nameInput.value.trim()) nameInput.value = d.name || '';
+                if (!nameInput.value.trim()) {
+                    nameInput.value = d.name || '';
+                    nameInput.style.transition = 'background 0.4s';
+                    nameInput.style.background = 'rgba(212,160,23,0.18)';
+                    setTimeout(function(){ nameInput.style.background = ''; }, 1200);
+                }
                 var visits = d.visits || 0;
                 var spent = '₹' + (d.totalSpent || 0).toLocaleString('en-IN');
                 var lastItems = d.lastOrderItems ? ' &nbsp;&bull;&nbsp; Last: ' + escH(d.lastOrderItems.split(',').slice(0,2).join(', ')) : '';
                 var pts = custPoints > 0 ? ' &nbsp;&bull;&nbsp; 🌟 ' + custPoints + ' pts' : '';
-                badge.innerHTML = '<span class="badge-found">&#x2713; ' + escH(d.name || 'Customer') + ' &nbsp;&bull;&nbsp; ' + visits + ' visits &nbsp;&bull;&nbsp; ' + spent + pts + lastItems + '</span>';
+                badge.innerHTML = '<span class="badge-found">👋 Welcome back, ' + escH(d.name || 'Customer') + '! &nbsp;&bull;&nbsp; ' + visits + ' visits &nbsp;&bull;&nbsp; ' + spent + pts + lastItems + '</span>';
             } else {
                 custPoints = 0;
                 badge.innerHTML = '<span class="badge-new">&#x2B; New customer &mdash; will be saved</span>';
@@ -943,6 +1037,7 @@ function placeOrder() {
     var name = document.getElementById('pos-cust-name').value.trim() || 'Walk-in';
     var phone = document.getElementById('pos-cust-phone').value.trim();
     var table = document.getElementById('pos-table').value.trim();
+    var notes = document.getElementById('pos-order-notes').value.trim();
     var subtotal = cart.reduce(function(s,c){ return s + c.price*c.qty; }, 0);
     var discount = (pointsRedeemed && subtotal >= REDEEM_MIN_ORDER) ? REDEEM_DISCOUNT : 0;
     var total = Math.max(0, subtotal - discount);
@@ -965,6 +1060,7 @@ function placeOrder() {
         createdAt: new Date().toISOString()
     };
     if (table) orderData.tableNumber = table;
+    if (notes) orderData.notes = notes;
     db.collection('orders').add(orderData).then(function(ref) {
         btn.disabled = false; btn.textContent = 'Place Order';
         currentBillOrderId = ref.id;
@@ -1056,6 +1152,7 @@ function newOrder() {
     document.getElementById('pos-cust-name').value = '';
     document.getElementById('pos-cust-phone').value = '';
     document.getElementById('pos-table').value = '';
+    document.getElementById('pos-order-notes').value = '';
     document.getElementById('pos-cust-badge').innerHTML = '';
     var lr = document.getElementById('pos-loyalty-row');
     if (lr) { lr.style.display = 'none'; lr.innerHTML = ''; }
@@ -1233,6 +1330,12 @@ function escH(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function toJsDate(val) {
+    if (!val) return new Date(0);
+    if (val.toDate) return val.toDate(); // Firestore Timestamp
+    return new Date(val);
+}
+
 var billQuotes = [
     // Food & happiness
     "Good food is the foundation of genuine happiness.",
@@ -1357,6 +1460,34 @@ function randomBillQuote() {
     }
 }
 
+// ── Today's Sales Counter ─────────────────────────────────────
+function startSalesCounter() {
+    if (!shopId) return;
+    db.collection('orders')
+      .where('shopId', '==', shopId)
+      .orderBy('createdAt', 'desc')
+      .limit(200)
+      .onSnapshot(function(snap) {
+          var todayStart = new Date(); todayStart.setHours(0,0,0,0);
+          var total = 0, count = 0;
+          snap.forEach(function(doc) {
+              var d = doc.data();
+              if (d.status === 'voided' || d.status === 'cancelled') return;
+              if (toJsDate(d.createdAt) < todayStart) return;
+              total += d.total || 0;
+              count++;
+          });
+          var el = document.getElementById('pos-sales-counter');
+          if (el) {
+              el.style.display = 'flex';
+              el.style.flexDirection = 'column';
+              el.style.alignItems = 'center';
+              el.style.lineHeight = '1.1';
+              document.getElementById('pos-sales-total').textContent = '₹' + total.toLocaleString('en-IN') + ' · ' + count;
+          }
+      }, function(err) { console.warn('Sales counter error:', err); });
+}
+
 // ── Recent Orders ─────────────────────────────────────────────
 var recentOrders = [];
 var recentUnsubscribe = null;
@@ -1366,7 +1497,12 @@ var recentPanelOpen = false;
 function toggleRecentOrders() {
     recentPanelOpen = !recentPanelOpen;
     document.getElementById('pos-recent-panel').classList.toggle('open', recentPanelOpen);
-    if (recentPanelOpen && recentUnsubscribe === null) startRecentOrdersListener();
+    if (recentPanelOpen) {
+        startRecentOrdersListener();
+    } else if (recentUnsubscribe) {
+        recentUnsubscribe();
+        recentUnsubscribe = null;
+    }
 }
 
 function startRecentOrdersListener() {
@@ -1393,7 +1529,7 @@ function renderRecentOrders() {
     var todayStart = new Date(); todayStart.setHours(0,0,0,0);
     var filtered = recentOrders.filter(function(o) {
         if (recentFilter === 'pos') return o.orderType === 'pos';
-        if (recentFilter === 'today') return new Date(o.createdAt) >= todayStart;
+        if (recentFilter === 'today') return toJsDate(o.createdAt) >= todayStart;
         if (recentFilter === 'pending') return o.status === 'pending' || o.status === 'confirmed' || o.status === 'preparing';
         return true;
     }).slice(0, 30);
@@ -1405,10 +1541,10 @@ function renderRecentOrders() {
     }
 
     list.innerHTML = filtered.map(function(o) {
-        var d = new Date(o.createdAt);
+        var d = toJsDate(o.createdAt);
         var timeStr = d.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
         var dateStr = d.toLocaleDateString('en-IN', {day:'2-digit', month:'short'});
-        var isToday = d >= (function(){ var t=new Date(); t.setHours(0,0,0,0); return t; })();
+        var isToday = d >= (function(){ var t=new Date(); t.setHours(0,0,0,0); return t; }());
         var displayTime = isToday ? timeStr : dateStr + ' ' + timeStr;
         var itemsSummary = (o.items || []).map(function(i){ return escH(i.name) + (i.qty > 1 ? ' ×'+i.qty : ''); }).join(', ');
         var status = (o.status || 'pending').toLowerCase();

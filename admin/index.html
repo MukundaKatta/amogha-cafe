@@ -934,6 +934,52 @@
             color: #27ae60;
         }
         .mac-save-btn:hover { background: rgba(39,174,96,0.2); }
+        .mac-cancel-btn {
+            background: none;
+            border: 1px solid rgba(231,76,60,0.2);
+            border-radius: 6px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            color: #e74c3c;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+        }
+        .mac-cancel-btn:hover { background: rgba(231,76,60,0.1); }
+        .mac-edit-panel {
+            background: rgba(212,160,23,0.05);
+            border: 1px solid rgba(212,160,23,0.2);
+            border-radius: 8px;
+            padding: 0.6rem 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .mac-edit-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .mac-edit-row label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            min-width: 62px;
+            font-weight: 600;
+        }
+        .mac-edit-input, .mac-edit-select {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid rgba(212,160,23,0.3);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 0.78rem;
+            padding: 0.25rem 0.5rem;
+            font-family: 'Poppins', sans-serif;
+        }
+        .mac-edit-input:focus, .mac-edit-select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
 
         .mac-remove-btn {
             background: none;
@@ -3946,12 +3992,26 @@
 
                 return '<div class="mac' + unavailClass + bulkSelClass + '" data-id="' + escHtml(item.id) + '">' +
                     bulkCheckHtml +
-                    '<div class="mac-top">' +
-                        '<span class="mac-type ' + typeClass + '"></span>' +
-                        '<span class="mac-name">' + escHtml(item.name) + '</span>' +
-                        badgeHtml +
+                    '<div class="mac-top" id="view-top-' + safeKey + '">' +
+                        '<span class="mac-type ' + typeClass + '" id="type-dot-' + safeKey + '"></span>' +
+                        '<span class="mac-name" id="view-name-' + safeKey + '">' + escHtml(item.name) + '</span>' +
+                        (item.badge ? '<span class="mac-badge" id="view-badge-' + safeKey + '">' + escHtml(item.badge) + '</span>' : '<span class="mac-badge" id="view-badge-' + safeKey + '" style="display:none"></span>') +
                     '</div>' +
-                    '<div class="mac-cat">' + escHtml(item.category) + '</div>' +
+                    '<div class="mac-cat" id="view-cat-' + safeKey + '">' + escHtml(item.category) + ' · ₹' + item.price + '</div>' +
+                    '<div class="mac-edit-panel" id="edit-panel-' + safeKey + '" style="display:none">' +
+                        '<div class="mac-edit-row"><label>Name</label><input id="ei-name-' + safeKey + '" class="mac-edit-input" value="' + escHtml(item.name) + '"></div>' +
+                        '<div class="mac-edit-row"><label>Category</label><select id="ei-cat-' + safeKey + '" class="mac-edit-select">' +
+                            (function() {
+                                var cats = Array.from(new Set(allMenuItems.map(function(m){ return m.category; }))).sort();
+                                return cats.map(function(c) {
+                                    return '<option value="' + escHtml(c) + '"' + (c === item.category ? ' selected' : '') + '>' + escHtml(c) + '</option>';
+                                }).join('');
+                            })() +
+                        '</select></div>' +
+                        '<div class="mac-edit-row"><label>Price (₹)</label><input id="ei-price-' + safeKey + '" class="mac-edit-input" type="number" value="' + item.price + '" min="0"></div>' +
+                        '<div class="mac-edit-row"><label>Type</label><select id="ei-type-' + safeKey + '" class="mac-edit-select"><option value="veg"' + (item.type==='veg'?' selected':'') + '>🟢 Veg</option><option value="non-veg"' + (item.type==='non-veg'?' selected':'') + '>🔴 Non-Veg</option></select></div>' +
+                        '<div class="mac-edit-row"><label>Badge</label><input id="ei-badge-' + safeKey + '" class="mac-edit-input" value="' + escHtml(item.badge||'') + '" placeholder="e.g. Chef\'s Special"></div>' +
+                    '</div>' +
                     '<div class="mac-image-section">' +
                         '<img class="mac-img-preview" id="img-preview-' + safeKey + '" src="' + (item.imageUrl ? escHtml(item.imageUrl) : '') + '" alt="" loading="lazy" style="' + (item.imageUrl ? 'display:block' : 'display:none') + '">' +
                         '<div class="mac-img-controls">' +
@@ -3962,12 +4022,9 @@
                         '</div>' +
                     '</div>' +
                     '<div class="mac-controls">' +
-                        '<div class="mac-price-row">' +
-                            '<span class="mac-price" id="price-display-' + safeKey + '">₹' + item.price + '</span>' +
-                            '<input class="mac-price-input" id="price-input-' + safeKey + '" type="number" value="' + item.price + '" style="display:none" min="0">' +
-                            '<button class="mac-edit-btn" id="edit-btn-' + safeKey + '" onclick="togglePriceEdit(\'' + escapedId + '\')">Edit</button>' +
-                            '<button class="mac-save-btn" id="save-btn-' + safeKey + '" onclick="savePrice(\'' + escapedId + '\')" style="display:none">Save</button>' +
-                        '</div>' +
+                        '<button class="mac-edit-btn" id="edit-btn-' + safeKey + '" onclick="startItemEdit(\'' + escapedId + '\')">✏️ Edit</button>' +
+                        '<button class="mac-save-btn" id="save-btn-' + safeKey + '" onclick="saveItemEdit(\'' + escapedId + '\')" style="display:none">✓ Save</button>' +
+                        '<button class="mac-cancel-btn" id="cancel-btn-' + safeKey + '" onclick="cancelItemEdit(\'' + escapedId + '\')" style="display:none">✕ Cancel</button>' +
                         '<label class="toggle-switch">' +
                             '<input type="checkbox"' + checked + ' onchange="toggleAvail(\'' + escapedId + '\', this.checked)">' +
                             '<span class="toggle-slider"></span>' +
@@ -4055,31 +4112,43 @@
             if (bulkMode) updateBulkBar();
         }
 
-        function togglePriceEdit(itemId) {
+        function startItemEdit(itemId) {
             var key = itemId.replace(/[^a-zA-Z0-9]/g, '_');
-            var display = document.getElementById('price-display-' + key);
-            var input = document.getElementById('price-input-' + key);
-            var editBtn = document.getElementById('edit-btn-' + key);
-            var saveBtn = document.getElementById('save-btn-' + key);
-
-            display.style.display = 'none';
-            input.style.display = 'inline-block';
-            input.focus();
-            input.select();
-            editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
+            document.getElementById('edit-panel-' + key).style.display = 'block';
+            document.getElementById('edit-btn-' + key).style.display = 'none';
+            document.getElementById('save-btn-' + key).style.display = 'inline-block';
+            document.getElementById('cancel-btn-' + key).style.display = 'inline-block';
+            document.getElementById('ei-name-' + key).focus();
         }
 
-        function savePrice(itemId) {
+        function cancelItemEdit(itemId) {
             var key = itemId.replace(/[^a-zA-Z0-9]/g, '_');
-            var input = document.getElementById('price-input-' + key);
-            var newPrice = parseInt(input.value);
-            if (isNaN(newPrice) || newPrice < 0) return;
+            var item = allMenuItems.find(function(m){ return m.id === itemId; });
+            if (item) {
+                document.getElementById('ei-name-' + key).value = item.name;
+                document.getElementById('ei-cat-' + key).value = item.category;
+                document.getElementById('ei-price-' + key).value = item.price;
+                document.getElementById('ei-type-' + key).value = item.type || 'veg';
+                document.getElementById('ei-badge-' + key).value = item.badge || '';
+            }
+            document.getElementById('edit-panel-' + key).style.display = 'none';
+            document.getElementById('edit-btn-' + key).style.display = 'inline-block';
+            document.getElementById('save-btn-' + key).style.display = 'none';
+            document.getElementById('cancel-btn-' + key).style.display = 'none';
+        }
 
+        function saveItemEdit(itemId) {
+            var key = itemId.replace(/[^a-zA-Z0-9]/g, '_');
+            var name = document.getElementById('ei-name-' + key).value.trim();
+            var category = document.getElementById('ei-cat-' + key).value.trim();
+            var price = parseInt(document.getElementById('ei-price-' + key).value);
+            var type = document.getElementById('ei-type-' + key).value;
+            var badge = document.getElementById('ei-badge-' + key).value.trim();
+            if (!name || !category || isNaN(price) || price < 0) return;
             db.collection('menu').doc(itemId).update({
-                price: newPrice,
-                updatedAt: new Date().toISOString()
-            }).catch(function(err) { console.error('Save price error:', err); });
+                name: name, category: category, price: price, type: type,
+                badge: badge || null, updatedAt: new Date().toISOString()
+            }).catch(function(err) { console.error('Save item error:', err); });
             // UI will update via onSnapshot
         }
 
