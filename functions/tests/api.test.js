@@ -6,6 +6,9 @@
 
 // ── Mocks (must be declared before require('../index.js')) ──────────────────
 
+// Set ADMIN_API_KEY for tests so admin-protected endpoints can be reached
+process.env.ADMIN_API_KEY = 'test-api-key-12345';
+
 // Mock Firestore collections with controllable responses
 const mockAdd = jest.fn(() => Promise.resolve({ id: 'test-order-id-abc' }));
 const mockGet = jest.fn();
@@ -158,7 +161,7 @@ describe('POST /order', () => {
 
     it('places a valid order and returns orderId + trackingUrl', async () => {
         const res = await request(app).post('/order').send(validOrder);
-        expect(res.status).toBe(200);
+        expect(res.status).toBe(201);
         expect(res.body.success).toBe(true);
         expect(res.body.orderId).toBe('test-order-id-abc');
         expect(res.body.trackingUrl).toContain('test-order-id-abc');
@@ -169,7 +172,7 @@ describe('POST /order', () => {
             ...validOrder,
             items: [{ name: 'Tea', qty: 1, price: 30 }],
         });
-        expect(res.status).toBe(200);
+        expect(res.status).toBe(201);
         expect(res.body.deliveryFee).toBe(49);
         expect(res.body.total).toBe(79); // 30 + 49
     });
@@ -182,7 +185,7 @@ describe('POST /order', () => {
                 { name: 'Raita', qty: 1, price: 40 },
             ],
         });
-        expect(res.status).toBe(200);
+        expect(res.status).toBe(201);
         // 249*2 + 40*1 = 538 >= 500 → free delivery
         expect(res.body.deliveryFee).toBe(0);
         expect(res.body.total).toBe(538);
@@ -227,7 +230,7 @@ describe('POST /order', () => {
                 { name: 'Lassi', qty: 1, price: 50 },
             ],
         });
-        expect(res.status).toBe(200);
+        expect(res.status).toBe(201);
         // 349 + 80 + 50 = 479 < 500 → +49 delivery = 528
         expect(res.body.total).toBe(528);
         expect(res.body.deliveryFee).toBe(49);
@@ -340,21 +343,23 @@ describe('POST /parse-bill', () => {
 // POST /notify
 // ═══════════════════════════════════════════════════════════════════════════
 describe('POST /notify', () => {
+    const adminHeaders = { 'x-api-key': 'test-api-key-12345' };
+
     it('returns 400 when phone is missing', async () => {
-        const res = await request(app).post('/notify').send({ message: 'Hello' });
+        const res = await request(app).post('/notify').set(adminHeaders).send({ message: 'Hello' });
         expect(res.status).toBe(400);
         expect(res.body.error).toMatch(/phone/i);
     });
 
     it('returns 400 when message is missing', async () => {
-        const res = await request(app).post('/notify').send({ phone: '9876543210' });
+        const res = await request(app).post('/notify').set(adminHeaders).send({ phone: '9876543210' });
         expect(res.status).toBe(400);
         expect(res.body.error).toMatch(/message/i);
     });
 
     it('returns 404 when user not found in Firestore', async () => {
         mockDocGet.mockResolvedValue({ exists: false, data: () => ({}) });
-        const res = await request(app).post('/notify').send({
+        const res = await request(app).post('/notify').set(adminHeaders).send({
             phone: '9999999999',
             message: 'Your order is ready!',
         });
@@ -364,12 +369,20 @@ describe('POST /notify', () => {
 
     it('returns 400 when user has no FCM token', async () => {
         mockDocGet.mockResolvedValue({ exists: true, data: () => ({ name: 'Ravi' }) });
-        const res = await request(app).post('/notify').send({
+        const res = await request(app).post('/notify').set(adminHeaders).send({
             phone: '9876543210',
             message: 'Ready!',
         });
         expect(res.status).toBe(400);
         expect(res.body.error).toMatch(/fcm token/i);
+    });
+
+    it('returns 401 without API key', async () => {
+        const res = await request(app).post('/notify').send({
+            phone: '9876543210',
+            message: 'Ready!',
+        });
+        expect(res.status).toBe(401);
     });
 });
 
@@ -435,8 +448,10 @@ describe('POST /smart-search', () => {
 // POST /analytics-query
 // ═══════════════════════════════════════════════════════════════════════════
 describe('POST /analytics-query', () => {
+    const adminHeaders = { 'x-api-key': 'test-api-key-12345' };
+
     it('returns 400 when question is missing', async () => {
-        const res = await request(app).post('/analytics-query').send({});
+        const res = await request(app).post('/analytics-query').set(adminHeaders).send({});
         expect(res.status).toBe(400);
         expect(res.body.error).toMatch(/question/i);
     });
@@ -452,7 +467,7 @@ describe('POST /analytics-query', () => {
                 items: [{ name: 'Chicken Biryani', qty: 2, price: 249, category: 'Biryani' }],
             },
         ]));
-        const res = await request(app).post('/analytics-query').send({
+        const res = await request(app).post('/analytics-query').set(adminHeaders).send({
             question: 'How much revenue this week?',
         });
         expect(res.status).toBe(200);
@@ -468,12 +483,17 @@ describe('POST /analytics-query', () => {
             { status: 'voided', total: 500, createdAt: '2026-03-01T11:00:00.000Z', items: [] },
             { status: 'delivered', total: 250, createdAt: '2026-03-01T12:00:00.000Z', payment: 'Cash', items: [] },
         ]));
-        // The summary building logic should only count the 'delivered' order
-        // We verify this by checking the route responds successfully
-        const res = await request(app).post('/analytics-query').send({
+        const res = await request(app).post('/analytics-query').set(adminHeaders).send({
             question: 'Total revenue?',
         });
         expect(res.status).toBe(200);
+    });
+
+    it('returns 401 without API key', async () => {
+        const res = await request(app).post('/analytics-query').send({
+            question: 'Total revenue?',
+        });
+        expect(res.status).toBe(401);
     });
 });
 
