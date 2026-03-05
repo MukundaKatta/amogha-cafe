@@ -508,7 +508,8 @@ test('signin succeeds and forgot-pin reset updates backend', async ({ page }) =>
     const updatedPin = await page.evaluate(() =>
         window.__e2eStore.collections.users.find((u) => u.id === '9000000002').pin
     );
-    expect(updatedPin).toBe('2222');
+    // PIN is stored as SHA-256 hash, not plaintext
+    expect(updatedPin).toBe('4bbfce10ce4f32a5279bfb667ada69c57342316ee51be5b18085a33c4474f1b2');
 
     await page.locator('#signin-btn').click();
     await page.locator('#auth-signup .auth-switch a').click();
