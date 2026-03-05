@@ -1386,7 +1386,10 @@ function btPrintBytes(bytes, deviceName) {
         }
     }
     base64 = btoa(base64);
-    return btPrinter.print({ data: base64, deviceName: deviceName });
+    // Connect first, then print
+    return btPrinter.connect({ deviceName: deviceName }).then(function() {
+        return btPrinter.print({ data: base64, deviceName: deviceName });
+    });
 }
 
 function doPrint(html) {
