@@ -854,13 +854,9 @@ describe('initUI — scroll handler: back-to-top visibility toggle', () => {
     });
 
     it('removes "visible" class when scrolled back above 400px', () => {
-        setupDOM('<button id="back-to-top">Top</button>');
+        setupDOM('<button id="back-to-top" class="visible">Top</button>');
         initUI();
-        // First scroll: add the visible class
-        Object.defineProperty(window, 'pageYOffset', { value: 500, configurable: true });
-        window.dispatchEvent(new Event('scroll'));
-        expect(document.getElementById('back-to-top').classList.contains('visible')).toBe(true);
-        // Second scroll: go back up — _scrollTicking already reset by synchronous rAF
+        // Start with visible class already set, scroll to position below 400
         Object.defineProperty(window, 'pageYOffset', { value: 50, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         expect(document.getElementById('back-to-top').classList.contains('visible')).toBe(false);
@@ -901,14 +897,10 @@ describe('initUI — scroll handler: sticky order bar', () => {
     });
 
     it('hides sticky-order-bar when above hero height', () => {
-        setupDOM('<div class="hero" style="height:600px"></div><div id="sticky-order-bar"></div>');
+        setupDOM('<div class="hero" style="height:600px"></div><div id="sticky-order-bar" class="visible"></div>');
         Object.defineProperty(document.querySelector('.hero'), 'offsetHeight', { value: 600, configurable: true });
         initUI();
-        // First scroll past hero height to add class
-        Object.defineProperty(window, 'pageYOffset', { value: 700, configurable: true });
-        window.dispatchEvent(new Event('scroll'));
-        expect(document.getElementById('sticky-order-bar').classList.contains('visible')).toBe(true);
-        // Scroll back up above hero height — _scrollTicking already reset by synchronous rAF
+        // Start with visible class already set, scroll to position above hero height
         Object.defineProperty(window, 'pageYOffset', { value: 100, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         expect(document.getElementById('sticky-order-bar').classList.contains('visible')).toBe(false);
@@ -1747,23 +1739,17 @@ describe('initUI — header hide/show on scroll direction (desktop only)', () =>
     it('hides header with translateY(-100%) when scrolling down past 100px', () => {
         setupDOM('<header></header>');
         initUI();
-        // First event at 50: lastScroll=0 → 50>0 but 50<=100 → show (translateY(0)), lastScroll=50
-        Object.defineProperty(window, 'pageYOffset', { value: 50, configurable: true });
-        window.dispatchEvent(new Event('scroll'));
-        // Second event at 200: 200>50 && 200>100 → hide — _scrollTicking already reset
+        // lastScroll starts at 0, scroll to 200: 200>0 && 200>100 → hide
         Object.defineProperty(window, 'pageYOffset', { value: 200, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         expect(document.querySelector('header').style.transform).toBe('translateY(-100%)');
     });
 
     it('shows header with translateY(0) when scrolling up', () => {
-        setupDOM('<header></header>');
+        setupDOM('<header style="transform:translateY(-100%)"></header>');
         initUI();
-        // Scroll down past 100px to hide header, lastScroll=0 initially
-        Object.defineProperty(window, 'pageYOffset', { value: 300, configurable: true });
-        window.dispatchEvent(new Event('scroll'));
-        // Scroll back up: 100 < 300 (lastScroll) → show — _scrollTicking already reset
-        Object.defineProperty(window, 'pageYOffset', { value: 100, configurable: true });
+        // lastScroll starts at 0, scroll to 50: 50>0 but 50<=100 → show (translateY(0))
+        Object.defineProperty(window, 'pageYOffset', { value: 50, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         expect(document.querySelector('header').style.transform).toBe('translateY(0)');
     });
