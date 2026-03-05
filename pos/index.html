@@ -1173,6 +1173,10 @@ function initBluetoothPrinter() {
         btPrinter = window.Capacitor.Plugins.BluetoothPrinter;
         btMode = 'capacitor';
         console.log('[BTPrinter] Capacitor native plugin available');
+        // List paired devices for debugging
+        btPrinter.listPairedDevices().then(function(res) {
+            console.log('[BTPrinter] Paired devices:', JSON.stringify(res.devices));
+        }).catch(function(e) { console.warn('[BTPrinter] listPairedDevices error:', e); });
         return;
     }
     console.log('[BTPrinter] No Bluetooth API available — will use browser print');
@@ -1392,22 +1396,26 @@ function doPrint(html) {
 
 function printBill() {
     var data = currentBillData, orderId = currentBillOrderId;
-    if (!data) return;
+    if (!data) { showToast('No bill data to print', 'error'); return; }
     var shopName = (shopConfig && shopConfig.name) || 'Amogha Cafe';
     var printerConfig = (shopConfig && shopConfig.printer) || {};
     var footer = printerConfig.footer || randomBillQuote();
 
     // Try Bluetooth thermal printer first
     if (btPrinter && printerConfig.btName) {
+        showToast('Printing via Bluetooth...', 'info');
         var escposData = buildBillEscPos(data, orderId, shopName, footer, printerConfig.paperWidth);
         btPrintBytes(escposData, printerConfig.btName).then(function(res) {
-            console.log('[BTPrinter] Bill printed:', res.bytesWritten, 'bytes');
+            showToast('Bill printed! (' + res.bytesWritten + ' bytes)', 'success');
         }).catch(function(err) {
-            console.warn('[BTPrinter] Bill print failed, falling back to browser print:', err);
+            showToast('BT print failed: ' + (err.message || err), 'error');
             printBillHTML(data, orderId, shopName, printerConfig, footer);
         });
         return;
     }
+    // Debug: show why Bluetooth wasn't used
+    if (!btPrinter) showToast('No BT plugin — using browser print', 'info');
+    else if (!printerConfig.btName) showToast('No printer name configured — using browser print', 'info');
     // Fallback: browser print dialog
     printBillHTML(data, orderId, shopName, printerConfig, footer);
 }
