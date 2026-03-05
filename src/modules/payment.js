@@ -28,8 +28,8 @@ export function getCheckoutTotals() {
         discount = Math.min(discount, subtotal);
         total = subtotal - discount + deliveryFee;
     }
-    // Apply gift card
-    if (appliedGiftCard && appliedGiftCard.balance > 0) {
+    // Apply gift card (validate balance exists and is a number)
+    if (appliedGiftCard && typeof appliedGiftCard.balance === 'number' && appliedGiftCard.balance > 0) {
         var gcDeduction = Math.min(appliedGiftCard.balance, total);
         total = Math.max(0, total - gcDeduction);
     }
@@ -643,7 +643,7 @@ export function buyGiftCard() {
     var db = getDb();
     if (!db) { msg.textContent = 'Service unavailable. Please try again.'; msg.className = 'coupon-msg error'; return; }
     var options = {
-        key: 'rzp_live_bfHYCYWDyoSHFn',
+        key: RAZORPAY_KEY,
         amount: amount * 100,
         currency: 'INR',
         name: 'Amogha Cafe',

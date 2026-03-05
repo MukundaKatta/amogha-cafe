@@ -382,13 +382,13 @@ export function initMenuSync() {
             }
             grid.innerHTML = items.map(function(t) {
                 var thumb = t.thumbnailUrl || (t.videoUrl ? t.videoUrl.replace('/upload/', '/upload/f_jpg,so_1/') : '');
-                return '<div class="testimonial-card" onclick="openVideoLightbox(\'' + (t.videoUrl || '') + '\')">' +
+                return '<div class="testimonial-card" onclick="openVideoLightbox(\'' + escH(t.videoUrl || '') + '\')">' +
                     '<div class="testimonial-thumb">' +
                         (thumb ? '<img src="' + thumb + '" alt="" loading="lazy">' : '<div class="testimonial-placeholder">🎬</div>') +
                         '<div class="testimonial-play">&#9654;</div>' +
                     '</div>' +
-                    '<p class="testimonial-name">' + (t.customerName || '') + '</p>' +
-                    (t.caption ? '<p class="testimonial-caption">' + t.caption + '</p>' : '') +
+                    '<p class="testimonial-name">' + escH(t.customerName || '') + '</p>' +
+                    (t.caption ? '<p class="testimonial-caption">' + escH(t.caption) + '</p>' : '') +
                 '</div>';
             }).join('');
         }
@@ -409,10 +409,10 @@ export function initMenuSync() {
                 return;
             }
             strip.innerHTML = posts.map(function(p) {
-                var linkOpen = p.link ? '<a href="' + p.link + '" target="_blank" rel="noopener">' : '<div>';
+                var linkOpen = p.link ? '<a href="' + escH(p.link) + '" target="_blank" rel="noopener">' : '<div>';
                 var linkClose = p.link ? '</a>' : '</div>';
-                return linkOpen + '<div class="social-card"><img src="' + p.imageUrl + '" alt="" loading="lazy">' +
-                    (p.caption ? '<span class="social-caption">' + p.caption + '</span>' : '') +
+                return linkOpen + '<div class="social-card"><img src="' + escH(p.imageUrl) + '" alt="" loading="lazy">' +
+                    (p.caption ? '<span class="social-caption">' + escH(p.caption) + '</span>' : '') +
                 '</div>' + linkClose;
             }).join('');
         }

@@ -1,10 +1,11 @@
 // ===== TOP-LEVEL CONSTANTS =====
 
 // *** RAZORPAY CONFIG ***
-// STEP 1: Sign up at https://dashboard.razorpay.com/signup and complete KYC
-// STEP 2: Go to Settings → API Keys → Generate Key
-// STEP 3: Replace the test key below with your live key (rzp_live_...)
-export const RAZORPAY_KEY = 'rzp_live_bfHYCYWDyoSHFn';
+// Set window.AMOGHA_CONFIG.razorpayKey before loading script.js to override.
+// Falls back to env-injected value or empty string (must be configured per environment).
+export const RAZORPAY_KEY = (typeof window !== 'undefined' && window.AMOGHA_CONFIG && window.AMOGHA_CONFIG.razorpayKey)
+    || import.meta.env.VITE_RAZORPAY_KEY
+    || '';
 
 export const WHATSAPP_NUMBER = '+919121004999';
 export const MERCHANT_NAME = 'AMOGHA CAFE & RESTAURANT';
