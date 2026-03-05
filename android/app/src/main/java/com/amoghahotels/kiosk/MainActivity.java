@@ -17,6 +17,9 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Register native Bluetooth printer plugin before bridge init
+        registerPlugin(BluetoothPrinterPlugin.class);
+
         super.onCreate(savedInstanceState);
 
         // Keep screen always on (kiosk tablet)

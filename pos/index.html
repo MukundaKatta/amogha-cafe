@@ -655,6 +655,7 @@ function startPOS() {
     }
     loadPOSMenu();
     startSalesCounter();
+    initBluetoothPrinter();
 }
 
 // ── Load Menu ────────────────────────────────────────────────
@@ -1162,6 +1163,218 @@ function newOrder() {
     renderPosMenu();
 }
 
+// ── Bluetooth Thermal Printer (ESC/POS) ─────────────────────────
+var btPrinter = null;   // Capacitor native plugin reference
+var btMode = 'none';     // 'capacitor' or 'none'
+
+function initBluetoothPrinter() {
+    // Mode 1: Capacitor native plugin (inside APK)
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BluetoothPrinter) {
+        btPrinter = window.Capacitor.Plugins.BluetoothPrinter;
+        btMode = 'capacitor';
+        console.log('[BTPrinter] Capacitor native plugin available');
+        return;
+    }
+    console.log('[BTPrinter] No Bluetooth API available — will use browser print');
+}
+
+// ESC/POS command constants
+var ESC = 0x1B, GS = 0x1D, LF = 0x0A;
+
+function escposBytes(/* ...arrays */) {
+    var total = 0, i;
+    for (i = 0; i < arguments.length; i++) total += arguments[i].length;
+    var result = new Uint8Array(total);
+    var offset = 0;
+    for (i = 0; i < arguments.length; i++) {
+        result.set(arguments[i] instanceof Uint8Array ? arguments[i] : new Uint8Array(arguments[i]), offset);
+        offset += arguments[i].length;
+    }
+    return result;
+}
+
+function escposText(str) {
+    // Encode text as bytes (ASCII + basic chars)
+    var bytes = [];
+    for (var i = 0; i < str.length; i++) {
+        var c = str.charCodeAt(i);
+        bytes.push(c > 127 ? 63 : c); // Replace non-ASCII with '?'
+    }
+    return new Uint8Array(bytes);
+}
+
+function escposInit()    { return new Uint8Array([ESC, 0x40]); }                  // Initialize printer
+function escposCenterOn(){ return new Uint8Array([ESC, 0x61, 1]); }              // Center align
+function escposCenterOff(){ return new Uint8Array([ESC, 0x61, 0]); }             // Left align
+function escposBoldOn()  { return new Uint8Array([ESC, 0x45, 1]); }              // Bold on
+function escposBoldOff() { return new Uint8Array([ESC, 0x45, 0]); }              // Bold off
+function escposBigOn()   { return new Uint8Array([GS, 0x21, 0x11]); }            // Double width+height
+function escposBigOff()  { return new Uint8Array([GS, 0x21, 0x00]); }            // Normal size
+function escposLF()      { return new Uint8Array([LF]); }                        // Line feed
+function escposCut()     { return new Uint8Array([GS, 0x56, 0x00]); }            // Full cut
+function escposFeedCut() { return new Uint8Array([LF, LF, LF, GS, 0x56, 0x00]); } // Feed + cut
+function escposDashes(w) {
+    var n = w === 80 ? 48 : 32; // chars per line for 80mm vs 58mm
+    var s = '';
+    for (var i = 0; i < n; i++) s += '-';
+    return escposText(s);
+}
+function escposDoubleDashes(w) {
+    var n = w === 80 ? 48 : 32;
+    var s = '';
+    for (var i = 0; i < n; i++) s += '=';
+    return escposText(s);
+}
+
+function escposRow(left, right, width) {
+    var cols = width === 80 ? 48 : 32;
+    var space = cols - left.length - right.length;
+    if (space < 1) space = 1;
+    var pad = '';
+    for (var i = 0; i < space; i++) pad += ' ';
+    return escposText(left + pad + right);
+}
+
+function buildBillEscPos(data, orderId, shopName, footer, paperWidth) {
+    var w = paperWidth || 58;
+    var parts = [];
+
+    parts.push(escposInit());
+    // Header
+    parts.push(escposCenterOn(), escposBoldOn(), escposBigOn());
+    parts.push(escposText(shopName));
+    parts.push(escposLF(), escposBigOff());
+    parts.push(escposText('POS Receipt'));
+    parts.push(escposLF(), escposBoldOff(), escposCenterOff());
+    parts.push(escposDashes(w), escposLF());
+
+    // Order info
+    var now = new Date();
+    var dateStr = now.toLocaleDateString('en-IN') + ' ' + now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
+    parts.push(escposRow('Order', '#' + orderId.slice(-6).toUpperCase(), w), escposLF());
+    parts.push(escposRow('Date', dateStr, w), escposLF());
+    if (data.customer && data.customer !== 'Walk-in') {
+        parts.push(escposRow('Customer', data.customer, w), escposLF());
+    }
+    if (data.phone && data.phone !== 'pos') {
+        parts.push(escposRow('Phone', data.phone, w), escposLF());
+    }
+    if (data.tableNumber) {
+        parts.push(escposRow('Table', data.tableNumber, w), escposLF());
+    }
+    parts.push(escposDashes(w), escposLF());
+
+    // Items
+    data.items.forEach(function(item) {
+        var name = item.name + ' x' + item.qty;
+        var price = 'Rs.' + (item.price * item.qty);
+        parts.push(escposRow(name, price, w), escposLF());
+    });
+
+    parts.push(escposDoubleDashes(w), escposLF());
+
+    // Total
+    parts.push(escposBoldOn());
+    parts.push(escposRow('TOTAL', 'Rs.' + data.total, w), escposLF());
+    parts.push(escposBoldOff());
+
+    if (data.discount > 0) {
+        parts.push(escposRow('Loyalty discount', '-Rs.' + data.discount, w), escposLF());
+    }
+    parts.push(escposRow('Payment', data.payment, w), escposLF());
+
+    // Loyalty section
+    if (data.phone && data.phone !== 'pos') {
+        var earned = data.pointsEarned || 0;
+        var redeemed = data.pointsRedeemed || 0;
+        var newBal = Math.max(0, custPoints - redeemed + earned);
+        if (earned > 0 || redeemed > 0) {
+            parts.push(escposDashes(w), escposLF());
+            parts.push(escposCenterOn(), escposBoldOn());
+            parts.push(escposText('LOYALTY POINTS'), escposLF());
+            parts.push(escposBoldOff(), escposCenterOff());
+            parts.push(escposRow('Earned this visit', '+' + earned + ' pts', w), escposLF());
+            if (redeemed > 0) {
+                parts.push(escposRow('Redeemed', '-' + redeemed + ' pts', w), escposLF());
+            }
+            parts.push(escposBoldOn());
+            parts.push(escposRow('Your balance', newBal + ' pts', w), escposLF());
+            parts.push(escposBoldOff());
+        }
+    }
+
+    // Footer
+    parts.push(escposDashes(w), escposLF());
+    parts.push(escposCenterOn());
+    parts.push(escposText(footer), escposLF());
+    parts.push(escposCenterOff());
+
+    // Feed and cut
+    parts.push(escposFeedCut());
+
+    return escposBytes.apply(null, parts);
+}
+
+function buildKOTEscPos(data, orderId, shopName, paperWidth) {
+    var w = paperWidth || 58;
+    var parts = [];
+
+    parts.push(escposInit());
+
+    // Header
+    parts.push(escposCenterOn(), escposBoldOn(), escposBigOn());
+    parts.push(escposText('KOT'));
+    parts.push(escposLF(), escposBigOff());
+    parts.push(escposText(shopName));
+    parts.push(escposLF(), escposBoldOff(), escposCenterOff());
+
+    // Token number (large)
+    var token = data.tokenNumber || '';
+    if (token) {
+        parts.push(escposCenterOn(), escposBigOn(), escposBoldOn());
+        parts.push(escposText('T' + token));
+        parts.push(escposLF(), escposBigOff(), escposBoldOff(), escposCenterOff());
+    }
+
+    parts.push(escposDoubleDashes(w), escposLF());
+
+    // Time + table + customer
+    var now = new Date();
+    var timeStr = now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
+    var info = timeStr;
+    if (data.tableNumber) info += ' | Table ' + data.tableNumber;
+    if (data.customer && data.customer !== 'Walk-in') info += ' | ' + data.customer;
+    parts.push(escposCenterOn(), escposText(info), escposLF(), escposCenterOff());
+    parts.push(escposDashes(w), escposLF());
+
+    // Items (bold, larger)
+    parts.push(escposBoldOn());
+    data.items.forEach(function(item) {
+        parts.push(escposText('[' + item.qty + ']  ' + item.name), escposLF());
+    });
+    parts.push(escposBoldOff());
+
+    parts.push(escposDoubleDashes(w), escposLF());
+    parts.push(escposCenterOn(), escposText('--- END ---'), escposLF(), escposCenterOff());
+
+    parts.push(escposFeedCut());
+
+    return escposBytes.apply(null, parts);
+}
+
+function btPrintBytes(bytes, deviceName) {
+    var base64 = '';
+    var chunk = 8192;
+    for (var i = 0; i < bytes.length; i += chunk) {
+        var slice = bytes.subarray(i, Math.min(i + chunk, bytes.length));
+        for (var j = 0; j < slice.length; j++) {
+            base64 += String.fromCharCode(slice[j]);
+        }
+    }
+    base64 = btoa(base64);
+    return btPrinter.print({ data: base64, deviceName: deviceName });
+}
+
 function doPrint(html) {
     var area = document.getElementById('print-area');
     area.innerHTML = html;
@@ -1183,6 +1396,23 @@ function printBill() {
     var shopName = (shopConfig && shopConfig.name) || 'Amogha Cafe';
     var printerConfig = (shopConfig && shopConfig.printer) || {};
     var footer = printerConfig.footer || randomBillQuote();
+
+    // Try Bluetooth thermal printer first
+    if (btPrinter && printerConfig.btName) {
+        var escposData = buildBillEscPos(data, orderId, shopName, footer, printerConfig.paperWidth);
+        btPrintBytes(escposData, printerConfig.btName).then(function(res) {
+            console.log('[BTPrinter] Bill printed:', res.bytesWritten, 'bytes');
+        }).catch(function(err) {
+            console.warn('[BTPrinter] Bill print failed, falling back to browser print:', err);
+            printBillHTML(data, orderId, shopName, printerConfig, footer);
+        });
+        return;
+    }
+    // Fallback: browser print dialog
+    printBillHTML(data, orderId, shopName, printerConfig, footer);
+}
+
+function printBillHTML(data, orderId, shopName, printerConfig, footer) {
     var now = new Date();
     var dateStr = now.toLocaleDateString('en-IN') + '  ' + now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
     var itemRows = data.items.map(function(i) {
@@ -1223,13 +1453,30 @@ function printBill() {
         '<div style="border-top:1px dashed #000;margin:6px 0"></div>' +
         '<div style="text-align:center;font-size:.75em;color:#555;margin-top:6px">' + escH(footer) + '</div>'
     );
-    // Note: KOT to separate kitchen printer is handled natively in the Android app
 }
 
 function printKOT() {
     var data = currentBillData, orderId = currentBillOrderId;
     if (!data) return;
     var shopName = (shopConfig && shopConfig.name) || 'Amogha Cafe';
+    var printerConfig = (shopConfig && shopConfig.printer) || {};
+
+    // Try Bluetooth KOT printer first
+    if (btPrinter && printerConfig.kotBtName) {
+        var escposData = buildKOTEscPos(data, orderId, shopName, printerConfig.kotPaperWidth);
+        btPrintBytes(escposData, printerConfig.kotBtName).then(function(res) {
+            console.log('[BTPrinter] KOT printed:', res.bytesWritten, 'bytes');
+        }).catch(function(err) {
+            console.warn('[BTPrinter] KOT print failed, falling back to browser print:', err);
+            printKOTHTML(data, orderId, shopName);
+        });
+        return;
+    }
+    // Fallback: browser print dialog
+    printKOTHTML(data, orderId, shopName);
+}
+
+function printKOTHTML(data, orderId, shopName) {
     var now = new Date();
     var timeStr = now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
     var itemRows = data.items.map(function(i) {
