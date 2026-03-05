@@ -14,7 +14,6 @@
 
 | Doc | Page | URL |
 |-----|------|-----|
-| [00-architecture.md](00-architecture.md) | End-to-End Architecture Overview | N/A (cross-cutting) |
 | [01-main-page.md](01-main-page.md) | Main / Public Ordering | https://amoghahotels.com |
 | [02-admin-dashboard.md](02-admin-dashboard.md) | Admin Dashboard | https://amoghahotels.com/admin.html |
 | [03-kitchen-display.md](03-kitchen-display.md) | Kitchen Display System | https://amoghahotels.com/kitchen/ |
@@ -49,6 +48,7 @@ serves as the canonical index for new developers or reviewers.*
 
 | Doc | Feature |
 |-----|---------|
+| [00-architecture.md](00-architecture.md) | End-to-End Architecture Overview |
 | [16-cloud-functions.md](16-cloud-functions.md) | REST API, AI Chatbot Endpoints & Cloud Functions Automation |
 | [17-ci-cd-and-seo.md](17-ci-cd-and-seo.md) | CI/CD (GitHub Actions), SEO, Firebase Config |
 
