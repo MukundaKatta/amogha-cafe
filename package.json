@@ -9,9 +9,7 @@
     "test:e2e": "playwright test --config tests/e2e/playwright.config.js"
   },
   "devDependencies": {
-    "@esbuild/darwin-arm64": "^0.21.5",
     "@playwright/test": "^1.45.0",
-    "@rollup/rollup-darwin-arm64": "^4.59.0",
     "@vitejs/plugin-legacy": "^5.0.0",
     "@vitest/coverage-istanbul": "^1.6.1",
     "@vitest/coverage-v8": "^1.0.0",
