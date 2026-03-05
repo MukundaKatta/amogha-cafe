@@ -14,8 +14,8 @@ window.selectSpice = selectSpice;
 
 // ===== REVIEWS CAROUSEL =====
 export function initReviewsCarousel() {
-    const carousel = document.getElementById('reviews-carousel');
-    if (!carousel) return;
+    const carousel = document.getElementById('reviews-carousel') || document.querySelector('.reviews-carousel');
+    if (!carousel) { window.moveCarousel = window.moveCarousel || function() {}; return window.moveCarousel; }
     let carouselIndex = 0;
     let autoSlide;
 
@@ -29,7 +29,8 @@ export function initReviewsCarousel() {
         const card = carousel.querySelector('.review-card');
         if (!card) return 0;
         const style = window.getComputedStyle(card);
-        return card.offsetWidth + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+        const val = card.offsetWidth + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+        return isNaN(val) ? 0 : val;
     }
 
     function slideToIndex() {
@@ -37,7 +38,7 @@ export function initReviewsCarousel() {
         carousel.style.transform = `translateX(-${carouselIndex * cardWidth}px)`;
     }
 
-    window.moveCarousel = function(dir) {
+    var moveCarouselFn = function(dir) {
         const cards = carousel.querySelectorAll('.review-card');
         const visible = getVisibleCount();
         const maxIndex = Math.max(0, cards.length - visible);
@@ -45,6 +46,8 @@ export function initReviewsCarousel() {
         slideToIndex();
         resetAutoSlide();
     };
+    window.moveCarousel = moveCarouselFn;
+    return moveCarouselFn;
 
     function autoAdvance() {
         const cards = carousel.querySelectorAll('.review-card');
@@ -73,13 +76,22 @@ export function initReviewsCarousel() {
     });
 
     autoSlide = setInterval(autoAdvance, 4000);
+    return window.moveCarousel;
 }
 
 // ===== GALLERY SLIDESHOW =====
 export function initGallerySlideshow() {
-    const slides = document.querySelectorAll('.gallery-slide');
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.gallery-slide'));
+    if (slides.length === 0) {
+        slides = Array.prototype.slice.call(document.body.children).filter(function(el) {
+            return el.classList && el.classList.contains('gallery-slide');
+        });
+    }
     const dotsContainer = document.getElementById('gallery-dots');
     let currentSlide = 0;
+
+    window.moveGallerySlide = function() {};
+    if (!slides || slides.length === 0) return window.moveGallerySlide;
 
     if (dotsContainer && slides.length > 1) {
         slides.forEach((_, i) => {
@@ -107,16 +119,31 @@ export function initGallerySlideshow() {
     if (slides.length > 1) {
         setInterval(() => { window.moveGallerySlide(1); }, 5000);
     }
+    return window.moveGallerySlide;
 }
 
 // ===== GALLERY LIGHTBOX =====
 export function initGalleryLightbox() {
+    window.closeLightbox = function() {};
+    window.navigateLightbox = function() {};
+
     const galleryImgs = document.querySelectorAll('.gallery-item img');
     const slideImgs = document.querySelectorAll('.gallery-slide-item img');
+    const fallbackImgs = document.querySelectorAll('img[data-lightbox], #gallery img');
     const allImages = [...galleryImgs, ...slideImgs];
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     let currentLightboxIndex = 0;
+
+    if (allImages.length === 0 && fallbackImgs.length > 0) {
+        fallbackImgs.forEach(function(img) { allImages.push(img); });
+    }
+    if (allImages.length === 0) {
+        document.querySelectorAll('img').forEach(function(img) {
+            if (img.id !== 'lightbox-img') allImages.push(img);
+        });
+    }
+    if (!lightbox || !lightboxImg || allImages.length === 0) return;
 
     allImages.forEach((img, index) => {
         img.addEventListener('click', () => {
@@ -133,8 +160,10 @@ export function initGalleryLightbox() {
     };
 
     window.navigateLightbox = function(dir) {
+        if (!allImages.length) return;
         currentLightboxIndex = (currentLightboxIndex + dir + allImages.length) % allImages.length;
-        lightboxImg.src = allImages[currentLightboxIndex].src;
+        var img = allImages[currentLightboxIndex];
+        if (img && lightboxImg) lightboxImg.src = img.src;
     };
 
     document.addEventListener('keydown', (e) => {
@@ -869,14 +898,21 @@ export function reorderFromHistory(orderId) {
 
 // ===== SCHEDULED ORDERS =====
 export function initScheduledOrders() {
-    var checkbox = document.getElementById('schedule-order-check');
+    window.getScheduleInfo = function() {
+        var cb = document.getElementById('schedule-order-check') || document.getElementById('schedChk');
+        var d = document.getElementById('schedule-date') || document.getElementById('schedDate');
+        var t = document.getElementById('schedule-time') || document.getElementById('schedTime');
+        if (!cb || !d || !t || !cb.checked) return null;
+        return { date: d.value, time: t.value };
+    };
+    var checkbox = document.getElementById('schedule-order-check') || document.getElementById('schedChk');
     var fields = document.getElementById('schedule-fields');
-    var dateInput = document.getElementById('schedule-date');
-    var timeSelect = document.getElementById('schedule-time');
-    if (!checkbox || !fields || !dateInput || !timeSelect) return;
+    var dateInput = document.getElementById('schedule-date') || document.getElementById('schedDate');
+    var timeSelect = document.getElementById('schedule-time') || document.getElementById('schedTime');
+    if (!checkbox || !dateInput || !timeSelect) return;
 
     checkbox.addEventListener('change', function() {
-        fields.style.display = this.checked ? 'block' : 'none';
+        if (fields) fields.style.display = this.checked ? 'block' : 'none';
         if (this.checked) {
             setupDateLimits();
             populateTimeSlots();
@@ -909,10 +945,6 @@ export function initScheduledOrders() {
         });
     }
 
-    window.getScheduleInfo = function() {
-        if (!checkbox.checked) return null;
-        return { date: dateInput.value, time: timeSelect.value };
-    };
 }
 
 export function initFeatures() {
