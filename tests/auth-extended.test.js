@@ -1379,6 +1379,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     get: () => Promise.resolve({ exists: true, data: () => user }),
+                    update: () => Promise.resolve(),
                 })),
                 where: function() { return this; },
                 onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
@@ -1387,7 +1388,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
         document.getElementById('signin-phone').value = '9000000020';
         document.getElementById('signin-password').value = '5678';
         handleSignIn();
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 100));
         // User should be stored in localStorage
         const storedUser = getCurrentUser();
         expect(storedUser).not.toBeNull();
@@ -1408,6 +1409,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     get: () => Promise.resolve({ exists: true, data: () => user }),
+                    update: () => Promise.resolve(),
                 })),
                 where: function() { return this; },
                 onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
@@ -1416,7 +1418,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
         document.getElementById('signin-phone').value = '9000000021';
         document.getElementById('signin-password').value = '4321';
         handleSignIn();
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 100));
         expect(getCurrentUser()).not.toBeNull();
         expect(getCurrentUser().name).toBe('Password User');
     });
@@ -1427,6 +1429,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     get: () => Promise.resolve({ exists: true, data: () => user }),
+                    update: () => Promise.resolve(),
                 })),
                 where: function() { return this; },
                 onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
@@ -1435,7 +1438,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
         document.getElementById('signin-phone').value = '9000000022';
         document.getElementById('signin-password').value = '9999';
         handleSignIn();
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 100));
         const msg = document.getElementById('signin-msg');
         expect(msg.textContent).toMatch(/incorrect pin/i);
         expect(msg.className).toContain('error');
@@ -1447,6 +1450,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     get: () => Promise.resolve({ exists: true, data: () => user }),
+                    update: () => Promise.resolve(),
                 })),
                 where: function() { return this; },
                 onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
@@ -1455,7 +1459,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
         document.getElementById('signin-phone').value = '9000000023';
         document.getElementById('signin-password').value = '1234';
         handleSignIn();
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 100));
         const greeting = document.getElementById('carousel-greeting');
         expect(greeting.textContent).toContain('Greeting');
     });
@@ -1698,14 +1702,14 @@ describe('handleSignIn — welcome bonus ternary (line 187-188)', () => {
     it('shows welcome bonus message when usedWelcomeBonus is false', async () => {
         const userData = { name: 'Ravi', phone: '9876543210', pin: '1234', usedWelcomeBonus: false };
         const getMock = vi.fn(() => Promise.resolve({ exists: true, data: () => userData }));
-        const docMock = vi.fn(() => ({ get: getMock }));
+        const docMock = vi.fn(() => ({ get: getMock, update: () => Promise.resolve() }));
         const collectionMock = vi.fn(() => ({ doc: docMock }));
         window.db = { collection: collectionMock };
 
         document.getElementById('signin-phone').value = '9876543210';
         document.getElementById('signin-password').value = '1234';
         handleSignIn();
-        await new Promise(r => setTimeout(r, 20));
+        await new Promise(r => setTimeout(r, 100));
         const toast = document.getElementById('auth-toast');
         expect(toast.textContent).toContain('welcome bonus');
     });
@@ -1713,14 +1717,14 @@ describe('handleSignIn — welcome bonus ternary (line 187-188)', () => {
     it('does not show welcome bonus message when usedWelcomeBonus is true', async () => {
         const userData = { name: 'Ravi', phone: '9876543210', pin: '1234', usedWelcomeBonus: true };
         const getMock = vi.fn(() => Promise.resolve({ exists: true, data: () => userData }));
-        const docMock = vi.fn(() => ({ get: getMock }));
+        const docMock = vi.fn(() => ({ get: getMock, update: () => Promise.resolve() }));
         const collectionMock = vi.fn(() => ({ doc: docMock }));
         window.db = { collection: collectionMock };
 
         document.getElementById('signin-phone').value = '9876543210';
         document.getElementById('signin-password').value = '1234';
         handleSignIn();
-        await new Promise(r => setTimeout(r, 20));
+        await new Promise(r => setTimeout(r, 100));
         const toast = document.getElementById('auth-toast');
         expect(toast.textContent).not.toContain('welcome bonus');
     });
