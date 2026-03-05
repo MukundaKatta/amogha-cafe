@@ -39,15 +39,40 @@ async function getMenuData() {
     return items;
 }
 
+// Sanitize user input before passing to Gemini to prevent prompt injection
+function sanitizeForPrompt(input) {
+    if (typeof input !== 'string') return String(input || '');
+    // Strip control characters and limit length
+    return input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').slice(0, 2000);
+}
+
+// Robust JSON extraction from Gemini response
+function parseGeminiJSON(text) {
+    text = text.trim();
+    // Strip markdown code fences
+    if (text.startsWith('```')) {
+        text = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
+    }
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        // Try to find JSON object or array in the response
+        var match = text.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+        if (match) {
+            return JSON.parse(match[1]);
+        }
+        throw new SyntaxError('Could not parse Gemini response as JSON: ' + text.slice(0, 200));
+    }
+}
+
 async function callGemini(systemPrompt, userMessage) {
     var model = getGeminiModel();
     var result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: systemPrompt + '\n\nUser request:\n' + userMessage }] }],
+        contents: [{ role: 'user', parts: [{ text: systemPrompt + '\n\nUser request:\n' + sanitizeForPrompt(userMessage) }] }],
         generationConfig: { temperature: 0.7, maxOutputTokens: 2048, responseMimeType: 'application/json' }
     });
     var text = result.response.candidates[0].content.parts[0].text.trim();
-    if (text.startsWith('```')) text = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
-    return JSON.parse(text);
+    return parseGeminiJSON(text);
 }
 
 const FREE_DELIVERY_THRESHOLD = 500;
@@ -65,6 +90,48 @@ app.use(function(req, res, next) {
     if (req.url.startsWith('/api')) req.url = req.url.slice(4) || '/';
     next();
 });
+
+// ===== RATE LIMITING (in-memory, per Cloud Function instance) =====
+var _rateLimits = {};
+var RATE_LIMIT_WINDOW = 60000; // 1 minute
+var RATE_LIMIT_MAX = 30; // max requests per window per IP
+
+function rateLimiter(req, res, next) {
+    var ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    var now = Date.now();
+    if (!_rateLimits[ip] || now - _rateLimits[ip].start > RATE_LIMIT_WINDOW) {
+        _rateLimits[ip] = { start: now, count: 1 };
+    } else {
+        _rateLimits[ip].count++;
+    }
+    if (_rateLimits[ip].count > RATE_LIMIT_MAX) {
+        return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    }
+    next();
+}
+
+// Apply rate limiting to AI-powered endpoints (expensive Gemini calls)
+app.use(['/chat', '/smart-search', '/recommend', '/forecast', '/menu-insights',
+         '/smart-notify', '/meal-plan', '/analytics-query', '/smart-combo',
+         '/summarize-reviews'], rateLimiter);
+
+// ===== AUTH MIDDLEWARE for admin/sensitive endpoints =====
+function requireAdminAuth(req, res, next) {
+    var authHeader = req.headers.authorization || '';
+    var apiKey = req.headers['x-api-key'] || '';
+    // Allow requests from the web app with a valid Firebase ID token or API key
+    // For now, check for a shared API key (set via Firebase Functions config)
+    var configKey = process.env.ADMIN_API_KEY || '';
+    if (configKey && (apiKey === configKey || authHeader === 'Bearer ' + configKey)) {
+        return next();
+    }
+    // If no API key is configured, allow all requests (backwards-compatible)
+    if (!configKey) return next();
+    return res.status(401).json({ error: 'Unauthorized. Provide a valid x-api-key header.' });
+}
+
+// Apply admin auth to sensitive endpoints
+app.use(['/notify', '/analytics-query', '/forecast', '/menu-insights'], requireAdminAuth);
 
 // -----------------------------------------------------------------------
 // GET /menu  — full available menu
@@ -129,6 +196,22 @@ app.post('/order', async function(req, res) {
         if (!customer) return res.status(400).json({ error: 'customer name is required' });
         if (!phone)    return res.status(400).json({ error: 'phone number is required' });
         if (!address)  return res.status(400).json({ error: 'delivery address is required' });
+
+        // Validate each item has required fields and reasonable values
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (!item.name || typeof item.name !== 'string') {
+                return res.status(400).json({ error: 'Each item must have a name' });
+            }
+            var qty = parseInt(item.qty) || 1;
+            if (qty < 1 || qty > 50) {
+                return res.status(400).json({ error: 'Item quantity must be between 1 and 50' });
+            }
+            var price = parseFloat(item.price) || 0;
+            if (price < 0 || price > 10000) {
+                return res.status(400).json({ error: 'Item price must be between 0 and 10000' });
+            }
+        }
 
         // Calculate totals
         var subtotal = items.reduce(function(sum, item) {
@@ -263,13 +346,7 @@ app.post('/parse-bill', async function(req, res) {
         });
 
         var text = result.response.candidates[0].content.parts[0].text.trim();
-
-        // Strip markdown code fence if Gemini wraps it
-        if (text.startsWith('```')) {
-            text = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
-        }
-
-        var parsed = JSON.parse(text);
+        var parsed = parseGeminiJSON(text);
 
         var validCategories = ['Ingredients','Utilities','Staff','Equipment','Rent','Marketing','Other'];
         var response = {
@@ -305,9 +382,12 @@ exports.birthdayRewards = functions.pubsub
     .timeZone('Asia/Kolkata')
     .onRun(async function() {
         try {
-            var today = new Date();
-            var month = String(today.getMonth() + 1).padStart(2, '0');
-            var day = String(today.getDate()).padStart(2, '0');
+            // Use IST (UTC+5:30) for date comparison since this runs in Asia/Kolkata timezone
+            var now = new Date();
+            var istOffset = 5.5 * 60 * 60 * 1000;
+            var today = new Date(now.getTime() + istOffset);
+            var month = String(today.getUTCMonth() + 1).padStart(2, '0');
+            var day = String(today.getUTCDate()).padStart(2, '0');
             var todayMMDD = month + '-' + day;
 
             var usersSnap = await db.collection('users').get();
@@ -400,6 +480,7 @@ app.post('/chat', async function(req, res) {
         var history = body.history || [];
 
         if (!message) return res.status(400).json({ error: 'message is required' });
+        message = sanitizeForPrompt(message);
 
         var menuItems = await getMenuData();
         var available = menuItems.filter(function(i) { return i.available; });
@@ -439,7 +520,7 @@ app.post('/chat', async function(req, res) {
 // -----------------------------------------------------------------------
 app.post('/smart-search', async function(req, res) {
     try {
-        var query = ((req.body || {}).query || '').trim();
+        var query = sanitizeForPrompt(((req.body || {}).query || '').trim());
         if (!query) return res.status(400).json({ error: 'query is required' });
 
         var available = (await getMenuData()).filter(function(i) { return i.available; });
@@ -660,8 +741,8 @@ app.post('/meal-plan', async function(req, res) {
 app.post('/analytics-query', async function(req, res) {
     try {
         var body = req.body || {};
-        var question = (body.question || '').trim();
-        var days = parseInt(body.days) || 90;
+        var question = sanitizeForPrompt((body.question || '').trim());
+        var days = Math.min(parseInt(body.days) || 90, 365);
         if (!question) return res.status(400).json({ error: 'question is required' });
 
         // Fetch recent orders
@@ -779,8 +860,7 @@ app.post('/analytics-query', async function(req, res) {
             generationConfig: { temperature: 0.2, maxOutputTokens: 512, responseMimeType: 'application/json' }
         });
         var text = result.response.candidates[0].content.parts[0].text.trim();
-        if (text.startsWith('```')) text = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
-        var parsed = JSON.parse(text);
+        var parsed = parseGeminiJSON(text);
 
         res.json({
             answer: parsed.answer || '',

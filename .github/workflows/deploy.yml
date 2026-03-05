@@ -18,10 +18,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install functions dependencies
+        run: cd functions && npm ci
+
       - name: Run tests
         run: npm test -- --run
 
-      - name: Deploy to Firebase Hosting + Firestore rules
-        run: npx firebase-tools deploy --only hosting,firestore:rules --token "$FIREBASE_TOKEN" --project amogha-cafe
+      - name: Run functions tests
+        run: cd functions && npm test
+
+      - name: Deploy to Firebase Hosting, Firestore rules, and Cloud Functions
+        run: npx firebase-tools deploy --only hosting,firestore:rules,functions --token "$FIREBASE_TOKEN" --project amogha-cafe
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

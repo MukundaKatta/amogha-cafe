@@ -16,16 +16,19 @@ export function awardLoyaltyPoints(orderTotal) {
     if (!user) return;
     var points = Math.floor(orderTotal / 10);
     // Streak bonus: check if ordered 3 consecutive days
-    var today = new Date().toISOString().split('T')[0];
+    // Use local date string to avoid UTC midnight timezone issues
+    var now = new Date();
+    var today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
     var dates = user.orderDates || [];
     if (dates[dates.length - 1] !== today) {
         dates.push(today);
     }
-    // Check for 3-day streak
+    // Check for 3-day streak using day difference calculation
     if (dates.length >= 3) {
         var last3 = dates.slice(-3);
-        var d1 = new Date(last3[0]), d2 = new Date(last3[1]), d3 = new Date(last3[2]);
-        var diff1 = (d2 - d1) / 86400000, diff2 = (d3 - d2) / 86400000;
+        // Parse dates as local dates (YYYY-MM-DD at noon to avoid DST issues)
+        var d1 = new Date(last3[0] + 'T12:00:00'), d2 = new Date(last3[1] + 'T12:00:00'), d3 = new Date(last3[2] + 'T12:00:00');
+        var diff1 = Math.round((d2 - d1) / 86400000), diff2 = Math.round((d3 - d2) / 86400000);
         if (diff1 === 1 && diff2 === 1) {
             points = points * 2;
         }

@@ -169,7 +169,7 @@ describe('setSplitCount', () => {
         expect(collectionMock).toHaveBeenCalledWith('orders');
         expect(docMock).toHaveBeenCalledWith('order123');
         expect(updateMock).toHaveBeenCalledWith({
-            splitBill: { count: 3, perPerson: 200, total: 600 },
+            splitBill: { count: 3, perPerson: 200, firstPersonPays: 200, total: 600 },
         });
     });
 

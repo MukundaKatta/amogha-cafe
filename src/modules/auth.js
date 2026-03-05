@@ -4,6 +4,15 @@ import { showBirthdayBanner } from './loyalty.js';
 
 // ===== AUTH SYSTEM (Sign In / Sign Up) =====
 
+// Simple PIN hashing using SHA-256 (Web Crypto API)
+async function hashPin(pin) {
+    var encoder = new TextEncoder();
+    var data = encoder.encode(pin + '_amogha_salt');
+    var hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    var hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
 export function getCurrentUser() {
     try {
         const data = safeGetItem('amoghaUser');
@@ -103,13 +112,14 @@ export function handleSignUp() {
         return;
     }
 
-    db.collection('users').doc(phone).get().then(function(doc) {
+    db.collection('users').doc(phone).get().then(async function(doc) {
         if (doc.exists) {
             msg.textContent = 'This phone number is already registered. Please sign in.';
             msg.className = 'auth-msg error';
             return;
         }
-        var newUser = { name: name, phone: phone, pin: password, usedWelcomeBonus: false, createdAt: new Date().toISOString() };
+        var hashedPin = await hashPin(password);
+        var newUser = { name: name, phone: phone, pin: hashedPin, usedWelcomeBonus: false, createdAt: new Date().toISOString() };
         return db.collection('users').doc(phone).set(newUser).then(function() {
             try {
                 setCurrentUser(newUser);
@@ -167,17 +177,24 @@ export function handleSignIn() {
         return;
     }
 
-    db.collection('users').doc(phone).get().then(function(doc) {
+    db.collection('users').doc(phone).get().then(async function(doc) {
         if (!doc.exists) {
             msg.textContent = 'No account found with this number. Please sign up.';
             msg.className = 'auth-msg error';
             return;
         }
         var user = doc.data();
-        if ((user.pin || user.password) !== password) {
+        var storedPin = user.pin || user.password || '';
+        var hashedInput = await hashPin(password);
+        // Support both hashed PINs (new) and legacy plain-text PINs
+        if (storedPin !== hashedInput && storedPin !== password) {
             msg.textContent = 'Incorrect PIN. Please try again.';
             msg.className = 'auth-msg error';
             return;
+        }
+        // Migrate legacy plain-text PIN to hashed on successful login
+        if (storedPin === password && storedPin !== hashedInput) {
+            db.collection('users').doc(phone).update({ pin: hashedInput }).catch(function(e) { console.error('PIN migration error:', e); });
         }
         try {
             setCurrentUser(user);
@@ -279,7 +296,9 @@ export function handleResetPassword() {
         return;
     }
 
-    db.collection('users').doc(forgotPhoneVerified).update({ pin: newPass }).then(function() {
+    hashPin(newPass).then(function(hashedPin) {
+    return db.collection('users').doc(forgotPhoneVerified).update({ pin: hashedPin });
+    }).then(function() {
         forgotPhoneVerified = null;
         msg.textContent = '';
         msg.className = 'auth-msg';

@@ -561,6 +561,7 @@ describe('handleSignUp — success path with referral code (lines 119-127)', () 
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     get: () => Promise.resolve({ exists: true, data: () => user }),
+                    update: () => Promise.resolve(),
                 })),
                 where: function() { return this; },
                 onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
@@ -569,7 +570,7 @@ describe('handleSignUp — success path with referral code (lines 119-127)', () 
         document.getElementById('signin-phone').value = '9000000013';
         document.getElementById('signin-password').value = '1234';
         handleSignIn();
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 100));
         const toast = document.getElementById('auth-toast');
         expect(toast.textContent).toMatch(/welcome back/i);
         expect(toast.textContent).toMatch(/25%/i);
@@ -584,6 +585,7 @@ describe('handleSignUp — success path with referral code (lines 119-127)', () 
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     get: () => Promise.resolve({ exists: true, data: () => user }),
+                    update: () => Promise.resolve(),
                 })),
                 where: function() { return this; },
                 onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
@@ -592,7 +594,7 @@ describe('handleSignUp — success path with referral code (lines 119-127)', () 
         document.getElementById('signin-phone').value = '9000000014';
         document.getElementById('signin-password').value = '1234';
         handleSignIn();
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 100));
         const toast = document.getElementById('auth-toast');
         expect(toast.textContent).not.toMatch(/25%/i);
     });
@@ -681,6 +683,7 @@ describe('handleSignIn — UI error catch path (line 195)', () => {
                         getResolved = true;
                         return Promise.resolve({ exists: true, data: () => user });
                     },
+                    update: () => Promise.resolve(),
                 })),
                 where: function() { return this; },
                 onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
@@ -709,7 +712,7 @@ describe('handleSignIn — UI error catch path (line 195)', () => {
         document.getElementById('signin-phone').value = '9000000016';
         document.getElementById('signin-password').value = '1234';
         handleSignIn();
-        await new Promise((r) => setTimeout(r, 50));
+        await new Promise((r) => setTimeout(r, 100));
         document.getElementById = realGetEl;
         const toast = document.getElementById('auth-toast');
         expect(toast.textContent).toMatch(/signed in successfully/i);
