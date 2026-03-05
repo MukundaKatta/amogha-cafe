@@ -736,9 +736,10 @@ describe('placeOrderToFirestore — referral chain (lines 432-466)', () => {
         placeOrderToFirestore('COD', null, 'cod-pending');
         await new Promise(r => setTimeout(r, 100));
 
-        // Referrer should get 100 bonus points (50 existing + 100 = 150)
-        expect(referrerUpdateMock).toHaveBeenCalledWith({ loyaltyPoints: 150 });
-        // Referral doc should be marked as redeemed
+        // Referrer gets 100 bonus points via FieldValue.increment (atomic, no read needed)
+        // The increment mock returns the raw value (100), not 50+100
+        expect(referrerUpdateMock).toHaveBeenCalledWith({ loyaltyPoints: 100 });
+        // Referral doc should be marked as redeemed FIRST (race condition fix)
         expect(referralRefUpdate).toHaveBeenCalledWith({ redeemed: true });
     });
 });
@@ -1216,10 +1217,10 @@ describe('placeOrderToFirestore — referral referrer doc missing (line 432)', (
         placeOrderToFirestore('COD', null, 'cod-pending');
         await new Promise(r => setTimeout(r, 100));
 
-        // Referrer update should NOT have been called because user doc doesn't exist
-        expect(referrerUpdateMock).not.toHaveBeenCalled();
-        // But referral should still be marked as redeemed
+        // Referral should be marked as redeemed first (race condition fix)
         expect(referralRefUpdate).toHaveBeenCalledWith({ redeemed: true });
+        // With FieldValue.increment approach, update is called regardless
+        // (Firestore handles the case where doc doesn't exist by failing gracefully)
     });
 });
 
@@ -1762,8 +1763,11 @@ describe('placeOrderToFirestore — referrer points award (lines 426,433-466)', 
     });
 
     it('awards referrer 100 pts when referral exists and user doc exists (line 433)', async () => {
-        let updatedReferrerPts = null;
+        let referrerUpdateData = null;
         const refDocRef = { update: vi.fn(() => Promise.resolve()) };
+        // Mock FieldValue.increment for the referral points update
+        const incrementMock = vi.fn((n) => ({ _increment: n }));
+        window.firebase = { firestore: { FieldValue: { increment: incrementMock } } };
         window.db = {
             collection: vi.fn((name) => {
                 if (name === 'orders') return {
@@ -1782,7 +1786,7 @@ describe('placeOrderToFirestore — referrer points award (lines 426,433-466)', 
                 };
                 if (name === 'users') return {
                     doc: vi.fn((phone) => ({
-                        update: vi.fn((data) => { if (phone === '9999999999') updatedReferrerPts = data.loyaltyPoints; return Promise.resolve(); }),
+                        update: vi.fn((data) => { if (phone === '9999999999') referrerUpdateData = data; return Promise.resolve(); }),
                         get: vi.fn(() => Promise.resolve({ exists: true, data: () => ({ loyaltyPoints: 50 }) })),
                     })),
                 };
@@ -1801,7 +1805,8 @@ describe('placeOrderToFirestore — referrer points award (lines 426,433-466)', 
         placeOrderToFirestore('COD', null, 'cod-pending');
         await new Promise(r => setTimeout(r, 100));
 
-        expect(updatedReferrerPts).toBe(150); // 50 existing + 100 referral bonus
+        // Now uses FieldValue.increment(100) instead of read-then-write
+        expect(referrerUpdateData).toEqual({ loyaltyPoints: { _increment: 100 } });
         expect(refDocRef.update).toHaveBeenCalledWith({ redeemed: true });
     });
 });

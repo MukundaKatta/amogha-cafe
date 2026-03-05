@@ -103,7 +103,7 @@ function saveFCMToken(token) {
             window.db.collection('users').doc(user.phone).update({
                 fcmToken: token,
                 fcmUpdatedAt: new Date().toISOString()
-            }).catch(function() {});
+            }).catch(function(e) { console.error('FCM token save error:', e); });
         }
     } catch (e) {}
     safeSetItem('amoghaFcmToken', token);

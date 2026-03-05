@@ -18,7 +18,7 @@ jobs:
 
       # ── Frontend dependencies ───────────────────────────────────────────
       - name: Install frontend dependencies
-        run: npm install --force
+        run: npm ci
 
       # ── Unit tests (Vitest) ─────────────────────────────────────────────
       - name: Run unit tests

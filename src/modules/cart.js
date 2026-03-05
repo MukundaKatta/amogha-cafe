@@ -46,7 +46,10 @@ export function loadCart() {
             parsed.forEach(function(item) { cart.push(item); });
             updateCartCount();
         }
-    } catch(e) { cart.length = 0; }
+    } catch(e) {
+        console.error('Failed to load cart from storage:', e);
+        cart.length = 0;
+    }
 }
 
 export function saveCart() {
@@ -310,7 +313,8 @@ export function updateFloatingCart() {
     let html = '';
     let subtotal = 0;
     cart.forEach(item => {
-        const itemTotal = item.price * item.quantity;
+        const addonTotal = (item.addons || []).reduce((s, a) => s + a.price, 0);
+        const itemTotal = (item.price + addonTotal) * item.quantity;
         subtotal += itemTotal;
         html += `<div class="fc-item"><span>${item.name} x${item.quantity}</span><span>₹${itemTotal}</span></div>`;
     });

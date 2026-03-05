@@ -14,7 +14,7 @@ var _geminiModel = null;
 function getGeminiModel() {
     if (!_geminiModel) {
         var { VertexAI } = require('@google-cloud/vertexai');
-        var vertexAI = new VertexAI({ project: 'amogha-cafe', location: 'us-central1' });
+        var vertexAI = new VertexAI({ project: process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || 'amogha-cafe', location: 'us-central1' });
         _geminiModel = vertexAI.getGenerativeModel({ model: 'gemini-2.0-flash-001' });
     }
     return _geminiModel;
@@ -72,7 +72,11 @@ async function callGemini(systemPrompt, userMessage) {
         generationConfig: { temperature: 0.7, maxOutputTokens: 2048, responseMimeType: 'application/json' }
     });
     if (!result.response.candidates || !result.response.candidates.length) throw new Error('Gemini returned no candidates');
-    var text = result.response.candidates[0].content.parts[0].text.trim();
+    var candidate = result.response.candidates[0];
+    if (!candidate.content || !candidate.content.parts || !candidate.content.parts.length || typeof candidate.content.parts[0].text !== 'string') {
+        throw new Error('Gemini returned malformed candidate (missing content/parts/text)');
+    }
+    var text = candidate.content.parts[0].text.trim();
     return parseGeminiJSON(text);
 }
 
@@ -80,7 +84,12 @@ const FREE_DELIVERY_THRESHOLD = 500;
 const DELIVERY_FEE = 49;
 
 const app = express();
-app.use(cors({ origin: ['https://amogha-cafe.web.app', 'https://amogha-cafe.firebaseapp.com'] }));
+app.use(cors({
+    origin: ['https://amogha-cafe.web.app', 'https://amogha-cafe.firebaseapp.com', 'https://amoghahotels.com'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+    credentials: true
+}));
 app.use(express.json({ limit: '4mb' }));
 
 // Normalize path: strip /api prefix so both
@@ -96,10 +105,23 @@ app.use(function(req, res, next) {
 var _rateLimits = {};
 var RATE_LIMIT_WINDOW = 60000; // 1 minute
 var RATE_LIMIT_MAX = 30; // max requests per window per IP
+var _rateLimitCleanupTs = Date.now();
 
 function rateLimiter(req, res, next) {
     var ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
     var now = Date.now();
+
+    // Periodic cleanup of expired entries to prevent memory leak
+    if (now - _rateLimitCleanupTs > RATE_LIMIT_WINDOW * 2) {
+        _rateLimitCleanupTs = now;
+        var keys = Object.keys(_rateLimits);
+        for (var k = 0; k < keys.length; k++) {
+            if (now - _rateLimits[keys[k]].start > RATE_LIMIT_WINDOW) {
+                delete _rateLimits[keys[k]];
+            }
+        }
+    }
+
     if (!_rateLimits[ip] || now - _rateLimits[ip].start > RATE_LIMIT_WINDOW) {
         _rateLimits[ip] = { start: now, count: 1 };
     } else {
@@ -126,8 +148,11 @@ function requireAdminAuth(req, res, next) {
     if (configKey && (apiKey === configKey || authHeader === 'Bearer ' + configKey)) {
         return next();
     }
-    // If no API key is configured, allow all requests (backwards-compatible)
-    if (!configKey) return next();
+    // Require API key — reject if not configured (prevents accidental open access)
+    if (!configKey) {
+        console.error('ADMIN_API_KEY not set — blocking admin endpoint access');
+        return res.status(500).json({ error: 'Server misconfiguration. Admin API key not set.' });
+    }
     return res.status(401).json({ error: 'Unauthorized. Provide a valid x-api-key header.' });
 }
 
@@ -249,7 +274,7 @@ app.post('/order', async function(req, res) {
         var docRef = await db.collection('orders').add(orderData);
         var trackUrl = 'https://amogha-cafe.web.app/track/index.html?id=' + docRef.id;
 
-        res.json({
+        res.status(201).json({
             success:      true,
             orderId:      docRef.id,
             summary:      'Order confirmed for ' + customer + '! ' +
@@ -312,7 +337,7 @@ app.post('/parse-bill', async function(req, res) {
         }
 
         var { VertexAI } = require('@google-cloud/vertexai');
-        var vertexAI = new VertexAI({ project: 'amogha-cafe', location: 'us-central1' });
+        var vertexAI = new VertexAI({ project: process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || 'amogha-cafe', location: 'us-central1' });
         var model = vertexAI.getGenerativeModel({ model: 'gemini-2.0-flash-001' });
 
         var prompt = 'You are analyzing a restaurant expense bill/receipt/invoice. ' +
@@ -347,7 +372,11 @@ app.post('/parse-bill', async function(req, res) {
         });
 
         if (!result.response.candidates || !result.response.candidates.length) throw new Error('Gemini returned no candidates');
-        var text = result.response.candidates[0].content.parts[0].text.trim();
+        var candidate = result.response.candidates[0];
+        if (!candidate.content || !candidate.content.parts || !candidate.content.parts.length || typeof candidate.content.parts[0].text !== 'string') {
+            throw new Error('Gemini returned malformed candidate');
+        }
+        var text = candidate.content.parts[0].text.trim();
         var parsed = parseGeminiJSON(text);
 
         var validCategories = ['Ingredients','Utilities','Staff','Equipment','Rent','Marketing','Other'];
@@ -425,8 +454,21 @@ exports.birthdayRewards = functions.pubsub
             });
 
             if (count > 0) {
-                await batch.commit();
-                console.log('Birthday coupons created for ' + count + ' users');
+                // Retry batch commit up to 2 times on transient failures
+                for (var attempt = 0; attempt < 3; attempt++) {
+                    try {
+                        await batch.commit();
+                        console.log('Birthday coupons created for ' + count + ' users');
+                        break;
+                    } catch (commitErr) {
+                        if (attempt < 2) {
+                            console.warn('Birthday batch commit attempt ' + (attempt + 1) + ' failed, retrying...', commitErr.message);
+                            await new Promise(function(r) { setTimeout(r, 1000 * (attempt + 1)); });
+                        } else {
+                            throw commitErr;
+                        }
+                    }
+                }
             }
             return null;
         } catch (e) {
@@ -623,7 +665,7 @@ app.post('/forecast', async function(req, res) {
             orderData.push({
                 date: o.createdAt ? o.createdAt.split('T')[0] : '',
                 items: (o.items || []).map(function(i) { return { name: i.name, qty: i.qty || 1 }; }),
-                total: o.total || 0, dayOfWeek: new Date(o.createdAt).getDay()
+                total: o.total || 0, dayOfWeek: o.createdAt ? new Date(o.createdAt).getDay() : 0
             });
         });
 
@@ -745,6 +787,7 @@ app.post('/analytics-query', async function(req, res) {
         var body = req.body || {};
         var question = sanitizeForPrompt((body.question || '').trim());
         var days = Math.min(parseInt(body.days) || 90, 365);
+        if (days < 1) days = 90;
         if (!question) return res.status(400).json({ error: 'question is required' });
 
         // Fetch recent orders
@@ -862,7 +905,11 @@ app.post('/analytics-query', async function(req, res) {
             generationConfig: { temperature: 0.2, maxOutputTokens: 512, responseMimeType: 'application/json' }
         });
         if (!result.response.candidates || !result.response.candidates.length) throw new Error('Gemini returned no candidates');
-        var text = result.response.candidates[0].content.parts[0].text.trim();
+        var candidate2 = result.response.candidates[0];
+        if (!candidate2.content || !candidate2.content.parts || !candidate2.content.parts.length || typeof candidate2.content.parts[0].text !== 'string') {
+            throw new Error('Gemini returned malformed candidate');
+        }
+        var text = candidate2.content.parts[0].text.trim();
         var parsed = parseGeminiJSON(text);
 
         res.json({

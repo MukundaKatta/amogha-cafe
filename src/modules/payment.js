@@ -2,15 +2,27 @@ import { lockScroll, unlockScroll } from '../core/utils.js';
 import { getCurrentUser, setCurrentUser, showAuthToast } from './auth.js';
 import { cart, getCheckoutTotal, updateCartCount, saveCart, updateButtonState, updateFloatingCart } from './cart.js';
 import { RAZORPAY_KEY, MERCHANT_NAME, WHATSAPP_NUMBER, FREE_DELIVERY_THRESHOLD, DELIVERY_FEE } from '../core/constants.js';
-import { getDb } from '../core/firebase.js';
+import { getDb, getFieldValue } from '../core/firebase.js';
 
 // ===== CHECKOUT FLOW =====
+
+// HTML escape helper to prevent XSS
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 export let selectedPayment = 'razorpay';
 export var appliedCoupon = null;
 export var appliedGiftCard = null;
 var appliedCouponCode = '';
 var selectedGcAmount = 500;
+
+// Sync coupon state to window so cart.js getCheckoutTotal can access it
+function syncCouponToWindow() {
+    window._appliedCoupon = appliedCoupon;
+}
 
 // Keep a module-level reference that cart.getCheckoutTotal can access via window
 // (payment.js owns the coupon state so it re-exports a totals getter)
@@ -88,7 +100,7 @@ export function openCheckout() {
 
     var itemsHtml = '';
     cart.forEach(function(item) {
-        itemsHtml += '<div class="co-item"><span>' + item.name + ' x' + item.quantity + '</span><span>\u20B9' + (item.price * item.quantity) + '</span></div>';
+        itemsHtml += '<div class="co-item"><span>' + escapeHtml(item.name) + ' x' + item.quantity + '</span><span>\u20B9' + (item.price * item.quantity) + '</span></div>';
     });
     // Render upsell suggestions
     var upsellHtml = '';
@@ -99,13 +111,15 @@ export function openCheckout() {
                 '<div class="upsell-title">Customers also ordered</div>' +
                 '<div class="upsell-items">';
             upsellItems.forEach(function(item) {
+                var safeName = escapeHtml(item.name);
+                var safeNameAttr = safeName.replace(/'/g, '&#39;').replace(/\\/g, '&#92;');
                 upsellHtml += '<div class="upsell-card">' +
                     '<div class="upsell-info">' +
-                        '<div class="upsell-name">' + item.name + '</div>' +
-                        '<div class="upsell-reason">' + item.reason + '</div>' +
+                        '<div class="upsell-name">' + safeName + '</div>' +
+                        '<div class="upsell-reason">' + escapeHtml(item.reason || '') + '</div>' +
                     '</div>' +
                     '<span class="upsell-price">\u20B9' + item.price + '</span>' +
-                    '<button class="upsell-add-btn" onclick="addUpsellItem(\'' + item.name.replace(/'/g, "\\'") + '\',' + item.price + ')">+ Add</button>' +
+                    '<button class="upsell-add-btn" onclick="addUpsellItem(\'' + safeNameAttr + '\',' + item.price + ')">+ Add</button>' +
                 '</div>';
             });
             upsellHtml += '</div></div>';
@@ -140,9 +154,8 @@ export function openCheckout() {
     if (currentUser && !currentUser.usedWelcomeBonus) {
         appliedCoupon = { discount: 25, type: 'percent', label: '25% off (Welcome Bonus!)' };
         appliedCouponCode = 'WELCOME25';
-        couponInput.value = 'WELCOME25';
-        couponMsg.textContent = 'Welcome bonus applied! You get 25% off!';
-        couponMsg.className = 'coupon-msg success';
+        if (couponInput) couponInput.value = 'WELCOME25';
+        if (couponMsg) { couponMsg.textContent = 'Welcome bonus applied! You get 25% off!'; couponMsg.className = 'coupon-msg success'; }
         var discount = subtotal * 0.25;
         discount = Math.min(discount, subtotal);
         var discountedTotal = subtotal - discount + deliveryFee;
@@ -150,10 +163,10 @@ export function openCheckout() {
     } else {
         appliedCoupon = null;
         appliedCouponCode = '';
-        couponInput.value = '';
-        couponMsg.textContent = '';
-        couponMsg.className = 'coupon-msg';
+        if (couponInput) couponInput.value = '';
+        if (couponMsg) { couponMsg.textContent = ''; couponMsg.className = 'coupon-msg'; }
     }
+    syncCouponToWindow();
 }
 
 export function closeCheckout() {
@@ -383,9 +396,12 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
 
         // Count coupon usage only after successful order placement
         if (appliedCouponCode) {
-            db.collection('coupons').doc(appliedCouponCode).update({
-                usedCount: firebase.firestore.FieldValue.increment(1)
-            }).catch(function(e) { console.error('Coupon usage update error:', e); });
+            var fv = getFieldValue();
+            if (fv) {
+                db.collection('coupons').doc(appliedCouponCode).update({
+                    usedCount: fv.increment(1)
+                }).catch(function(e) { console.error('Coupon usage update error:', e); });
+            }
         }
 
         // Mark welcome bonus as used
@@ -396,14 +412,18 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         }
         appliedCoupon = null;
         appliedCouponCode = '';
+        syncCouponToWindow();
 
         // Deduct gift card balance if used
-        if (appliedGiftCard && appliedGiftCard.code) {
+        if (appliedGiftCard && appliedGiftCard.code && typeof appliedGiftCard.balance === 'number') {
             var gcDeduction = Math.min(appliedGiftCard.balance, orderData.total);
-            db.collection('giftCards').doc(appliedGiftCard.code).update({
-                balance: firebase.firestore.FieldValue.increment(-gcDeduction),
-                redeemedAt: new Date().toISOString()
-            }).catch(function(e) { console.error('Gift card deduction error:', e); });
+            var fvGc = getFieldValue();
+            if (fvGc) {
+                db.collection('giftCards').doc(appliedGiftCard.code).update({
+                    balance: fvGc.increment(-gcDeduction),
+                    redeemedAt: new Date().toISOString()
+                }).catch(function(e) { console.error('Gift card deduction error:', e); });
+            }
             appliedGiftCard = null;
         }
 
@@ -427,18 +447,21 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         }
 
         // Award referrer points if current user was referred
+        // Mark redeemed FIRST to prevent double-reward race condition
         if (currentUser && db) {
             db.collection('referrals').where('refereePhone', '==', currentUser.phone).where('redeemed', '==', false).limit(1).get().then(function(snap) {
                 if (!snap.empty) {
                     var ref = snap.docs[0];
                     var referrerPhone = ref.data().referrerPhone;
-                    db.collection('users').doc(referrerPhone).get().then(function(uDoc) {
-                        if (uDoc.exists) {
-                            var pts = (uDoc.data().loyaltyPoints || 0) + 100;
-                            db.collection('users').doc(referrerPhone).update({ loyaltyPoints: pts }).catch(function(e) { console.error('Referrer points error:', e); });
+                    // Mark redeemed first to prevent duplicate rewards
+                    ref.ref.update({ redeemed: true }).then(function() {
+                        var fvRef = getFieldValue();
+                        if (fvRef) {
+                            db.collection('users').doc(referrerPhone).update({
+                                loyaltyPoints: fvRef.increment(100)
+                            }).catch(function(e) { console.error('Referrer points error:', e); });
                         }
-                    });
-                    ref.ref.update({ redeemed: true }).catch(function(e) { console.error('Referral redeem error:', e); });
+                    }).catch(function(e) { console.error('Referral redeem error:', e); });
                 }
             }).catch(function(e) { console.error('Referral lookup error:', e); });
         }
@@ -473,9 +496,10 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
             var hasUpdates = false;
             orderData.items.forEach(function(item) {
                 var key = item.name.toLowerCase();
-                if (inventoryMap[key] && inventoryMap[key].qty > 0) {
+                var itemQty = parseInt(item.qty) || 0;
+                if (inventoryMap[key] && inventoryMap[key].qty > 0 && itemQty > 0) {
                     var ref = db.collection('inventory').doc(inventoryMap[key].id);
-                    batch.update(ref, { quantity: Math.max(0, inventoryMap[key].qty - item.qty) });
+                    batch.update(ref, { quantity: Math.max(0, inventoryMap[key].qty - itemQty) });
                     hasUpdates = true;
                 }
             });
@@ -491,6 +515,7 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
 export function applyCoupon() {
     var input = document.getElementById('coupon-code');
     var msg = document.getElementById('coupon-msg');
+    if (!input || !msg) return;
     var code = input.value.trim().toUpperCase();
 
     // Hardcoded fallback in case Firestore is unavailable
@@ -504,6 +529,7 @@ export function applyCoupon() {
     function applyCouponData(coupon, codeValue) {
         appliedCoupon = coupon;
         appliedCouponCode = codeValue || '';
+        syncCouponToWindow();
         msg.textContent = 'Coupon applied! ' + coupon.label;
         msg.className = 'coupon-msg success';
         var subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
