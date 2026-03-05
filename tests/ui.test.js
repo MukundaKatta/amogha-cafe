@@ -14,6 +14,11 @@ vi.mock('../src/core/utils.js', () => ({
 import { launchConfetti, closeMobileMenu, initUI } from '../src/modules/ui.js';
 import { safeGetItem } from '../src/core/utils.js';
 
+// Global scroll listener cleanup — initUI() adds scroll listeners that persist
+// across tests. Track and remove them after each test to prevent interference.
+beforeEach(() => { enableScrollTracking(); });
+afterEach(() => { cleanupScrollListeners(); });
+
 // ===== DOM SETUP HELPER =====
 // Restores real jsdom query methods scoped to document.body so each test
 // operates on a clean, isolated DOM subtree.
@@ -22,6 +27,29 @@ function setupDOM(html) {
     document.getElementById = (id) => document.body.querySelector('#' + id);
     document.querySelectorAll = (sel) => document.body.querySelectorAll(sel);
     document.querySelector = (sel) => document.body.querySelector(sel);
+}
+
+// ===== EVENT LISTENER CLEANUP =====
+// Track window event listeners added by initUI() so we can remove them between tests.
+// Without this, scroll/resize listeners accumulate and interfere with each other.
+var _trackedListeners = [];
+var _origAddEventListener = window.addEventListener.bind(window);
+var _origRemoveEventListener = window.removeEventListener.bind(window);
+
+function enableScrollTracking() {
+    _trackedListeners = [];
+    window.addEventListener = function(type, fn, opts) {
+        _trackedListeners.push({ type: type, fn: fn, opts: opts });
+        return _origAddEventListener(type, fn, opts);
+    };
+}
+
+function cleanupScrollListeners() {
+    _trackedListeners.forEach(function(entry) {
+        _origRemoveEventListener(entry.type, entry.fn);
+    });
+    _trackedListeners = [];
+    window.addEventListener = _origAddEventListener;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
