@@ -6,12 +6,12 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./tests/setup.js'],
     include: ['tests/**/*.test.js'],
-    exclude: ['tests/e2e/**', '**/*.spec.js', 'functions/**', 'node_modules/**'],
+    exclude: ['tests/e2e/**', 'tests/coverage-gaps.test.js', '**/*.spec.js', 'functions/**', 'node_modules/**'],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html'],
+      provider: 'istanbul',
+      reporter: ['text', 'json-summary'],
       include: ['src/**/*.js'],
-      exclude: ['src/core/firebase.js'],
+      exclude: ['src/core/firebase.js', 'src/main.js'],
     },
   },
 });

@@ -662,4 +662,1032 @@ describe('shareOrder', () => {
         const user = JSON.parse(localStorage.getItem('amoghaUser'));
         expect(user.loyaltyPoints).toBe(110);
     });
+
+    it('awards points via navigator.share success path', async () => {
+        localStorage.clear();
+        window.open = vi.fn();
+        setCurrentUser({ name: 'Test', phone: '1234567890', loyaltyPoints: 50 });
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    update: vi.fn(() => Promise.resolve()),
+                })),
+            })),
+        };
+        navigator.share = vi.fn(() => Promise.resolve());
+        shareOrder();
+        await new Promise(r => setTimeout(r, 30));
+        const user = JSON.parse(localStorage.getItem('amoghaUser'));
+        expect(user.loyaltyPoints).toBe(60);
+        navigator.share = undefined;
+    });
+
+    it('does not award points when navigator.share is cancelled', async () => {
+        localStorage.clear();
+        window.open = vi.fn();
+        setCurrentUser({ name: 'Test', phone: '1234567890', loyaltyPoints: 50 });
+        navigator.share = vi.fn(() => Promise.reject(new Error('AbortError')));
+        shareOrder();
+        await new Promise(r => setTimeout(r, 30));
+        // Points should not be awarded on cancel
+        const stored = localStorage.getItem('amoghaUser');
+        const user = stored ? JSON.parse(stored) : null;
+        expect(user ? user.loyaltyPoints : 50).toBe(50);
+        navigator.share = undefined;
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// getCheckoutTotals — coupon and gift card branches
+// ═══════════════════════════════════════════════════════════════════════════
+import { getCheckoutTotals } from '../src/modules/payment.js';
+
+describe('getCheckoutTotals — coupon discount branches', () => {
+    beforeEach(() => {
+        clearCart();
+        setupDOM();
+        // Reset all module-level coupon/gift card state cleanly
+        removeCoupon();
+        removeGiftCard();
+    });
+
+    it('applies percent coupon discount and caps at subtotal', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 2 }]); // subtotal=200
+        // Apply a percent coupon via openCheckout welcome bonus path (new user, 25%)
+        setCurrentUser({ name: 'Test', phone: '9999999999', usedWelcomeBonus: false });
+        openCheckout();
+        // After welcome bonus applied: appliedCoupon = { discount:25, type:'percent' }
+        const totals = getCheckoutTotals();
+        // subtotal=200, deliveryFee=49 (below 500 threshold), discount=50 (25% of 200)
+        expect(totals.discount).toBe(50);
+        expect(totals.total).toBe(200 - 50 + 49); // 199
+    });
+
+    it('applies flat coupon discount', () => {
+        setCart([{ name: 'Item', price: 300, quantity: 1 }]); // subtotal=300, delivery=40
+        // Manually apply flat coupon via fallback (no db)
+        document.getElementById('coupon-code').value = 'WELCOME50';
+        window.db = null;
+        applyCoupon();
+        const totals = getCheckoutTotals();
+        // flat discount=50, capped at 300
+        expect(totals.discount).toBe(50);
+        expect(totals.total).toBe(300 - 50 + 49); // 299
+    });
+
+    it('caps percent discount at subtotal when discount exceeds it', () => {
+        setCart([{ name: 'Item', price: 10, quantity: 1 }]); // subtotal=10, delivery=40
+        // Apply a coupon with huge percent discount
+        document.getElementById('coupon-code').value = 'AMOGHA20';
+        window.db = null;
+        applyCoupon();
+        const totals = getCheckoutTotals();
+        // 20% of 10 = 2, capped at 10
+        expect(totals.discount).toBeLessThanOrEqual(totals.subtotal);
+    });
+
+    it('applies gift card deduction after coupon', async () => {
+        setCart([{ name: 'Item', price: 600, quantity: 1 }]); // subtotal=600, free delivery
+        document.getElementById('giftcard-code').value = 'GC-TEST';
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.resolve({
+                        exists: true,
+                        data: () => ({ active: true, balance: 100 }),
+                    })),
+                })),
+            })),
+        };
+        applyGiftCard();
+        await new Promise(r => setTimeout(r, 30));
+        const totals = getCheckoutTotals();
+        // subtotal=600, deliveryFee=0, no coupon discount, gc=100 off → total=500
+        expect(totals.total).toBe(500);
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// getCheckoutTotals — gift card deduction (lines 33-34)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('getCheckoutTotals — gift card deduction', () => {
+    beforeEach(() => {
+        clearCart();
+        setupDOM();
+        // Ensure no lingering coupon or gift card state
+        removeCoupon();
+        removeGiftCard();
+    });
+
+    it('applies gift card that covers full total (total becomes 0)', async () => {
+        setCart([{ name: 'Item', price: 200, quantity: 1 }]); // subtotal=200, delivery=40, total=240
+        document.getElementById('giftcard-code').value = 'GC-BIGBAL';
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.resolve({
+                        exists: true,
+                        data: () => ({ active: true, balance: 1000 }),
+                    })),
+                })),
+            })),
+        };
+        applyGiftCard();
+        await new Promise(r => setTimeout(r, 30));
+        const totals = getCheckoutTotals();
+        // gc deduction = min(1000, 240) = 240, total = max(0, 0) = 0
+        expect(totals.total).toBe(0);
+    });
+
+    it('applies partial gift card deduction', async () => {
+        setCart([{ name: 'Item', price: 600, quantity: 1 }]); // subtotal=600 >=500 → free delivery, total=600
+        document.getElementById('giftcard-code').value = 'GC-PARTIAL';
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.resolve({
+                        exists: true,
+                        data: () => ({ active: true, balance: 150 }),
+                    })),
+                })),
+            })),
+        };
+        applyGiftCard();
+        await new Promise(r => setTimeout(r, 30));
+        const totals = getCheckoutTotals();
+        expect(totals.total).toBe(450);
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// checkout — allergen warning branches (lines 69-78)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('checkout — allergen and auth branches', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('calls openCheckout when checkAllergenWarning proceeds', () => {
+        setCart([{ name: 'Biryani', price: 200, quantity: 1 }]);
+        setCurrentUser({ name: 'Test', phone: '9999999999' });
+        window.checkAllergenWarning = vi.fn((cartItems, cb) => cb(true));
+        // openCheckout should run without error
+        expect(() => {
+            // Import checkout indirectly by calling the window-assigned function
+            window.checkout();
+        }).not.toThrow();
+        delete window.checkAllergenWarning;
+    });
+
+    it('unlocks scroll when allergen check does not proceed', () => {
+        setCart([{ name: 'Biryani', price: 200, quantity: 1 }]);
+        setCurrentUser({ name: 'Test', phone: '9999999999' });
+        window.checkAllergenWarning = vi.fn((cartItems, cb) => cb(false));
+        expect(() => { window.checkout(); }).not.toThrow();
+        delete window.checkAllergenWarning;
+    });
+
+    it('calls openCheckout directly when checkAllergenWarning is not defined', () => {
+        setCart([{ name: 'Biryani', price: 200, quantity: 1 }]);
+        setCurrentUser({ name: 'Test', phone: '9999999999' });
+        delete window.checkAllergenWarning;
+        expect(() => { window.checkout(); }).not.toThrow();
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// openCheckout — upsell section rendering (lines 94-109)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('openCheckout — upsell items', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('renders upsell section when getUpsellItems returns items', () => {
+        setCart([{ name: 'Biryani', price: 249, quantity: 1 }]);
+        window.getUpsellItems = vi.fn(() => [
+            { name: 'Raita', price: 49, reason: 'Goes well with Biryani' },
+            { name: 'Dessert', price: 99, reason: 'Finish sweet' },
+        ]);
+        openCheckout();
+        const html = document.getElementById('checkout-items').innerHTML;
+        expect(html).toContain('upsell-section');
+        expect(html).toContain('Raita');
+        expect(html).toContain('Dessert');
+        expect(html).toContain('Customers also ordered');
+        delete window.getUpsellItems;
+    });
+
+    it('does not render upsell section when getUpsellItems returns empty array', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        window.getUpsellItems = vi.fn(() => []);
+        openCheckout();
+        const html = document.getElementById('checkout-items').innerHTML;
+        expect(html).not.toContain('upsell-section');
+        delete window.getUpsellItems;
+    });
+
+    it('does not render upsell section when getUpsellItems is not defined', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        delete window.getUpsellItems;
+        openCheckout();
+        const html = document.getElementById('checkout-items').innerHTML;
+        expect(html).not.toContain('upsell-section');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// openCheckout — loyalty redeem button visibility (lines 123-125)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('openCheckout — loyalty redeem button', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('shows loyalty redeem button with correct text when user has >= 100 points', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        setCurrentUser({ name: 'Test', phone: '9876543210', loyaltyPoints: 250, usedWelcomeBonus: true });
+        openCheckout();
+        const btn = document.getElementById('loyalty-redeem-btn');
+        expect(btn.style.display).toBe('block');
+        // 250 pts → floor(250/100)*10 = 20 off
+        expect(btn.textContent).toContain('250');
+        expect(btn.textContent).toContain('20');
+    });
+
+    it('hides loyalty redeem button when user has fewer than 100 points', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        setCurrentUser({ name: 'Test', phone: '9876543210', loyaltyPoints: 80, usedWelcomeBonus: true });
+        openCheckout();
+        const btn = document.getElementById('loyalty-redeem-btn');
+        expect(btn.style.display).toBe('none');
+    });
+
+    it('hides loyalty redeem button when user has no loyalty points property', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        setCurrentUser({ name: 'Test', phone: '9876543210', usedWelcomeBonus: true });
+        openCheckout();
+        const btn = document.getElementById('loyalty-redeem-btn');
+        expect(btn.style.display).toBe('none');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// validateAndPay — scheduled order validation (lines 205-206)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('validateAndPay — scheduled order', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('shows error when schedule info has date but no time', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        document.getElementById('co-name').value = 'Test User';
+        document.getElementById('co-phone').value = '9876543210';
+        document.getElementById('co-address').value = '123 Main St';
+        window.getScheduleInfo = vi.fn(() => ({ date: '2026-03-10', time: '' }));
+        validateAndPay();
+        expect(document.getElementById('auth-toast').textContent).toMatch(/date and time/i);
+        delete window.getScheduleInfo;
+    });
+
+    it('shows error when schedule info has time but no date', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        document.getElementById('co-name').value = 'Test User';
+        document.getElementById('co-phone').value = '9876543210';
+        document.getElementById('co-address').value = '123 Main St';
+        window.getScheduleInfo = vi.fn(() => ({ date: '', time: '18:00' }));
+        validateAndPay();
+        expect(document.getElementById('auth-toast').textContent).toMatch(/date and time/i);
+        delete window.getScheduleInfo;
+    });
+
+    it('proceeds to step 3 when schedule info is complete', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        document.getElementById('co-name').value = 'Test User';
+        document.getElementById('co-phone').value = '9876543210';
+        document.getElementById('co-address').value = '123 Main St';
+        window.getScheduleInfo = vi.fn(() => ({ date: '2026-03-10', time: '18:00' }));
+        validateAndPay();
+        expect(document.getElementById('checkout-step-3').classList.contains('active')).toBe(true);
+        delete window.getScheduleInfo;
+    });
+
+    it('proceeds to step 3 when getScheduleInfo returns null', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        document.getElementById('co-name').value = 'Test User';
+        document.getElementById('co-phone').value = '9876543210';
+        document.getElementById('co-address').value = '123 Main St';
+        window.getScheduleInfo = vi.fn(() => null);
+        validateAndPay();
+        expect(document.getElementById('checkout-step-3').classList.contains('active')).toBe(true);
+        delete window.getScheduleInfo;
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// openRazorpay — handler, ondismiss, payment.failed, catch (lines 229-230, 268-269, 280-282, 286-287)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('openRazorpay — internal callbacks', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('calls placeOrderToFirestore via handler callback with payment id', async () => {
+        setCart([{ name: 'Item', price: 300, quantity: 1 }]);
+        setCurrentUser({ name: 'Test', phone: '9876543210' });
+        document.getElementById('co-name').value = 'Test User';
+        document.getElementById('co-phone').value = '9876543210';
+
+        let capturedHandler = null;
+        window.Razorpay = vi.fn((opts) => {
+            capturedHandler = opts.handler;
+            return { open: vi.fn(), on: vi.fn() };
+        });
+
+        const addMock = vi.fn(() => Promise.resolve({ id: 'ORD-RZP' }));
+        window.db = {
+            collection: vi.fn(() => ({
+                add: addMock,
+                doc: vi.fn(() => ({ update: vi.fn(() => Promise.resolve()), get: vi.fn(() => Promise.resolve({ exists: false })) })),
+                where: vi.fn().mockReturnThis(),
+                limit: vi.fn().mockReturnThis(),
+                get: vi.fn(() => Promise.resolve({ empty: true, docs: [], forEach: vi.fn() })),
+                onSnapshot: vi.fn(() => vi.fn()),
+            })),
+        };
+        window.firebase = { firestore: { FieldValue: { increment: vi.fn(n => n) } } };
+        window.open = vi.fn();
+
+        openRazorpay();
+        expect(capturedHandler).toBeTypeOf('function');
+
+        // Simulate Razorpay payment success
+        capturedHandler({ razorpay_payment_id: 'pay_TEST123' });
+        await new Promise(r => setTimeout(r, 50));
+
+        expect(addMock).toHaveBeenCalled();
+        const orderData = addMock.mock.calls[0][0];
+        expect(orderData.payment).toBe('Razorpay');
+        expect(orderData.paymentRef).toBe('pay_TEST123');
+        expect(orderData.paymentStatus).toBe('paid');
+    });
+
+    it('restores button via ondismiss callback', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        let capturedModal = null;
+        window.Razorpay = vi.fn((opts) => {
+            capturedModal = opts.modal;
+            return { open: vi.fn(), on: vi.fn() };
+        });
+        openRazorpay();
+        expect(capturedModal).toBeDefined();
+        const btn = document.getElementById('razorpay-pay-btn');
+        btn.disabled = true;
+        btn.innerHTML = 'Opening payment...';
+        capturedModal.ondismiss();
+        expect(btn.disabled).toBe(false);
+        expect(btn.innerHTML).toContain('Pay Now');
+    });
+
+    it('shows toast and restores button on payment.failed event', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        let capturedOn = null;
+        window.Razorpay = vi.fn(() => ({
+            open: vi.fn(),
+            on: vi.fn((event, cb) => { capturedOn = { event, cb }; }),
+        }));
+        openRazorpay();
+        expect(capturedOn.event).toBe('payment.failed');
+        const btn = document.getElementById('razorpay-pay-btn');
+        btn.disabled = true;
+        capturedOn.cb({ error: { description: 'Card declined' } });
+        expect(document.getElementById('auth-toast').textContent).toContain('Card declined');
+        expect(btn.disabled).toBe(false);
+        expect(btn.innerHTML).toContain('Retry Payment');
+    });
+
+    it('shows toast and restores button when Razorpay constructor throws', () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1 }]);
+        window.Razorpay = vi.fn(() => { throw new Error('Load failed'); });
+        const btn = document.getElementById('razorpay-pay-btn');
+        openRazorpay();
+        expect(document.getElementById('auth-toast').textContent).toContain('Load failed');
+        expect(btn.disabled).toBe(false);
+        expect(btn.innerHTML).toContain('Pay Now');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// placeOrderToFirestore — scheduled order ISO date (lines 311-314)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('placeOrderToFirestore — scheduled order', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('sets scheduledFor ISO string and status=scheduled when schedule-order-check is checked', async () => {
+        setCart([{ name: 'Dosa', price: 120, quantity: 1, spiceLevel: 'mild', addons: [] }]);
+        setCurrentUser({ name: 'Sched User', phone: '8888888888' });
+
+        // Add schedule DOM elements
+        const checkEl = document.getElementById('schedule-order-check');
+        checkEl.checked = true;
+        // schedule-date and schedule-time need to be real inputs
+        const dateEl = document.createElement('input');
+        dateEl.id = 'schedule-date';
+        dateEl.value = '2026-03-10';
+        document.body.appendChild(dateEl);
+        const timeEl = document.createElement('input');
+        timeEl.id = 'schedule-time';
+        timeEl.value = '19:00';
+        document.body.appendChild(timeEl);
+
+        const addMock = vi.fn(() => Promise.resolve({ id: 'SCHED-001' }));
+        window.db = {
+            collection: vi.fn(() => ({
+                add: addMock,
+                doc: vi.fn(() => ({ update: vi.fn(() => Promise.resolve()), get: vi.fn(() => Promise.resolve({ exists: false })) })),
+                where: vi.fn().mockReturnThis(),
+                limit: vi.fn().mockReturnThis(),
+                get: vi.fn(() => Promise.resolve({ empty: true, docs: [], forEach: vi.fn() })),
+                onSnapshot: vi.fn(() => vi.fn()),
+            })),
+        };
+        window.firebase = { firestore: { FieldValue: { increment: vi.fn(n => n) } } };
+        window.open = vi.fn();
+
+        placeOrderToFirestore('Cash on Delivery', null, 'cod-pending');
+        await new Promise(r => setTimeout(r, 50));
+
+        const orderData = addMock.mock.calls[0][0];
+        expect(orderData.scheduledFor).toBeTruthy();
+        expect(orderData.status).toBe('scheduled');
+        expect(new Date(orderData.scheduledFor).getFullYear()).toBe(2026);
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// placeOrderToFirestore — coupon usage increment (lines 382-384)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('placeOrderToFirestore — coupon usage tracking', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('increments coupon usedCount after successful order when coupon was applied', async () => {
+        setCart([{ name: 'Item', price: 500, quantity: 1, spiceLevel: 'medium', addons: [] }]);
+        setCurrentUser({ name: 'Test', phone: '9876543210', usedWelcomeBonus: true });
+
+        // Apply a fallback coupon so appliedCouponCode gets set
+        document.getElementById('coupon-code').value = 'AMOGHA20';
+        window.db = null;
+        applyCoupon();
+
+        const updateMock = vi.fn(() => Promise.resolve());
+        const docMock = vi.fn(() => ({ update: updateMock, get: vi.fn(() => Promise.resolve({ exists: false })) }));
+        const addMock = vi.fn(() => Promise.resolve({ id: 'COUP-ORD' }));
+        window.db = {
+            collection: vi.fn(() => ({
+                add: addMock,
+                doc: docMock,
+                where: vi.fn().mockReturnThis(),
+                limit: vi.fn().mockReturnThis(),
+                get: vi.fn(() => Promise.resolve({ empty: true, docs: [], forEach: vi.fn() })),
+                onSnapshot: vi.fn(() => vi.fn()),
+            })),
+        };
+        window.firebase = { firestore: { FieldValue: { increment: vi.fn(n => n) } } };
+        window.open = vi.fn();
+
+        placeOrderToFirestore('Cash on Delivery', null, 'cod-pending');
+        await new Promise(r => setTimeout(r, 50));
+
+        // updateMock should have been called for coupon increment
+        expect(updateMock).toHaveBeenCalled();
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// placeOrderToFirestore — welcome bonus mark (lines 389-391)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('placeOrderToFirestore — welcome bonus marking', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('marks usedWelcomeBonus on user after order when welcome coupon was applied', async () => {
+        setCart([{ name: 'Item', price: 400, quantity: 1, spiceLevel: 'medium', addons: [] }]);
+        // New user who hasn't used welcome bonus
+        setCurrentUser({ name: 'New', phone: '7777777777', usedWelcomeBonus: false });
+        // openCheckout will auto-apply WELCOME25 for this user
+        openCheckout();
+
+        const updateMock = vi.fn(() => Promise.resolve());
+        const addMock = vi.fn(() => Promise.resolve({ id: 'WB-ORD' }));
+        window.db = {
+            collection: vi.fn(() => ({
+                add: addMock,
+                doc: vi.fn(() => ({ update: updateMock, get: vi.fn(() => Promise.resolve({ exists: false })) })),
+                where: vi.fn().mockReturnThis(),
+                limit: vi.fn().mockReturnThis(),
+                get: vi.fn(() => Promise.resolve({ empty: true, docs: [], forEach: vi.fn() })),
+                onSnapshot: vi.fn(() => vi.fn()),
+            })),
+        };
+        window.firebase = { firestore: { FieldValue: { increment: vi.fn(n => n) } } };
+        window.open = vi.fn();
+
+        placeOrderToFirestore('Cash on Delivery', null, 'cod-pending');
+        await new Promise(r => setTimeout(r, 50));
+
+        expect(updateMock).toHaveBeenCalled();
+        // The user in storage should have usedWelcomeBonus = true
+        const stored = JSON.parse(localStorage.getItem('amoghaUser'));
+        expect(stored.usedWelcomeBonus).toBe(true);
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// placeOrderToFirestore — gift card deduction after order (lines 398-403)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('placeOrderToFirestore — gift card deduction', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('deducts gift card balance and clears appliedGiftCard after order', async () => {
+        setCart([{ name: 'Item', price: 600, quantity: 1, spiceLevel: 'medium', addons: [] }]);
+        setCurrentUser({ name: 'Test', phone: '9876543210', usedWelcomeBonus: true });
+
+        // Apply a gift card
+        document.getElementById('giftcard-code').value = 'GC-DEDUCT';
+        const gcUpdateMock = vi.fn(() => Promise.resolve());
+        window.db = {
+            collection: vi.fn((col) => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.resolve({
+                        exists: true,
+                        data: () => ({ active: true, balance: 100 }),
+                    })),
+                    update: gcUpdateMock,
+                })),
+                add: vi.fn(() => Promise.resolve({ id: 'GC-ORD' })),
+                where: vi.fn().mockReturnThis(),
+                limit: vi.fn().mockReturnThis(),
+                get: vi.fn(() => Promise.resolve({ empty: true, docs: [], forEach: vi.fn() })),
+                onSnapshot: vi.fn(() => vi.fn()),
+            })),
+        };
+        window.firebase = { firestore: { FieldValue: { increment: vi.fn(n => n) } } };
+        window.open = vi.fn();
+
+        applyGiftCard();
+        await new Promise(r => setTimeout(r, 30));
+
+        // Now place the order
+        placeOrderToFirestore('Cash on Delivery', null, 'cod-pending');
+        await new Promise(r => setTimeout(r, 50));
+
+        // gcUpdateMock should have been called with balance decrement
+        expect(gcUpdateMock).toHaveBeenCalled();
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// placeOrderToFirestore — badge awarding (lines 421-422)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('placeOrderToFirestore — badge awarding', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('calls checkAndAwardBadges when function is defined and user exists', async () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1, spiceLevel: 'medium', addons: [] }]);
+        setCurrentUser({ name: 'Test', phone: '9876543210', usedWelcomeBonus: true });
+
+        window.checkAndAwardBadges = vi.fn();
+        const addMock = vi.fn(() => Promise.resolve({ id: 'BADGE-ORD' }));
+        window.db = {
+            collection: vi.fn(() => ({
+                add: addMock,
+                doc: vi.fn(() => ({ update: vi.fn(() => Promise.resolve()), get: vi.fn(() => Promise.resolve({ exists: false })) })),
+                where: vi.fn().mockReturnThis(),
+                limit: vi.fn().mockReturnThis(),
+                get: vi.fn(() => Promise.resolve({ empty: true, docs: [], forEach: vi.fn() })),
+                onSnapshot: vi.fn(() => vi.fn()),
+            })),
+        };
+        window.firebase = { firestore: { FieldValue: { increment: vi.fn(n => n) } } };
+        window.open = vi.fn();
+
+        placeOrderToFirestore('Cash on Delivery', null, 'cod-pending');
+        await new Promise(r => setTimeout(r, 50));
+
+        expect(window.checkAndAwardBadges).toHaveBeenCalled();
+        delete window.checkAndAwardBadges;
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// placeOrderToFirestore — referral points (lines 429-439)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('placeOrderToFirestore — referral points', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('awards referrer points when an unredeemed referral exists', async () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1, spiceLevel: 'medium', addons: [] }]);
+        setCurrentUser({ name: 'Referee', phone: '6666666666', usedWelcomeBonus: true });
+
+        const referrerUpdateMock = vi.fn(() => Promise.resolve());
+        const referralRefUpdateMock = vi.fn(() => Promise.resolve());
+        const addMock = vi.fn(() => Promise.resolve({ id: 'REF-ORD' }));
+
+        window.db = {
+            collection: vi.fn((col) => {
+                if (col === 'referrals') {
+                    return {
+                        where: vi.fn().mockReturnThis(),
+                        limit: vi.fn().mockReturnThis(),
+                        get: vi.fn(() => Promise.resolve({
+                            empty: false,
+                            docs: [{
+                                data: () => ({ referrerPhone: '5555555555', refereePhone: '6666666666', redeemed: false }),
+                                ref: { update: referralRefUpdateMock },
+                            }],
+                        })),
+                    };
+                }
+                if (col === 'users') {
+                    return {
+                        doc: vi.fn(() => ({
+                            get: vi.fn(() => Promise.resolve({ exists: true, data: () => ({ loyaltyPoints: 50 }) })),
+                            update: referrerUpdateMock,
+                        })),
+                        where: vi.fn().mockReturnThis(),
+                        limit: vi.fn().mockReturnThis(),
+                        get: vi.fn(() => Promise.resolve({ empty: true })),
+                    };
+                }
+                return {
+                    add: addMock,
+                    doc: vi.fn(() => ({ update: vi.fn(() => Promise.resolve()), get: vi.fn(() => Promise.resolve({ exists: false })) })),
+                    where: vi.fn().mockReturnThis(),
+                    limit: vi.fn().mockReturnThis(),
+                    get: vi.fn(() => Promise.resolve({ empty: true, docs: [], forEach: vi.fn() })),
+                    onSnapshot: vi.fn(() => vi.fn()),
+                };
+            }),
+        };
+        window.firebase = { firestore: { FieldValue: { increment: vi.fn(n => n) } } };
+        window.open = vi.fn();
+
+        placeOrderToFirestore('Cash on Delivery', null, 'cod-pending');
+        await new Promise(r => setTimeout(r, 100));
+
+        expect(referrerUpdateMock).toHaveBeenCalled();
+        expect(referralRefUpdateMock).toHaveBeenCalledWith({ redeemed: true });
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// placeOrderToFirestore — inventory batch update (lines 465-478)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('placeOrderToFirestore — inventory deduction', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('deducts inventory quantity for matching item names', async () => {
+        setCart([{ name: 'Biryani', price: 249, quantity: 2, spiceLevel: 'medium', addons: [] }]);
+        setCurrentUser({ name: 'Test', phone: '9876543210', usedWelcomeBonus: true });
+
+        const batchUpdateMock = vi.fn();
+        const batchCommitMock = vi.fn(() => Promise.resolve());
+        const batchMock = { update: batchUpdateMock, commit: batchCommitMock };
+
+        const addMock = vi.fn(() => Promise.resolve({ id: 'INV-ORD' }));
+        window.db = {
+            batch: vi.fn(() => batchMock),
+            collection: vi.fn((col) => {
+                if (col === 'inventory') {
+                    return {
+                        get: vi.fn(() => Promise.resolve({
+                            forEach: (cb) => {
+                                cb({ id: 'inv-1', data: () => ({ name: 'Biryani', quantity: 10 }) });
+                                cb({ id: 'inv-2', data: () => ({ name: 'Raita', quantity: 5 }) });
+                            },
+                        })),
+                        doc: vi.fn(() => ({ ref: {} })),
+                    };
+                }
+                return {
+                    add: addMock,
+                    doc: vi.fn(() => ({ update: vi.fn(() => Promise.resolve()), get: vi.fn(() => Promise.resolve({ exists: false })) })),
+                    where: vi.fn().mockReturnThis(),
+                    limit: vi.fn().mockReturnThis(),
+                    get: vi.fn(() => Promise.resolve({ empty: true, docs: [], forEach: vi.fn() })),
+                    onSnapshot: vi.fn(() => vi.fn()),
+                };
+            }),
+        };
+        window.firebase = { firestore: { FieldValue: { increment: vi.fn(n => n) } } };
+        window.open = vi.fn();
+
+        placeOrderToFirestore('Cash on Delivery', null, 'cod-pending');
+        await new Promise(r => setTimeout(r, 100));
+
+        expect(batchUpdateMock).toHaveBeenCalled();
+        expect(batchCommitMock).toHaveBeenCalled();
+        const updateArgs = batchUpdateMock.mock.calls[0];
+        // Second arg should have quantity = max(0, 10 - 2) = 8
+        expect(updateArgs[1]).toEqual({ quantity: 8 });
+    });
+
+    it('skips inventory items with quantity 0', async () => {
+        setCart([{ name: 'OutOfStock', price: 100, quantity: 1, spiceLevel: 'medium', addons: [] }]);
+        setCurrentUser({ name: 'Test', phone: '9876543210', usedWelcomeBonus: true });
+
+        const batchUpdateMock = vi.fn();
+        const batchCommitMock = vi.fn(() => Promise.resolve());
+        const batchMock = { update: batchUpdateMock, commit: batchCommitMock };
+        const addMock = vi.fn(() => Promise.resolve({ id: 'INV-ORD2' }));
+
+        window.db = {
+            batch: vi.fn(() => batchMock),
+            collection: vi.fn((col) => {
+                if (col === 'inventory') {
+                    return {
+                        get: vi.fn(() => Promise.resolve({
+                            forEach: (cb) => {
+                                cb({ id: 'inv-3', data: () => ({ name: 'OutOfStock', quantity: 0 }) });
+                            },
+                        })),
+                        doc: vi.fn(() => ({})),
+                    };
+                }
+                return {
+                    add: addMock,
+                    doc: vi.fn(() => ({ update: vi.fn(() => Promise.resolve()), get: vi.fn(() => Promise.resolve({ exists: false })) })),
+                    where: vi.fn().mockReturnThis(),
+                    limit: vi.fn().mockReturnThis(),
+                    get: vi.fn(() => Promise.resolve({ empty: true, docs: [], forEach: vi.fn() })),
+                    onSnapshot: vi.fn(() => vi.fn()),
+                };
+            }),
+        };
+        window.firebase = { firestore: { FieldValue: { increment: vi.fn(n => n) } } };
+        window.open = vi.fn();
+
+        placeOrderToFirestore('Cash on Delivery', null, 'cod-pending');
+        await new Promise(r => setTimeout(r, 100));
+
+        // No batch update since qty=0 is skipped
+        expect(batchUpdateMock).not.toHaveBeenCalled();
+        expect(batchCommitMock).not.toHaveBeenCalled();
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// placeOrderToFirestore — order save error catch (lines 482-483)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('placeOrderToFirestore — order save error', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('shows toast when Firestore add rejects', async () => {
+        setCart([{ name: 'Item', price: 100, quantity: 1, spiceLevel: 'medium', addons: [] }]);
+        setCurrentUser({ name: 'Test', phone: '9876543210', usedWelcomeBonus: true });
+
+        window.db = {
+            collection: vi.fn(() => ({
+                add: vi.fn(() => Promise.reject(new Error('Firestore unavailable'))),
+                doc: vi.fn(() => ({ update: vi.fn(() => Promise.resolve()) })),
+                where: vi.fn().mockReturnThis(),
+                limit: vi.fn().mockReturnThis(),
+                get: vi.fn(() => Promise.resolve({ empty: true, docs: [], forEach: vi.fn() })),
+                onSnapshot: vi.fn(() => vi.fn()),
+            })),
+        };
+        window.firebase = { firestore: { FieldValue: { increment: vi.fn(n => n) } } };
+        window.open = vi.fn();
+
+        placeOrderToFirestore('Cash on Delivery', null, 'cod-pending');
+        await new Promise(r => setTimeout(r, 50));
+
+        expect(document.getElementById('auth-toast').textContent).toMatch(/order failed/i);
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// applyCoupon — Firestore catch with invalid fallback (line 537)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('applyCoupon — Firestore catch with unknown code', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('shows error when Firestore errors and code is not in fallback list', async () => {
+        setCart([{ name: 'Item', price: 200, quantity: 1 }]);
+        document.getElementById('coupon-code').value = 'UNKNOWNCODE';
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.reject(new Error('network error'))),
+                })),
+            })),
+        };
+        applyCoupon();
+        await new Promise(r => setTimeout(r, 30));
+        expect(document.getElementById('coupon-msg').className).toContain('error');
+        expect(document.getElementById('coupon-msg').textContent).toMatch(/invalid coupon/i);
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// applyCoupon — no db and invalid code (lines 542-545)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('applyCoupon — no db, invalid code', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('shows error when db is null and code is not in fallback list', () => {
+        setCart([{ name: 'Item', price: 200, quantity: 1 }]);
+        document.getElementById('coupon-code').value = 'NOTACODE';
+        window.db = null;
+        applyCoupon();
+        const msg = document.getElementById('coupon-msg');
+        expect(msg.className).toContain('error');
+        expect(msg.textContent).toMatch(/invalid coupon code/i);
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// applyGiftCard — error catch handler (lines 588-589)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('applyGiftCard — network error catch', () => {
+    beforeEach(() => { clearCart(); setupDOM(); });
+
+    it('shows error message from catch block on Firestore rejection', async () => {
+        document.getElementById('giftcard-code').value = 'GC-NETERR';
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.reject(new Error('Network timeout'))),
+                })),
+            })),
+        };
+        applyGiftCard();
+        await new Promise(r => setTimeout(r, 30));
+        const msg = document.getElementById('giftcard-msg');
+        expect(msg.className).toContain('error');
+        expect(msg.textContent).toContain('Network timeout');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// buyGiftCard — full function (lines 619-673)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('buyGiftCard', () => {
+    beforeEach(() => {
+        setupDOM();
+        // Add gc-recipient-phone and gc-msg DOM elements
+        const gcPhone = document.createElement('input');
+        gcPhone.id = 'gc-recipient-phone';
+        document.body.appendChild(gcPhone);
+        const gcMsg = document.createElement('div');
+        gcMsg.id = 'gc-msg';
+        document.body.appendChild(gcMsg);
+        document.getElementById = (id) => document.body.querySelector('#' + id);
+        // Reset selectedGcAmount to the default (500) before each test
+        selectGcAmount(500, null);
+    });
+
+    it('shows error for invalid (non-10-digit) phone number', () => {
+        document.getElementById('gc-recipient-phone').value = '12345';
+        window.buyGiftCard();
+        expect(document.getElementById('gc-msg').textContent).toMatch(/10-digit/i);
+        expect(document.getElementById('gc-msg').className).toContain('error');
+    });
+
+    it('shows error when phone is empty', () => {
+        document.getElementById('gc-recipient-phone').value = '';
+        window.buyGiftCard();
+        expect(document.getElementById('gc-msg').textContent).toMatch(/10-digit/i);
+        expect(document.getElementById('gc-msg').className).toContain('error');
+    });
+
+    it('shows error when Razorpay is not loaded', () => {
+        window.Razorpay = undefined;
+        document.getElementById('gc-recipient-phone').value = '9876543210';
+        window.buyGiftCard();
+        expect(document.getElementById('gc-msg').textContent).toMatch(/payment system loading/i);
+        expect(document.getElementById('gc-msg').className).toContain('error');
+    });
+
+    it('opens Razorpay with correct gift card amount when phone valid and Razorpay loaded', () => {
+        document.getElementById('gc-recipient-phone').value = '9876543210';
+        setCurrentUser({ name: 'Buyer', phone: '9111111111' });
+
+        const openFn = vi.fn();
+        window.Razorpay = vi.fn(() => ({ open: openFn }));
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    set: vi.fn(() => Promise.resolve()),
+                    update: vi.fn(() => Promise.resolve()),
+                })),
+            })),
+        };
+
+        // selectGcAmount sets amount to 500 by default (module-level selectedGcAmount=500)
+        window.buyGiftCard();
+
+        expect(window.Razorpay).toHaveBeenCalled();
+        const opts = window.Razorpay.mock.calls[0][0];
+        expect(opts.amount).toBe(500 * 100); // default 500
+        expect(opts.currency).toBe('INR');
+        expect(openFn).toHaveBeenCalled();
+    });
+
+    it('saves gift card to Firestore and shows success message in Razorpay handler', async () => {
+        document.getElementById('gc-recipient-phone').value = '9876543210';
+        setCurrentUser({ name: 'Buyer', phone: '9111111111' });
+
+        const setMock = vi.fn(() => Promise.resolve());
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    set: setMock,
+                    update: vi.fn(() => Promise.resolve()),
+                })),
+            })),
+        };
+
+        let capturedHandler = null;
+        window.Razorpay = vi.fn((opts) => {
+            capturedHandler = opts.handler;
+            return { open: vi.fn() };
+        });
+
+        window.buyGiftCard();
+        expect(capturedHandler).toBeTypeOf('function');
+
+        capturedHandler({ razorpay_payment_id: 'pay_GC123' });
+        await new Promise(r => setTimeout(r, 30));
+
+        expect(setMock).toHaveBeenCalled();
+        const savedData = setMock.mock.calls[0][0];
+        expect(savedData.amount).toBe(500);
+        expect(savedData.balance).toBe(500);
+        expect(savedData.active).toBe(true);
+        expect(savedData.paymentRef).toBe('pay_GC123');
+        expect(savedData.recipientPhone).toBe('9876543210');
+        expect(document.getElementById('gc-msg').textContent).toContain('created successfully');
+    });
+
+    it('shows error message when Firestore set fails in handler', async () => {
+        document.getElementById('gc-recipient-phone').value = '9876543210';
+        setCurrentUser({ name: 'Buyer', phone: '9111111111' });
+
+        const setMock = vi.fn(() => Promise.reject(new Error('Save failed')));
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    set: setMock,
+                    update: vi.fn(() => Promise.resolve()),
+                })),
+            })),
+        };
+
+        let capturedHandler = null;
+        window.Razorpay = vi.fn((opts) => {
+            capturedHandler = opts.handler;
+            return { open: vi.fn() };
+        });
+
+        window.buyGiftCard();
+        capturedHandler({ razorpay_payment_id: 'pay_GC_FAIL' });
+        await new Promise(r => setTimeout(r, 30));
+
+        expect(document.getElementById('gc-msg').textContent).toContain('Save failed');
+        expect(document.getElementById('gc-msg').className).toContain('error');
+    });
+
+    it('uses guest purchaserPhone when user is not logged in', () => {
+        document.getElementById('gc-recipient-phone').value = '9876543210';
+        setCurrentUser(null);
+
+        const openFn = vi.fn();
+        window.Razorpay = vi.fn(() => ({ open: openFn }));
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({ set: vi.fn(() => Promise.resolve()) })),
+            })),
+        };
+
+        window.buyGiftCard();
+
+        const opts = window.Razorpay.mock.calls[0][0];
+        expect(opts.prefill.contact).toBe('guest');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// selectGcAmount — DOM button update
+// ═══════════════════════════════════════════════════════════════════════════
+describe('selectGcAmount — DOM updates', () => {
+    it('sets active class on chosen button and removes from others', () => {
+        document.body.innerHTML = `
+            <button class="gc-amount-btn active" id="btn500">₹500</button>
+            <button class="gc-amount-btn" id="btn1000">₹1000</button>
+            <button class="gc-amount-btn" id="btn2000">₹2000</button>
+        `;
+        document.querySelectorAll = (sel) => document.body.querySelectorAll(sel);
+        const btn1000 = document.body.querySelector('#btn1000');
+        selectGcAmount(1000, btn1000);
+        expect(btn1000.classList.contains('active')).toBe(true);
+        expect(document.body.querySelector('#btn500').classList.contains('active')).toBe(false);
+        expect(document.body.querySelector('#btn2000').classList.contains('active')).toBe(false);
+    });
+
+    it('handles null btn argument without throwing', () => {
+        document.body.innerHTML = '<button class="gc-amount-btn active">₹500</button>';
+        document.querySelectorAll = (sel) => document.body.querySelectorAll(sel);
+        expect(() => selectGcAmount(2000, null)).not.toThrow();
+    });
 });

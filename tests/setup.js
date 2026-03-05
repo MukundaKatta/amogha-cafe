@@ -36,6 +36,29 @@ globalThis.db = {
 };
 globalThis.window.db = globalThis.db;
 
+// Browser API mocks used across modules
+if (!globalThis.window.scrollTo) {
+    globalThis.window.scrollTo = vi.fn();
+} else {
+    globalThis.window.scrollTo = vi.fn(globalThis.window.scrollTo);
+}
+
+if (!globalThis.window.requestAnimationFrame) {
+    globalThis.window.requestAnimationFrame = (cb) => setTimeout(() => cb(Date.now()), 16);
+}
+
+if (typeof globalThis.IntersectionObserver === 'undefined') {
+    globalThis.IntersectionObserver = class {
+        constructor(cb) {
+            this._cb = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+        takeRecords() { return []; }
+    };
+}
+
 // Suppress DOM errors in tests (many functions touch the DOM)
 globalThis.document.getElementById = vi.fn(() => null);
 globalThis.document.querySelectorAll = vi.fn(() => []);
@@ -50,4 +73,5 @@ beforeEach(() => {
         collection: vi.fn(() => ({ ...mockCollection })),
     };
     globalThis.window.db = globalThis.db;
+    globalThis.window.scrollTo = vi.fn();
 });
