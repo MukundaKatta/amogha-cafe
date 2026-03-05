@@ -4,7 +4,7 @@
 // Set window.AMOGHA_CONFIG.razorpayKey before loading script.js to override.
 // Falls back to env-injected value or empty string (must be configured per environment).
 export const RAZORPAY_KEY = (typeof window !== 'undefined' && window.AMOGHA_CONFIG && window.AMOGHA_CONFIG.razorpayKey)
-    || import.meta.env.VITE_RAZORPAY_KEY
+    || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_RAZORPAY_KEY)
     || '';
 
 export const WHATSAPP_NUMBER = '+919121004999';
