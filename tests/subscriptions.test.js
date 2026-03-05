@@ -1,4 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+vi.mock('../src/core/utils.js', () => ({
+    safeGetItem: vi.fn((key) => localStorage.getItem(key)),
+    safeSetItem: vi.fn((key, val) => localStorage.setItem(key, val)),
+    lockScroll: vi.fn(),
+    unlockScroll: vi.fn(),
+}));
+
 import {
     openSubscriptionModal,
     closeSubscriptionModal,
@@ -20,6 +28,8 @@ function setupDOM(html) {
 describe('openSubscriptionModal', () => {
     beforeEach(() => {
         localStorage.clear();
+        window.db = null;
+        window._notifListenerActive = false;
         setupDOM();
         window.openAuthModal = vi.fn();
         window.showAuthToast = vi.fn();
