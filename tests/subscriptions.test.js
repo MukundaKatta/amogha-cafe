@@ -7,6 +7,14 @@ vi.mock('../src/core/utils.js', () => ({
     unlockScroll: vi.fn(),
 }));
 
+// Mock getCurrentUser/setCurrentUser to avoid cross-module mock interference
+var _mockUser = null;
+vi.mock('../src/modules/auth.js', () => ({
+    getCurrentUser: vi.fn(() => _mockUser),
+    setCurrentUser: vi.fn((u) => { _mockUser = u; }),
+    showAuthToast: vi.fn(),
+}));
+
 import {
     openSubscriptionModal,
     closeSubscriptionModal,
@@ -27,6 +35,7 @@ function setupDOM(html) {
 // ═══════════════════════════════════════════════════════════════════════════
 describe('openSubscriptionModal', () => {
     beforeEach(() => {
+        _mockUser = null;
         localStorage.clear();
         window.db = null;
         window._notifListenerActive = false;
@@ -43,7 +52,7 @@ describe('openSubscriptionModal', () => {
     });
 
     it('shows service unavailable when db is null', () => {
-        setCurrentUser({ name: 'Test', phone: '1234567890' });
+        _mockUser = { name: 'Test', phone: '1234567890' };
         window.db = null;
         openSubscriptionModal();
         expect(window.showAuthToast).toHaveBeenCalledWith(expect.stringMatching(/unavailable/i));
