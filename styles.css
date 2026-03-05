@@ -220,3 +220,7 @@ body.light-mode .ai-rec-name{color:#1a1a1a}
 body.light-mode .meal-planner-card{background:rgba(255,255,255,.97)}
 body.light-mode .meal-day-card .meal-item{color:#1a1a1a}
 body.light-mode .insight-summary p,.insight-theme,.insight-suggestions li,.forecast-table td{color:#1a1a1a}
+
+/* Safari perf: skip rendering off-screen menu categories */
+.menu-category { content-visibility: auto; contain-intrinsic-size: auto 600px; }
+.menu-item-card { contain: layout style paint; }

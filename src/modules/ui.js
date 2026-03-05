@@ -473,17 +473,18 @@ export function initUI() {
         carousel.addEventListener('scroll', updateArrows, { passive: true });
         updateArrows();
 
-        carousel.querySelectorAll('.category-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = item.getAttribute('href');
-                const target = document.querySelector(targetId);
-                if (target) {
-                    const offset = 100;
-                    const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-                    window.scrollTo({ top, behavior: 'smooth' });
-                }
-            });
+        // Use event delegation — category items are rendered dynamically by menu.js
+        carousel.addEventListener('click', function(e) {
+            var item = e.target.closest('.category-item');
+            if (!item) return;
+            e.preventDefault();
+            var targetId = item.getAttribute('href');
+            var target = targetId ? document.querySelector(targetId) : null;
+            if (target) {
+                var offset = 100;
+                var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                window.scrollTo({ top, behavior: 'smooth' });
+            }
         });
     })();
 
@@ -619,16 +620,31 @@ export function initUI() {
 
         document.querySelectorAll('img[loading="lazy"]').forEach(revealImage);
 
-        const imgObserver = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-                mutation.addedNodes.forEach(node => {
-                    if (node.tagName === 'IMG' && node.loading === 'lazy') {
-                        revealImage(node);
-                    }
+        // Observe only the menu container (not document.body) to avoid firing
+        // hundreds of times when the full menu re-renders via innerHTML.
+        var imgTargets = [
+            document.getElementById('dynamic-menu-container'),
+            document.querySelector('.specials'),
+            document.querySelector('.gallery')
+        ].filter(Boolean);
+        if (imgTargets.length) {
+            const imgObserver = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType !== 1) return;
+                        if (node.tagName === 'IMG' && node.loading === 'lazy') {
+                            revealImage(node);
+                        }
+                        // Also check children (e.g. menu cards contain img tags)
+                        var imgs = node.querySelectorAll ? node.querySelectorAll('img[loading="lazy"]') : [];
+                        imgs.forEach(revealImage);
+                    });
                 });
             });
-        });
-        imgObserver.observe(document.body, { childList: true, subtree: true });
+            imgTargets.forEach(function(target) {
+                imgObserver.observe(target, { childList: true, subtree: true });
+            });
+        }
     })();
 
     // ===== PREMIUM: 3D CARD TILT EFFECT =====

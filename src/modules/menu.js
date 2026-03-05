@@ -282,16 +282,25 @@ function renderMenuCategories(menuData) {
         });
     });
 
-    // Render category sections
+    // Render category sections in batches to avoid Safari memory crash.
+    // Build HTML in a detached fragment, then swap in one write.
     var container = document.getElementById('dynamic-menu-container');
     if (container) {
-        container.innerHTML = cats.map(function(cat) {
+        // Use a hidden temporary div to parse HTML off-DOM, avoiding
+        // MutationObserver/IntersectionObserver storms during construction.
+        var tmp = document.createElement('div');
+        tmp.innerHTML = cats.map(function(cat) {
             var slug = catSlug(cat);
             return '<div class="menu-category" id="cat-' + slug + '">' +
                 '<h3 class="category-title">' + escH(cat) + '</h3>' +
                 '<div class="menu-items">' + groups[cat].map(renderItemCard).join('') + '</div>' +
                 '</div>';
         }).join('');
+        // Single DOM write: clear + append all at once via fragment
+        var frag = document.createDocumentFragment();
+        while (tmp.firstChild) frag.appendChild(tmp.firstChild);
+        container.innerHTML = '';
+        container.appendChild(frag);
     }
 
     // Render category carousel
