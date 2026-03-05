@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amogha Cafe & Restaurant — Product Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --burgundy: #8B1A1A;
+  --gold: #D4A017;
+  --gold-light: #E8C547;
+  --gold-muted: #B8860B;
+  --dark: #1E140E;
+  --deep-dark: #110B06;
+  --cream: #FAF7F2;
+  --warm-gray: #2C1810;
+}
+
+html { scroll-behavior: smooth; scroll-snap-type: y mandatory; overflow-y: scroll; }
+body { font-family: 'Poppins', sans-serif; background: var(--deep-dark); color: var(--cream); }
+
+/* ─── Slide system ─── */
+.slide {
+  min-height: 100vh;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(139,26,26,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ─── Nav dots ─── */
+.nav-dots {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 100;
+}
+.nav-dots a {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(212,160,23,0.25);
+  border: 1px solid rgba(212,160,23,0.4);
+  transition: all 0.3s;
+  display: block;
+}
+.nav-dots a.active,
+.nav-dots a:hover {
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(212,160,23,0.5);
+  transform: scale(1.3);
+}
+
+/* ─── Typography ─── */
+h1, h2, h3 { font-family: 'Playfair Display', serif; }
+h1 { font-size: clamp(2.5rem, 6vw, 5rem); line-height: 1.1; }
+h2 { font-size: clamp(1.8rem, 4vw, 3rem); margin-bottom: 16px; }
+h3 { font-size: clamp(1.1rem, 2vw, 1.4rem); }
+.gold { color: var(--gold); }
+.subtitle {
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 300;
+  color: rgba(250,247,242,0.7);
+  max-width: 700px;
+  text-align: center;
+  line-height: 1.6;
+}
+.label {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+  padding: 6px 16px;
+  border: 1px solid rgba(212,160,23,0.3);
+  border-radius: 20px;
+}
+
+/* ─── Grid layouts ─── */
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; width: 100%; max-width: 1100px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; width: 100%; max-width: 1100px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; width: 100%; max-width: 1100px; }
+
+/* ─── Cards ─── */
+.card {
+  background: linear-gradient(135deg, rgba(44,24,16,0.9) 0%, rgba(30,20,14,0.95) 100%);
+  border: 1px solid rgba(212,160,23,0.15);
+  border-radius: 16px;
+  padding: 32px 28px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212,160,23,0.35);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+.card:hover::after { opacity: 1; }
+
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 16px;
+  display: block;
+}
+.card h3 { margin-bottom: 8px; color: var(--cream); }
+.card p { font-size: 0.88rem; line-height: 1.6; color: rgba(250,247,242,0.65); }
+
+/* ─── Stats ─── */
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  justify-content: center;
+  margin: 40px 0;
+}
+.stat {
+  text-align: center;
+}
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(250,247,242,0.5);
+  margin-top: 6px;
+}
+
+/* ─── Feature list ─── */
+.feature-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.feature-list li {
+  font-size: 0.92rem;
+  color: rgba(250,247,242,0.75);
+  padding-left: 24px;
+  position: relative;
+}
+.feature-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+/* ─── Tech stack badges ─── */
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  max-width: 900px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 24px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(44,24,16,0.8);
+  border: 1px solid rgba(212,160,23,0.2);
+  color: rgba(250,247,242,0.8);
+  transition: all 0.25s;
+}
+.badge:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(212,160,23,0.08);
+}
+
+/* ─── Architecture diagram ─── */
+.arch-box {
+  background: rgba(17,11,6,0.8);
+  border: 1px solid rgba(212,160,23,0.2);
+  border-radius: 12px;
+  padding: 24px 32px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: rgba(250,247,242,0.7);
+  line-height: 1.8;
+  max-width: 720px;
+  width: 100%;
+  text-align: center;
+  white-space: pre;
+  overflow-x: auto;
+}
+.arch-box .gold { color: var(--gold); font-weight: bold; }
+
+/* ─── Divider ─── */
+.divider {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 20px auto;
+}
+
+/* ─── Surface cards (special variant) ─── */
+.surface-card {
+  text-align: center;
+  padding: 40px 24px;
+}
+.surface-card .card-icon { font-size: 2.5rem; }
+.surface-card h3 { font-size: 1.1rem; }
+
+/* ─── Animations ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate {
+  opacity: 0;
+  animation: fadeUp 0.6s ease forwards;
+}
+.slide.visible .animate { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+.d1 { animation-delay: 0.1s; }
+.d2 { animation-delay: 0.2s; }
+.d3 { animation-delay: 0.3s; }
+.d4 { animation-delay: 0.4s; }
+.d5 { animation-delay: 0.5s; }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .slide { padding: 40px 20px; }
+  .nav-dots { right: 12px; gap: 8px; }
+  .nav-dots a { width: 7px; height: 7px; }
+  .stat-row { gap: 24px; }
+  .arch-box { font-size: 0.7rem; padding: 16px; }
+}
+
+/* ─── Slide-specific accents ─── */
+#slide-hero { background: linear-gradient(180deg, var(--deep-dark) 0%, var(--dark) 50%, var(--warm-gray) 100%); }
+#slide-hero::before { background: radial-gradient(ellipse at 50% 30%, rgba(212,160,23,0.06) 0%, transparent 70%); }
+
+.slide:nth-child(even) { background: linear-gradient(180deg, var(--dark) 0%, var(--deep-dark) 100%); }
+.slide:nth-child(odd) { background: linear-gradient(180deg, var(--deep-dark) 0%, var(--dark) 100%); }
+
+/* ─── Footer ─── */
+.footer-info {
+  font-size: 0.78rem;
+  color: rgba(250,247,242,0.4);
+  text-align: center;
+  line-height: 1.8;
+  max-width: 500px;
+}
+.footer-info a { color: var(--gold-muted); text-decoration: none; }
+.footer-info a:hover { color: var(--gold-light); }
+</style>
+</head>
+<body>
+
+<!-- Nav dots -->
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- ═══ SLIDE 1 — HERO ═══ -->
+<section class="slide" id="slide-hero">
+  <span class="label animate d1">Product Overview 2026</span>
+  <h1 class="animate d2" style="text-align:center;">
+    <span class="gold">Amogha</span> Cafe<br>& Restaurant
+  </h1>
+  <div class="divider animate d3"></div>
+  <p class="subtitle animate d3">
+    A full-stack, AI-powered restaurant platform — from online ordering to kitchen ops, delivery, and analytics.
+  </p>
+  <div class="stat-row animate d4">
+    <div class="stat"><div class="stat-num">9</div><div class="stat-label">App Surfaces</div></div>
+    <div class="stat"><div class="stat-num">11</div><div class="stat-label">AI Features</div></div>
+    <div class="stat"><div class="stat-num">16+</div><div class="stat-label">API Endpoints</div></div>
+    <div class="stat"><div class="stat-num">2,059</div><div class="stat-label">Tests</div></div>
+  </div>
+</section>
+
+<!-- ═══ SLIDE 2 — THE PROBLEM ═══ -->
+<section class="slide" id="slide-problem">
+  <span class="label animate d1">The Challenge</span>
+  <h2 class="animate d2">Restaurants Run on <span class="gold">Disconnected Tools</span></h2>
+  <p class="subtitle animate d3" style="margin-bottom: 36px;">
+    Separate apps for ordering, kitchen management, delivery, payments, and analytics create chaos, data silos, and poor customer experiences.
+  </p>
+  <div class="grid-3 animate d4">
+    <div class="card" style="text-align:center;">
+      <span class="card-icon">&#x1f4f1; &#x2194; &#x1f4bb;</span>
+      <h3>Fragmented Systems</h3>
+      <p>Staff juggles 5+ tools for daily operations — POS, kitchen tickets, delivery apps, accounting software.</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <span class="card-icon">&#x1f50d;</span>
+      <h3>No Intelligence</h3>
+      <p>Menu decisions, demand forecasting, and customer insights require manual analysis with spreadsheets.</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <span class="card-icon">&#x1f6d2;</span>
+      <h3>Lost Revenue</h3>
+      <p>Poor ordering UX, no personalization, no upsell — customers leave without completing orders.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SLIDE 3 — THE SOLUTION ═══ -->
+<section class="slide" id="slide-solution">
+  <span class="label animate d1">Our Solution</span>
+  <h2 class="animate d2">One Platform. <span class="gold">Every Surface.</span></h2>
+  <p class="subtitle animate d3" style="margin-bottom: 36px;">
+    Amogha unifies the entire restaurant operation into a single real-time platform powered by AI.
+  </p>
+  <div class="grid-3 animate d4">
+    <div class="card surface-card">
+      <span class="card-icon">&#x1f4f1;</span>
+      <h3>Online Ordering</h3>
+      <p>PWA with smart search, AI chatbot, personalized recommendations, and Razorpay checkout.</p>
+    </div>
+    <div class="card surface-card">
+      <span class="card-icon">&#x1f4fa;</span>
+      <h3>Kitchen Display</h3>
+      <p>Real-time order queue with prep timers, priority sorting, and station-based filtering.</p>
+    </div>
+    <div class="card surface-card">
+      <span class="card-icon">&#x1f4b3;</span>
+      <h3>POS Terminal</h3>
+      <p>Staff-facing counter ordering with receipt generation and quick-access menu.</p>
+    </div>
+    <div class="card surface-card">
+      <span class="card-icon">&#x1f6f5;</span>
+      <h3>Delivery App</h3>
+      <p>Driver assignments, turn-by-turn navigation, earnings tracking, and live status updates.</p>
+    </div>
+    <div class="card surface-card">
+      <span class="card-icon">&#x1f916;</span>
+      <h3>Self-Service Kiosk</h3>
+      <p>Touch-first ordering with voice support and multi-tenant capability for branches.</p>
+    </div>
+    <div class="card surface-card">
+      <span class="card-icon">&#x1f4ca;</span>
+      <h3>Admin Dashboard</h3>
+      <p>Orders, menu management, inventory, staff, expenses, and AI-powered analytics.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SLIDE 4 — AI FEATURES ═══ -->
+<section class="slide" id="slide-ai">
+  <span class="label animate d1">Powered by Gemini 2.0 Flash</span>
+  <h2 class="animate d2"><span class="gold">11</span> AI-Powered Features</h2>
+  <p class="subtitle animate d3" style="margin-bottom: 36px;">
+    Every AI feature runs server-side via Google Vertex AI, protecting API keys and enabling rich context.
+  </p>
+  <div class="grid-2 animate d4">
+    <div class="card">
+      <h3>&#x1f4ac; Customer-Facing</h3>
+      <ul class="feature-list" style="margin-top: 12px;">
+        <li>Conversational AI chatbot for ordering & FAQs</li>
+        <li>Smart semantic menu search ("something spicy under &#x20b9;300")</li>
+        <li>Personalized meal & combo recommendations</li>
+        <li>AI-generated subscription meal plans</li>
+        <li>"AI For You" personalized section</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>&#x1f4bc; Operations & Admin</h3>
+      <ul class="feature-list" style="margin-top: 12px;">
+        <li>Bill/receipt OCR with expense categorization</li>
+        <li>Natural language analytics queries</li>
+        <li>Demand forecasting & inventory planning</li>
+        <li>Automated review sentiment analysis</li>
+        <li>Menu profitability insights</li>
+        <li>Smart push notification generation</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SLIDE 5 — CUSTOMER FEATURES ═══ -->
+<section class="slide" id="slide-features">
+  <span class="label animate d1">Customer Experience</span>
+  <h2 class="animate d2">Designed to <span class="gold">Delight & Convert</span></h2>
+  <div class="divider animate d2"></div>
+  <div class="grid-4 animate d3" style="margin-top: 24px;">
+    <div class="card">
+      <span class="card-icon">&#x1f4b0;</span>
+      <h3>Smart Payments</h3>
+      <p>UPI, cards, wallets via Razorpay. Coupons, gift cards, split bill, COD.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">&#x2b50;</span>
+      <h3>Loyalty & Badges</h3>
+      <p>3-tier rewards (Bronze/Silver/Gold), 10 achievement badges, birthday bonuses, referrals.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">&#x1f46b;</span>
+      <h3>Group Ordering</h3>
+      <p>Shared carts for friends & family with real-time sync and split payments.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">&#x1f30f;</span>
+      <h3>Multi-Language</h3>
+      <p>Full support for English, Hindi, and Telugu — every label, every screen.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">&#x1f4cd;</span>
+      <h3>Live Tracking</h3>
+      <p>Real-time delivery map with Leaflet.js + OpenStreetMap integration.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">&#x1f4c5;</span>
+      <h3>Reservations</h3>
+      <p>Table booking with time slots and WhatsApp confirmation.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">&#x1f514;</span>
+      <h3>Push Notifications</h3>
+      <p>FCM-powered alerts for order status, promotions, and loyalty milestones.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">&#x1f4e6;</span>
+      <h3>Subscriptions</h3>
+      <p>AI-generated meal plans with recurring orders and preference learning.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SLIDE 6 — ARCHITECTURE ═══ -->
+<section class="slide" id="slide-arch">
+  <span class="label animate d1">Technical Architecture</span>
+  <h2 class="animate d2">Built on <span class="gold">Firebase</span></h2>
+  <p class="subtitle animate d3" style="margin-bottom: 28px;">Real-time data sync across all 9 surfaces with zero server management.</p>
+  <div class="arch-box animate d4">
+    <span class="gold">  9 App Surfaces</span>  (PWA + Kiosk + POS + KDS + ...)
+          |
+    <span class="gold">  Vite 5</span>  &#x2192;  Bundled ES Modules  &#x2192;  <span class="gold">Firebase Hosting</span>
+          |
+    <span class="gold">  Cloud Firestore</span>  (17+ collections, real-time listeners)
+          |
+    <span class="gold">  Cloud Functions</span>  (Express API, 16+ endpoints)
+          |
+    <span class="gold">  Vertex AI</span>  (Gemini 2.0 Flash)  +  <span class="gold">Razorpay</span>  +  <span class="gold">FCM</span>
+  </div>
+  <div class="badge-row animate d5" style="margin-top: 32px;">
+    <span class="badge">Vanilla JS (ES Modules)</span>
+    <span class="badge">Vite 5</span>
+    <span class="badge">Firebase Firestore</span>
+    <span class="badge">Cloud Functions</span>
+    <span class="badge">Gemini 2.0 Flash</span>
+    <span class="badge">Razorpay</span>
+    <span class="badge">Leaflet.js</span>
+    <span class="badge">Chart.js</span>
+    <span class="badge">FCM</span>
+    <span class="badge">Playwright</span>
+    <span class="badge">Vitest / Jest</span>
+    <span class="badge">GitHub Actions CI/CD</span>
+  </div>
+</section>
+
+<!-- ═══ SLIDE 7 — DATA MODEL ═══ -->
+<section class="slide" id="slide-data">
+  <span class="label animate d1">Data Model</span>
+  <h2 class="animate d2"><span class="gold">17+</span> Firestore Collections</h2>
+  <div class="divider animate d2"></div>
+  <div class="grid-3 animate d3" style="margin-top: 24px;">
+    <div class="card">
+      <h3>&#x1f6d2; Commerce</h3>
+      <ul class="feature-list" style="margin-top: 8px;">
+        <li>menu</li>
+        <li>orders</li>
+        <li>addons</li>
+        <li>coupons / giftCards</li>
+        <li>specials</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>&#x1f464; Users & Engagement</h3>
+      <ul class="feature-list" style="margin-top: 8px;">
+        <li>users</li>
+        <li>reviews</li>
+        <li>referrals</li>
+        <li>chatHistory</li>
+        <li>reservations</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>&#x2699; Operations</h3>
+      <ul class="feature-list" style="margin-top: 8px;">
+        <li>inventory</li>
+        <li>staff / expenses</li>
+        <li>deliveryPersons</li>
+        <li>tables</li>
+        <li>settings / branches</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SLIDE 8 — QUALITY ═══ -->
+<section class="slide" id="slide-quality">
+  <span class="label animate d1">Engineering Quality</span>
+  <h2 class="animate d2">Tested. Secured. <span class="gold">Production-Ready.</span></h2>
+  <div class="divider animate d2"></div>
+  <div class="stat-row animate d3">
+    <div class="stat"><div class="stat-num">2,059</div><div class="stat-label">Unit Tests</div></div>
+    <div class="stat"><div class="stat-num">40</div><div class="stat-label">API Tests</div></div>
+    <div class="stat"><div class="stat-num">E2E</div><div class="stat-label">Playwright Suite</div></div>
+    <div class="stat"><div class="stat-num">CI/CD</div><div class="stat-label">Auto-Deploy</div></div>
+  </div>
+  <div class="grid-2 animate d4" style="margin-top: 12px;">
+    <div class="card">
+      <h3>&#x1f6e1; Security</h3>
+      <ul class="feature-list" style="margin-top: 12px;">
+        <li>Admin API key authentication middleware</li>
+        <li>Rate limiting (30 req/min) on AI endpoints</li>
+        <li>Prompt injection sanitization (control chars, 2K limit)</li>
+        <li>Firestore security rules for access control</li>
+        <li>Input validation on all endpoints</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>&#x26a1; Performance</h3>
+      <ul class="feature-list" style="margin-top: 12px;">
+        <li>Lazy module loading via requestIdleCallback</li>
+        <li>In-memory menu cache (10-min TTL) in Cloud Functions</li>
+        <li>Service workers for offline capability</li>
+        <li>Vite-bundled ES modules with tree-shaking</li>
+        <li>Deferred AI recommendations (4s delay)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SLIDE 9 — BUSINESS ═══ -->
+<section class="slide" id="slide-business">
+  <span class="label animate d1">Live in Production</span>
+  <h2 class="animate d2"><span class="gold">Amogha</span> — Hyderabad</h2>
+  <div class="divider animate d2"></div>
+  <div class="grid-2 animate d3" style="margin-top: 24px;">
+    <div class="card" style="text-align: center;">
+      <span class="card-icon" style="font-size: 3rem;">&#x1f35b;</span>
+      <h3 style="margin-top: 8px;">Authentic Indian Cuisine</h3>
+      <p style="margin-top: 12px;">South Indian, Hyderabadi, and Pan-Indian specialties served from Kukatpally, Hyderabad.</p>
+      <div style="margin-top: 20px; font-size: 0.85rem; color: rgba(250,247,242,0.5); line-height: 1.8;">
+        &#x1f4cd; Pragathi Nagar Rd, Kukatpally<br>
+        &#x1f4de; +91 91210 04999<br>
+        &#x23f0; Mon-Thu 11:00-21:30 &middot; Fri-Sat till 22:30
+      </div>
+    </div>
+    <div class="card" style="text-align: center;">
+      <span class="card-icon" style="font-size: 3rem;">&#x2b50;</span>
+      <h3 style="margin-top: 8px;">Customer Love</h3>
+      <div class="stat-row" style="margin: 24px 0 0 0;">
+        <div class="stat"><div class="stat-num">4.8</div><div class="stat-label">Rating</div></div>
+        <div class="stat"><div class="stat-num">1,250+</div><div class="stat-label">Reviews</div></div>
+      </div>
+      <p style="margin-top: 16px;">Free delivery on orders above &#x20b9;500. Happy Hour deals daily. 3-tier loyalty program.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SLIDE 10 — CLOSING ═══ -->
+<section class="slide" id="slide-close">
+  <h2 class="animate d1" style="font-size: clamp(2rem, 5vw, 3.5rem); text-align: center;">
+    The <span class="gold">Complete</span> Restaurant<br>Platform.
+  </h2>
+  <div class="divider animate d2"></div>
+  <p class="subtitle animate d3">
+    One codebase. Nine surfaces. Real-time everything.<br>Powered by AI. Built on Firebase. Ready to scale.
+  </p>
+  <div class="badge-row animate d4" style="margin-top: 36px;">
+    <span class="badge" style="border-color: var(--gold); color: var(--gold);">amoghahotels.com</span>
+    <span class="badge" style="border-color: var(--gold); color: var(--gold);">amogha-cafe.web.app</span>
+  </div>
+  <div class="footer-info animate d5" style="margin-top: 48px;">
+    Built with Firebase &middot; Vertex AI &middot; Razorpay &middot; Vite<br>
+    &copy; 2026 Amogha Cafe & Restaurant
+  </div>
+</section>
+
+<script>
+// Build nav dots
+const slides = document.querySelectorAll('.slide');
+const navDots = document.getElementById('navDots');
+slides.forEach((s, i) => {
+  const a = document.createElement('a');
+  a.href = '#' + s.id;
+  a.title = 'Slide ' + (i + 1);
+  if (i === 0) a.classList.add('active');
+  navDots.appendChild(a);
+});
+
+// Intersection observer for active dot + animations
+const dots = navDots.querySelectorAll('a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      const idx = Array.from(slides).indexOf(e.target);
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.4 });
+
+slides.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
