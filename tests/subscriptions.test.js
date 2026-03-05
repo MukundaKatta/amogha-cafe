@@ -23,6 +23,7 @@ describe('openSubscriptionModal', () => {
         setupDOM();
         window.openAuthModal = vi.fn();
         window.showAuthToast = vi.fn();
+        window.scrollTo = vi.fn();
     });
 
     it('prompts sign-in when no user is logged in', () => {

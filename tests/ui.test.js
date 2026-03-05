@@ -669,6 +669,8 @@ describe('initUI — mobile nav link click behaviour', () => {
             <button id="mobile-menu-toggle">\u2715</button>
             <section id="menu-section"></section>
         `);
+        // Stub scrollIntoView since jsdom doesn't implement it
+        document.getElementById('menu-section').scrollIntoView = vi.fn();
         initUI();
         document.querySelector('#nav-links a').click();
         expect(document.getElementById('nav-links').classList.contains('active')).toBe(false);
@@ -830,10 +832,8 @@ describe('initUI — scroll handler: back-to-top visibility toggle', () => {
         Object.defineProperty(window, 'pageYOffset', { value: 500, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         expect(document.getElementById('back-to-top').classList.contains('visible')).toBe(true);
-        // Second scroll: go back up — rAF mock fires synchronously so ticking resets
+        // Second scroll: go back up — _scrollTicking already reset by synchronous rAF
         Object.defineProperty(window, 'pageYOffset', { value: 50, configurable: true });
-        // Need a fresh rAF invocation — reassign so the ticking flag triggers a new frame
-        window.requestAnimationFrame = vi.fn((cb) => { cb(); return 1; });
         window.dispatchEvent(new Event('scroll'));
         expect(document.getElementById('back-to-top').classList.contains('visible')).toBe(false);
     });
@@ -880,9 +880,8 @@ describe('initUI — scroll handler: sticky order bar', () => {
         Object.defineProperty(window, 'pageYOffset', { value: 700, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         expect(document.getElementById('sticky-order-bar').classList.contains('visible')).toBe(true);
-        // Scroll back up above hero height
+        // Scroll back up above hero height — _scrollTicking already reset by synchronous rAF
         Object.defineProperty(window, 'pageYOffset', { value: 100, configurable: true });
-        window.requestAnimationFrame = vi.fn((cb) => { cb(); return 1; });
         window.dispatchEvent(new Event('scroll'));
         expect(document.getElementById('sticky-order-bar').classList.contains('visible')).toBe(false);
     });
@@ -1723,9 +1722,7 @@ describe('initUI — header hide/show on scroll direction (desktop only)', () =>
         // First event at 50: lastScroll=0 → 50>0 but 50<=100 → show (translateY(0)), lastScroll=50
         Object.defineProperty(window, 'pageYOffset', { value: 50, configurable: true });
         window.dispatchEvent(new Event('scroll'));
-        // Reassign rAF so _scrollTicking resets properly for second event
-        window.requestAnimationFrame = vi.fn((cb) => { cb(); return 1; });
-        // Second event at 200: 200>50 && 200>100 → hide
+        // Second event at 200: 200>50 && 200>100 → hide — _scrollTicking already reset
         Object.defineProperty(window, 'pageYOffset', { value: 200, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         expect(document.querySelector('header').style.transform).toBe('translateY(-100%)');
@@ -1737,8 +1734,7 @@ describe('initUI — header hide/show on scroll direction (desktop only)', () =>
         // Scroll down past 100px to hide header, lastScroll=0 initially
         Object.defineProperty(window, 'pageYOffset', { value: 300, configurable: true });
         window.dispatchEvent(new Event('scroll'));
-        window.requestAnimationFrame = vi.fn((cb) => { cb(); return 1; });
-        // Scroll back up: 100 < 300 (lastScroll) → show
+        // Scroll back up: 100 < 300 (lastScroll) → show — _scrollTicking already reset
         Object.defineProperty(window, 'pageYOffset', { value: 100, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         expect(document.querySelector('header').style.transform).toBe('translateY(0)');
