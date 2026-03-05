@@ -196,6 +196,7 @@ describe('handleSignIn — Firestore paths', () => {
             collection: () => ({
                 doc: () => ({
                     get: () => Promise.resolve({ exists: true, data: () => user }),
+                    update: () => Promise.resolve(),
                     onSnapshot: vi.fn(() => vi.fn()),
                 }),
                 where: function() { return this; },
@@ -205,7 +206,8 @@ describe('handleSignIn — Firestore paths', () => {
         document.getElementById('signin-phone').value = '9876543210';
         document.getElementById('signin-password').value = '1234';
         handleSignIn();
-        await new Promise((r) => setTimeout(r, 20));
+        // Allow time for async hashPin + Firestore promise chain
+        await new Promise((r) => setTimeout(r, 100));
         const storedUser = getCurrentUser();
         expect(storedUser).not.toBeNull();
         expect(storedUser.phone).toBe('9876543210');

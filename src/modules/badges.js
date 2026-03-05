@@ -32,6 +32,8 @@ function hasBadge(user, badgeId) {
 
 function awardBadge(user, badgeId) {
     if (!user.badges) user.badges = [];
+    // Prevent duplicate badge awards
+    if (hasBadge(user, badgeId)) return;
     user.badges.push({ badgeId: badgeId, earnedAt: new Date().toISOString() });
     setCurrentUser(user);
 
@@ -121,11 +123,12 @@ export function checkAndAwardBadges(user, order) {
         if (allDates.indexOf(today) === -1) allDates.push(today);
         if (allDates.length >= 3) {
             var last3 = allDates.slice(-3);
-            var d1 = new Date(last3[0]);
-            var d2 = new Date(last3[1]);
-            var d3 = new Date(last3[2]);
-            var diff1 = (d2 - d1) / 86400000;
-            var diff2 = (d3 - d2) / 86400000;
+            // Parse as local dates at noon to avoid DST/timezone issues
+            var d1 = new Date(last3[0] + 'T12:00:00');
+            var d2 = new Date(last3[1] + 'T12:00:00');
+            var d3 = new Date(last3[2] + 'T12:00:00');
+            var diff1 = Math.round((d2 - d1) / 86400000);
+            var diff2 = Math.round((d3 - d2) / 86400000);
             if (diff1 === 1 && diff2 === 1) {
                 newBadges.push('streak_master');
             }

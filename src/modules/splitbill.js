@@ -54,14 +54,20 @@ export function setSplitCount(n) {
 
     var total = parseInt(modal.dataset.total) || 0;
     var orderId = modal.dataset.orderId || '';
-    var perPerson = Math.ceil(total / n);
+    // Use floor to avoid overpayment; first person pays any remainder
+    var perPerson = Math.floor(total / n);
+    var firstPersonPays = total - (perPerson * (n - 1));
 
     var resultDiv = document.getElementById('split-result');
     if (resultDiv) {
+        var displayNote = firstPersonPays !== perPerson
+            ? '<div style="font-size:0.75rem;color:#a09080;margin-top:0.3rem">First person pays Rs.' + firstPersonPays + ', others pay Rs.' + perPerson + '</div>'
+            : '';
         resultDiv.innerHTML = '<div style="background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.15);border-radius:12px;padding:1rem;text-align:center">' +
             '<div style="font-size:0.85rem;color:#a09080;margin-bottom:0.3rem">Each person pays</div>' +
             '<div style="font-size:1.8rem;font-weight:700;color:#D4A017">Rs.' + perPerson + '</div>' +
-            '<div style="font-size:0.75rem;color:#a09080">' + n + ' people x Rs.' + perPerson + ' = Rs.' + (perPerson * n) + '</div>' +
+            '<div style="font-size:0.75rem;color:#a09080">Total: Rs.' + total + ' split ' + n + ' ways</div>' +
+            displayNote +
         '</div>';
     }
 
@@ -72,10 +78,11 @@ export function setSplitCount(n) {
         var html = '<h4 style="color:#D4A017;margin:0.8rem 0 0.5rem;font-size:0.9rem">Share Payment Links</h4>';
         for (var i = 0; i < n; i++) {
             var label = i === 0 ? 'You' : 'Person ' + (i + 1);
-            var upiLink = 'upi://pay?pa=' + upiId + '&pn=Amogha%20Cafe&am=' + perPerson + '&tn=Split%20Bill%20' + orderId.slice(-6);
+            var personAmount = i === 0 ? firstPersonPays : perPerson;
+            var upiLink = 'upi://pay?pa=' + upiId + '&pn=Amogha%20Cafe&am=' + personAmount + '&tn=Split%20Bill%20' + orderId.slice(-6);
             html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.05)">' +
                 '<span style="font-size:0.85rem">' + label + '</span>' +
-                '<a href="' + upiLink + '" style="padding:0.3rem 0.8rem;background:linear-gradient(135deg,#D4A017,#B8860B);color:#1a0f08;border-radius:8px;font-weight:700;font-size:0.75rem;text-decoration:none">Pay Rs.' + perPerson + '</a>' +
+                '<a href="' + upiLink + '" style="padding:0.3rem 0.8rem;background:linear-gradient(135deg,#D4A017,#B8860B);color:#1a0f08;border-radius:8px;font-weight:700;font-size:0.75rem;text-decoration:none">Pay Rs.' + personAmount + '</a>' +
             '</div>';
         }
         html += '<button onclick="shareSplitBill(' + n + ',' + perPerson + ')" style="width:100%;margin-top:0.8rem;padding:0.5rem;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.85rem">Share via WhatsApp</button>';
@@ -86,7 +93,7 @@ export function setSplitCount(n) {
     var db = getDb();
     if (db && orderId) {
         db.collection('orders').doc(orderId).update({
-            splitBill: { count: n, perPerson: perPerson, total: total }
+            splitBill: { count: n, perPerson: perPerson, firstPersonPays: firstPersonPays, total: total }
         }).catch(function(err) { console.error('Split bill save error:', err); });
     }
 }
