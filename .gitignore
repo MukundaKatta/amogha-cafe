@@ -90,6 +90,15 @@ Screenshot *.png
 # Vite build artifacts
 *.js.map
 
+# Claude Code
+.claude/
+
+# Test results
+test-results/
+
+# POS dist build
+pos-dist/
+
 # Capacitor kiosk build
 kiosk-dist/
 android/app/build/
