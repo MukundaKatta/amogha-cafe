@@ -4,6 +4,7 @@ import { lockScroll, unlockScroll } from '../core/utils.js';
 
 // ===== SUBSCRIPTION MEAL PLANS =====
 // Customers can subscribe to weekly meal plans for discounted pricing.
+var _planCatalog = {};
 
 export function openSubscriptionModal() {
     var user = getCurrentUser();
@@ -23,7 +24,11 @@ export function openSubscriptionModal() {
     lockScroll();
 
     var db = getDb();
-    if (!db) return;
+    if (!db) {
+        unlockScroll();
+        if (typeof window.showAuthToast === 'function') window.showAuthToast('Service unavailable. Please try again.');
+        return;
+    }
 
     // Load subscription plans from Firestore
     db.collection('subscriptionPlans').where('active', '==', true).get().then(function(snap) {
@@ -80,14 +85,20 @@ function getDefaultPlans() {
 }
 
 function renderSubscriptionModal(modal, plans, user) {
+    _planCatalog = {};
+    plans.forEach(function(plan) {
+        if (plan && plan.id) _planCatalog[plan.id] = plan;
+    });
+
     var html = '<div class="modal-content" style="max-width:500px;padding:1.5rem;max-height:85vh;overflow-y:auto">' +
         '<span class="close-modal" onclick="closeSubscriptionModal()">&times;</span>' +
         '<h2 style="color:#D4A017;margin-bottom:0.5rem">Meal Plans</h2>' +
         '<p style="color:#a09080;font-size:0.85rem;margin-bottom:1.2rem">Save up to 30% with weekly subscriptions</p>';
 
     plans.forEach(function(plan) {
-        var savings = plan.regularPrice - plan.pricePerMonth;
-        var savingsPercent = Math.round((savings / plan.regularPrice) * 100);
+        var regularPrice = plan.regularPrice || plan.pricePerMonth || 0;
+        var savings = Math.max(0, regularPrice - (plan.pricePerMonth || 0));
+        var savingsPercent = regularPrice > 0 ? Math.round((savings / regularPrice) * 100) : 0;
         html += '<div style="background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.15);border-radius:14px;padding:1.2rem;margin-bottom:1rem">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">' +
                 '<h3 style="color:#e8d5b5;margin:0;font-size:1.1rem">' + plan.name + '</h3>' +
@@ -96,7 +107,7 @@ function renderSubscriptionModal(modal, plans, user) {
             '<p style="color:#a09080;font-size:0.8rem;margin-bottom:0.6rem">' + plan.description + '</p>' +
             '<div style="display:flex;align-items:baseline;gap:0.5rem;margin-bottom:0.6rem">' +
                 '<span style="font-size:1.4rem;font-weight:700;color:#D4A017">Rs.' + plan.pricePerMonth + '</span>' +
-                '<span style="color:#a09080;font-size:0.8rem;text-decoration:line-through">Rs.' + plan.regularPrice + '</span>' +
+                '<span style="color:#a09080;font-size:0.8rem;text-decoration:line-through">Rs.' + regularPrice + '</span>' +
                 '<span style="color:#a09080;font-size:0.75rem">/month</span>' +
             '</div>' +
             '<div style="margin-bottom:0.8rem">' +
@@ -137,8 +148,7 @@ export function subscribeToPlan(planId) {
     var user = getCurrentUser();
     if (!user) return;
 
-    var plans = getDefaultPlans();
-    var plan = plans.find(function(p) { return p.id === planId; });
+    var plan = _planCatalog[planId] || getDefaultPlans().find(function(p) { return p.id === planId; });
     if (!plan) return;
 
     var subscription = {

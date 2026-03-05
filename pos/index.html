@@ -526,7 +526,7 @@ var db = firebase.firestore();
 // ── State ────────────────────────────────────────────────────
 var shopId = (new URLSearchParams(location.search)).get('shop') || null;
 var shopConfig = null;
-var todayTokenKey = 'posToken_' + new Date().toISOString().slice(0,10); // resets daily
+var todayTokenKey = 'posToken_' + new Date().toLocaleDateString('en-CA'); // resets daily (local date)
 var currentToken = parseInt(localStorage.getItem(todayTokenKey) || '0');
 
 function nextToken() {
@@ -1412,7 +1412,8 @@ function printBill() {
     if (!data) { showToast('No bill data to print', 'error'); return; }
     var shopName = (shopConfig && shopConfig.name) || 'Amogha Cafe';
     var printerConfig = (shopConfig && shopConfig.printer) || {};
-    var footer = printerConfig.footer || randomBillQuote();
+    var fortune = randomBillQuote();
+    var footer = printerConfig.footer ? (fortune + '\n' + printerConfig.footer) : fortune;
 
     // Try Bluetooth thermal printer first
     if (btPrinter && printerConfig.btName) {
@@ -1472,7 +1473,7 @@ function printBillHTML(data, orderId, shopName, printerConfig, footer) {
                 '<div style="font-size:.68em;color:#777;text-align:center;margin-top:3px">Check balance: ' + loyaltyUrl + '</div>';
         })() +
         '<div style="border-top:1px dashed #000;margin:6px 0"></div>' +
-        '<div style="text-align:center;font-size:.75em;color:#555;margin-top:6px">' + escH(footer) + '</div>'
+        '<div style="text-align:center;font-size:.75em;color:#555;margin-top:6px">' + escH(footer).replace(/\n/g, '<br>') + '</div>'
     );
 }
 

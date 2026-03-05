@@ -67,16 +67,16 @@ export function initUI() {
     window.scrollTo(0, 0);
 
     // ===== PAGE TRANSITION & PRELOADER =====
-    window.addEventListener('load', () => {
-        const pageTransition = document.getElementById('page-transition');
-        if (pageTransition) {
-            setTimeout(() => pageTransition.classList.add('loaded'), 100);
-        }
-        setTimeout(() => {
-            const preloader = document.getElementById('preloader');
-            if (preloader) preloader.classList.add('hidden');
-        }, 2200);
-    });
+    // Hide preloader quickly — DOM is already parsed (module scripts are deferred)
+    var pageTransition = document.getElementById('page-transition');
+    if (pageTransition) {
+        requestAnimationFrame(function() { pageTransition.classList.add('loaded'); });
+    }
+    var preloader = document.getElementById('preloader');
+    if (preloader) {
+        // Hide after a short delay (allow first paint + hero to render)
+        setTimeout(function() { preloader.classList.add('hidden'); }, 800);
+    }
 
     // ===== DARK MODE TOGGLE =====
     (function() {
@@ -225,7 +225,7 @@ export function initUI() {
                 if (href && href.startsWith('#')) {
                     e.preventDefault();
                     var target = document.querySelector(href);
-                    if (target) {
+                    if (target && typeof target.scrollIntoView === 'function') {
                         setTimeout(function() {
                             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }, 50);
@@ -241,7 +241,7 @@ export function initUI() {
             if (this.id === 'cart-icon') return;
             e.preventDefault();
             const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
+            if (target && typeof target.scrollIntoView === 'function') {
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 closeMobileMenu();
             }
@@ -299,6 +299,7 @@ export function initUI() {
     var _scrollTicking = false;
     window.addEventListener('scroll', function() {
         if (!_scrollTicking) {
+            _scrollTicking = true;
             requestAnimationFrame(function() {
                 var currentScroll = window.pageYOffset;
                 var isDesktop = window.innerWidth > 768;
@@ -379,7 +380,6 @@ export function initUI() {
 
                 _scrollTicking = false;
             });
-            _scrollTicking = true;
         }
     }, { passive: true });
 
@@ -424,11 +424,11 @@ export function initUI() {
 
         const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
+                if (entry.isIntersecting && entry.target && entry.target.classList) {
                     entry.target.classList.add('visible');
                 }
             });
-        }, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
+        }, { threshold: 0.01, rootMargin: '0px 0px -30px 0px' });
 
         allReveals.forEach(el => revealObserver.observe(el));
     })();
@@ -528,7 +528,7 @@ export function initUI() {
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            if (typeof showAuthToast === 'function') showAuthToast('Thank you for your message! We will get back to you shortly.');
+            if (typeof window.showAuthToast === 'function') window.showAuthToast('Thank you for your message! We will get back to you shortly.');
             e.target.reset();
         });
     }
@@ -837,7 +837,9 @@ export function initUI() {
     // ===== BUTTON RIPPLE EFFECT =====
     (function() {
         document.addEventListener('click', function(e) {
-            var btn = e.target.closest('.add-to-cart, .cta-button, .btn-primary, .pay-now-btn, .combo-add-btn');
+            var target = e.target;
+            if (!target || typeof target.closest !== 'function') return;
+            var btn = target.closest('.add-to-cart, .cta-button, .btn-primary, .pay-now-btn, .combo-add-btn');
             if (!btn) return;
             var ripple = document.createElement('span');
             ripple.className = 'btn-ripple';
@@ -875,7 +877,11 @@ export function initUI() {
         }
 
         document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('add-to-cart') || e.target.closest('.add-to-cart')) {
+            var target = e.target;
+            if (!target) return;
+            var hasClass = !!(target.classList && typeof target.classList.contains === 'function' && target.classList.contains('add-to-cart'));
+            var isInside = typeof target.closest === 'function' && !!target.closest('.add-to-cart');
+            if (hasClass || isInside) {
                 burstParticles(e.clientX, e.clientY);
             }
         });
@@ -1031,7 +1037,7 @@ export function initUI() {
         });
 
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.search-autocomplete-wrap')) {
+            if (!e.target || typeof e.target.closest !== 'function' || !e.target.closest('.search-autocomplete-wrap')) {
                 dropdown.classList.remove('visible');
             }
         });
@@ -1092,30 +1098,28 @@ export function initUI() {
     })();
 
     // ===== LAZY IMAGE LOAD COMPLETION =====
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('img[loading="lazy"]').forEach(function(img) {
-            if (img.complete) {
-                img.classList.add('loaded');
-            } else {
-                img.addEventListener('load', function() { img.classList.add('loaded'); });
-                img.addEventListener('error', function() { img.classList.add('loaded'); });
-            }
-        });
-        var imgMo = new MutationObserver(function(mutations) {
-            mutations.forEach(function(m) {
-                m.addedNodes.forEach(function(node) {
-                    if (node.nodeType === 1) {
-                        var imgs = node.querySelectorAll ? node.querySelectorAll('img[loading="lazy"]') : [];
-                        imgs.forEach(function(img) {
-                            if (img.complete) { img.classList.add('loaded'); }
-                            else { img.addEventListener('load', function() { img.classList.add('loaded'); }); }
-                        });
-                    }
-                });
+    document.querySelectorAll('img[loading="lazy"]').forEach(function(img) {
+        if (img.complete) {
+            img.classList.add('loaded');
+        } else {
+            img.addEventListener('load', function() { img.classList.add('loaded'); });
+            img.addEventListener('error', function() { img.classList.add('loaded'); });
+        }
+    });
+    var imgMo = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+            m.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) {
+                    var imgs = node.querySelectorAll ? node.querySelectorAll('img[loading="lazy"]') : [];
+                    imgs.forEach(function(img) {
+                        if (img.complete) { img.classList.add('loaded'); }
+                        else { img.addEventListener('load', function() { img.classList.add('loaded'); }); }
+                    });
+                }
             });
         });
-        imgMo.observe(document.body, { childList: true, subtree: true });
     });
+    imgMo.observe(document.body, { childList: true, subtree: true });
 }
 
 Object.assign(window, { closeMobileMenu, launchConfetti });

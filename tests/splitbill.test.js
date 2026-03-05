@@ -217,6 +217,54 @@ describe('shareSplitBill', () => {
     });
 });
 
+// ===== backdrop click =====
+
+describe('openSplitBill — backdrop click closes modal', () => {
+    it('calls closeSplitBill when clicking on the modal backdrop (line 40)', () => {
+        openSplitBill('order123', 600);
+        const modal = document.getElementById('split-bill-modal');
+        // Simulate a click where e.target === modal (clicking outside modal-content)
+        const clickEvent = new MouseEvent('click', { bubbles: true });
+        Object.defineProperty(clickEvent, 'target', { value: modal });
+        modal.dispatchEvent(clickEvent);
+        // closeSplitBill sets display to none
+        expect(modal.style.display).toBe('none');
+    });
+
+    it('does NOT close when clicking inside modal-content', () => {
+        openSplitBill('order123', 600);
+        const modal = document.getElementById('split-bill-modal');
+        const content = modal.querySelector('.modal-content');
+        const clickEvent = new MouseEvent('click', { bubbles: true });
+        Object.defineProperty(clickEvent, 'target', { value: content });
+        modal.dispatchEvent(clickEvent);
+        // Modal should still be visible
+        expect(modal.style.display).toBe('block');
+    });
+});
+
+// ===== Firestore update error catch =====
+
+describe('setSplitCount — Firestore update error catch (line 90)', () => {
+    it('logs error but does not throw when Firestore update rejects', async () => {
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const updateMock = vi.fn(() => Promise.reject(new Error('Firestore write failed')));
+        const docMock = vi.fn(() => ({ update: updateMock }));
+        const collectionMock = vi.fn(() => ({ doc: docMock }));
+        window.db = { collection: collectionMock };
+
+        openSplitBill('order123', 600);
+        setSplitCount(3);
+
+        // Wait for the rejected promise to settle
+        await new Promise((r) => setTimeout(r, 10));
+
+        expect(updateMock).toHaveBeenCalled();
+        expect(consoleSpy).toHaveBeenCalledWith('Split bill save error:', expect.any(Error));
+        consoleSpy.mockRestore();
+    });
+});
+
 // ===== window globals =====
 
 describe('window globals', () => {
@@ -225,5 +273,88 @@ describe('window globals', () => {
         expect(typeof window.closeSplitBill).toBe('function');
         expect(typeof window.setSplitCount).toBe('function');
         expect(typeof window.shareSplitBill).toBe('function');
+    });
+});
+
+// ===========================================================================
+// Branch coverage: setSplitCount when total is 0 or orderId is empty (lines 55-70)
+// ===========================================================================
+describe('setSplitCount — total is 0 and orderId is empty (lines 55-70)', () => {
+    it('handles total=0 gracefully (perPerson = 0)', () => {
+        openSplitBill('', 0);
+        setSplitCount(2);
+        const resultDiv = document.getElementById('split-result');
+        expect(resultDiv.textContent).toContain('Rs.0');
+    });
+
+    it('handles empty orderId (UPI link still generated)', () => {
+        openSplitBill('', 600);
+        setSplitCount(3);
+        const linksDiv = document.getElementById('split-links');
+        const upiAnchors = linksDiv.querySelectorAll('a[href^="upi://"]');
+        expect(upiAnchors.length).toBe(3);
+    });
+
+    it('does not save to Firestore when orderId is empty', () => {
+        const updateMock = vi.fn(() => Promise.resolve());
+        const docMock = vi.fn(() => ({ update: updateMock }));
+        const collectionMock = vi.fn(() => ({ doc: docMock }));
+        window.db = { collection: collectionMock };
+
+        openSplitBill('', 600);
+        setSplitCount(2);
+
+        // db && orderId — orderId is '', so Firestore should not be called
+        expect(collectionMock).not.toHaveBeenCalled();
+    });
+
+    it('generates correct per-person amount when total is 0', () => {
+        openSplitBill('order123', 0);
+        setSplitCount(4);
+        const resultDiv = document.getElementById('split-result');
+        // Math.ceil(0 / 4) = 0
+        expect(resultDiv.textContent).toContain('Rs.0');
+    });
+});
+
+// ===========================================================================
+// Branch: setSplitCount — resultDiv and linksDiv are null (lines 60-70)
+// ===========================================================================
+describe('setSplitCount — missing result/links divs (lines 60-70)', () => {
+    it('does not throw when split-result and split-links elements are missing from modal', () => {
+        // Create a minimal modal without result/links divs
+        setupDOM(`
+            <div id="split-bill-modal" class="modal" style="display:block" data-order-id="order123" data-total="600">
+                <div class="modal-content"></div>
+            </div>
+        `);
+        // setSplitCount will find the modal but not the result/links divs
+        expect(() => setSplitCount(3)).not.toThrow();
+    });
+
+    it('still computes perPerson even without result/links divs', () => {
+        setupDOM(`
+            <div id="split-bill-modal" class="modal" style="display:block" data-order-id="order123" data-total="900">
+                <div class="modal-content"></div>
+            </div>
+        `);
+        // Just ensure no crash — the rendering is skipped
+        setSplitCount(3);
+        expect(document.getElementById('split-result')).toBeNull();
+        expect(document.getElementById('split-links')).toBeNull();
+    });
+});
+
+// ===========================================================================
+// Branch: setSplitCount — linksDiv rendering with label for first person "You" (line 74)
+// ===========================================================================
+describe('setSplitCount — UPI link labels (line 74)', () => {
+    it('labels first person as "You" and others as "Person N"', () => {
+        openSplitBill('order123', 600);
+        setSplitCount(3);
+        const linksDiv = document.getElementById('split-links');
+        expect(linksDiv.textContent).toContain('You');
+        expect(linksDiv.textContent).toContain('Person 2');
+        expect(linksDiv.textContent).toContain('Person 3');
     });
 });

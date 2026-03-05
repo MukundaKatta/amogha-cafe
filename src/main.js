@@ -38,58 +38,57 @@ import { initChatbot } from './modules/chatbot.js';
 
 // Note: script is loaded as a module (deferred by default), DOM is already parsed
 
-// Core initializations (order matters)
+// ===== CRITICAL PATH (above the fold) =====
 initUI();            // Sets up scroll, dark mode, nav, parallax, all visual IIFEs
 initHero();          // Hero slideshow + symphony gold lines + scramble reveal
 initDynamicHeroText(); // Rotating taglines
 initHeaderSlideshow(); // Header image rotation
 initAuth();          // Restore user session, dropdown, referral field
 loadCart();          // Restore cart from localStorage
-initAddonCache();    // Pre-warm addon cache from Firestore
 restoreButtonStates(); // Show qty buttons for items already in cart
 updateCartFab();     // Show cart FAB if cart has items
 initCart();          // Cart modal, delegated click handlers
 
-// Firestore-dependent initializations
+// Menu — highest priority Firestore call (what users come to see)
 initMenuSync();      // Menu availability/price overlay, specials, hero slides, theme
 
-// Feature modules
-initLoyalty();       // Loyalty widget
-initNotifications(); // Push notification banner
-initReservations();  // Reservation modal button override
-initFeatures();      // Reviews carousel, gallery, combos, happy hour, voice, i18n, etc.
-initProfile();       // Customer profile module
-loadDailySpecial();  // Daily special section (reads from Firestore settings/dailySpecial)
-initComboBuilder();  // Combo builder dropdowns + pricing
-initLiveOrderTicker(); // Replace static ticker with real recent orders from Firestore
+// ===== DEFERRED INITIALIZATIONS (after first paint) =====
+// Use requestIdleCallback where available, fall back to setTimeout
+var deferInit = window.requestIdleCallback || function(cb) { setTimeout(cb, 100); };
+
+deferInit(function() {
+    initAddonCache();    // Pre-warm addon cache from Firestore
+    initLoyalty();       // Loyalty widget
+    initNotifications(); // Push notification banner
+    initReservations();  // Reservation modal button override
+    initFeatures();      // Reviews carousel, gallery, combos, happy hour, voice, i18n, etc.
+    initProfile();       // Customer profile module
+});
+
+// Lower-priority features deferred further
+setTimeout(function() {
+    loadDailySpecial();
+    initComboBuilder();
+    initLiveOrderTicker();
+    initOrderAgainSection();
+    initGroupOrdering();
+    initChatbot();
+}, 1500);
 
 // Show reorder toast after short delay (needs DOM + auth to be ready)
 setTimeout(function() {
     var user = null;
     try { user = JSON.parse(localStorage.getItem('amoghaUser')); } catch(e) {}
     if (user) showReorderToast();
-}, 2000);
-
-// Order Again section (shows last 3 orders on main page)
-initOrderAgainSection();
-
-// Group ordering (check URL for ?group= parameter)
-initGroupOrdering();
-
-// AI Chatbot widget
-initChatbot();
+}, 2500);
 
 // AI For You recommendations (delayed to not block load)
-setTimeout(initAiForYou, 3000);
+setTimeout(initAiForYou, 4000);
 
 // Init floating cart bar state
 updateFloatingCartBar();
 
-// Expose displayCart and showRecommendations at window level (used by features.js hook)
-window.displayCart = function() {
-    // Import is hoisted — call through the module's export directly
-    displayCart();
-    showRecommendations();
-};
+// Expose displayCart at window level (features.js hooks into this to add showRecommendations)
+window.displayCart = displayCart;
 
 window.loadMenuRatings = loadMenuRatings;

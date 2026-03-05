@@ -1,9 +1,9 @@
-const CACHE_NAME = 'amogha-v69';
+const CACHE_NAME = 'amogha-v70';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=68',
-  './script.js?v=68',
+  './styles.css?v=67',
+  './script.js?v=20260305c',
   './manifest.json',
   './amogha-logo.png',
   // Hero slideshow images

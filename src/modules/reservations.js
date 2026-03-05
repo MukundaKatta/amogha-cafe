@@ -79,7 +79,7 @@ export function generateTimeSlots(dateStr) {
         for (var m = 0; m < 60; m += 30) {
             if (h === endHour && m > 0) break;
             var timeStr = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-            var displayTime = (h > 12 ? h - 12 : h) + ':' + String(m).padStart(2, '0') + (h >= 12 ? ' PM' : ' AM');
+            var displayTime = (h === 0 ? 12 : h > 12 ? h - 12 : h) + ':' + String(m).padStart(2, '0') + (h >= 12 ? ' PM' : ' AM');
             var slot = document.createElement('button');
             slot.type = 'button';
             slot.className = 'time-slot-btn';

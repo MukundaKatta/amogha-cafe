@@ -145,9 +145,8 @@ service cloud.firestore {
       allow create, update: if hasFields(['username', 'shopId', 'active'])
                             && isString(request.resource.data.username)
                             && isString(request.resource.data.shopId);
-      allow delete: if true;
+      allow delete: if false;
     }
-
 
     // -------------------------------------------------------------------------
     // COUPONS
@@ -179,7 +178,9 @@ service cloud.firestore {
                     && isNumber(request.resource.data.balance)
                     && request.resource.data.balance > 0;
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
-                         .hasOnly(['balance', 'redeemedAt']);
+                         .hasOnly(['balance', 'redeemedAt'])
+                    && request.resource.data.balance >= 0
+                    && request.resource.data.balance <= resource.data.balance;
       allow delete: if false;
     }
 
@@ -206,7 +207,8 @@ service cloud.firestore {
                     && isString(request.resource.data.phone)
                     && request.resource.data.partySize is int
                     && request.resource.data.partySize > 0;
-      allow update: if true;  // admin/kitchen updates status
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'tableId', 'notes', 'updatedAt']);
       allow delete: if false;
     }
 

@@ -14,6 +14,7 @@
 
 | Doc | Page | URL |
 |-----|------|-----|
+| [00-architecture.md](00-architecture.md) | End-to-End Architecture Overview | N/A (cross-cutting) |
 | [01-main-page.md](01-main-page.md) | Main / Public Ordering | https://amoghahotels.com |
 | [02-admin-dashboard.md](02-admin-dashboard.md) | Admin Dashboard | https://amoghahotels.com/admin.html |
 | [03-kitchen-display.md](03-kitchen-display.md) | Kitchen Display System | https://amoghahotels.com/kitchen/ |
@@ -175,6 +176,20 @@ amogha-cafe/
 | mealPlans | AI-generated saved meal plans |
 
 ## Quick Commands
+
+### End-to-End UI Tests
+
+The project includes a Playwright-based suite that exercises the user interface in a real browser. To run:
+
+```bash
+npm install           # ensure dependencies including Playwright are present
+npx playwright install
+npm run build         # build the site
+npm run test:e2e      # launches local preview + runs the UI tests
+```
+
+Tests live under `tests/e2e/*.js`; add new specs as features are added.
+
 
 ```bash
 # Build

@@ -585,6 +585,9 @@ function switchTab(tab) {
         if (nb) nb.classList.toggle('active', t === tab);
     });
     if (tab === 'earnings') renderEarnings();
+    if (tab === 'active') loadMyActive();
+    if (tab === 'available') loadAvailable();
+    if (tab === 'history') loadHistory();
 }
 
 // ── Tab 1: Available Orders ────────────────────────────────────

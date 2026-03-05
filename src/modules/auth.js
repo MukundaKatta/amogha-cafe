@@ -22,7 +22,7 @@ export function setCurrentUser(user) {
                 snap.docChanges().forEach(function(change) {
                     if (change.type === 'added') {
                         var n = change.doc.data();
-                        if (typeof sendPushNotification === 'function') sendPushNotification(n.title, n.body);
+                        if (typeof window.sendPushNotification === 'function') window.sendPushNotification(n.title, n.body);
                         change.doc.ref.update({ read: true });
                     }
                 });
@@ -38,29 +38,26 @@ export function openAuthModal() {
         }
         return;
     }
-    document.getElementById('auth-modal').style.display = 'block';
+    var modal = document.getElementById('auth-modal');
+    if (!modal) return;
+    modal.style.display = 'block';
     lockScroll();
     switchAuthView('signup');
 }
 
 export function closeAuthModal() {
-    document.getElementById('auth-modal').style.display = 'none';
+    var modal = document.getElementById('auth-modal');
+    if (modal) modal.style.display = 'none';
     unlockScroll();
-    document.getElementById('signup-name').value = '';
-    document.getElementById('signup-phone').value = '';
-    document.getElementById('signup-password').value = '';
-    document.getElementById('signin-phone').value = '';
-    document.getElementById('signin-password').value = '';
-    document.getElementById('signup-msg').textContent = '';
-    document.getElementById('signup-msg').className = 'auth-msg';
-    document.getElementById('signin-msg').textContent = '';
-    document.getElementById('signin-msg').className = 'auth-msg';
-    document.getElementById('forgot-phone').value = '';
-    document.getElementById('forgot-name').value = '';
-    document.getElementById('forgot-new-password').value = '';
-    document.getElementById('forgot-confirm-password').value = '';
-    document.getElementById('forgot-msg').textContent = '';
-    document.getElementById('forgot-msg').className = 'auth-msg';
+    ['signup-name', 'signup-phone', 'signup-password', 'signin-phone', 'signin-password',
+     'forgot-phone', 'forgot-name', 'forgot-new-password', 'forgot-confirm-password'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    ['signup-msg', 'signin-msg', 'forgot-msg'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) { el.textContent = ''; el.className = 'auth-msg'; }
+    });
     document.getElementById('forgot-step-1').style.display = '';
     document.getElementById('forgot-step-2').style.display = 'none';
     forgotPhoneVerified = null;
@@ -124,7 +121,7 @@ export function handleSignUp() {
                 var code = refCode ? refCode.value.trim() : '';
                 if (code) {
                     setTimeout(function() {
-                        if (typeof applyReferralAtSignup === 'function') applyReferralAtSignup(code);
+                        if (typeof window.applyReferralAtSignup === 'function') window.applyReferralAtSignup(code);
                     }, 2000);
                 }
             } catch (uiErr) {
@@ -236,7 +233,7 @@ export function handleForgotPassword() {
             return;
         }
         var user = doc.data();
-        if (user.name.toLowerCase() !== name.toLowerCase()) {
+        if ((user.name || '').toLowerCase() !== name.toLowerCase()) {
             msg.textContent = 'Name does not match our records.';
             msg.className = 'auth-msg error';
             return;
@@ -293,11 +290,14 @@ export function handleResetPassword() {
 
 export function signOut() {
     try { localStorage.removeItem('amoghaUser'); } catch(e) {}
+    window._notifListenerActive = false;
     const btn = document.getElementById('signin-btn');
-    btn.className = 'signin-nav-btn';
-    btn.innerHTML = '<svg class="signin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span id="signin-text">Sign In</span>';
+    if (btn) {
+        btn.className = 'signin-nav-btn';
+        btn.innerHTML = '<svg class="signin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span id="signin-text">Sign In</span>';
+    }
     updateCarouselGreeting();
-    if (typeof updateLoyaltyWidget === 'function') updateLoyaltyWidget();
+    if (typeof window.updateLoyaltyWidget === 'function') window.updateLoyaltyWidget();
     showAuthToast('You have been signed out.');
 }
 
@@ -313,7 +313,7 @@ export function updateSignInUI(user) {
             '<a href="#" onclick="event.preventDefault();event.stopPropagation();signOut()">Sign Out</a>' +
         '</div>';
     btn.onclick = function(e) { e.preventDefault(); var dd = document.getElementById('user-dropdown'); if (dd) dd.classList.toggle('show'); };
-    if (typeof updateLoyaltyWidget === 'function') updateLoyaltyWidget();
+    if (typeof window.updateLoyaltyWidget === 'function') window.updateLoyaltyWidget();
 }
 
 export function togglePassword(inputId, btn) {

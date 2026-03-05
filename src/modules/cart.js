@@ -12,6 +12,7 @@ export var cachedAddons = [];
 
 export function initAddonCache() {
     // Try localStorage first (10-min cache)
+    cachedAddons.length = 0;
     try {
         var cached = localStorage.getItem('addons_cache');
         if (cached) {
@@ -154,6 +155,7 @@ export function openAddonPicker(itemName, basePrice) {
     var overlay = document.getElementById('addon-picker-overlay');
     var nameEl = document.getElementById('addon-item-name');
     var listEl = document.getElementById('addon-sheet-list');
+    if (!overlay || !nameEl || !listEl) return;
 
     nameEl.textContent = itemName + ' — \u20B9' + basePrice;
 
@@ -192,12 +194,13 @@ export function updateAddonTotal() {
     if (!pendingAddonItem) return;
     var addonSum = selectedAddons.reduce(function(s, a) { return s + a.price; }, 0);
     var total = pendingAddonItem.price + addonSum;
-    document.getElementById('addon-total').textContent = 'Total: \u20B9' + total;
+    var totalEl = document.getElementById('addon-total');
+    if (totalEl) totalEl.textContent = 'Total: \u20B9' + total;
 }
 
 export function closeAddonPicker() {
-    document.getElementById('addon-picker-overlay').style.display = 'none';
-    // Cancel the pending add — user dismissed without confirming
+    var overlay = document.getElementById('addon-picker-overlay');
+    if (overlay) overlay.style.display = 'none';
     pendingAddonItem = null;
     selectedAddons.length = 0;
 }
@@ -208,7 +211,8 @@ export function confirmAddonSelection() {
     var addons = selectedAddons.slice();
     pendingAddonItem = null;
     selectedAddons.length = 0;
-    document.getElementById('addon-picker-overlay').style.display = 'none';
+    var overlay = document.getElementById('addon-picker-overlay');
+    if (overlay) overlay.style.display = 'none';
     finalizeAddToCart(item.name, item.price, item.spiceLevel, addons);
 }
 
@@ -460,7 +464,8 @@ export function clearCart() {
         displayCart();
         itemNames.forEach(name => updateButtonState(name));
         updateFloatingCart();
-        document.getElementById('cart-modal').style.display = 'none';
+        var cm = document.getElementById('cart-modal');
+        if (cm) cm.style.display = 'none';
         unlockScroll();
     }
 }
@@ -497,17 +502,16 @@ export function initCart() {
         });
     }
 
-    // Close buttons
-    var closeButtons = document.querySelectorAll('.close');
-    closeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (btn.closest('#auth-modal')) return;
-            if (cartModal) cartModal.style.display = 'none';
-            var resModal = document.getElementById('reservation-modal');
-            if (resModal) resModal.style.display = 'none';
-            unlockScroll();
-        });
-    });
+    // Close buttons — only for cart and reservation modals
+    if (cartModal) {
+        var cartClose = cartModal.querySelector('.close');
+        if (cartClose) cartClose.addEventListener('click', function() { cartModal.style.display = 'none'; unlockScroll(); });
+    }
+    var resModal = document.getElementById('reservation-modal');
+    if (resModal) {
+        var resClose = resModal.querySelector('.close');
+        if (resClose) resClose.addEventListener('click', function() { resModal.style.display = 'none'; unlockScroll(); });
+    }
 
     // Click outside modals
     window.addEventListener('click', (e) => {

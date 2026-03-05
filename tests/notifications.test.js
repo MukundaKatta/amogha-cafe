@@ -348,6 +348,23 @@ describe('initFCM', () => {
         global.firebase = { messaging: vi.fn(() => { throw new Error('FCM init error'); }) };
         expect(() => initFCM()).not.toThrow();
     });
+
+    it('logs error when getToken rejects (line 84)', async () => {
+        const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+        const onMessageMock = vi.fn();
+        const getTokenMock = vi.fn(() => Promise.reject(new Error('token denied')));
+        const messagingMock = { getToken: getTokenMock, onMessage: onMessageMock };
+        global.firebase = { messaging: vi.fn(() => messagingMock) };
+
+        initFCM();
+        await new Promise(r => setTimeout(r, 10));
+
+        expect(consoleLog).toHaveBeenCalledWith(
+            expect.stringContaining('FCM token error'),
+            'token denied'
+        );
+        consoleLog.mockRestore();
+    });
 });
 
 // ---------------------------------------------------------------------------
@@ -585,5 +602,206 @@ describe('window globals', () => {
 
     it('window.sendSmartNotification is the same function as the named export', () => {
         expect(window.sendSmartNotification).toBe(sendSmartNotification);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Branch coverage: sendSmartNotification — cached order history parsing (line 125)
+// ---------------------------------------------------------------------------
+describe('sendSmartNotification — cached order history (line 125)', () => {
+    beforeEach(() => {
+        window.Notification.permission = 'granted';
+        localStorage.setItem('amoghaUser', JSON.stringify({ phone: '9999999999', name: 'Test' }));
+    });
+
+    it('sends order history from localStorage amoghaMyOrders when cached', async () => {
+        const orders = [
+            { data: { items: ['Biryani'], total: 249 } },
+            { data: { items: ['Naan'], total: 40 } },
+        ];
+        localStorage.setItem('amoghaMyOrders', JSON.stringify(orders));
+
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ title: 'Welcome back', body: 'Try biryani again!' }),
+            })
+        );
+        await sendSmartNotification('returning-user');
+        const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+        expect(body.orderHistory).toHaveLength(2);
+        expect(body.orderHistory[0].items).toContain('Biryani');
+    });
+
+    it('sends empty orderHistory when amoghaMyOrders is not in localStorage', async () => {
+        localStorage.removeItem('amoghaMyOrders');
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ title: 'Hi', body: 'Welcome!' }),
+            })
+        );
+        await sendSmartNotification('general');
+        const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+        expect(body.orderHistory).toEqual([]);
+    });
+
+    it('sends empty orderHistory when amoghaMyOrders is invalid JSON', async () => {
+        localStorage.setItem('amoghaMyOrders', 'not-json');
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ title: 'Hi', body: 'Welcome!' }),
+            })
+        );
+        await sendSmartNotification('general');
+        const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+        expect(body.orderHistory).toEqual([]);
+    });
+
+    it('limits orderHistory to at most 5 entries', async () => {
+        const orders = Array.from({ length: 10 }, (_, i) => ({
+            data: { items: [`Item${i}`], total: i * 100 },
+        }));
+        localStorage.setItem('amoghaMyOrders', JSON.stringify(orders));
+
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ title: 'Hi', body: 'Order again!' }),
+            })
+        );
+        await sendSmartNotification('general');
+        const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+        expect(body.orderHistory.length).toBeLessThanOrEqual(5);
+    });
+
+    it('handles amoghaUser parsing failure gracefully (returns early)', async () => {
+        localStorage.setItem('amoghaUser', 'broken-json');
+        global.fetch = vi.fn();
+        await sendSmartNotification('general');
+        // user will be null due to JSON.parse failure, should return early
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// 21. initFCM — getToken resolves with truthy token → saveFCMToken called
+// ---------------------------------------------------------------------------
+describe('initFCM — saveFCMToken via getToken', () => {
+    it('saves FCM token to localStorage when getToken resolves with a token', async () => {
+        const onMessageMock = vi.fn();
+        const getTokenMock = vi.fn(() => Promise.resolve('mock-fcm-token-123'));
+        const messagingMock = { getToken: getTokenMock, onMessage: onMessageMock };
+        global.firebase = { messaging: vi.fn(() => messagingMock) };
+
+        initFCM();
+        // Flush promise queue so getToken .then() runs
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(safeSetItem).toHaveBeenCalledWith('amoghaFcmToken', 'mock-fcm-token-123');
+    });
+
+    it('calls db.collection.doc.update when user exists in localStorage and db is available', async () => {
+        const updateMock = vi.fn(() => Promise.resolve());
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({ update: updateMock })),
+            })),
+        };
+        localStorage.setItem('amoghaUser', JSON.stringify({ phone: '9876543210', name: 'Test' }));
+
+        const onMessageMock = vi.fn();
+        const getTokenMock = vi.fn(() => Promise.resolve('fcm-token-xyz'));
+        const messagingMock = { getToken: getTokenMock, onMessage: onMessageMock };
+        global.firebase = { messaging: vi.fn(() => messagingMock) };
+
+        initFCM();
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(window.db.collection).toHaveBeenCalledWith('users');
+        expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({
+            fcmToken: 'fcm-token-xyz',
+        }));
+    });
+
+    it('still saves to localStorage even when db update fails', async () => {
+        const updateMock = vi.fn(() => Promise.reject(new Error('update failed')));
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({ update: updateMock })),
+            })),
+        };
+        localStorage.setItem('amoghaUser', JSON.stringify({ phone: '9876543210', name: 'Test' }));
+
+        const onMessageMock = vi.fn();
+        const getTokenMock = vi.fn(() => Promise.resolve('fcm-token-abc'));
+        const messagingMock = { getToken: getTokenMock, onMessage: onMessageMock };
+        global.firebase = { messaging: vi.fn(() => messagingMock) };
+
+        initFCM();
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(safeSetItem).toHaveBeenCalledWith('amoghaFcmToken', 'fcm-token-abc');
+    });
+
+    it('saves token to localStorage even without user or db', async () => {
+        localStorage.removeItem('amoghaUser');
+        delete window.db;
+
+        const onMessageMock = vi.fn();
+        const getTokenMock = vi.fn(() => Promise.resolve('fcm-token-nouser'));
+        const messagingMock = { getToken: getTokenMock, onMessage: onMessageMock };
+        global.firebase = { messaging: vi.fn(() => messagingMock) };
+
+        initFCM();
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(safeSetItem).toHaveBeenCalledWith('amoghaFcmToken', 'fcm-token-nouser');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// 22. initFCM — onMessage callback fires (foreground FCM message)
+// ---------------------------------------------------------------------------
+describe('initFCM — onMessage foreground handler', () => {
+    it('calls sendPushNotification and showAuthToast when foreground message arrives', async () => {
+        let onMessageCallback = null;
+        const onMessageMock = vi.fn((cb) => { onMessageCallback = cb; });
+        const getTokenMock = vi.fn(() => Promise.resolve(null));
+        const messagingMock = { getToken: getTokenMock, onMessage: onMessageMock };
+        global.firebase = { messaging: vi.fn(() => messagingMock) };
+
+        window.Notification.permission = 'granted';
+        initFCM();
+
+        expect(onMessageMock).toHaveBeenCalled();
+        expect(typeof onMessageCallback).toBe('function');
+
+        // Simulate a foreground message with notification payload
+        onMessageCallback({
+            notification: { title: 'Order Ready', body: 'Your biryani is done!' },
+        });
+
+        expect(window.Notification).toHaveBeenCalledWith('Order Ready', expect.objectContaining({
+            body: 'Your biryani is done!',
+        }));
+        expect(showAuthToast).toHaveBeenCalledWith('Your biryani is done!');
+    });
+
+    it('uses fallback title and body when notification payload is missing', async () => {
+        let onMessageCallback = null;
+        const onMessageMock = vi.fn((cb) => { onMessageCallback = cb; });
+        const getTokenMock = vi.fn(() => Promise.resolve(null));
+        const messagingMock = { getToken: getTokenMock, onMessage: onMessageMock };
+        global.firebase = { messaging: vi.fn(() => messagingMock) };
+
+        window.Notification.permission = 'granted';
+        initFCM();
+
+        // Simulate message without notification field
+        onMessageCallback({});
+
+        expect(window.Notification).toHaveBeenCalledWith('Amogha Cafe', expect.objectContaining({
+            body: '',
+        }));
+        // When body is empty, showAuthToast receives title
+        expect(showAuthToast).toHaveBeenCalledWith('Amogha Cafe');
     });
 });

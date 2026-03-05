@@ -862,7 +862,7 @@
                 // Categorize
                 var waiting   = orders.filter(function(o) { return o.data.status === 'pending' || o.data.status === 'confirmed'; });
                 var preparing = orders.filter(function(o) { return o.data.status === 'preparing'; });
-                var ready     = orders.filter(function(o) { return o.data.status === 'delivered'; });
+                var ready     = orders.filter(function(o) { return o.data.status === 'ready'; });
 
                 // Detect newly ready orders
                 var currentReadyIds = new Set(ready.map(function(o) { return o.id; }));

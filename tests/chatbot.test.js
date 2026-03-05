@@ -414,6 +414,103 @@ describe('sendChatMessage', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Enter key sends message (line 54)
+// ---------------------------------------------------------------------------
+describe('initChatbot — Enter key sends message', () => {
+    beforeEach(() => {
+        initChatbot();
+        syncChatClosedState();
+    });
+
+    it('calls sendChatMessage when Enter key is pressed on the input (line 54)', async () => {
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ reply: 'Enter reply', suggestedItems: [] }),
+            })
+        );
+        const input = document.getElementById('ai-chat-input');
+        input.value = 'Enter test message';
+
+        const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+        input.dispatchEvent(event);
+
+        await new Promise((r) => setTimeout(r, 20));
+
+        expect(global.fetch).toHaveBeenCalledWith(
+            '/api/chat',
+            expect.objectContaining({ method: 'POST' })
+        );
+        const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+        expect(body.message).toBe('Enter test message');
+    });
+
+    it('does NOT send when a non-Enter key is pressed', async () => {
+        global.fetch = vi.fn();
+        const input = document.getElementById('ai-chat-input');
+        input.value = 'Should not send';
+
+        const event = new KeyboardEvent('keydown', { key: 'a', bubbles: true });
+        input.dispatchEvent(event);
+
+        await new Promise((r) => setTimeout(r, 10));
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Cart mapping in fetch body (line 103)
+// ---------------------------------------------------------------------------
+describe('sendChatMessage — cart mapping in fetch body (line 103)', () => {
+    beforeEach(() => {
+        initChatbot();
+        syncChatClosedState();
+    });
+
+    it('sends cart items mapped to {name, qty, price} in the fetch body', async () => {
+        // Import and mutate the cart array from the mocked module
+        const { cart } = await import('../src/modules/cart.js');
+        cart.length = 0;
+        cart.push(
+            { name: 'Biryani', quantity: 2, price: 250, spiceLevel: 'hot', addons: [] },
+            { name: 'Naan', quantity: 1, price: 40, spiceLevel: 'mild', addons: ['butter'] }
+        );
+
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ reply: 'Got it', suggestedItems: [] }),
+            })
+        );
+        await sendChatMessage('My order');
+        await new Promise((r) => setTimeout(r, 10));
+
+        const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+        expect(body.cart).toEqual([
+            { name: 'Biryani', qty: 2, price: 250 },
+            { name: 'Naan', qty: 1, price: 40 },
+        ]);
+
+        // Clean up
+        cart.length = 0;
+    });
+
+    it('sends empty cart array when cart is empty', async () => {
+        const { cart } = await import('../src/modules/cart.js');
+        cart.length = 0;
+
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
+            })
+        );
+        await sendChatMessage('Hello');
+        await new Promise((r) => setTimeout(r, 10));
+
+        const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+        expect(body.cart).toEqual([]);
+    });
+});
+
+// ---------------------------------------------------------------------------
 // 16. window globals — toggleChat, sendChatMessage, initChatbot are on window
 // ---------------------------------------------------------------------------
 describe('window globals', () => {
@@ -439,5 +536,214 @@ describe('window globals', () => {
 
     it('window.initChatbot is the same function as the named export', () => {
         expect(window.initChatbot).toBe(initChatbot);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Branch coverage: sendChatMessage — input is null fallback (line 74)
+// ---------------------------------------------------------------------------
+describe('sendChatMessage — input element is null (line 74)', () => {
+    it('uses empty string when #ai-chat-input does not exist and no presetMsg', async () => {
+        // Set up DOM without the input element but with messages container
+        document.body.innerHTML = '<div id="ai-chat-messages"></div>';
+        document.getElementById = (id) => document.body.querySelector('#' + id);
+        global.fetch = vi.fn();
+        await sendChatMessage();
+        // message is '' (falsy), so fetch should NOT be called
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('still works with presetMsg when input element is null', async () => {
+        // Set up DOM without input but with messages container
+        document.body.innerHTML = '<div id="ai-chat-messages"></div>';
+        document.getElementById = (id) => document.body.querySelector('#' + id);
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ reply: 'Reply without input', suggestedItems: [] }),
+            })
+        );
+        await sendChatMessage('Hello from preset');
+        await new Promise((r) => setTimeout(r, 10));
+        expect(global.fetch).toHaveBeenCalled();
+        const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+        expect(body.message).toBe('Hello from preset');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Branch coverage: sendChatMessage — input exists → clear it (line 76)
+// ---------------------------------------------------------------------------
+describe('sendChatMessage — input exists and gets cleared (line 76)', () => {
+    beforeEach(() => {
+        initChatbot();
+        syncChatClosedState();
+    });
+
+    it('clears the input value when input exists and presetMsg is provided', async () => {
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
+            })
+        );
+        const input = document.getElementById('ai-chat-input');
+        input.value = 'should be cleared';
+        await sendChatMessage('preset msg');
+        await new Promise((r) => setTimeout(r, 10));
+        // input.value should be cleared to '' even though presetMsg was used
+        expect(input.value).toBe('');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Branch coverage: sendChatMessage — full async fetch flow (lines 76-113)
+// ---------------------------------------------------------------------------
+describe('sendChatMessage — complete async fetch flow coverage (lines 76-113)', () => {
+    beforeEach(() => {
+        initChatbot();
+        syncChatClosedState();
+    });
+
+    it('sends history (last 6 messages) in the fetch body', async () => {
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ reply: 'R1', suggestedItems: [] }),
+            })
+        );
+        // Send multiple messages to build chat history
+        await sendChatMessage('msg1');
+        await new Promise((r) => setTimeout(r, 10));
+        await sendChatMessage('msg2');
+        await new Promise((r) => setTimeout(r, 10));
+
+        const body = JSON.parse(global.fetch.mock.calls[1][1].body);
+        expect(body.history).toBeDefined();
+        expect(body.history.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('sends user preferences when getCurrentUser returns a user', async () => {
+        // Re-mock getCurrentUser to return a user
+        const authMock = await import('../src/modules/auth.js');
+        authMock.getCurrentUser.mockReturnValueOnce({
+            name: 'Ravi',
+            dietaryPrefs: ['Vegetarian'],
+        });
+
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ reply: 'Veggie!', suggestedItems: [] }),
+            })
+        );
+        await sendChatMessage('Veg options');
+        await new Promise((r) => setTimeout(r, 10));
+
+        const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+        expect(body.preferences).toEqual({ name: 'Ravi', isVeg: true });
+    });
+
+    it('sends empty preferences when getCurrentUser returns null', async () => {
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
+            })
+        );
+        await sendChatMessage('Hello');
+        await new Promise((r) => setTimeout(r, 10));
+
+        const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+        expect(body.preferences).toEqual({});
+    });
+
+    it('uses fallback reply text when data.reply is falsy', async () => {
+        global.fetch = vi.fn(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({ suggestedItems: [] }),
+            })
+        );
+        await sendChatMessage('Test');
+        await new Promise((r) => setTimeout(r, 10));
+        const messages = document.getElementById('ai-chat-messages');
+        expect(messages.textContent).toContain('Sorry, please try again.');
+    });
+});
+
+// ===========================================================================
+// Branch coverage: sendChatMessage — user preferences with dietaryPrefs (line 104)
+// ===========================================================================
+describe('sendChatMessage — user preferences with dietaryPrefs (line 104)', () => {
+    beforeEach(() => {
+        initChatbot();
+        syncChatClosedState();
+    });
+
+    it('sends isVeg:true when user has Vegetarian in dietaryPrefs', async () => {
+        const { getCurrentUser } = await import('../src/modules/auth.js');
+        getCurrentUser.mockReturnValue({ name: 'Ravi', dietaryPrefs: ['Vegetarian'] });
+
+        let capturedBody = null;
+        global.fetch = vi.fn((url, opts) => {
+            capturedBody = JSON.parse(opts.body);
+            return Promise.resolve({
+                json: () => Promise.resolve({ reply: 'Test', suggestedItems: [] }),
+            });
+        });
+
+        await sendChatMessage('Suggest something');
+        await new Promise((r) => setTimeout(r, 10));
+
+        expect(capturedBody.preferences).toEqual({ name: 'Ravi', isVeg: true });
+    });
+
+    it('sends isVeg:false when user has no Vegetarian in dietaryPrefs', async () => {
+        const { getCurrentUser } = await import('../src/modules/auth.js');
+        getCurrentUser.mockReturnValue({ name: 'Ravi', dietaryPrefs: ['Vegan'] });
+
+        let capturedBody = null;
+        global.fetch = vi.fn((url, opts) => {
+            capturedBody = JSON.parse(opts.body);
+            return Promise.resolve({
+                json: () => Promise.resolve({ reply: 'Test', suggestedItems: [] }),
+            });
+        });
+
+        await sendChatMessage('Suggest something');
+        await new Promise((r) => setTimeout(r, 10));
+
+        expect(capturedBody.preferences).toEqual({ name: 'Ravi', isVeg: false });
+    });
+
+    it('sends empty preferences when user is null', async () => {
+        const { getCurrentUser } = await import('../src/modules/auth.js');
+        getCurrentUser.mockReturnValue(null);
+
+        let capturedBody = null;
+        global.fetch = vi.fn((url, opts) => {
+            capturedBody = JSON.parse(opts.body);
+            return Promise.resolve({
+                json: () => Promise.resolve({ reply: 'Test', suggestedItems: [] }),
+            });
+        });
+
+        await sendChatMessage('Suggest something');
+        await new Promise((r) => setTimeout(r, 10));
+
+        expect(capturedBody.preferences).toEqual({});
+    });
+
+    it('sends isVeg:false when user.dietaryPrefs is undefined', async () => {
+        const { getCurrentUser } = await import('../src/modules/auth.js');
+        getCurrentUser.mockReturnValue({ name: 'Ravi' }); // no dietaryPrefs
+
+        let capturedBody = null;
+        global.fetch = vi.fn((url, opts) => {
+            capturedBody = JSON.parse(opts.body);
+            return Promise.resolve({
+                json: () => Promise.resolve({ reply: 'Test', suggestedItems: [] }),
+            });
+        });
+
+        await sendChatMessage('Suggest something');
+        await new Promise((r) => setTimeout(r, 10));
+
+        expect(capturedBody.preferences).toEqual({ name: 'Ravi', isVeg: false });
     });
 });

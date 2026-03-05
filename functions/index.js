@@ -45,6 +45,7 @@ async function callGemini(systemPrompt, userMessage) {
         contents: [{ role: 'user', parts: [{ text: systemPrompt + '\n\nUser request:\n' + userMessage }] }],
         generationConfig: { temperature: 0.7, maxOutputTokens: 2048, responseMimeType: 'application/json' }
     });
+    if (!result.response.candidates || !result.response.candidates.length) throw new Error('Gemini returned no candidates');
     var text = result.response.candidates[0].content.parts[0].text.trim();
     if (text.startsWith('```')) text = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
     return JSON.parse(text);
@@ -262,6 +263,7 @@ app.post('/parse-bill', async function(req, res) {
             }]
         });
 
+        if (!result.response.candidates || !result.response.candidates.length) throw new Error('Gemini returned no candidates');
         var text = result.response.candidates[0].content.parts[0].text.trim();
 
         // Strip markdown code fence if Gemini wraps it
@@ -778,6 +780,7 @@ app.post('/analytics-query', async function(req, res) {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             generationConfig: { temperature: 0.2, maxOutputTokens: 512, responseMimeType: 'application/json' }
         });
+        if (!result.response.candidates || !result.response.candidates.length) throw new Error('Gemini returned no candidates');
         var text = result.response.candidates[0].content.parts[0].text.trim();
         if (text.startsWith('```')) text = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
         var parsed = JSON.parse(text);

@@ -3833,7 +3833,8 @@
         function switchTab(tab, btn) {
             currentTab = tab;
             document.querySelectorAll('.admin-tab').forEach(function(t) { t.classList.remove('active'); });
-            btn.classList.add('active');
+            if (btn) { btn.classList.add('active'); }
+            else { var el = document.querySelector('.admin-tab[data-tab="' + tab + '"]'); if (el) el.classList.add('active'); }
 
             // Hide all panels
             document.querySelector('.filters').style.display = tab === 'orders' ? 'flex' : 'none';

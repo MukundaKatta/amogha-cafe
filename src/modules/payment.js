@@ -60,13 +60,15 @@ export function checkout() {
         return;
     }
     if (!getCurrentUser()) {
-        document.getElementById('cart-modal').style.display = 'none';
+        var cm = document.getElementById('cart-modal');
+        if (cm) cm.style.display = 'none';
         unlockScroll();
         if (typeof window.openAuthModal === 'function') window.openAuthModal();
         showAuthToast('Please sign in to continue with your order');
         return;
     }
-    document.getElementById('cart-modal').style.display = 'none';
+    var cartModal = document.getElementById('cart-modal');
+    if (cartModal) cartModal.style.display = 'none';
     lockScroll();
     // Allergen check before opening checkout
     if (typeof window.checkAllergenWarning === 'function') {
@@ -155,12 +157,13 @@ export function openCheckout() {
 }
 
 export function closeCheckout() {
-    document.getElementById('checkout-modal').style.display = 'none';
+    var modal = document.getElementById('checkout-modal');
+    if (modal) modal.style.display = 'none';
     unlockScroll();
-    document.getElementById('co-name').value = '';
-    document.getElementById('co-phone').value = '';
-    document.getElementById('co-address').value = '';
-    document.getElementById('co-notes').value = '';
+    ['co-name', 'co-phone', 'co-address', 'co-notes'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.value = '';
+    });
 }
 
 export function goToStep(step) {
@@ -311,7 +314,8 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         var schedDate = document.getElementById('schedule-date');
         var schedTime = document.getElementById('schedule-time');
         if (schedDate && schedTime && schedDate.value && schedTime.value) {
-            scheduledFor = new Date(schedDate.value + 'T' + schedTime.value).toISOString();
+            // Preserve local date/time as entered to avoid timezone day-shift.
+            scheduledFor = schedDate.value + 'T' + schedTime.value + ':00';
         }
     }
 
@@ -411,15 +415,15 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         updateFloatingCart();
 
         // Launch confetti for celebration
-        if (typeof launchConfetti === 'function') launchConfetti();
+        if (typeof window.launchConfetti === 'function') window.launchConfetti();
 
         // Award loyalty points
-        if (typeof awardLoyaltyPoints === 'function') awardLoyaltyPoints(orderData.total);
+        if (typeof window.awardLoyaltyPoints === 'function') window.awardLoyaltyPoints(orderData.total);
 
         // Check and award badges
-        if (typeof checkAndAwardBadges === 'function') {
+        if (typeof window.checkAndAwardBadges === 'function') {
             var badgeUser = getCurrentUser();
-            if (badgeUser) checkAndAwardBadges(badgeUser, orderData);
+            if (badgeUser) window.checkAndAwardBadges(badgeUser, orderData);
         }
 
         // Award referrer points if current user was referred
@@ -440,10 +444,10 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         }
 
         // Schedule review prompt
-        if (typeof scheduleReviewPrompt === 'function') scheduleReviewPrompt(orderData.items.map(function(i) { return { name: i.name }; }));
+        if (typeof window.scheduleReviewPrompt === 'function') window.scheduleReviewPrompt(orderData.items.map(function(i) { return { name: i.name }; }));
 
         // Send push notification
-        if (typeof sendPushNotification === 'function') sendPushNotification('Order Placed!', 'Your order from Amogha has been placed successfully.');
+        if (typeof window.sendPushNotification === 'function') window.sendPushNotification('Order Placed!', 'Your order from Amogha has been placed successfully.');
 
         // WhatsApp confirmation to customer
         if (phone) {
@@ -600,13 +604,13 @@ export function removeGiftCard() {
 }
 
 export function openGiftCardModal() {
-    document.getElementById('giftcard-modal').style.display = 'block';
-    lockScroll();
+    var modal = document.getElementById('giftcard-modal');
+    if (modal) { modal.style.display = 'block'; lockScroll(); }
 }
 
 export function closeGiftCardModal() {
-    document.getElementById('giftcard-modal').style.display = 'none';
-    unlockScroll();
+    var modal = document.getElementById('giftcard-modal');
+    if (modal) { modal.style.display = 'none'; unlockScroll(); }
 }
 
 export function selectGcAmount(amount, btn) {
@@ -637,6 +641,7 @@ export function buyGiftCard() {
     }
 
     var db = getDb();
+    if (!db) { msg.textContent = 'Service unavailable. Please try again.'; msg.className = 'coupon-msg error'; return; }
     var options = {
         key: 'rzp_live_bfHYCYWDyoSHFn',
         amount: amount * 100,
@@ -696,7 +701,7 @@ export function redeemLoyaltyAtCheckout() {
     if (db) {
         db.collection('users').doc(user.phone).update({ loyaltyPoints: user.loyaltyPoints }).catch(function(e) { console.error('Loyalty update error:', e); });
     }
-    if (typeof updateLoyaltyWidget === 'function') updateLoyaltyWidget();
+    if (typeof window.updateLoyaltyWidget === 'function') window.updateLoyaltyWidget();
 }
 
 // ===== SOCIAL SHARING (Share & Earn 10 pts) =====

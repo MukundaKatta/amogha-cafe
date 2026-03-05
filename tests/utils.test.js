@@ -113,3 +113,111 @@ describe('lockScroll / unlockScroll', () => {
         expect(document.body.style.top).toBe('');
     });
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// safeCopy — fallbackCopy when navigator.clipboard unavailable or rejects
+// (lines 13-23)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('safeCopy — fallbackCopy branch when clipboard is unavailable (lines 15-16)', () => {
+    it('calls fallbackCopy when navigator.clipboard is undefined', () => {
+        Object.defineProperty(navigator, 'clipboard', {
+            value: undefined,
+            configurable: true,
+        });
+        const btn = { textContent: '' };
+        document.execCommand = vi.fn(() => true);
+        safeCopy('test text', btn);
+        // fallbackCopy should have run and set button text
+        expect(btn.textContent).toBe('Copied!');
+    });
+
+    it('calls fallbackCopy when navigator.clipboard.writeText is undefined', () => {
+        Object.defineProperty(navigator, 'clipboard', {
+            value: {},
+            configurable: true,
+        });
+        const btn = { textContent: '' };
+        document.execCommand = vi.fn(() => true);
+        safeCopy('test text', btn);
+        expect(btn.textContent).toBe('Copied!');
+    });
+});
+
+describe('safeCopy — fallbackCopy branch when clipboard.writeText rejects (line 14)', () => {
+    it('falls back to fallbackCopy and sets button text on clipboard rejection', async () => {
+        Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText: vi.fn(() => Promise.reject(new Error('Permission denied'))) },
+            configurable: true,
+        });
+        const btn = { textContent: '' };
+        document.execCommand = vi.fn(() => true);
+        safeCopy('fallback text', btn);
+        await new Promise(r => setTimeout(r, 20));
+        // fallbackCopy should have set the button text
+        expect(btn.textContent).toBe('Copied!');
+    });
+});
+
+describe('fallbackCopy — textarea creation and execCommand (lines 19-25)', () => {
+    it('creates a textarea with the given text, appends it, and removes it', () => {
+        const appendSpy = vi.spyOn(document.body, 'appendChild');
+        const removeSpy = vi.spyOn(document.body, 'removeChild');
+        document.execCommand = vi.fn(() => true);
+
+        fallbackCopy('copy this', null);
+
+        expect(appendSpy).toHaveBeenCalled();
+        const ta = appendSpy.mock.calls[appendSpy.mock.calls.length - 1][0];
+        expect(ta.tagName.toLowerCase()).toBe('textarea');
+        expect(ta.value).toBe('copy this');
+        expect(removeSpy).toHaveBeenCalled();
+
+        appendSpy.mockRestore();
+        removeSpy.mockRestore();
+    });
+
+    it('sets button text to Copied! when execCommand succeeds', () => {
+        document.execCommand = vi.fn(() => true);
+        const btn = { textContent: '' };
+        fallbackCopy('text', btn);
+        expect(btn.textContent).toBe('Copied!');
+    });
+
+    it('does not throw when execCommand throws an error', () => {
+        document.execCommand = vi.fn(() => { throw new Error('execCommand not supported'); });
+        expect(() => fallbackCopy('text', null)).not.toThrow();
+    });
+
+    it('does not set button text when execCommand throws', () => {
+        document.execCommand = vi.fn(() => { throw new Error('execCommand error'); });
+        const btn = { textContent: 'original' };
+        fallbackCopy('text', btn);
+        // The catch block swallows the error, btn text remains unchanged
+        expect(btn.textContent).toBe('original');
+    });
+
+    it('removes the textarea even when execCommand throws', () => {
+        document.execCommand = vi.fn(() => { throw new Error('fail'); });
+        const removeSpy = vi.spyOn(document.body, 'removeChild');
+        fallbackCopy('text', null);
+        expect(removeSpy).toHaveBeenCalled();
+        removeSpy.mockRestore();
+    });
+});
+
+// ===========================================================================
+// Branch coverage: safeCopy — btn is null/falsy when clipboard succeeds (line 13)
+// ===========================================================================
+describe('safeCopy — btn is null when clipboard.writeText succeeds (line 13)', () => {
+    it('does not throw when btn is null and clipboard succeeds', async () => {
+        const writeText = vi.fn(() => Promise.resolve());
+        Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText },
+            configurable: true,
+        });
+        safeCopy('test', null);
+        await new Promise(r => setTimeout(r, 10));
+        expect(writeText).toHaveBeenCalledWith('test');
+        // Should not throw — btn is null so "if (btn)" is false
+    });
+});

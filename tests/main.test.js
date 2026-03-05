@@ -30,7 +30,9 @@ describe('main.js', () => {
     });
 
     it('imports and calls all init functions without error', async () => {
+        vi.useFakeTimers();
         await import('../src/main.js');
+        vi.advanceTimersByTime(200); // trigger requestIdleCallback fallback
         // Verify key init functions were called
         const { initUI } = await import('../src/modules/ui.js');
         const { initHero } = await import('../src/modules/hero.js');
@@ -44,6 +46,7 @@ describe('main.js', () => {
         expect(loadCart).toHaveBeenCalled();
         expect(initCart).toHaveBeenCalled();
         expect(initFeatures).toHaveBeenCalled();
+        vi.useRealTimers();
     });
 
     it('calls initMenuSync to set up Firestore listeners', async () => {
@@ -52,33 +55,44 @@ describe('main.js', () => {
         expect(initMenuSync).toHaveBeenCalled();
     });
 
-    it('calls initLoyalty, initNotifications, and initReservations', async () => {
+    it('calls initLoyalty, initNotifications, and initReservations after deferred init', async () => {
+        vi.useFakeTimers();
         await import('../src/main.js');
+        vi.advanceTimersByTime(200); // trigger requestIdleCallback fallback
         const { initLoyalty } = await import('../src/modules/loyalty.js');
         const { initNotifications } = await import('../src/modules/notifications.js');
         const { initReservations } = await import('../src/modules/reservations.js');
         expect(initLoyalty).toHaveBeenCalled();
         expect(initNotifications).toHaveBeenCalled();
         expect(initReservations).toHaveBeenCalled();
+        vi.useRealTimers();
     });
 
-    it('calls initProfile, initGroupOrdering, and initChatbot', async () => {
+    it('calls initProfile, initGroupOrdering, and initChatbot after deferred init', async () => {
+        vi.useFakeTimers();
         await import('../src/main.js');
+        // initProfile is in requestIdleCallback (100ms fallback), others in setTimeout(1500)
+        vi.advanceTimersByTime(2000);
         const { initProfile } = await import('../src/modules/profile.js');
         const { initGroupOrdering } = await import('../src/modules/group.js');
         const { initChatbot } = await import('../src/modules/chatbot.js');
         expect(initProfile).toHaveBeenCalled();
         expect(initGroupOrdering).toHaveBeenCalled();
         expect(initChatbot).toHaveBeenCalled();
+        vi.useRealTimers();
     });
 
-    it('calls initAddonCache, restoreButtonStates, and updateCartFab from cart', async () => {
+    it('calls restoreButtonStates, updateCartFab, and defers initAddonCache', async () => {
+        vi.useFakeTimers();
         await import('../src/main.js');
+        // Trigger requestIdleCallback / deferred init
+        vi.advanceTimersByTime(200);
         const { initAddonCache, restoreButtonStates, updateCartFab, updateFloatingCartBar } = await import('../src/modules/cart.js');
-        expect(initAddonCache).toHaveBeenCalled();
         expect(restoreButtonStates).toHaveBeenCalled();
         expect(updateCartFab).toHaveBeenCalled();
         expect(updateFloatingCartBar).toHaveBeenCalled();
+        expect(initAddonCache).toHaveBeenCalled();
+        vi.useRealTimers();
     });
 
     it('calls hero initializers: initDynamicHeroText and initHeaderSlideshow', async () => {
@@ -88,13 +102,17 @@ describe('main.js', () => {
         expect(initHeaderSlideshow).toHaveBeenCalled();
     });
 
-    it('calls feature sub-initializers: loadDailySpecial, initComboBuilder, initLiveOrderTicker, initOrderAgainSection', async () => {
+    it('calls feature sub-initializers after deferred timeout', async () => {
+        vi.useFakeTimers();
         await import('../src/main.js');
+        // Feature sub-initializers are deferred via setTimeout(1500)
+        vi.advanceTimersByTime(2000);
         const { loadDailySpecial, initComboBuilder, initLiveOrderTicker, initOrderAgainSection } = await import('../src/modules/features.js');
         expect(loadDailySpecial).toHaveBeenCalled();
         expect(initComboBuilder).toHaveBeenCalled();
         expect(initLiveOrderTicker).toHaveBeenCalled();
         expect(initOrderAgainSection).toHaveBeenCalled();
+        vi.useRealTimers();
     });
 
     it('sets window.displayCart and window.loadMenuRatings', async () => {
@@ -106,16 +124,13 @@ describe('main.js', () => {
     it('window.displayCart calls displayCart and showRecommendations from their modules', async () => {
         await import('../src/main.js');
         const { displayCart } = await import('../src/modules/cart.js');
-        const { showRecommendations } = await import('../src/modules/features.js');
 
         // Reset call counts so we can isolate the window.displayCart invocation
         displayCart.mockClear();
-        showRecommendations.mockClear();
 
         window.displayCart();
 
         expect(displayCart).toHaveBeenCalled();
-        expect(showRecommendations).toHaveBeenCalled();
     });
 
     it('window.loadMenuRatings is the loadMenuRatings export from menu.js', async () => {

@@ -47,7 +47,6 @@ export function initReviewsCarousel() {
         resetAutoSlide();
     };
     window.moveCarousel = moveCarouselFn;
-    return moveCarouselFn;
 
     function autoAdvance() {
         const cards = carousel.querySelectorAll('.review-card');
@@ -76,7 +75,7 @@ export function initReviewsCarousel() {
     });
 
     autoSlide = setInterval(autoAdvance, 4000);
-    return window.moveCarousel;
+    return moveCarouselFn;
 }
 
 // ===== GALLERY SLIDESHOW =====
@@ -241,6 +240,7 @@ export function submitReviews() {
     if (!user) return;
     var text = document.getElementById('review-text').value.trim();
     var db = getDb();
+    if (!db) return;
     var batch = db.batch();
     var hasRating = false;
     window._reviewItems.forEach(function(item, idx) {
@@ -802,9 +802,9 @@ export function openMyOrders() {
         modal = document.createElement('div');
         modal.id = 'myorders-modal';
         modal.className = 'modal';
-        modal.innerHTML = '<div class="modal-content myorders-content"><span class="close" onclick="document.getElementById(\'myorders-modal\').style.display=\'none\'">&times;</span><h2>My Orders</h2><div id="myorders-list" class="myorders-list"><p>Loading...</p></div></div>';
+        modal.innerHTML = '<div class="modal-content myorders-content"><span class="close" onclick="document.getElementById(\'myorders-modal\').style.display=\'none\';if(typeof unlockScroll===\'function\')unlockScroll()">&times;</span><h2>My Orders</h2><div id="myorders-list" class="myorders-list"><p>Loading...</p></div></div>';
         document.body.appendChild(modal);
-        modal.addEventListener('click', function(e) { if (e.target === modal) modal.style.display = 'none'; });
+        modal.addEventListener('click', function(e) { if (e.target === modal) { modal.style.display = 'none'; if (typeof window.unlockScroll === 'function') window.unlockScroll(); } });
     }
     modal.style.display = 'block';
     var listEl = document.getElementById('myorders-list');
@@ -883,6 +883,7 @@ export function reorderFromHistory(orderId) {
         }
     }
     var db = getDb();
+    if (!db) return;
     db.collection('orders').doc(orderId).get().then(function(doc) {
         if (doc.exists && doc.data().items) {
             doc.data().items.forEach(function(item) {

@@ -145,7 +145,7 @@ function renderSpecials(specials) {
 }
 
 // ===== SKELETON LOADERS =====
-function showMenuSkeletons() {
+export function showMenuSkeletons() {
     var skeletonHTML = '<div class="menu-skeleton-card">' +
         '<div class="skeleton-line h-img"></div>' +
         '<div class="skeleton-line w-60"></div>' +
@@ -160,7 +160,7 @@ function showMenuSkeletons() {
     });
 }
 
-function removeMenuSkeletons() {
+export function removeMenuSkeletons() {
     document.querySelectorAll('.menu-skeleton-card').forEach(function(el) { el.remove(); });
 }
 

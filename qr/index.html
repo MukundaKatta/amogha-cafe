@@ -1011,7 +1011,6 @@ setCat = function(cat, el) {
 document.addEventListener('touchend', function(e) {
     if (e.target.closest('.add-btn,.qty-ctrl button,.cat-tab,.filter-chip,.cart-btn,.place-order-btn')) {
         e.preventDefault();
-        e.target.click();
     }
 }, { passive: false });
 

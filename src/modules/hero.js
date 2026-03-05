@@ -53,7 +53,7 @@ export function initDynamicHeroText() {
 
 export function initHeaderSlideshow() {
     const slides = document.querySelectorAll('.header-slideshow .slide');
-    if (slides.length === 0) return;
+    if (slides.length <= 1) return;
     let current = 0;
     setInterval(() => {
         slides[current].classList.remove('active');

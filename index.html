@@ -26,10 +26,25 @@
     <link rel="apple-touch-icon" href="amogha-logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://checkout.razorpay.com">
     <!-- Load fonts non-blocking: preload triggers fetch, onload swaps to stylesheet -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+Telugu:wght@400;700&family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap" onload="this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+Telugu:wght@400;700&family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap"></noscript>
-    <link rel="stylesheet" href="styles.css?v=66">
+    <!-- Critical CSS inlined for instant preloader render -->
+    <style>
+    :root{--gold:#D4A017;--gold-dark:#b8860b;--dark:#1e140e;--dark-deep:#110b06}
+    #preloader{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,#3d2217 0%,var(--dark) 40%,var(--dark-deep) 100%);z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 1s cubic-bezier(.4,0,.2,1),visibility 1s}
+    #preloader.hidden{opacity:0;visibility:hidden}
+    .preloader-inner{text-align:center}.preloader-logo{width:140px;height:140px;border-radius:28px;margin-bottom:2rem;border:2px solid rgba(239,179,26,.2)}
+    .preloader-bar{width:260px;height:1px;background:rgba(255,255,255,.08);border-radius:3px;margin:0 auto;overflow:hidden}
+    .preloader-progress{width:0;height:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold),#fff5cc,var(--gold),var(--gold-dark));border-radius:3px;animation:preloader-fill 1.8s ease-out forwards}
+    @keyframes preloader-fill{to{width:100%}}
+    /* Ensure dynamically-loaded sections are visible (reveal animation can miss them) */
+    .section-reveal{opacity:1!important;transform:none!important}
+    </style>
+    <link rel="stylesheet" href="styles.css?v=67" media="all">
     <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
 
     <!-- Restaurant Schema Markup for SEO -->
@@ -74,7 +89,7 @@
     <div class="food-particles" id="food-particles"></div>
 
     <!-- Menu Item Image Preview -->
-    <img class="menu-preview-img" id="menu-preview-img" src="" alt="">
+    <img class="menu-preview-img" id="menu-preview-img" alt="">
 
     <!-- Grain Texture Overlay -->
     <div class="grain-overlay"></div>
@@ -452,7 +467,7 @@
         <div class="container">
             <div class="daily-special-inner">
                 <div class="daily-special-img-placeholder">🍛</div>
-                <img class="daily-special-img" src="" alt="Daily Special" style="display:none">
+                <img class="daily-special-img" alt="Daily Special" style="display:none">
                 <div class="daily-special-body">
                     <div class="daily-special-badge">⭐ Today Only</div>
                     <div class="daily-special-title">Chef's Special</div>
@@ -474,7 +489,7 @@
     <section id="combo-builder-section" class="combo-builder-section">
         <div class="container">
             <h2 style="text-align:center;font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:var(--primary);margin-bottom:0.4rem;">Build Your Combo</h2>
-            <p class="section-subtitle" style="text-align:center;margin-bottom:2.5rem;">Mix &amp; match your favourites — save 20% on every combination</p>
+            <p class="section-subtitle" style="text-align:center;margin-bottom:2.5rem;">Mix &amp; match your favourites — save 15% on every combination</p>
             <div class="combo-builder-card">
                 <div class="combo-selects">
                     <div class="combo-select-wrap">
@@ -713,7 +728,7 @@
                 </div>
             </div>
             <div style="margin-top:2rem; border-radius:12px; overflow:hidden; box-shadow:0 3px 15px rgba(0,0,0,0.1);">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3805.5!2d78.3911!3d17.4935!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb91f7e2c7e5b5%3A0x5e3f2e3f2e3f2e3f!2sAddagutta+Society%2C+Pragathi+Nagar+Rd%2C+Kukatpally%2C+Hyderabad%2C+Telangana+500085!5e0!3m2!1sen!2sin!4v1700000000000" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3805.5!2d78.3911!3d17.4935!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb91f7e2c7e5b5%3A0x5e3f2e3f2e3f2e3f!2sAddagutta+Society%2C+Pragathi+Nagar+Rd%2C+Kukatpally%2C+Hyderabad%2C+Telangana+500085!5e0!3m2!1sen!2sin!4v1700000000000" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" title="Google Maps - Amogha Cafe Location" referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
         </div>
     </section>
@@ -1226,7 +1241,7 @@
     <!-- Gallery Lightbox -->
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close">&times;</span>
-        <img id="lightbox-img" src="" alt="Gallery Image" loading="lazy">
+        <img id="lightbox-img" alt="Gallery Image" loading="lazy">
         <button class="lightbox-nav lightbox-prev" onclick="event.stopPropagation(); navigateLightbox(-1)">&#10094;</button>
         <button class="lightbox-nav lightbox-next" onclick="event.stopPropagation(); navigateLightbox(1)">&#10095;</button>
     </div>
@@ -1351,14 +1366,17 @@
         var db = firebase.firestore();
         var analytics = firebase.analytics();
     </script>
-    <script type="module" src="/script.js?v=20260303"></script>
-    <script nomodule src="/script-legacy.js?v=20260303"></script>
+    <script type="module" src="/script.js?v=20260305c"></script>
+    <script nomodule src="/script-legacy.js?v=20260305c"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(function(reg) {
                 reg.update();
             });
+            var _swRefreshing = false;
             navigator.serviceWorker.addEventListener('controllerchange', function() {
+                if (_swRefreshing) return;
+                _swRefreshing = true;
                 window.location.reload();
             });
         }

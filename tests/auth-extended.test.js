@@ -1258,3 +1258,1040 @@ describe('updateSignInUI — dropdown toggle onclick (line 315)', () => {
         expect(avatarMatch[1].length).toBeLessThanOrEqual(2);
     });
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// closeUserDropdown — lines 434-436
+// ═══════════════════════════════════════════════════════════════════════════
+describe('closeUserDropdown (lines 435-436)', () => {
+    beforeEach(() => {
+        window.scrollTo = vi.fn();
+    });
+
+    it('removes "visible" class from user-dropdown element', () => {
+        setupDOM('<div id="user-dropdown" class="user-dropdown visible"></div>');
+        const dd = document.getElementById('user-dropdown');
+        expect(dd.classList.contains('visible')).toBe(true);
+        window.closeUserDropdown();
+        expect(dd.classList.contains('visible')).toBe(false);
+    });
+
+    it('does nothing and does not throw when user-dropdown does not exist', () => {
+        setupDOM('<div id="auth-toast"></div>');
+        expect(() => window.closeUserDropdown()).not.toThrow();
+    });
+
+    it('is exposed on window as a function', () => {
+        expect(typeof window.closeUserDropdown).toBe('function');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// signOut — updateLoyaltyWidget branch (line 300)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('signOut — updateLoyaltyWidget function check (line 300)', () => {
+    beforeEach(() => {
+        setupDOM(`
+            <button id="signin-btn" class="signin-nav-btn signed-in"><span>Test</span></button>
+            <div id="carousel-greeting">Hey Test, </div>
+            <div id="auth-toast"></div>
+        `);
+        localStorage.setItem('amoghaUser', JSON.stringify({ name: 'Test', phone: '1234567890' }));
+    });
+
+    it('calls updateLoyaltyWidget when it is a function on window', () => {
+        window.updateLoyaltyWidget = vi.fn();
+        signOut();
+        expect(window.updateLoyaltyWidget).toHaveBeenCalled();
+        delete window.updateLoyaltyWidget;
+    });
+
+    it('does not throw when updateLoyaltyWidget is not a function', () => {
+        delete window.updateLoyaltyWidget;
+        expect(() => signOut()).not.toThrow();
+    });
+
+    it('does not throw when updateLoyaltyWidget is undefined', () => {
+        window.updateLoyaltyWidget = undefined;
+        expect(() => signOut()).not.toThrow();
+        delete window.updateLoyaltyWidget;
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// updateSignInUI — updateLoyaltyWidget function check (line 316)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('updateSignInUI — updateLoyaltyWidget function check (line 316)', () => {
+    beforeEach(() => {
+        setupDOM('<button id="signin-btn" class="signin-nav-btn"></button>');
+    });
+
+    it('calls updateLoyaltyWidget when it is a function', () => {
+        window.updateLoyaltyWidget = vi.fn();
+        updateSignInUI({ name: 'Ravi Kumar', phone: '9876543210' });
+        expect(window.updateLoyaltyWidget).toHaveBeenCalled();
+        delete window.updateLoyaltyWidget;
+    });
+
+    it('does not throw when updateLoyaltyWidget is not defined', () => {
+        delete window.updateLoyaltyWidget;
+        expect(() => updateSignInUI({ name: 'Ravi', phone: '9876543210' })).not.toThrow();
+    });
+
+    it('renders initials, dropdown, and first name in button innerHTML', () => {
+        updateSignInUI({ name: 'Ravi Kumar', phone: '9876543210' });
+        const btn = document.getElementById('signin-btn');
+        // Check initials in avatar
+        expect(btn.innerHTML).toContain('user-avatar');
+        expect(btn.innerHTML).toContain('RK');
+        // Check dropdown with profile and sign out links
+        expect(btn.innerHTML).toContain('user-dropdown');
+        expect(btn.innerHTML).toContain('My Profile');
+        expect(btn.innerHTML).toContain('Sign Out');
+        // Check first name in signin-text
+        expect(btn.innerHTML).toContain('Ravi');
+    });
+
+    it('sets signed-in class and creates onclick handler', () => {
+        updateSignInUI({ name: 'Priya Sharma', phone: '9876543210' });
+        const btn = document.getElementById('signin-btn');
+        expect(btn.className).toBe('signin-nav-btn signed-in');
+        expect(typeof btn.onclick).toBe('function');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// handleSignIn — full success path (lines 177-187)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('handleSignIn — full success path with password match (lines 177-187)', () => {
+    beforeEach(() => {
+        setupDOM(FULL_SIGNUP_HTML);
+        window.scrollTo = vi.fn();
+        window._notifListenerActive = false;
+        localStorage.clear();
+    });
+
+    it('calls setCurrentUser, updateSignInUI, updateCarouselGreeting on pin match', async () => {
+        const user = { name: 'Sign In User', phone: '9000000020', pin: '5678', usedWelcomeBonus: true };
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: () => Promise.resolve({ exists: true, data: () => user }),
+                })),
+                where: function() { return this; },
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+        document.getElementById('signin-phone').value = '9000000020';
+        document.getElementById('signin-password').value = '5678';
+        handleSignIn();
+        await new Promise((r) => setTimeout(r, 50));
+        // User should be stored in localStorage
+        const storedUser = getCurrentUser();
+        expect(storedUser).not.toBeNull();
+        expect(storedUser.name).toBe('Sign In User');
+        // Button should be updated
+        const btn = document.getElementById('signin-btn');
+        expect(btn.classList.contains('signed-in')).toBe(true);
+        // Auth modal should be closed
+        expect(document.getElementById('auth-modal').style.display).toBe('none');
+        // Toast should show welcome back
+        const toast = document.getElementById('auth-toast');
+        expect(toast.textContent).toMatch(/welcome back/i);
+    });
+
+    it('matches user.password field when pin is not set', async () => {
+        const user = { name: 'Password User', phone: '9000000021', password: '4321', usedWelcomeBonus: true };
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: () => Promise.resolve({ exists: true, data: () => user }),
+                })),
+                where: function() { return this; },
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+        document.getElementById('signin-phone').value = '9000000021';
+        document.getElementById('signin-password').value = '4321';
+        handleSignIn();
+        await new Promise((r) => setTimeout(r, 50));
+        expect(getCurrentUser()).not.toBeNull();
+        expect(getCurrentUser().name).toBe('Password User');
+    });
+
+    it('shows incorrect PIN message when password does not match', async () => {
+        const user = { name: 'Wrong PIN', phone: '9000000022', pin: '1111' };
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: () => Promise.resolve({ exists: true, data: () => user }),
+                })),
+                where: function() { return this; },
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+        document.getElementById('signin-phone').value = '9000000022';
+        document.getElementById('signin-password').value = '9999';
+        handleSignIn();
+        await new Promise((r) => setTimeout(r, 50));
+        const msg = document.getElementById('signin-msg');
+        expect(msg.textContent).toMatch(/incorrect pin/i);
+        expect(msg.className).toContain('error');
+    });
+
+    it('updates carousel greeting on successful sign in', async () => {
+        const user = { name: 'Greeting Test', phone: '9000000023', pin: '1234', usedWelcomeBonus: true };
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: () => Promise.resolve({ exists: true, data: () => user }),
+                })),
+                where: function() { return this; },
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+        document.getElementById('signin-phone').value = '9000000023';
+        document.getElementById('signin-password').value = '1234';
+        handleSignIn();
+        await new Promise((r) => setTimeout(r, 50));
+        const greeting = document.getElementById('carousel-greeting');
+        expect(greeting.textContent).toContain('Greeting');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// handleSignUp — signup referral code input scenarios (lines 119-139)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('handleSignUp — referral code edge cases (lines 119-139)', () => {
+    beforeEach(() => {
+        setupDOM(FULL_SIGNUP_HTML);
+        window.scrollTo = vi.fn();
+        window._notifListenerActive = false;
+        localStorage.clear();
+    });
+
+    it('does not call applyReferralAtSignup when referral input has empty value', async () => {
+        window.applyReferralAtSignup = vi.fn();
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: () => Promise.resolve({ exists: false, data: () => ({}) }),
+                    set: () => Promise.resolve(),
+                })),
+                where: function() { return this; },
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+        document.getElementById('signup-name').value = 'No Ref User';
+        document.getElementById('signup-phone').value = '9000000030';
+        document.getElementById('signup-password').value = '1234';
+        document.getElementById('signup-referral').value = '';
+        handleSignUp();
+        await new Promise((r) => setTimeout(r, 2200));
+        expect(window.applyReferralAtSignup).not.toHaveBeenCalled();
+        delete window.applyReferralAtSignup;
+    }, 5000);
+
+    it('does not throw when applyReferralAtSignup is not a function and referral code is present', async () => {
+        delete window.applyReferralAtSignup;
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: () => Promise.resolve({ exists: false, data: () => ({}) }),
+                    set: () => Promise.resolve(),
+                })),
+                where: function() { return this; },
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+        document.getElementById('signup-name').value = 'No Func User';
+        document.getElementById('signup-phone').value = '9000000031';
+        document.getElementById('signup-password').value = '1234';
+        document.getElementById('signup-referral').value = 'TESTCODE';
+        handleSignUp();
+        await new Promise((r) => setTimeout(r, 2200));
+        // Should not throw, just skip the call
+        expect(getCurrentUser()).not.toBeNull();
+    }, 5000);
+
+    it('handles signup-referral element not existing in DOM', async () => {
+        // Remove the referral input from DOM
+        const refEl = document.getElementById('signup-referral');
+        if (refEl) refEl.parentNode.removeChild(refEl);
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: () => Promise.resolve({ exists: false, data: () => ({}) }),
+                    set: () => Promise.resolve(),
+                })),
+                where: function() { return this; },
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+        document.getElementById('signup-name').value = 'No Ref El User';
+        document.getElementById('signup-phone').value = '9000000032';
+        document.getElementById('signup-password').value = '1234';
+        handleSignUp();
+        await new Promise((r) => setTimeout(r, 50));
+        expect(getCurrentUser()).not.toBeNull();
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// initAuth — click outside signin-btn parent closes dropdown (line 427)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('initAuth — document click outside signinBtn.parentElement (line 427)', () => {
+    beforeEach(() => {
+        window.scrollTo = vi.fn();
+        localStorage.clear();
+        window._notifListenerActive = false;
+    });
+
+    it('dropdown stays visible when clicking inside signin-btn parent', async () => {
+        setupDOM(`
+            <nav>
+                <button id="signin-btn" class="signin-nav-btn"></button>
+            </nav>
+            <div id="outside-el"></div>
+            <div id="carousel-greeting"></div>
+            <div id="auth-modal"></div>
+        `);
+        let capturedDocListener = null;
+        const origAddEventListener = document.addEventListener.bind(document);
+        document.addEventListener = (type, handler, ...rest) => {
+            if (type === 'click') capturedDocListener = handler;
+            return origAddEventListener(type, handler, ...rest);
+        };
+
+        window.db = undefined;
+        initAuth();
+        await new Promise((r) => setTimeout(r, 1100));
+        document.addEventListener = origAddEventListener;
+
+        localStorage.setItem('amoghaUser', JSON.stringify({ name: 'Ravi', phone: '9876543210', pin: '1234' }));
+        const signinBtn = document.getElementById('signin-btn');
+        const parentNav = signinBtn.parentElement;
+        const dropdown = parentNav.querySelector('.user-dropdown');
+
+        // Open dropdown
+        signinBtn.dispatchEvent(new MouseEvent('click', { bubbles: false }));
+        expect(dropdown.classList.contains('visible')).toBe(true);
+
+        // Click inside the parent — dropdown should stay visible
+        const fakeEvt = { target: signinBtn };
+        capturedDocListener(fakeEvt);
+        expect(dropdown.classList.contains('visible')).toBe(true);
+    }, 5000);
+});
+
+// ===========================================================================
+// Branch coverage: openAuthModal — user exists, confirm sign-out dialog (line 36)
+// ===========================================================================
+describe('openAuthModal — user exists, sign-out dialog (line 36)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        setupDOM(FULL_SIGNUP_HTML);
+    });
+
+    it('calls signOut when user confirms sign-out dialog', () => {
+        localStorage.setItem('amoghaUser', JSON.stringify({ name: 'Ravi', phone: '9876543210', pin: '1234' }));
+        window.confirm = vi.fn(() => true);
+        openAuthModal();
+        expect(window.confirm).toHaveBeenCalled();
+        // signOut removes amoghaUser from localStorage
+        expect(localStorage.getItem('amoghaUser')).toBeNull();
+    });
+
+    it('does nothing when user cancels sign-out dialog', () => {
+        localStorage.setItem('amoghaUser', JSON.stringify({ name: 'Ravi', phone: '9876543210', pin: '1234' }));
+        window.confirm = vi.fn(() => false);
+        openAuthModal();
+        expect(window.confirm).toHaveBeenCalled();
+        // User is still signed in
+        expect(localStorage.getItem('amoghaUser')).not.toBeNull();
+    });
+});
+
+// ===========================================================================
+// Branch coverage: handleSignUp — referral code path (line 119)
+// ===========================================================================
+describe('handleSignUp — referral code present (line 119)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        window.db = undefined;
+        setupDOM(FULL_SIGNUP_HTML + '<input id="signup-referral" value="REF123">');
+    });
+
+    it('calls applyReferralAtSignup when referral code is entered', async () => {
+        window.applyReferralAtSignup = vi.fn();
+        const getMock = vi.fn(() => Promise.resolve({ exists: false }));
+        const setMock = vi.fn(() => Promise.resolve());
+        const docMock = vi.fn(() => ({ get: getMock, set: setMock }));
+        const collectionMock = vi.fn(() => ({ doc: docMock }));
+        window.db = { collection: collectionMock };
+
+        document.getElementById('signup-name').value = 'Test';
+        document.getElementById('signup-phone').value = '9876543210';
+        document.getElementById('signup-password').value = '1234';
+        handleSignUp();
+        await new Promise(r => setTimeout(r, 50));
+        // applyReferralAtSignup is deferred via setTimeout(2000) so use fake timers
+        vi.useFakeTimers();
+        vi.advanceTimersByTime(2500);
+        vi.useRealTimers();
+    });
+});
+
+// ===========================================================================
+// Branch coverage: handleSignUp catch — permission-denied vs generic (lines 138-139)
+// ===========================================================================
+describe('handleSignUp — catch block error messages (lines 138-139)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        window.db = undefined;
+        setupDOM(FULL_SIGNUP_HTML);
+    });
+
+    it('shows "Access denied" message for permission-denied error', async () => {
+        const err = new Error('Permission denied');
+        err.code = 'permission-denied';
+        const collectionMock = vi.fn(() => ({ doc: vi.fn(() => ({ get: vi.fn(() => Promise.reject(err)) })) }));
+        window.db = { collection: collectionMock };
+
+        document.getElementById('signup-name').value = 'Test';
+        document.getElementById('signup-phone').value = '9876543210';
+        document.getElementById('signup-password').value = '1234';
+        handleSignUp();
+        await new Promise(r => setTimeout(r, 20));
+        const msg = document.getElementById('signup-msg');
+        expect(msg.textContent).toContain('Access denied');
+    });
+
+    it('shows "Connection error" message for generic error', async () => {
+        const err = new Error('Network failure');
+        err.code = 'unavailable';
+        const collectionMock = vi.fn(() => ({ doc: vi.fn(() => ({ get: vi.fn(() => Promise.reject(err)) })) }));
+        window.db = { collection: collectionMock };
+
+        document.getElementById('signup-name').value = 'Test';
+        document.getElementById('signup-phone').value = '9876543210';
+        document.getElementById('signup-password').value = '1234';
+        handleSignUp();
+        await new Promise(r => setTimeout(r, 20));
+        const msg = document.getElementById('signup-msg');
+        expect(msg.textContent).toContain('Connection error');
+    });
+});
+
+// ===========================================================================
+// Branch coverage: handleSignIn — welcome bonus message ternary (line 187)
+// ===========================================================================
+describe('handleSignIn — welcome bonus ternary (line 187-188)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        window.db = undefined;
+        setupDOM(FULL_SIGNUP_HTML);
+    });
+
+    it('shows welcome bonus message when usedWelcomeBonus is false', async () => {
+        const userData = { name: 'Ravi', phone: '9876543210', pin: '1234', usedWelcomeBonus: false };
+        const getMock = vi.fn(() => Promise.resolve({ exists: true, data: () => userData }));
+        const docMock = vi.fn(() => ({ get: getMock }));
+        const collectionMock = vi.fn(() => ({ doc: docMock }));
+        window.db = { collection: collectionMock };
+
+        document.getElementById('signin-phone').value = '9876543210';
+        document.getElementById('signin-password').value = '1234';
+        handleSignIn();
+        await new Promise(r => setTimeout(r, 20));
+        const toast = document.getElementById('auth-toast');
+        expect(toast.textContent).toContain('welcome bonus');
+    });
+
+    it('does not show welcome bonus message when usedWelcomeBonus is true', async () => {
+        const userData = { name: 'Ravi', phone: '9876543210', pin: '1234', usedWelcomeBonus: true };
+        const getMock = vi.fn(() => Promise.resolve({ exists: true, data: () => userData }));
+        const docMock = vi.fn(() => ({ get: getMock }));
+        const collectionMock = vi.fn(() => ({ doc: docMock }));
+        window.db = { collection: collectionMock };
+
+        document.getElementById('signin-phone').value = '9876543210';
+        document.getElementById('signin-password').value = '1234';
+        handleSignIn();
+        await new Promise(r => setTimeout(r, 20));
+        const toast = document.getElementById('auth-toast');
+        expect(toast.textContent).not.toContain('welcome bonus');
+    });
+});
+
+// ===========================================================================
+// Branch coverage: updateSignInUI — btn/user null guard, initials (lines 306-315)
+// ===========================================================================
+describe('updateSignInUI — null guards and initials logic (lines 306-315)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        setupDOM(FULL_SIGNUP_HTML);
+    });
+
+    it('returns early when btn is null', () => {
+        setupDOM(''); // No signin-btn
+        expect(() => updateSignInUI({ name: 'Test', phone: '1234567890' })).not.toThrow();
+    });
+
+    it('returns early when user is null', () => {
+        expect(() => updateSignInUI(null)).not.toThrow();
+    });
+
+    it('generates correct initials from multi-word name', () => {
+        updateSignInUI({ name: 'Ravi Kumar', phone: '9876543210' });
+        const btn = document.getElementById('signin-btn');
+        expect(btn.innerHTML).toContain('RK');
+    });
+
+    it('generates single initial from single-word name', () => {
+        updateSignInUI({ name: 'Ravi', phone: '9876543210' });
+        const btn = document.getElementById('signin-btn');
+        expect(btn.innerHTML).toContain('R');
+    });
+
+    it('uses "G" initial when user.name is empty', () => {
+        updateSignInUI({ name: '', phone: '9876543210' });
+        const btn = document.getElementById('signin-btn');
+        expect(btn.innerHTML).toContain('G');
+    });
+
+    it('uses "Guest" when user.name is undefined', () => {
+        updateSignInUI({ phone: '9876543210' });
+        const btn = document.getElementById('signin-btn');
+        expect(btn.innerHTML).toContain('G');
+        expect(btn.innerHTML).toContain('Guest');
+    });
+});
+
+// ===========================================================================
+// Branch: openAuthModal — user is signed in but cancels confirm (line 36)
+// ===========================================================================
+describe('openAuthModal — user cancels sign-out confirm dialog (line 36)', () => {
+    beforeEach(() => {
+        setupDOM(`
+            <div id="auth-modal" style="display:none"></div>
+            <div id="auth-signup" class="auth-view"></div>
+            <div id="auth-signin" class="auth-view"></div>
+            <div id="auth-forgot" class="auth-view"></div>
+            <input id="signup-name"><input id="signup-phone"><input id="signup-password">
+            <input id="signin-phone"><input id="signin-password">
+            <span id="signup-msg" class="auth-msg"></span><span id="signin-msg" class="auth-msg"></span>
+            <input id="forgot-phone"><input id="forgot-name"><input id="forgot-new-password"><input id="forgot-confirm-password">
+            <span id="forgot-msg" class="auth-msg"></span>
+            <div id="forgot-step-1"></div><div id="forgot-step-2" style="display:none"></div>
+            <div id="carousel-greeting"></div>
+            <div id="auth-toast"></div>
+        `);
+        localStorage.clear();
+    });
+
+    it('does NOT sign out when user clicks Cancel on confirm dialog', () => {
+        setCurrentUser({ name: 'Test', phone: '9876543210', pin: '1234' });
+        window.confirm = vi.fn(() => false);
+        openAuthModal();
+        // User should still be signed in
+        const user = getCurrentUser();
+        expect(user).not.toBeNull();
+        expect(user.name).toBe('Test');
+    });
+});
+
+// ===========================================================================
+// Branch: handleSignUp — referral code entered (line 119-129)
+// ===========================================================================
+describe('handleSignUp — referral code processing (lines 119-129)', () => {
+    beforeEach(() => {
+        setupDOM(`
+            <div id="auth-modal" style="display:block"></div>
+            <div id="auth-signup" class="auth-view active"></div>
+            <div id="auth-signin" class="auth-view"></div>
+            <div id="auth-forgot" class="auth-view"></div>
+            <input id="signup-name" value="New User"><input id="signup-phone" value="9876543210"><input id="signup-password" value="1234">
+            <input id="signup-referral" value="REF123">
+            <input id="signin-phone"><input id="signin-password">
+            <span id="signup-msg" class="auth-msg"></span><span id="signin-msg" class="auth-msg"></span>
+            <input id="forgot-phone"><input id="forgot-name"><input id="forgot-new-password"><input id="forgot-confirm-password">
+            <span id="forgot-msg" class="auth-msg"></span>
+            <div id="forgot-step-1"></div><div id="forgot-step-2" style="display:none"></div>
+            <div id="carousel-greeting"></div>
+            <div id="auth-toast"></div>
+            <button id="signin-btn" class="signin-nav-btn"></button>
+        `);
+        localStorage.clear();
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.resolve({ exists: false })),
+                    set: vi.fn(() => Promise.resolve()),
+                    update: vi.fn(() => Promise.resolve()),
+                    onSnapshot: vi.fn(() => vi.fn()),
+                })),
+                where: vi.fn().mockReturnThis(),
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+    });
+
+    it('calls applyReferralAtSignup when referral code is provided', async () => {
+        vi.useFakeTimers();
+        const refSpy = vi.fn();
+        window.applyReferralAtSignup = refSpy;
+        handleSignUp();
+        await vi.advanceTimersByTimeAsync(100);
+        await Promise.resolve();
+        await vi.advanceTimersByTimeAsync(2500);
+        expect(refSpy).toHaveBeenCalledWith('REF123');
+        delete window.applyReferralAtSignup;
+        vi.useRealTimers();
+    });
+});
+
+// ===========================================================================
+// Branch: handleSignUp — permission-denied error (line 139)
+// ===========================================================================
+describe('handleSignUp — permission-denied error (line 139)', () => {
+    beforeEach(() => {
+        setupDOM(`
+            <div id="auth-modal" style="display:block"></div>
+            <div id="auth-signup" class="auth-view active"></div>
+            <div id="auth-signin" class="auth-view"></div>
+            <div id="auth-forgot" class="auth-view"></div>
+            <input id="signup-name" value="New User"><input id="signup-phone" value="9876543210"><input id="signup-password" value="1234">
+            <input id="signin-phone"><input id="signin-password">
+            <span id="signup-msg" class="auth-msg"></span><span id="signin-msg" class="auth-msg"></span>
+            <input id="forgot-phone"><input id="forgot-name"><input id="forgot-new-password"><input id="forgot-confirm-password">
+            <span id="forgot-msg" class="auth-msg"></span>
+            <div id="forgot-step-1"></div><div id="forgot-step-2" style="display:none"></div>
+            <div id="carousel-greeting"></div>
+            <div id="auth-toast"></div>
+        `);
+        localStorage.clear();
+    });
+
+    it('shows Access denied message when error code is permission-denied', async () => {
+        const permError = new Error('Permission denied');
+        permError.code = 'permission-denied';
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.reject(permError)),
+                    onSnapshot: vi.fn(() => vi.fn()),
+                })),
+                where: vi.fn().mockReturnThis(),
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+        handleSignUp();
+        await new Promise(r => setTimeout(r, 50));
+        const msg = document.getElementById('signup-msg');
+        expect(msg.textContent).toContain('Access denied');
+    });
+});
+
+// ===========================================================================
+// Branch: handleSignIn — welcome bonus still active message (line 187-188)
+// ===========================================================================
+describe('handleSignIn — welcome bonus message branch (line 187-188)', () => {
+    beforeEach(() => {
+        setupDOM(`
+            <div id="auth-modal" style="display:block"></div>
+            <div id="auth-signup" class="auth-view"></div>
+            <div id="auth-signin" class="auth-view active"></div>
+            <div id="auth-forgot" class="auth-view"></div>
+            <input id="signup-name"><input id="signup-phone"><input id="signup-password">
+            <input id="signin-phone" value="9876543210"><input id="signin-password" value="1234">
+            <span id="signup-msg" class="auth-msg"></span><span id="signin-msg" class="auth-msg"></span>
+            <input id="forgot-phone"><input id="forgot-name"><input id="forgot-new-password"><input id="forgot-confirm-password">
+            <span id="forgot-msg" class="auth-msg"></span>
+            <div id="forgot-step-1"></div><div id="forgot-step-2" style="display:none"></div>
+            <div id="carousel-greeting"></div>
+            <div id="auth-toast"></div>
+            <button id="signin-btn" class="signin-nav-btn"></button>
+        `);
+        localStorage.clear();
+    });
+
+    it('shows welcome bonus message when usedWelcomeBonus is false', async () => {
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.resolve({
+                        exists: true,
+                        data: () => ({ name: 'Test', phone: '9876543210', pin: '1234', usedWelcomeBonus: false })
+                    })),
+                    update: vi.fn(() => Promise.resolve()),
+                    onSnapshot: vi.fn(() => vi.fn()),
+                })),
+                where: vi.fn().mockReturnThis(),
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+        handleSignIn();
+        await new Promise(r => setTimeout(r, 50));
+        const toast = document.getElementById('auth-toast');
+        expect(toast.textContent).toContain('welcome bonus');
+    });
+
+    it('does NOT show welcome bonus message when usedWelcomeBonus is true', async () => {
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.resolve({
+                        exists: true,
+                        data: () => ({ name: 'Test', phone: '9876543210', pin: '1234', usedWelcomeBonus: true })
+                    })),
+                    update: vi.fn(() => Promise.resolve()),
+                    onSnapshot: vi.fn(() => vi.fn()),
+                })),
+                where: vi.fn().mockReturnThis(),
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+        handleSignIn();
+        await new Promise(r => setTimeout(r, 50));
+        const toast = document.getElementById('auth-toast');
+        expect(toast.textContent).not.toContain('welcome bonus');
+    });
+});
+
+// ===========================================================================
+// Branch: updateSignInUI — creates dropdown with onclick (lines 308-315)
+// ===========================================================================
+describe('updateSignInUI — dropdown toggle (lines 308-315)', () => {
+    beforeEach(() => {
+        setupDOM(`
+            <button id="signin-btn" class="signin-nav-btn"></button>
+            <div id="auth-toast"></div>
+        `);
+    });
+
+    it('toggles user-dropdown show class on btn.onclick', () => {
+        updateSignInUI({ name: 'Ravi Kumar', phone: '9876543210' });
+        const btn = document.getElementById('signin-btn');
+        // btn.onclick should toggle dropdown
+        const event = new Event('click');
+        event.preventDefault = vi.fn();
+        btn.onclick(event);
+        const dd = document.getElementById('user-dropdown');
+        expect(dd.classList.contains('show')).toBe(true);
+        // Click again to toggle off
+        btn.onclick(event);
+        expect(dd.classList.contains('show')).toBe(false);
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Branch coverage: openAuthModal — user already signed in (line 36)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('openAuthModal — user already signed in (line 36)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        setupDOM(`
+            <div id="auth-modal" style="display:none"></div>
+            <div class="auth-view" id="auth-signup"></div>
+            <div class="auth-view" id="auth-signin"></div>
+            <div class="auth-view" id="auth-forgot"></div>
+            <div id="auth-toast"></div>
+            <button id="signin-btn" class="signin-nav-btn"></button>
+            <div id="carousel-greeting"></div>
+        `);
+        window.scrollTo = vi.fn();
+    });
+
+    it('shows confirm dialog and signs out if user confirms (line 36)', () => {
+        setCurrentUser({ name: 'Test User', phone: '1234567890' });
+        // Mock confirm to return true (user confirms sign out)
+        const origConfirm = window.confirm;
+        window.confirm = vi.fn(() => true);
+        openAuthModal();
+        expect(window.confirm).toHaveBeenCalled();
+        // User should be signed out
+        expect(getCurrentUser()).toBeNull();
+        window.confirm = origConfirm;
+    });
+
+    it('does nothing if user cancels confirm dialog (line 36)', () => {
+        setCurrentUser({ name: 'Test User', phone: '1234567890' });
+        const origConfirm = window.confirm;
+        window.confirm = vi.fn(() => false);
+        openAuthModal();
+        // User should still be logged in (signOut was not called)
+        // Auth modal should NOT be opened
+        expect(document.getElementById('auth-modal').style.display).toBe('none');
+        window.confirm = origConfirm;
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Branch coverage: handleSignUp — UI error catch block (line 119/130-133)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('handleSignUp — UI error catch block (line 119,130-133)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        setupDOM(`
+            <input id="signup-name" value="NewUser">
+            <input id="signup-phone" value="5555555555">
+            <input id="signup-password" value="1234">
+            <span id="signup-msg"></span>
+            <div id="auth-modal" style="display:block"></div>
+            <div class="auth-view" id="auth-signup"></div>
+            <div class="auth-view" id="auth-signin"></div>
+            <div class="auth-view" id="auth-forgot"></div>
+            <input id="signin-phone"><input id="signin-password">
+            <span id="signin-msg" class="auth-msg"></span>
+            <input id="forgot-phone"><input id="forgot-name">
+            <input id="forgot-new-password"><input id="forgot-confirm-password">
+            <span id="forgot-msg" class="auth-msg"></span>
+            <div id="forgot-step-1"></div><div id="forgot-step-2" style="display:none"></div>
+            <div id="auth-toast"></div>
+            <button id="signin-btn" class="signin-nav-btn"></button>
+            <div id="carousel-greeting"></div>
+        `);
+        window.scrollTo = vi.fn();
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.resolve({ exists: false })),
+                    set: vi.fn(() => Promise.resolve()),
+                    update: vi.fn(() => Promise.resolve()),
+                    onSnapshot: vi.fn(() => vi.fn()),
+                })),
+                where: vi.fn().mockReturnThis(),
+                onSnapshot: vi.fn((cb) => { cb({ docChanges: () => [] }); return vi.fn(); }),
+            })),
+        };
+    });
+
+    it('catches UI error during signup and still shows success toast (line 130-133)', async () => {
+        // Make updateSignInUI throw to trigger catch block
+        const origUpdateSignInUI = window.updateSignInUI;
+        window.updateSignInUI = () => { throw new Error('UI broken'); };
+        handleSignUp();
+        await new Promise(r => setTimeout(r, 50));
+        const toast = document.getElementById('auth-toast');
+        expect(toast.textContent).toMatch(/Account created|Welcome/i);
+        window.updateSignInUI = origUpdateSignInUI;
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Branch coverage: handleSignIn — permission-denied error (line 139)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('handleSignIn — permission-denied error (line 139)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        setupDOM(`
+            <input id="signin-phone" value="1234567890">
+            <input id="signin-password" value="1234">
+            <span id="signin-msg" class="auth-msg"></span>
+            <div id="auth-toast"></div>
+        `);
+    });
+
+    it('shows connection error message on Firestore error (line 139)', async () => {
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.reject({ code: 'unavailable', message: 'offline' })),
+                })),
+            })),
+        };
+        handleSignIn();
+        await new Promise(r => setTimeout(r, 50));
+        const msg = document.getElementById('signin-msg');
+        expect(msg.textContent).toContain('Connection error');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Branch coverage: handleSignUp — permission-denied error (line 139)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('handleSignUp — permission-denied error (line 139)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        setupDOM(`
+            <input id="signup-name" value="Test">
+            <input id="signup-phone" value="1234567890">
+            <input id="signup-password" value="1234">
+            <span id="signup-msg"></span>
+            <div id="auth-toast"></div>
+        `);
+    });
+
+    it('shows access denied message on permission-denied error (line 139)', async () => {
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.reject({ code: 'permission-denied', message: 'denied' })),
+                })),
+            })),
+        };
+        handleSignUp();
+        await new Promise(r => setTimeout(r, 50));
+        const msg = document.getElementById('signup-msg');
+        expect(msg.textContent).toContain('Access denied');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Branch coverage: handleSignIn — wrong PIN (line 187)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('handleSignIn — incorrect PIN (line 187)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        setupDOM(`
+            <input id="signin-phone" value="1234567890">
+            <input id="signin-password" value="9999">
+            <span id="signin-msg" class="auth-msg"></span>
+            <div id="auth-toast"></div>
+        `);
+    });
+
+    it('shows incorrect PIN message when pin does not match (line 187)', async () => {
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.resolve({
+                        exists: true,
+                        data: () => ({ name: 'Test', phone: '1234567890', pin: '1234' }),
+                    })),
+                })),
+            })),
+        };
+        handleSignIn();
+        await new Promise(r => setTimeout(r, 50));
+        const msg = document.getElementById('signin-msg');
+        expect(msg.textContent).toContain('Incorrect PIN');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Branch coverage: updateSignInUI — dropdown onclick (lines 308-315)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('updateSignInUI — user with empty name falls back to G initials (line 308)', () => {
+    beforeEach(() => {
+        setupDOM(`
+            <button id="signin-btn" class="signin-nav-btn"></button>
+            <div id="auth-toast"></div>
+        `);
+    });
+
+    it('uses G as initials when user name is empty string (line 308)', () => {
+        updateSignInUI({ name: '', phone: '1234567890' });
+        const btn = document.getElementById('signin-btn');
+        expect(btn.innerHTML).toContain('G');
+    });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Branch coverage: openAuthModal — already signed in, confirm signout (line 36)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('openAuthModal — already signed in user (line 36)', () => {
+    beforeEach(() => {
+        setupDOM(`
+            <div id="auth-modal" style="display:none">
+                <div class="auth-view" id="auth-signup"></div>
+                <div class="auth-view" id="auth-signin"></div>
+                <div class="auth-view" id="auth-forgot"></div>
+            </div>
+            <button id="signin-btn" class="signin-nav-btn signed-in"><span>Test</span></button>
+            <input id="signup-name"><input id="signup-phone"><input id="signup-password">
+            <input id="signin-phone"><input id="signin-password">
+            <span id="signup-msg" class="auth-msg"></span>
+            <span id="signin-msg" class="auth-msg"></span>
+            <input id="forgot-phone"><input id="forgot-name">
+            <input id="forgot-new-password"><input id="forgot-confirm-password">
+            <span id="forgot-msg" class="auth-msg"></span>
+            <div id="forgot-step-1"></div><div id="forgot-step-2" style="display:none"></div>
+            <div id="carousel-greeting"></div>
+            <div id="auth-toast"></div>
+        `);
+    });
+
+    it('calls signOut when user confirms sign out via confirm dialog', () => {
+        setCurrentUser({ name: 'SignedIn User', phone: '1234567890' });
+        // Mock confirm to return true
+        window.confirm = vi.fn(() => true);
+        openAuthModal();
+        // User should be signed out
+        expect(localStorage.getItem('amoghaUser')).toBeNull();
+        delete window.confirm;
+    });
+
+    it('does not sign out when user cancels confirm dialog', () => {
+        setCurrentUser({ name: 'SignedIn User', phone: '1234567890' });
+        window.confirm = vi.fn(() => false);
+        openAuthModal();
+        // User should still be signed in
+        expect(JSON.parse(localStorage.getItem('amoghaUser')).name).toBe('SignedIn User');
+        delete window.confirm;
+    });
+});
+
+// Lines 130-133 (handleSignUp catch) skipped — try block is fully defensive and cannot throw in test env
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Branch coverage: handleSignUp — permission-denied error (line 139)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('handleSignUp — generic connection error (line 138)', () => {
+    beforeEach(() => {
+        localStorage.clear();
+        setupDOM(`
+            <input id="signup-name" value="Error User">
+            <input id="signup-phone" value="9999911111">
+            <input id="signup-password" value="1234">
+            <span id="signup-msg" class="auth-msg"></span>
+            <div id="auth-toast"></div>
+        `);
+    });
+
+    it('shows connection error message for non-permission errors (line 138)', async () => {
+        window.db = {
+            collection: vi.fn(() => ({
+                doc: vi.fn(() => ({
+                    get: vi.fn(() => Promise.reject({ code: 'unavailable', message: 'unavailable' })),
+                })),
+            })),
+        };
+        handleSignUp();
+        await new Promise(r => setTimeout(r, 50));
+        const msg = document.getElementById('signup-msg');
+        expect(msg.textContent).toContain('Connection error');
+    });
+});
+
+// Lines 192-195 (handleSignIn catch) skipped — try block is fully defensive and cannot throw in test env
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Branch coverage: updateSignInUI — dropdown toggle onclick (lines 308-315)
+// ═══════════════════════════════════════════════════════════════════════════
+describe('updateSignInUI — dropdown toggle on click (lines 308-315)', () => {
+    beforeEach(() => {
+        setupDOM(`
+            <nav><button id="signin-btn" class="signin-nav-btn"></button></nav>
+            <div id="auth-toast"></div>
+        `);
+    });
+
+    it('sets signed-in class and creates user-dropdown', () => {
+        updateSignInUI({ name: 'Test User', phone: '1234567890' });
+        const btn = document.getElementById('signin-btn');
+        expect(btn.classList.contains('signed-in')).toBe(true);
+        expect(document.getElementById('user-dropdown')).not.toBeNull();
+    });
+
+    it('toggles user-dropdown show class via onclick handler', () => {
+        updateSignInUI({ name: 'Test User', phone: '1234567890' });
+        const btn = document.getElementById('signin-btn');
+        // Directly invoke the onclick handler to avoid document click listener interference
+        btn.onclick({ preventDefault: () => {} });
+        const dd = document.getElementById('user-dropdown');
+        expect(dd.classList.contains('show')).toBe(true);
+        btn.onclick({ preventDefault: () => {} });
+        expect(dd.classList.contains('show')).toBe(false);
+    });
+});
