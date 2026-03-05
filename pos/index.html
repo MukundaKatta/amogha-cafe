@@ -1163,6 +1163,16 @@ function newOrder() {
     renderPosMenu();
 }
 
+// ── POS Toast ───────────────────────────────────────────────────
+function showToast(msg, type) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;color:#fff;max-width:90%;text-align:center;' +
+        (type === 'error' ? 'background:#e74c3c;' : type === 'success' ? 'background:#27ae60;' : 'background:#333;');
+    document.body.appendChild(el);
+    setTimeout(function() { el.remove(); }, 4000);
+}
+
 // ── Bluetooth Thermal Printer (ESC/POS) ─────────────────────────
 var btPrinter = null;   // Capacitor native plugin reference
 var btMode = 'none';     // 'capacitor' or 'none'
