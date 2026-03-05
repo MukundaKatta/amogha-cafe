@@ -86,7 +86,7 @@ serves as the canonical index for new developers or reviewers.*
 - **Push:** Firebase Cloud Messaging (background notifications)
 - **PWA:** Service workers + Web App Manifest
 - **CI/CD:** GitHub Actions (test → deploy on push to master)
-- **Tests:** Vitest (71 tests)
+- **Tests:** Vitest (2,059 unit/integration tests) + Playwright E2E
 
 ## Project Structure
 
