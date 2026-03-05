@@ -15,12 +15,42 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      # ── Frontend dependencies ───────────────────────────────────────────
+      - name: Install frontend dependencies
+        run: npm install --force
 
-      - name: Run tests
+      # ── Unit tests (Vitest) ─────────────────────────────────────────────
+      - name: Run unit tests
         run: npm test -- --run
 
+      # ── API tests (Jest + supertest) ────────────────────────────────────
+      - name: Install functions dependencies
+        run: cd functions && npm install
+
+      - name: Run API tests
+        run: cd functions && npm test
+
+      # ── Build for E2E preview server ────────────────────────────────────
+      - name: Build frontend
+        run: npm run build
+
+      # ── E2E tests (Playwright) ──────────────────────────────────────────
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          BASE_URL: http://127.0.0.1:4173
+
+      - name: Upload E2E failure videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-videos
+          path: test-results/
+
+      # ── Deploy ──────────────────────────────────────────────────────────
       - name: Deploy to Firebase Hosting + Firestore rules
         run: npx firebase-tools deploy --only hosting,firestore:rules --token "$FIREBASE_TOKEN" --project amogha-cafe
         env:
