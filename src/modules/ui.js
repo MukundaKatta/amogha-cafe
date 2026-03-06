@@ -49,14 +49,19 @@ export function launchConfetti() {
     animate();
 }
 
-export function closeMobileMenu() {
+export function closeMobileMenu(skipScrollRestore) {
     var navLinks = document.getElementById('nav-links');
     var mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
     var mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     if (navLinks) navLinks.classList.remove('active');
     if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('active');
     if (mobileMenuToggle) mobileMenuToggle.textContent = '\u2630';
-    unlockScroll();
+    if (skipScrollRestore) {
+        document.body.classList.remove('modal-open');
+        document.body.style.top = '';
+    } else {
+        unlockScroll();
+    }
 }
 
 export function initUI() {
@@ -221,15 +226,17 @@ export function initUI() {
                     mobileMenuToggle.textContent = '\u2630';
                     return;
                 }
-                closeMobileMenu();
                 if (href && href.startsWith('#')) {
                     e.preventDefault();
+                    closeMobileMenu(true);
                     var target = document.querySelector(href);
                     if (target && typeof target.scrollIntoView === 'function') {
                         setTimeout(function() {
                             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }, 50);
                     }
+                } else {
+                    closeMobileMenu();
                 }
             });
         });
@@ -242,8 +249,8 @@ export function initUI() {
             e.preventDefault();
             const target = document.querySelector(this.getAttribute('href'));
             if (target && typeof target.scrollIntoView === 'function') {
+                closeMobileMenu(true);
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                closeMobileMenu();
             }
         });
     });
