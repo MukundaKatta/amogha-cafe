@@ -247,12 +247,26 @@ export function initUI() {
         anchor.addEventListener('click', function (e) {
             if (this.id === 'cart-icon') return;
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            var href = this.getAttribute('href');
+            const target = document.querySelector(href);
             if (target && typeof target.scrollIntoView === 'function') {
                 closeMobileMenu(true);
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Update URL hash for shareability (pushState so back button works)
+                var hash = href === '#home' ? '' : href;
+                history.pushState(null, '', hash || window.location.pathname);
             }
         });
+    });
+
+    // Handle browser back/forward button for hash changes
+    window.addEventListener('popstate', function() {
+        if (window.location.hash) {
+            var target = document.querySelector(window.location.hash);
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     });
 
     // ===== BACK TO TOP =====
@@ -369,20 +383,25 @@ export function initUI() {
                     else if (!barShouldShow && barIsVisible) _stickyBar.classList.remove('visible');
                 }
 
-                // Active nav link tracking
-                if (isDesktop) {
-                    var currentSection = '';
-                    for (var i = 0; i < _cachedSectionTops.length; i++) {
-                        if (currentScroll >= _cachedSectionTops[i].top - 150) {
-                            currentSection = _cachedSectionTops[i].id;
-                        }
+                // Active nav link tracking + URL hash update
+                var currentSection = '';
+                for (var i = 0; i < _cachedSectionTops.length; i++) {
+                    if (currentScroll >= _cachedSectionTops[i].top - 150) {
+                        currentSection = _cachedSectionTops[i].id;
                     }
+                }
+                if (isDesktop) {
                     navAnchors.forEach(function(a) {
                         a.classList.remove('active');
                         if (a.getAttribute('href') === '#' + currentSection) {
                             a.classList.add('active');
                         }
                     });
+                }
+                // Update URL hash for shareability (replaceState to avoid history spam)
+                var newHash = currentSection && currentSection !== 'home' ? '#' + currentSection : '';
+                if (window.location.hash !== newHash && (newHash || window.location.hash)) {
+                    history.replaceState(null, '', newHash || window.location.pathname);
                 }
 
                 _scrollTicking = false;
@@ -1143,6 +1162,18 @@ export function initUI() {
         });
     });
     imgMo.observe(document.body, { childList: true, subtree: true });
+
+    // ===== HASH-BASED NAVIGATION ON PAGE LOAD =====
+    // If URL has a hash (e.g. /#menu), scroll to that section after preloader finishes
+    if (window.location.hash) {
+        var hashTarget = document.querySelector(window.location.hash);
+        if (hashTarget) {
+            // Delay to let preloader finish and layout settle
+            setTimeout(function() {
+                hashTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 2000);
+        }
+    }
 }
 
 Object.assign(window, { closeMobileMenu, launchConfetti });

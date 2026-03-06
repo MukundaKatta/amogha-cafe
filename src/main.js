@@ -3,7 +3,7 @@
 import './core/utils.js';
 import './core/constants.js';
 
-// Modules — import for window exports side effects
+// Critical modules — imported eagerly (needed above the fold)
 import './modules/auth.js';
 import './modules/cart.js';
 import './modules/payment.js';
@@ -14,12 +14,10 @@ import './modules/notifications.js';
 import './modules/reservations.js';
 import './modules/loyalty.js';
 import './modules/features.js';
-import './modules/badges.js';
-import './modules/profile.js';
-import './modules/group.js';
-import './modules/splitbill.js';
-import './modules/subscriptions.js';
-import './modules/chatbot.js';
+
+// Non-critical modules — loaded via dynamic import() for code splitting.
+// These are deferred anyway and have no synchronous window exports,
+// so lazy-loading them reduces the initial bundle size.
 
 // Named imports for initialization
 import { loadCart, initAddonCache, restoreButtonStates, updateCartFab, initCart, displayCart } from './modules/cart.js';
@@ -31,10 +29,7 @@ import { initNotifications } from './modules/notifications.js';
 import { initReservations } from './modules/reservations.js';
 import { initLoyalty } from './modules/loyalty.js';
 import { initFeatures, showRecommendations, loadDailySpecial, initComboBuilder, showReorderToast, initLiveOrderTicker, initOrderAgainSection, initAiForYou } from './modules/features.js';
-import { initProfile } from './modules/profile.js';
-import { initGroupOrdering } from './modules/group.js';
 import { updateFloatingCartBar } from './modules/cart.js';
-import { initChatbot } from './modules/chatbot.js';
 
 // Note: script is loaded as a module (deferred by default), DOM is already parsed
 
@@ -62,17 +57,26 @@ deferInit(function() {
     initNotifications(); // Push notification banner
     initReservations();  // Reservation modal button override
     initFeatures();      // Reviews carousel, gallery, combos, happy hour, voice, i18n, etc.
-    initProfile();       // Customer profile module
+
+    // Profile — dynamically imported (separate chunk)
+    import('./modules/profile.js').then(function(m) { m.initProfile(); });
+
+    // Badges — dynamically imported (separate chunk)
+    import('./modules/badges.js');
 });
 
-// Lower-priority features deferred further
+// Lower-priority features deferred further + dynamically imported non-critical modules
 setTimeout(function() {
     loadDailySpecial();
     initComboBuilder();
     initLiveOrderTicker();
     initOrderAgainSection();
-    initGroupOrdering();
-    initChatbot();
+
+    // Group ordering, chatbot, splitbill, subscriptions — separate chunks
+    import('./modules/group.js').then(function(m) { m.initGroupOrdering(); });
+    import('./modules/chatbot.js').then(function(m) { m.initChatbot(); });
+    import('./modules/splitbill.js');
+    import('./modules/subscriptions.js');
 }, 1500);
 
 // Show reorder toast after short delay (needs DOM + auth to be ready)
