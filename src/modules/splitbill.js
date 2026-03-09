@@ -52,7 +52,7 @@ export function setSplitCount(n) {
     var modal = document.getElementById('split-bill-modal');
     if (!modal) return;
 
-    var total = parseInt(modal.dataset.total) || 0;
+    var total = parseFloat(modal.dataset.total) || 0;
     var orderId = modal.dataset.orderId || '';
     // Use floor to avoid overpayment; first person pays any remainder
     var perPerson = Math.floor(total / n);

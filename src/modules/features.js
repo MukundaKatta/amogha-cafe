@@ -1222,7 +1222,7 @@ export function initComboBuilder() {
                 total += parseFloat(opt.dataset.price) || 0;
             }
         });
-        var discounted = Math.round(total * 0.80);
+        var discounted = Math.round(total * 0.85);
         var savings    = total - discounted;
         var origEl  = section.querySelector('.combo-original');
         var discEl  = section.querySelector('.combo-discounted');
@@ -1248,8 +1248,8 @@ export function initComboBuilder() {
                 if (!sel || !sel.value) return;
                 var opt  = sel.options[sel.selectedIndex];
                 var price = parseFloat(opt.dataset.price) || 0;
-                // Apply 20% combo discount to each item
-                var discountedPrice = Math.round(price * 0.80);
+                // Apply 15% combo discount to each item
+                var discountedPrice = Math.round(price * 0.85);
                 if (typeof window.finalizeAddToCart === 'function') {
                     window.finalizeAddToCart(sel.value, discountedPrice, 'medium', []);
                 }

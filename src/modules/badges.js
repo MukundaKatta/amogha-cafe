@@ -121,6 +121,7 @@ export function checkAndAwardBadges(user, order) {
     if (!hasBadge(user, 'streak_master')) {
         var allDates = (user.orderDates || []).slice();
         if (allDates.indexOf(today) === -1) allDates.push(today);
+        allDates.sort();
         if (allDates.length >= 3) {
             var last3 = allDates.slice(-3);
             // Parse as local dates at noon to avoid DST/timezone issues

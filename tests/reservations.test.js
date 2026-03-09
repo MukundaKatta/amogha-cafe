@@ -556,7 +556,7 @@ describe('initReservations — fallback submit handler hides modal (line 175)', 
         window.showAuthToast = vi.fn();
     });
 
-    it('does not attach fallback submit handler (removed to prevent double-submit)', () => {
+    it('fallback submit handler fires for non-enhanced form but skips enhanced form', () => {
         setupDOM(`
             <div id="reservation-modal" style="display:block">
                 <form id="reservation-form">
@@ -567,9 +567,17 @@ describe('initReservations — fallback submit handler hides modal (line 175)', 
         window.showAuthToast = vi.fn();
         initReservations();
         const form = document.getElementById('reservation-form');
+
+        // Non-enhanced form: fallback handler fires
         const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
         form.dispatchEvent(submitEvent);
-        // No fallback handler — showAuthToast should NOT be called by initReservations
+        expect(window.showAuthToast).toHaveBeenCalled();
+
+        // Enhanced form: fallback handler skips
+        window.showAuthToast.mockClear();
+        form.dataset.enhanced = 'true';
+        const submitEvent2 = new Event('submit', { bubbles: true, cancelable: true });
+        form.dispatchEvent(submitEvent2);
         expect(window.showAuthToast).not.toHaveBeenCalled();
     });
 });

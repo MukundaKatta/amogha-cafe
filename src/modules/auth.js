@@ -26,7 +26,7 @@ export function setCurrentUser(user) {
     var db = getDb();
     if (user && user.phone && typeof db !== 'undefined' && db && !window._notifListenerActive) {
         window._notifListenerActive = true;
-        db.collection('notifications').where('userPhone', '==', user.phone).where('read', '==', false)
+        window._notifListenerUnsub = db.collection('notifications').where('userPhone', '==', user.phone).where('read', '==', false)
             .onSnapshot(function(snap) {
                 snap.docChanges().forEach(function(change) {
                     if (change.type === 'added') {
@@ -313,6 +313,10 @@ export function handleResetPassword() {
 export function signOut() {
     try { localStorage.removeItem('amoghaUser'); } catch(e) {}
     window._notifListenerActive = false;
+    if (typeof window._notifListenerUnsub === 'function') {
+        window._notifListenerUnsub();
+        window._notifListenerUnsub = null;
+    }
     const btn = document.getElementById('signin-btn');
     if (btn) {
         btn.className = 'signin-nav-btn';

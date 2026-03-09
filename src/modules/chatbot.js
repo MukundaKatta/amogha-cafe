@@ -110,7 +110,7 @@ export async function sendChatMessage(presetMsg) {
 
         var botBubble = document.createElement('div');
         botBubble.className = 'ai-msg bot';
-        var html = '<p>' + (data.reply || 'Sorry, please try again.') + '</p>';
+        var html = '<p>' + escapeHtml(data.reply || 'Sorry, please try again.') + '</p>';
 
         // Show suggested items as add-to-cart buttons
         if (data.suggestedItems && data.suggestedItems.length > 0) {
