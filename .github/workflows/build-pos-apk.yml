@@ -29,13 +29,14 @@ jobs:
 
       - name: Patch Capacitor config for POS
         run: |
-          sed -i "s|webDir: 'kiosk-dist'|webDir: 'pos-dist'|g" capacitor.config.ts
-          sed -i "s|appName: 'Amogha Kiosk'|appName: 'Amogha POS'|g" capacitor.config.ts
+          sed -i "s|webDir: 'ios-dist'|webDir: 'pos-dist'|g" capacitor.config.ts
+          sed -i "s|appName: 'Amogha Cafe'|appName: 'Amogha POS'|g" capacitor.config.ts
+          sed -i "s|appId: 'com.amoghahotels.cafe'|appId: 'com.amoghahotels.pos'|g" capacitor.config.ts
 
       - name: Patch Android app name for POS
         run: |
-          sed -i 's|<string name="app_name">Amogha Kiosk</string>|<string name="app_name">Amogha POS</string>|g' android/app/src/main/res/values/strings.xml
-          sed -i 's|<string name="title_activity_main">Amogha Kiosk</string>|<string name="title_activity_main">Amogha POS</string>|g' android/app/src/main/res/values/strings.xml
+          sed -i 's|<string name="app_name">Amogha Cafe</string>|<string name="app_name">Amogha POS</string>|g' android/app/src/main/res/values/strings.xml
+          sed -i 's|<string name="title_activity_main">Amogha Cafe</string>|<string name="title_activity_main">Amogha POS</string>|g' android/app/src/main/res/values/strings.xml
 
       - name: Sync Capacitor
         run: npx cap sync android

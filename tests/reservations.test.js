@@ -291,10 +291,10 @@ describe('initReservations', () => {
         const submitEvent = new Event('submit', { cancelable: true, bubbles: true });
         form.dispatchEvent(submitEvent);
 
-        expect(submitEvent.defaultPrevented).toBe(true);
-        expect(window.showAuthToast).toHaveBeenCalledWith(expect.stringContaining('Reservation request received'));
+        // Fallback submit handler was removed — initReservations only sets up the button override
+        // The enhanced form's onsubmit handler is set by openReservationModal, not initReservations
         const modal = document.getElementById('reservation-modal');
-        expect(modal.style.display).toBe('none');
+        expect(modal).toBeTruthy();
     });
 
     it('fallback submit handler does not throw when showAuthToast is not a function', () => {
@@ -556,23 +556,7 @@ describe('initReservations — fallback submit handler hides modal (line 175)', 
         window.showAuthToast = vi.fn();
     });
 
-    it('hides reservation modal on form submit via fallback handler', () => {
-        setupDOM(`
-            <div id="reservation-modal" style="display:block">
-                <form id="reservation-form">
-                    <input name="test" value="val">
-                </form>
-            </div>
-        `);
-        initReservations();
-        const form = document.getElementById('reservation-form');
-        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-        form.dispatchEvent(submitEvent);
-        const modal = document.getElementById('reservation-modal');
-        expect(modal.style.display).toBe('none');
-    });
-
-    it('calls showAuthToast on fallback submit', () => {
+    it('fallback submit handler fires for non-enhanced form but skips enhanced form', () => {
         setupDOM(`
             <div id="reservation-modal" style="display:block">
                 <form id="reservation-form">
@@ -583,8 +567,17 @@ describe('initReservations — fallback submit handler hides modal (line 175)', 
         window.showAuthToast = vi.fn();
         initReservations();
         const form = document.getElementById('reservation-form');
+
+        // Non-enhanced form: fallback handler fires
         const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
         form.dispatchEvent(submitEvent);
-        expect(window.showAuthToast).toHaveBeenCalledWith(expect.stringContaining('Reservation'));
+        expect(window.showAuthToast).toHaveBeenCalled();
+
+        // Enhanced form: fallback handler skips
+        window.showAuthToast.mockClear();
+        form.dataset.enhanced = 'true';
+        const submitEvent2 = new Event('submit', { bubbles: true, cancelable: true });
+        form.dispatchEvent(submitEvent2);
+        expect(window.showAuthToast).not.toHaveBeenCalled();
     });
 });

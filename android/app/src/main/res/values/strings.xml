@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Amogha Kiosk</string>
-    <string name="title_activity_main">Amogha Kiosk</string>
-    <string name="package_name">com.amoghahotels.kiosk</string>
-    <string name="custom_url_scheme">com.amoghahotels.kiosk</string>
+    <string name="app_name">Amogha Cafe</string>
+    <string name="title_activity_main">Amogha Cafe</string>
+    <string name="package_name">com.amoghahotels.cafe</string>
+    <string name="custom_url_scheme">com.amoghahotels.cafe</string>
 </resources>

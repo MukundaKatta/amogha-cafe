@@ -96,6 +96,9 @@ Screenshot *.png
 # Test results
 test-results/
 
+# iOS dist build
+ios-dist/
+
 # POS dist build
 pos-dist/
 

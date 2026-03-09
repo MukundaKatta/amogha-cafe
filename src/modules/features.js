@@ -877,7 +877,8 @@ export function reorderFromHistory(orderId) {
                     addToCart(item.name, item.price);
                 }
             });
-            document.getElementById('myorders-modal').style.display = 'none';
+            var modal1 = document.getElementById('myorders-modal');
+            if (modal1) modal1.style.display = 'none';
             showAuthToast('Items added to cart! Review and checkout.');
             return;
         }
@@ -891,7 +892,8 @@ export function reorderFromHistory(orderId) {
                     addToCart(item.name, item.price);
                 }
             });
-            document.getElementById('myorders-modal').style.display = 'none';
+            var modal2 = document.getElementById('myorders-modal');
+            if (modal2) modal2.style.display = 'none';
             showAuthToast('Items added to cart! Review and checkout.');
         }
     });

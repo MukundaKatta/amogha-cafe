@@ -26,8 +26,13 @@ function syncCouponToWindow() {
 
 // Keep a module-level reference that cart.getCheckoutTotal can access via window
 // (payment.js owns the coupon state so it re-exports a totals getter)
+function itemSubtotal(item) {
+    var addonTotal = (item.addons || []).reduce(function(s, a) { return s + a.price; }, 0);
+    return (item.price + addonTotal) * item.quantity;
+}
+
 export function getCheckoutTotals() {
-    var subtotal = cart.reduce(function(sum, item) { var addonTotal = (item.addons || []).reduce(function(s, a) { return s + a.price; }, 0); return sum + ((item.price + addonTotal) * item.quantity); }, 0);
+    var subtotal = cart.reduce(function(sum, item) { return sum + itemSubtotal(item); }, 0);
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
     var discount = 0;
     var total = subtotal + deliveryFee;
@@ -94,13 +99,16 @@ export function checkout() {
 }
 
 export function openCheckout() {
-    var subtotal = cart.reduce(function(sum, item) { return sum + (item.price * item.quantity); }, 0);
+    var subtotal = cart.reduce(function(sum, item) { return sum + itemSubtotal(item); }, 0);
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
     var total = subtotal + deliveryFee;
 
     var itemsHtml = '';
     cart.forEach(function(item) {
-        itemsHtml += '<div class="co-item"><span>' + escapeHtml(item.name) + ' x' + item.quantity + '</span><span>\u20B9' + (item.price * item.quantity) + '</span></div>';
+        var addonTotal = (item.addons || []).reduce(function(s, a) { return s + a.price; }, 0);
+        var lineTotal = (item.price + addonTotal) * item.quantity;
+        var addonLabel = addonTotal > 0 ? ' (+\u20B9' + addonTotal + ')' : '';
+        itemsHtml += '<div class="co-item"><span>' + escapeHtml(item.name) + addonLabel + ' x' + item.quantity + '</span><span>\u20B9' + lineTotal + '</span></div>';
     });
     // Render upsell suggestions
     var upsellHtml = '';
@@ -126,10 +134,14 @@ export function openCheckout() {
         }
     }
 
-    document.getElementById('checkout-items').innerHTML = itemsHtml + upsellHtml;
-    document.getElementById('co-subtotal').textContent = '\u20B9' + subtotal;
-    document.getElementById('co-delivery').textContent = deliveryFee === 0 ? 'FREE' : '\u20B9' + deliveryFee;
-    document.getElementById('co-total').textContent = '\u20B9' + total;
+    var checkoutItemsEl = document.getElementById('checkout-items');
+    if (checkoutItemsEl) checkoutItemsEl.innerHTML = itemsHtml + upsellHtml;
+    var coSubEl = document.getElementById('co-subtotal');
+    if (coSubEl) coSubEl.textContent = '\u20B9' + subtotal;
+    var coDelEl = document.getElementById('co-delivery');
+    if (coDelEl) coDelEl.textContent = deliveryFee === 0 ? 'FREE' : '\u20B9' + deliveryFee;
+    var coTotEl = document.getElementById('co-total');
+    if (coTotEl) coTotEl.textContent = '\u20B9' + total;
 
     // Show loyalty redeem button
     var loyaltyBtn = document.getElementById('loyalty-redeem-btn');
@@ -145,7 +157,8 @@ export function openCheckout() {
     }
 
     goToStep(1);
-    document.getElementById('checkout-modal').style.display = 'block';
+    var checkoutModal = document.getElementById('checkout-modal');
+    if (checkoutModal) checkoutModal.style.display = 'block';
 
     // Auto-apply welcome bonus
     var currentUser = getCurrentUser();
@@ -159,7 +172,8 @@ export function openCheckout() {
         var discount = subtotal * 0.25;
         discount = Math.min(discount, subtotal);
         var discountedTotal = subtotal - discount + deliveryFee;
-        document.getElementById('co-total').textContent = '\u20B9' + discountedTotal.toFixed(0);
+        var coTotWelcome = document.getElementById('co-total');
+        if (coTotWelcome) coTotWelcome.textContent = '\u20B9' + discountedTotal.toFixed(0);
     } else {
         appliedCoupon = null;
         appliedCouponCode = '';
@@ -181,7 +195,8 @@ export function closeCheckout() {
 
 export function goToStep(step) {
     document.querySelectorAll('.checkout-step').forEach(function(s) { s.classList.remove('active'); });
-    document.getElementById('checkout-step-' + step).classList.add('active');
+    var stepEl = document.getElementById('checkout-step-' + step);
+    if (stepEl) stepEl.classList.add('active');
     if (step === 3) setupPayment();
 }
 
@@ -190,7 +205,8 @@ export function setupPayment() {
     var total = totals.total;
     var totalStr = '\u20B9' + total.toFixed(0);
 
-    document.getElementById('pay-total').textContent = totalStr;
+    var payTotalEl = document.getElementById('pay-total');
+    if (payTotalEl) payTotalEl.textContent = totalStr;
     var codTotal = document.getElementById('cod-total');
     if (codTotal) codTotal.textContent = totalStr;
 
@@ -332,7 +348,8 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         }
     }
 
-    document.getElementById('confirm-detail').textContent = 'Payment: ' + payMethod + (paymentRef ? ' (Ref: ' + paymentRef + ')' : '') + ' | Total: \u20B9' + totals.total.toFixed(0);
+    var confirmDetailEl = document.getElementById('confirm-detail');
+    if (confirmDetailEl) confirmDetailEl.textContent = 'Payment: ' + payMethod + (paymentRef ? ' (Ref: ' + paymentRef + ')' : '') + ' | Total: \u20B9' + totals.total.toFixed(0);
 
     // Build WhatsApp message
     var msg = '*New Order - Amogha Cafe*\n\n';
@@ -349,7 +366,8 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
     if (paymentRef) msg += '\n*Payment Ref:* ' + paymentRef;
 
     var waLink = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
-    document.getElementById('whatsapp-link').href = waLink;
+    var waLinkEl = document.getElementById('whatsapp-link');
+    if (waLinkEl) waLinkEl.href = waLink;
 
     goToStep(4);
 
@@ -410,12 +428,20 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
             setCurrentUser(currentUser);
             db.collection('users').doc(currentUser.phone).update({ usedWelcomeBonus: true }).catch(function(e) { console.error('Bonus update error:', e); });
         }
-        appliedCoupon = null;
-        appliedCouponCode = '';
-        syncCouponToWindow();
+        // Deduct loyalty points only after successful order save
+        if (appliedCoupon && appliedCoupon._loyaltyPointsToDeduct) {
+            var loyaltyUser = getCurrentUser();
+            if (loyaltyUser) {
+                loyaltyUser.loyaltyPoints = (loyaltyUser.loyaltyPoints || 0) - appliedCoupon._loyaltyPointsToDeduct;
+                if (loyaltyUser.loyaltyPoints < 0) loyaltyUser.loyaltyPoints = 0;
+                setCurrentUser(loyaltyUser);
+                db.collection('users').doc(loyaltyUser.phone).update({ loyaltyPoints: loyaltyUser.loyaltyPoints }).catch(function(e) { console.error('Loyalty deduction error:', e); });
+            }
+        }
 
         // Deduct gift card balance if used
         if (appliedGiftCard && appliedGiftCard.code && typeof appliedGiftCard.balance === 'number') {
+            // Compute how much of the gift card was actually used (pre-GC total minus final total)
             var preGcTotal = totals.subtotal - totals.discount + totals.deliveryFee;
             var gcDeduction = Math.min(appliedGiftCard.balance, preGcTotal);
             var fvGc = getFieldValue();
@@ -427,6 +453,10 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
             }
             appliedGiftCard = null;
         }
+
+        appliedCoupon = null;
+        appliedCouponCode = '';
+        syncCouponToWindow();
 
         // Clear cart only after successful save
         cart.length = 0;
@@ -533,11 +563,12 @@ export function applyCoupon() {
         syncCouponToWindow();
         msg.textContent = 'Coupon applied! ' + coupon.label;
         msg.className = 'coupon-msg success';
-        var subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        var subtotal = cart.reduce(function(sum, item) { return sum + itemSubtotal(item); }, 0);
         var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
         var discount = calcDiscount(coupon, subtotal);
         var total = subtotal - discount + deliveryFee;
-        document.getElementById('co-total').textContent = '\u20B9' + total.toFixed(0);
+        var coTotalCpn = document.getElementById('co-total');
+        if (coTotalCpn) coTotalCpn.textContent = '\u20B9' + total.toFixed(0);
     }
 
     var db = getDb();
@@ -545,7 +576,7 @@ export function applyCoupon() {
         db.collection('coupons').doc(code).get().then(function(doc) {
             if (doc.exists) {
                 var c = doc.data();
-                var subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+                var subtotal = cart.reduce(function(s, i) { return s + itemSubtotal(i); }, 0);
                 var validation = validateCoupon(c, subtotal);
                 if (!validation.valid) {
                     msg.textContent = validation.reason;
@@ -590,6 +621,7 @@ export function removeCoupon() {
 export function applyGiftCard() {
     var input = document.getElementById('giftcard-code');
     var msg = document.getElementById('giftcard-msg');
+    if (!input || !msg) return;
     var code = input.value.trim().toUpperCase();
 
     if (!code) { msg.textContent = 'Please enter a gift card code'; msg.className = 'coupon-msg error'; return; }
@@ -608,13 +640,14 @@ export function applyGiftCard() {
         msg.className = 'coupon-msg success';
 
         // Recalculate total
-        var subtotal = cart.reduce(function(s, i) { return s + i.price * i.quantity; }, 0);
+        var subtotal = cart.reduce(function(s, i) { return s + itemSubtotal(i); }, 0);
         var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
         var couponDiscount = appliedCoupon ? calcDiscount(appliedCoupon, subtotal) : 0;
         var afterCoupon = subtotal - couponDiscount + deliveryFee;
         var gcDeduction = Math.min(gc.balance, afterCoupon);
         var total = afterCoupon - gcDeduction;
-        document.getElementById('co-total').textContent = '\u20B9' + total.toFixed(0);
+        var coTotalGc = document.getElementById('co-total');
+        if (coTotalGc) coTotalGc.textContent = '\u20B9' + total.toFixed(0);
     }).catch(function(err) {
         msg.textContent = 'Error: ' + err.message;
         msg.className = 'coupon-msg error';
@@ -710,24 +743,19 @@ export function redeemLoyaltyAtCheckout() {
     if (!user || !user.loyaltyPoints || user.loyaltyPoints < 100) return;
     var redeemable = Math.floor(user.loyaltyPoints / 100) * 10;
     var pointsToUse = Math.floor(user.loyaltyPoints / 100) * 100;
-    var subtotal = cart.reduce(function(s, i) { return s + i.price * i.quantity; }, 0);
+    var subtotal = cart.reduce(function(s, i) { return s + itemSubtotal(i); }, 0);
     var discount = Math.min(redeemable, subtotal);
     if (discount <= 0) return;
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
     var total = subtotal - discount + deliveryFee;
-    appliedCoupon = { discount: discount, type: 'flat', label: 'Rs.' + discount + ' (Loyalty Points)' };
-    document.getElementById('co-total').textContent = 'Rs.' + total.toFixed(0);
+    appliedCoupon = { discount: discount, type: 'flat', label: 'Rs.' + discount + ' (Loyalty Points)', _loyaltyPointsToDeduct: pointsToUse };
+    var coTotalEl = document.getElementById('co-total');
+    if (coTotalEl) coTotalEl.textContent = 'Rs.' + total.toFixed(0);
     var msg = document.getElementById('coupon-msg');
-    msg.textContent = 'Redeemed ' + pointsToUse + ' points for Rs.' + discount + ' off!';
-    msg.className = 'coupon-msg success';
-    document.getElementById('coupon-code').value = 'LOYALTY';
-    // Deduct points
-    user.loyaltyPoints -= pointsToUse;
-    setCurrentUser(user);
-    var db = getDb();
-    if (db) {
-        db.collection('users').doc(user.phone).update({ loyaltyPoints: user.loyaltyPoints }).catch(function(e) { console.error('Loyalty update error:', e); });
-    }
+    if (msg) { msg.textContent = 'Redeemed ' + pointsToUse + ' points for Rs.' + discount + ' off!'; msg.className = 'coupon-msg success'; }
+    var couponInput = document.getElementById('coupon-code');
+    if (couponInput) couponInput.value = 'LOYALTY';
+    // Store intent only — actual deduction happens after order is placed in placeOrderToFirestore
     if (typeof window.updateLoyaltyWidget === 'function') window.updateLoyaltyWidget();
 }
 

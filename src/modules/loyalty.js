@@ -57,7 +57,7 @@ export function awardLoyaltyPoints(orderTotal) {
     if (newTier.name !== oldTier.name) {
         setTimeout(function() {
             showAuthToast('Congratulations! You are now ' + newTier.icon + ' ' + newTier.name + ' tier!');
-            if (typeof launchConfetti === 'function') launchConfetti();
+            if (typeof window.launchConfetti === 'function') window.launchConfetti();
         }, 2000);
     }
     updateLoyaltyWidget();

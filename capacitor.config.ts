@@ -1,18 +1,25 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.amoghahotels.kiosk',
-  appName: 'Amogha Kiosk',
-  webDir: 'kiosk-dist',
+  appId: 'com.amoghahotels.cafe',
+  appName: 'Amogha Cafe',
+  webDir: 'ios-dist',
   server: {
     allowNavigation: [
       'www.gstatic.com',
       'checkout.razorpay.com',
+      'api.razorpay.com',
+      'lux.razorpay.com',
       'fonts.googleapis.com',
       'fonts.gstatic.com',
-      'firebasestorage.googleapis.com'
+      'firebasestorage.googleapis.com',
+      'amogha-cafe.web.app'
     ],
     androidScheme: 'https'
+  },
+  ios: {
+    contentInset: 'automatic',
+    scheme: 'Amogha Cafe'
   },
   android: {
     allowMixedContent: false,
