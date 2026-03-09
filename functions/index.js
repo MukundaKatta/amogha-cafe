@@ -223,7 +223,7 @@ app.post('/order', async function(req, res) {
         if (!phone)    return res.status(400).json({ error: 'phone number is required' });
         if (!address)  return res.status(400).json({ error: 'delivery address is required' });
 
-        // Validate each item has required fields and reasonable values
+        // Validate each item has required fields
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
             if (!item.name || typeof item.name !== 'string') {
@@ -233,15 +233,33 @@ app.post('/order', async function(req, res) {
             if (qty < 1 || qty > 50) {
                 return res.status(400).json({ error: 'Item quantity must be between 1 and 50' });
             }
-            var price = parseFloat(item.price) || 0;
-            if (price < 0 || price > 10000) {
-                return res.status(400).json({ error: 'Item price must be between 0 and 10000' });
-            }
         }
 
-        // Calculate totals
-        var subtotal = items.reduce(function(sum, item) {
-            return sum + ((parseFloat(item.price) || 0) * (parseInt(item.qty) || 1));
+        // Server-side price validation: look up actual prices from menu DB
+        // This prevents clients from submitting manipulated prices
+        var menuData = await getMenuData();
+        var menuPriceMap = {};
+        menuData.forEach(function(m) { menuPriceMap[m.name.toLowerCase()] = m.price; });
+
+        var verifiedItems = [];
+        for (var j = 0; j < items.length; j++) {
+            var orderItem = items[j];
+            var menuPrice = menuPriceMap[orderItem.name.toLowerCase()];
+            if (menuPrice === undefined) {
+                return res.status(400).json({ error: 'Item not found on menu: ' + orderItem.name });
+            }
+            verifiedItems.push({
+                name:       orderItem.name,
+                qty:        parseInt(orderItem.qty) || 1,
+                price:      menuPrice, // Always use server-side price
+                spiceLevel: orderItem.spiceLevel || 'medium',
+                addons:     []
+            });
+        }
+
+        // Calculate totals using verified server-side prices
+        var subtotal = verifiedItems.reduce(function(sum, item) {
+            return sum + (item.price * item.qty);
         }, 0);
         var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
         var total = subtotal + deliveryFee;
@@ -251,15 +269,7 @@ app.post('/order', async function(req, res) {
             phone:          phone,
             address:        address,
             notes:          notes,
-            items:          items.map(function(item) {
-                return {
-                    name:       item.name  || '',
-                    qty:        parseInt(item.qty)   || 1,
-                    price:      parseFloat(item.price) || 0,
-                    spiceLevel: item.spiceLevel || 'medium',
-                    addons:     []
-                };
-            }),
+            items:          verifiedItems,
             subtotal:       subtotal,
             deliveryFee:    deliveryFee,
             total:          total,
@@ -397,6 +407,102 @@ app.post('/parse-bill', async function(req, res) {
             return res.status(422).json({ error: 'Could not extract structured data from this bill. Please enter details manually.' });
         }
         res.status(500).json({ error: 'Bill parsing failed. Please try again or enter details manually.' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /auth/kiosk-login — authenticate POS/kiosk terminal server-side
+// Validates credentials without exposing kiosk passwords to the client
+// -----------------------------------------------------------------------
+app.post('/auth/kiosk-login', async function(req, res) {
+    try {
+        var body = req.body || {};
+        var username = (body.username || '').trim().toLowerCase();
+        var password = body.password || '';
+
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required' });
+        }
+
+        // Check kiosks collection
+        var snap = await db.collection('kiosks')
+            .where('username', '==', username)
+            .where('active', '==', true)
+            .get();
+
+        var matched = null;
+        snap.forEach(function(doc) {
+            var d = doc.data();
+            if (d.password === password) {
+                matched = { id: doc.id, shopId: d.shopId, name: d.name || '' };
+            }
+        });
+
+        if (matched) {
+            // Fetch shop config
+            var shopDoc = await db.collection('shops').doc(matched.shopId).get();
+            var shopConfig = shopDoc.exists
+                ? { id: shopDoc.id, name: shopDoc.data().name || matched.shopId, tagline: shopDoc.data().tagline || '', theme: shopDoc.data().theme || '' }
+                : { id: matched.shopId, name: matched.name || matched.shopId };
+
+            return res.json({ success: true, shopId: matched.shopId, shopConfig: shopConfig });
+        }
+
+        // Legacy fallback: shopId as username + adminPin as password
+        var shopsSnap = await db.collection('shops').get();
+        var legacy = null;
+        shopsSnap.forEach(function(doc) {
+            var d = doc.data();
+            if (doc.id === username && d.adminPin === password) {
+                legacy = { id: doc.id, name: d.name || doc.id, tagline: d.tagline || '', theme: d.theme || '' };
+            }
+        });
+
+        if (legacy) {
+            return res.json({ success: true, shopId: legacy.id, shopConfig: legacy });
+        }
+
+        res.status(401).json({ error: 'Invalid username or password' });
+    } catch (e) {
+        console.error('POST /auth/kiosk-login error:', e);
+        res.status(500).json({ error: 'Login failed. Please try again.' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// POST /auth/delivery-login — authenticate delivery partner server-side
+// Validates credentials without exposing delivery PINs to the client
+// -----------------------------------------------------------------------
+app.post('/auth/delivery-login', async function(req, res) {
+    try {
+        var body = req.body || {};
+        var phone = (body.phone || '').trim();
+        var pin = (body.pin || '').trim();
+
+        if (!/^\d{10}$/.test(phone)) {
+            return res.status(400).json({ error: 'Enter a valid 10-digit phone number' });
+        }
+        if (!pin) {
+            return res.status(400).json({ error: 'PIN is required' });
+        }
+
+        var doc = await db.collection('deliveryPersons').doc(phone).get();
+        if (!doc.exists) {
+            return res.status(401).json({ error: 'Phone number not registered. Contact admin.' });
+        }
+
+        var d = doc.data();
+        if (!d.active) {
+            return res.status(403).json({ error: 'Your account is inactive. Contact admin.' });
+        }
+        if (d.pin !== pin) {
+            return res.status(401).json({ error: 'Incorrect PIN. Try again.' });
+        }
+
+        res.json({ success: true, phone: phone, name: d.name || 'Delivery Partner' });
+    } catch (e) {
+        console.error('POST /auth/delivery-login error:', e);
+        res.status(500).json({ error: 'Login failed. Check your connection.' });
     }
 });
 

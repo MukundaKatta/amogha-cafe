@@ -152,12 +152,14 @@ describe('Delivery — Auth', () => {
         expect(document.getElementById('login-err').textContent).toContain('PIN');
     });
 
-    it('doLogin queries deliveryPersons collection', () => {
+    it('doLogin calls auth endpoint via fetch', () => {
         if (!fns.doLogin) return;
         document.getElementById('login-phone').value = '9876543210';
         document.getElementById('login-pin').value = '1234';
         fns.doLogin();
-        expect(fns.__mockDb.collection).toHaveBeenCalledWith('deliveryPersons');
+        expect(fns.__context.fetch).toHaveBeenCalledWith('/api/auth/delivery-login', expect.objectContaining({
+            method: 'POST',
+        }));
     });
 
     it('doLogout clears session and shows login', () => {

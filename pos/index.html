@@ -590,49 +590,29 @@ function posLogin() {
     btn.textContent = 'Signing in…';
     document.getElementById('pos-login-err').textContent = '';
 
-    db.collection('kiosks')
-        .where('username', '==', username)
-        .where('active', '==', true)
-        .get()
-        .then(function(snap) {
-            var matched = null;
-            snap.forEach(function(doc) {
-                var d = doc.data();
-                if (d.password === password) matched = { id: doc.id, ...d };
-            });
-            if (matched) {
-                db.collection('shops').doc(matched.shopId).get().then(function(shopDoc) {
-                    shopId = matched.shopId;
-                    shopConfig = shopDoc.exists
-                        ? { id: shopDoc.id, ...shopDoc.data() }
-                        : { id: matched.shopId, name: matched.name || matched.shopId };
-                    startPOS();
-                });
-            } else {
-                // Legacy fallback: shopId as username + adminPin as password (migration path)
-                db.collection('shops').get().then(function(shopsSnap) {
-                    var legacy = null;
-                    shopsSnap.forEach(function(doc) {
-                        if (doc.id === username && doc.data().adminPin === password) legacy = { id: doc.id, ...doc.data() };
-                    });
-                    if (legacy) {
-                        shopId = legacy.id;
-                        shopConfig = legacy;
-                        startPOS();
-                    } else {
-                        btn.disabled = false;
-                        btn.textContent = 'Login';
-                        document.getElementById('pos-login-err').textContent = 'Invalid username or password.';
-                        document.getElementById('pos-password').value = '';
-                        document.getElementById('pos-password').focus();
-                    }
-                });
-            }
-        }).catch(function() {
+    // Authenticate via Cloud Function (credentials never exposed to client)
+    fetch('/api/auth/kiosk-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username, password: password })
+    }).then(function(resp) { return resp.json().then(function(data) { return { ok: resp.ok, data: data }; }); })
+    .then(function(result) {
+        if (result.ok && result.data.success) {
+            shopId = result.data.shopId;
+            shopConfig = result.data.shopConfig;
+            startPOS();
+        } else {
             btn.disabled = false;
             btn.textContent = 'Login';
-            document.getElementById('pos-login-err').textContent = 'Connection error. Try again.';
-        });
+            document.getElementById('pos-login-err').textContent = result.data.error || 'Invalid username or password.';
+            document.getElementById('pos-password').value = '';
+            document.getElementById('pos-password').focus();
+        }
+    }).catch(function() {
+        btn.disabled = false;
+        btn.textContent = 'Login';
+        document.getElementById('pos-login-err').textContent = 'Connection error. Try again.';
+    });
 }
 
 function posLogout() {

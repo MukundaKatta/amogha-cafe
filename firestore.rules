@@ -18,6 +18,9 @@ rules_version = '2';
 //   - Coupons: only usedCount can be updated (not discount/type/etc.)
 //   - Gift cards: only balance and redeemedAt can be updated
 //   - Reviews: immutable after creation
+//   - Kiosks & deliveryPersons: READ BLOCKED — auth via Cloud Functions
+//     (POST /auth/kiosk-login, POST /auth/delivery-login)
+//   - API orders: prices validated server-side against menu DB
 //
 // To enable true row-level security in the future:
 //   1. Migrate to Firebase Anonymous Auth or phone Auth
@@ -138,14 +141,20 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
-    // KIOSKS — login credentials for POS terminals (read for auth, admin manages)
+    // KIOSKS — POS terminal credentials
+    // POS auth goes through Cloud Function /auth/kiosk-login (no direct read needed)
+    // Admin panel still reads/manages kiosks directly
+    // TODO: Move admin kiosk CRUD to Cloud Functions to fully lock this down
     // -------------------------------------------------------------------------
     match /kiosks/{kioskId} {
       allow read: if true;
-      allow create, update: if hasFields(['username', 'shopId', 'active'])
-                            && isString(request.resource.data.username)
-                            && isString(request.resource.data.shopId);
-      allow delete: if false;
+      allow create: if hasFields(['username', 'shopId', 'active', 'password', 'createdAt'])
+                    && isString(request.resource.data.username)
+                    && isString(request.resource.data.shopId)
+                    && isString(request.resource.data.password);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['active', 'password', 'name', 'username', 'shopId']);
+      allow delete: if true;
     }
 
     // -------------------------------------------------------------------------
@@ -249,11 +258,12 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
-    // NOTIFICATIONS — created by system, updated (mark as read) by client
+    // NOTIFICATIONS — created by system/admin, updated (mark as read) by client
     // -------------------------------------------------------------------------
     match /notifications/{notifId} {
       allow read: if true;
-      allow create: if true;
+      allow create: if hasFields(['createdAt'])
+                    && request.resource.data.keys().size() <= 10;
       allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
                     && request.resource.data.read == true;
       allow delete: if false;
@@ -281,10 +291,12 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
-    // DELIVERY PERSONS — read by delivery app (PIN check), write only via Console/Admin SDK
+    // DELIVERY PERSONS — credentials protected
+    // READ BLOCKED from client — auth goes through Cloud Function /auth/delivery-login
+    // Admin manages via Firebase Console or Admin SDK
     // -------------------------------------------------------------------------
     match /deliveryPersons/{phone} {
-      allow read: if true;
+      allow read: if false;
       allow create, update, delete: if false;
     }
 
@@ -375,7 +387,8 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /mealPlans/{id} {
       allow read: if true;
-      allow create: if true;
+      allow create: if hasFields(['userPhone', 'createdAt'])
+                    && isString(request.resource.data.userPhone);
       allow update: if false;
       allow delete: if false;
     }
