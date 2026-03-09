@@ -375,6 +375,64 @@ describe('Service Worker', () => {
         });
     });
 
+    describe('fetch event — CSS file detection via pathname', () => {
+        it('uses network-first for .css files even with empty destination', async () => {
+            const mockResponse = { ok: true, type: 'basic', clone: () => ({ cloned: true }) };
+            globalThis.fetch.mockResolvedValueOnce(mockResponse);
+
+            let responded;
+            const event = {
+                request: { url: 'https://amogha.cafe/styles.css', method: 'GET', destination: '' },
+                respondWith: vi.fn((p) => { responded = p; }),
+            };
+            handlers.fetch(event);
+            const result = await responded;
+            expect(result).toBe(mockResponse);
+            expect(globalThis.fetch).toHaveBeenCalledWith(event.request);
+        });
+    });
+
+    describe('fetch event — opaque response not cached', () => {
+        it('does not cache opaque responses for network-first resources', async () => {
+            const mockResponse = { ok: true, type: 'opaque', clone: () => ({ cloned: true }) };
+            globalThis.fetch.mockResolvedValueOnce(mockResponse);
+
+            const openCallsBefore = env.caches.open.mock.calls.length;
+
+            let responded;
+            const event = {
+                request: { url: 'https://amogha.cafe/index.html', method: 'GET', destination: 'document' },
+                respondWith: vi.fn((p) => { responded = p; }),
+            };
+            handlers.fetch(event);
+            const result = await responded;
+            expect(result).toBe(mockResponse);
+
+            // Allow microtasks to flush
+            await new Promise(r => setTimeout(r, 50));
+            // caches.open should not have been called again to store the opaque response
+            expect(env.caches.open.mock.calls.length).toBe(openCallsBefore);
+        });
+    });
+
+    describe('fetch event — document offline with cached copy', () => {
+        it('returns cached document instead of falling back to index.html', async () => {
+            globalThis.fetch.mockRejectedValueOnce(new Error('offline'));
+
+            // caches.match returns the cached version of the requested page directly
+            env.caches.match.mockResolvedValueOnce('cached-page');
+
+            let responded;
+            const event = {
+                request: { url: 'https://amogha.cafe/about', method: 'GET', destination: 'document' },
+                respondWith: vi.fn((p) => { responded = p; }),
+            };
+            handlers.fetch(event);
+            const result = await responded;
+            expect(result).toBe('cached-page');
+        });
+    });
+
     // ===== PUSH EVENT =====
     describe('push event', () => {
         it('shows notification with data from push payload', async () => {
