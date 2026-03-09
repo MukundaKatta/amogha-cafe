@@ -428,13 +428,10 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
             setCurrentUser(currentUser);
             db.collection('users').doc(currentUser.phone).update({ usedWelcomeBonus: true }).catch(function(e) { console.error('Bonus update error:', e); });
         }
-        // Deduct loyalty points only after successful order save
+        // Persist loyalty point deduction to Firestore (localStorage already updated optimistically in redeemLoyaltyAtCheckout)
         if (appliedCoupon && appliedCoupon._loyaltyPointsToDeduct) {
             var loyaltyUser = getCurrentUser();
             if (loyaltyUser) {
-                loyaltyUser.loyaltyPoints = (loyaltyUser.loyaltyPoints || 0) - appliedCoupon._loyaltyPointsToDeduct;
-                if (loyaltyUser.loyaltyPoints < 0) loyaltyUser.loyaltyPoints = 0;
-                setCurrentUser(loyaltyUser);
                 db.collection('users').doc(loyaltyUser.phone).update({ loyaltyPoints: loyaltyUser.loyaltyPoints }).catch(function(e) { console.error('Loyalty deduction error:', e); });
             }
         }
@@ -756,6 +753,10 @@ export function redeemLoyaltyAtCheckout() {
     var couponInput = document.getElementById('coupon-code');
     if (couponInput) couponInput.value = 'LOYALTY';
     // Store intent only — actual deduction happens after order is placed in placeOrderToFirestore
+    // Update localStorage optimistically so UI reflects deduction immediately
+    user.loyaltyPoints = (user.loyaltyPoints || 0) - pointsToUse;
+    if (user.loyaltyPoints < 0) user.loyaltyPoints = 0;
+    setCurrentUser(user);
     if (typeof window.updateLoyaltyWidget === 'function') window.updateLoyaltyWidget();
 }
 
