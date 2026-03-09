@@ -189,6 +189,20 @@ async function setSignedInUser(page, user) {
     }, user);
 }
 
+// Click the first .add-to-cart button and handle the addon picker if it appears
+async function addFirstItemToCart(page) {
+    const addButtons = page.locator('.add-to-cart');
+    await expect(addButtons.first()).toBeVisible();
+    await addButtons.first().click();
+    // If addon picker appeared, confirm it (adds item without addons)
+    const addonOverlay = page.locator('#addon-picker-overlay');
+    const isAddonVisible = await addonOverlay.evaluate(el => el.style.display !== 'none').catch(() => false);
+    if (isAddonVisible) {
+        await page.locator('.addon-confirm-btn').click();
+    }
+    await expect(page.locator('#cart-count')).not.toHaveText('0');
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Main Page
 // ═══════════════════════════════════════════════════════════════════════════
@@ -203,10 +217,7 @@ test('home page renders core UI', async ({ page }) => {
 
 test('cart flow opens checkout and redirects unauthenticated user to auth modal', async ({ page }) => {
     await page.goto('/');
-    const addButtons = page.locator('.add-to-cart');
-    await expect(addButtons.first()).toBeVisible();
-    await addButtons.first().click();
-    await expect(page.locator('#cart-count')).not.toHaveText('0');
+    await addFirstItemToCart(page);
     await page.locator('#cart-icon').click();
     await expect(page.locator('#cart-modal')).toBeVisible();
     const checkout = page.locator('#checkout');
@@ -396,7 +407,7 @@ test('authenticated user can proceed to checkout without auth modal', async ({ p
         localStorage.setItem('amoghaUser', JSON.stringify({ name: 'E2E Tester', phone: '9000000000', pin: '1234' }));
     });
     await page.goto('/');
-    await page.locator('.add-to-cart').first().click();
+    await addFirstItemToCart(page);
     await page.click('#cart-icon');
     await page.click('#checkout');
     await expect(page.locator('#auth-modal')).not.toBeVisible();
@@ -522,7 +533,7 @@ test('signin succeeds and forgot-pin reset updates backend', async ({ page }) =>
 
 test('cart supports quantity updates, remove and clear actions', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.add-to-cart').first().click();
+    await addFirstItemToCart(page);
     await page.click('#cart-icon');
     await expect(page.locator('.cart-item').first()).toBeVisible();
     await page.locator('.cart-item .qty-btn:has-text("+")').first().click();
@@ -531,7 +542,7 @@ test('cart supports quantity updates, remove and clear actions', async ({ page }
     await expect(page.locator('#cart-items')).toContainText('Your cart is empty');
 
     await page.click('#cart-modal .close');
-    await page.locator('.add-to-cart').first().click();
+    await addFirstItemToCart(page);
     await page.click('#cart-icon');
     page.once('dialog', (dialog) => dialog.accept());
     await page.click('#clear-cart');
@@ -662,6 +673,8 @@ test('group ordering and subscriptions complete main interactions', async ({ pag
     });
     await setSignedInUser(page, { name: 'Group User', phone: '9000000007', pin: '1234', usedWelcomeBonus: true });
     await page.goto('/');
+    // group.js is dynamically imported — wait for its window exports to be available
+    await page.waitForFunction(() => typeof window.createGroupCart === 'function', { timeout: 10000 });
     await page.evaluate(() => window.createGroupCart());
     await expect(page.locator('#group-modal')).toBeVisible();
     await expect(page.locator('#group-share-url')).toHaveValue(/group=/);
@@ -670,6 +683,8 @@ test('group ordering and subscriptions complete main interactions', async ({ pag
     const groupStatus = await page.evaluate(() => (window.__e2eStore.collections.groupCarts || [])[0]?.status);
     expect(groupStatus).toBe('locked');
 
+    // subscriptions.js is dynamically imported — wait for its window exports
+    await page.waitForFunction(() => typeof window.openSubscriptionModal === 'function', { timeout: 10000 });
     await page.evaluate(() => window.openSubscriptionModal());
     await expect(page.locator('#subscription-modal')).toBeVisible();
     await page.locator('#subscription-modal button:has-text("Subscribe Now")').first().click();
@@ -692,6 +707,8 @@ test('badges, split bill and meal planner modals render correctly', async ({ pag
     await page.click('button[title="My Badges"]');
     await expect(page.locator('#badge-gallery-modal')).toHaveClass(/show/);
 
+    // splitbill.js is dynamically imported — wait for its window exports
+    await page.waitForFunction(() => typeof window.openSplitBill === 'function', { timeout: 10000 });
     await page.evaluate(() => window.openSplitBill('ORDER123', 900));
     await page.click('#split-bill-modal .split-num-btn:has-text("3")');
     await expect(page.locator('#split-result')).toContainText('Rs.300');

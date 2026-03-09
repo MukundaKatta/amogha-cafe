@@ -74,8 +74,13 @@ test.describe('checkout flows', () => {
         });
         await page.reload();
 
-        // add first menu item to cart
-        await page.click('.add-to-cart');
+        // add first menu item to cart (handle addon picker if it appears)
+        await page.locator('.add-to-cart').first().click();
+        const addonOverlay = page.locator('#addon-picker-overlay');
+        if (await addonOverlay.evaluate(el => el.style.display !== 'none').catch(() => false)) {
+            await page.locator('.addon-confirm-btn').click();
+        }
+        await expect(page.locator('#cart-count')).not.toHaveText('0');
         await page.click('#cart-icon');
         await page.click('#checkout');
         // ensure checkout modal is visible
@@ -100,7 +105,13 @@ test.describe('checkout flows', () => {
         });
 
         await page.reload();
-        await page.click('.add-to-cart');
+        // add first menu item to cart (handle addon picker if it appears)
+        await page.locator('.add-to-cart').first().click();
+        const addonOverlay2 = page.locator('#addon-picker-overlay');
+        if (await addonOverlay2.evaluate(el => el.style.display !== 'none').catch(() => false)) {
+            await page.locator('.addon-confirm-btn').click();
+        }
+        await expect(page.locator('#cart-count')).not.toHaveText('0');
         await page.click('#cart-icon');
         await page.click('#checkout');
         await expect(page.locator('#checkout-modal')).toBeVisible();
