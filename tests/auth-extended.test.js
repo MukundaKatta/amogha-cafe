@@ -24,6 +24,14 @@ function setupDOM(html) {
     document.querySelector = (sel) => document.body.querySelector(sel);
 }
 
+// Flush async chains (db.get → hashPin/crypto.subtle → db.set).
+// In CI, crypto.subtle.digest() may take longer than 50ms,
+// so we loop multiple short waits to reliably flush all microtasks.
+async function flushAsyncChain() {
+    for (let i = 0; i < 15; i++) await new Promise(r => setTimeout(r, 0));
+    await new Promise(r => setTimeout(r, 100));
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // signOut
 // ═══════════════════════════════════════════════════════════════════════════
@@ -522,7 +530,7 @@ describe('handleSignUp — success path with referral code (lines 119-127)', () 
         document.getElementById('signup-password').value = '1234';
         document.getElementById('signup-referral').value = '';
         handleSignUp();
-        await new Promise((r) => setTimeout(r, 50));
+        await flushAsyncChain();
         const toast = document.getElementById('auth-toast');
         expect(toast.textContent).toMatch(/welcome/i);
         expect(toast.textContent).toMatch(/25%/i);
@@ -545,12 +553,12 @@ describe('handleSignUp — success path with referral code (lines 119-127)', () 
         document.getElementById('signup-password').value = '1234';
         document.getElementById('signup-referral').value = 'FRIEND50';
         handleSignUp();
-        await new Promise((r) => setTimeout(r, 50));
+        await flushAsyncChain();
         // applyReferralAtSignup is called via setTimeout(2000) — verify it gets scheduled
         // by checking that it eventually is called (fast-forward with long wait)
-        await new Promise((r) => setTimeout(r, 2100));
+        await new Promise((r) => setTimeout(r, 2500));
         expect(window.applyReferralAtSignup).toHaveBeenCalledWith('FRIEND50');
-    }, 5000);
+    }, 10000);
 
     it('shows welcome bonus message when usedWelcomeBonus is false on signIn', async () => {
         const user = { name: 'Bonus User', phone: '9000000013', pin: '1234', usedWelcomeBonus: false };
@@ -652,7 +660,7 @@ describe('handleSignUp — UI error catch path (line 133)', () => {
         document.getElementById('signup-phone').value = '9000000015';
         document.getElementById('signup-password').value = '1234';
         handleSignUp();
-        await new Promise((r) => setTimeout(r, 50));
+        await flushAsyncChain();
         // Restore getElementById
         document.getElementById = realGetEl;
         const toast = document.getElementById('auth-toast');
@@ -1493,10 +1501,10 @@ describe('handleSignUp — referral code edge cases (lines 119-139)', () => {
         document.getElementById('signup-password').value = '1234';
         document.getElementById('signup-referral').value = '';
         handleSignUp();
-        await new Promise((r) => setTimeout(r, 2200));
+        await new Promise((r) => setTimeout(r, 2500));
         expect(window.applyReferralAtSignup).not.toHaveBeenCalled();
         delete window.applyReferralAtSignup;
-    }, 5000);
+    }, 10000);
 
     it('does not throw when applyReferralAtSignup is not a function and referral code is present', async () => {
         delete window.applyReferralAtSignup;
@@ -1515,10 +1523,10 @@ describe('handleSignUp — referral code edge cases (lines 119-139)', () => {
         document.getElementById('signup-password').value = '1234';
         document.getElementById('signup-referral').value = 'TESTCODE';
         handleSignUp();
-        await new Promise((r) => setTimeout(r, 2200));
+        await new Promise((r) => setTimeout(r, 2500));
         // Should not throw, just skip the call
         expect(getCurrentUser()).not.toBeNull();
-    }, 5000);
+    }, 10000);
 
     it('handles signup-referral element not existing in DOM', async () => {
         // Remove the referral input from DOM
@@ -1538,7 +1546,7 @@ describe('handleSignUp — referral code edge cases (lines 119-139)', () => {
         document.getElementById('signup-phone').value = '9000000032';
         document.getElementById('signup-password').value = '1234';
         handleSignUp();
-        await new Promise((r) => setTimeout(r, 50));
+        await flushAsyncChain();
         expect(getCurrentUser()).not.toBeNull();
     });
 });
@@ -1640,7 +1648,7 @@ describe('handleSignUp — referral code present (line 119)', () => {
         document.getElementById('signup-phone').value = '9876543210';
         document.getElementById('signup-password').value = '1234';
         handleSignUp();
-        await new Promise(r => setTimeout(r, 50));
+        await flushAsyncChain();
         // applyReferralAtSignup is deferred via setTimeout(2000) so use fake timers
         vi.useFakeTimers();
         vi.advanceTimersByTime(2500);
@@ -1848,8 +1856,9 @@ describe('handleSignUp — referral code processing (lines 119-129)', () => {
         const refSpy = vi.fn();
         window.applyReferralAtSignup = refSpy;
         handleSignUp();
-        await vi.advanceTimersByTimeAsync(100);
-        await Promise.resolve();
+        // Flush the async chain: db.get() → hashPin(crypto.subtle) → db.set()
+        for (let i = 0; i < 20; i++) await vi.advanceTimersByTimeAsync(0);
+        // Advance past the setTimeout(2000) inside handleSignUp
         await vi.advanceTimersByTimeAsync(2500);
         expect(refSpy).toHaveBeenCalledWith('REF123');
         delete window.applyReferralAtSignup;
@@ -1893,7 +1902,7 @@ describe('handleSignUp — permission-denied error (line 139)', () => {
             })),
         };
         handleSignUp();
-        await new Promise(r => setTimeout(r, 50));
+        await flushAsyncChain();
         const msg = document.getElementById('signup-msg');
         expect(msg.textContent).toContain('Access denied');
     });
@@ -1938,7 +1947,7 @@ describe('handleSignIn — welcome bonus message branch (line 187-188)', () => {
             })),
         };
         handleSignIn();
-        await new Promise(r => setTimeout(r, 50));
+        await flushAsyncChain();
         const toast = document.getElementById('auth-toast');
         expect(toast.textContent).toContain('welcome bonus');
     });
@@ -1959,7 +1968,7 @@ describe('handleSignIn — welcome bonus message branch (line 187-188)', () => {
             })),
         };
         handleSignIn();
-        await new Promise(r => setTimeout(r, 50));
+        await flushAsyncChain();
         const toast = document.getElementById('auth-toast');
         expect(toast.textContent).not.toContain('welcome bonus');
     });
@@ -2078,7 +2087,7 @@ describe('handleSignUp — UI error catch block (line 119,130-133)', () => {
         const origUpdateSignInUI = window.updateSignInUI;
         window.updateSignInUI = () => { throw new Error('UI broken'); };
         handleSignUp();
-        await new Promise(r => setTimeout(r, 50));
+        await flushAsyncChain();
         const toast = document.getElementById('auth-toast');
         expect(toast.textContent).toMatch(/Account created|Welcome/i);
         window.updateSignInUI = origUpdateSignInUI;
@@ -2108,7 +2117,7 @@ describe('handleSignIn — permission-denied error (line 139)', () => {
             })),
         };
         handleSignIn();
-        await new Promise(r => setTimeout(r, 50));
+        await flushAsyncChain();
         const msg = document.getElementById('signin-msg');
         expect(msg.textContent).toContain('Connection error');
     });
@@ -2138,7 +2147,7 @@ describe('handleSignUp — permission-denied error (line 139)', () => {
             })),
         };
         handleSignUp();
-        await new Promise(r => setTimeout(r, 50));
+        await flushAsyncChain();
         const msg = document.getElementById('signup-msg');
         expect(msg.textContent).toContain('Access denied');
     });
@@ -2170,7 +2179,7 @@ describe('handleSignIn — incorrect PIN (line 187)', () => {
             })),
         };
         handleSignIn();
-        await new Promise(r => setTimeout(r, 50));
+        await flushAsyncChain();
         const msg = document.getElementById('signin-msg');
         expect(msg.textContent).toContain('Incorrect PIN');
     });
@@ -2265,7 +2274,7 @@ describe('handleSignUp — generic connection error (line 138)', () => {
             })),
         };
         handleSignUp();
-        await new Promise(r => setTimeout(r, 50));
+        await flushAsyncChain();
         const msg = document.getElementById('signup-msg');
         expect(msg.textContent).toContain('Connection error');
     });
