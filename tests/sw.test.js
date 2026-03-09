@@ -392,6 +392,29 @@ describe('Service Worker', () => {
         });
     });
 
+    describe('fetch event — non-ok response not cached (network-first)', () => {
+        it('does not cache a 500 response for a document', async () => {
+            const mockResponse = { ok: false, status: 500, type: 'basic', clone: () => ({ cloned: true }) };
+            globalThis.fetch.mockResolvedValueOnce(mockResponse);
+
+            const openCallsBefore = env.caches.open.mock.calls.length;
+
+            let responded;
+            const event = {
+                request: { url: 'https://amogha.cafe/index.html', method: 'GET', destination: 'document' },
+                respondWith: vi.fn((p) => { responded = p; }),
+            };
+            handlers.fetch(event);
+            const result = await responded;
+            expect(result).toBe(mockResponse);
+
+            // Allow microtasks to flush
+            await new Promise(r => setTimeout(r, 50));
+            // caches.open should not have been called again to store the non-ok response
+            expect(env.caches.open.mock.calls.length).toBe(openCallsBefore);
+        });
+    });
+
     describe('fetch event — opaque response not cached', () => {
         it('does not cache opaque responses for network-first resources', async () => {
             const mockResponse = { ok: true, type: 'opaque', clone: () => ({ cloned: true }) };
