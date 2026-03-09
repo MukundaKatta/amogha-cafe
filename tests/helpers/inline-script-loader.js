@@ -36,6 +36,17 @@ export function loadInlineScript(htmlPath, extraGlobals = {}) {
     script = script.replace(/firebase\.initializeApp\(\{[\s\S]*?\}\);/g, '');
     script = script.replace(/var\s+db\s*=\s*firebase\.firestore\(\);?/g, '');
 
+    // Strip 'use strict' directives — they forbid with() which we need for sandboxing.
+    // This is safe because we only use with() to inject mock globals, not to change semantics.
+    script = script.replace(/['"]use strict['"];?\s*/g, '');
+
+    // Unwrap top-level IIFEs so function declarations are visible at the with() scope.
+    // Pattern: (function(){ ... })();  or  (function(){ ... }());
+    const iifeMatch = script.match(/^\s*\(function\s*\(\s*\)\s*\{([\s\S]*)\}\s*\)\s*\(\s*\)\s*;?\s*$/);
+    if (iifeMatch) {
+        script = iifeMatch[1];
+    }
+
     // Mock globals
     const mockDocRef = {
         get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
@@ -145,23 +156,24 @@ export function loadInlineScript(htmlPath, extraGlobals = {}) {
         ...extraGlobals,
     };
 
-    // Wrap the script to capture all function declarations
-    const wrappedScript = `
-        (function(ctx) {
-            with(ctx) {
-                var db = ctx.db;
-                var firebase = ctx.firebase;
-                ${script}
-                // Collect all function declarations into an object
-                var __exports = {};
-                ${extractFunctionNames(script).map(n => `try { __exports['${n}'] = ${n}; } catch(e) {}`).join('\n')}
-                return __exports;
-            }
-        })
+    // Wrap the script to capture all function declarations.
+    // We use new Function() instead of eval() because ES modules are always strict mode,
+    // and strict mode forbids with(). new Function() creates a sloppy-mode scope.
+    const functionNames = extractFunctionNames(script);
+    const collectExports = functionNames.map(n => `try { __exports['${n}'] = ${n}; } catch(e) {}`).join('\n');
+    const wrappedBody = `
+        with(ctx) {
+            var db = ctx.db;
+            var firebase = ctx.firebase;
+            ${script}
+            var __exports = {};
+            ${collectExports}
+            return __exports;
+        }
     `;
 
     try {
-        const factory = eval(wrappedScript);
+        const factory = new Function('ctx', wrappedBody);
         const exports = factory(context);
         exports.__mockDb = mockDb;
         exports.__mockCollection = mockCollection;
