@@ -67,8 +67,10 @@ export function closeAuthModal() {
         var el = document.getElementById(id);
         if (el) { el.textContent = ''; el.className = 'auth-msg'; }
     });
-    document.getElementById('forgot-step-1').style.display = '';
-    document.getElementById('forgot-step-2').style.display = 'none';
+    var fs1 = document.getElementById('forgot-step-1');
+    var fs2 = document.getElementById('forgot-step-2');
+    if (fs1) fs1.style.display = '';
+    if (fs2) fs2.style.display = 'none';
     forgotPhoneVerified = null;
 }
 

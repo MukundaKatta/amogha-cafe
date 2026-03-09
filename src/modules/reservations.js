@@ -72,7 +72,8 @@ export function generateTimeSlots(dateStr) {
     if (!container) return;
     container.innerHTML = '<label>Select Time</label><div class="time-grid" id="time-grid"></div>';
     var grid = document.getElementById('time-grid');
-    var day = new Date(dateStr).getDay();
+    var parts = dateStr.split('-');
+    var day = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])).getDay();
     var startHour = (day === 0) ? 12 : 11; // Sunday opens at 12
     var endHour = (day === 5 || day === 6) ? 22 : 21; // Fri/Sat close at 22:30, else 21:30
     for (var h = startHour; h <= endHour; h++) {

@@ -861,7 +861,7 @@ describe('redeemLoyaltyAtCheckout — full path (lines 683-708)', () => {
         localStorage.clear();
     });
 
-    it('redeems points, updates DB, and calls updateLoyaltyWidget', () => {
+    it('redeems points, stores intent, and calls updateLoyaltyWidget', () => {
         setCart([{ name: 'Item', price: 500, quantity: 1 }]); // subtotal=500, free delivery
         const updateMock = vi.fn(() => Promise.resolve());
         window.db = {
@@ -885,8 +885,8 @@ describe('redeemLoyaltyAtCheckout — full path (lines 683-708)', () => {
         expect(document.getElementById('coupon-msg').textContent).toContain('50');
         expect(document.getElementById('coupon-code').value).toBe('LOYALTY');
         expect(document.getElementById('co-total').textContent).toBe('Rs.450');
-        // DB update should have been called
-        expect(updateMock).toHaveBeenCalledWith({ loyaltyPoints: 0 });
+        // Points are NOT deducted immediately — deferred until order placement
+        expect(updateMock).not.toHaveBeenCalled();
         // updateLoyaltyWidget should have been called
         expect(window.updateLoyaltyWidget).toHaveBeenCalled();
 

@@ -126,10 +126,14 @@ export function openCheckout() {
         }
     }
 
-    document.getElementById('checkout-items').innerHTML = itemsHtml + upsellHtml;
-    document.getElementById('co-subtotal').textContent = '\u20B9' + subtotal;
-    document.getElementById('co-delivery').textContent = deliveryFee === 0 ? 'FREE' : '\u20B9' + deliveryFee;
-    document.getElementById('co-total').textContent = '\u20B9' + total;
+    var checkoutItemsEl = document.getElementById('checkout-items');
+    if (checkoutItemsEl) checkoutItemsEl.innerHTML = itemsHtml + upsellHtml;
+    var coSubEl = document.getElementById('co-subtotal');
+    if (coSubEl) coSubEl.textContent = '\u20B9' + subtotal;
+    var coDelEl = document.getElementById('co-delivery');
+    if (coDelEl) coDelEl.textContent = deliveryFee === 0 ? 'FREE' : '\u20B9' + deliveryFee;
+    var coTotEl = document.getElementById('co-total');
+    if (coTotEl) coTotEl.textContent = '\u20B9' + total;
 
     // Show loyalty redeem button
     var loyaltyBtn = document.getElementById('loyalty-redeem-btn');
@@ -145,7 +149,8 @@ export function openCheckout() {
     }
 
     goToStep(1);
-    document.getElementById('checkout-modal').style.display = 'block';
+    var checkoutModal = document.getElementById('checkout-modal');
+    if (checkoutModal) checkoutModal.style.display = 'block';
 
     // Auto-apply welcome bonus
     var currentUser = getCurrentUser();
@@ -159,7 +164,8 @@ export function openCheckout() {
         var discount = subtotal * 0.25;
         discount = Math.min(discount, subtotal);
         var discountedTotal = subtotal - discount + deliveryFee;
-        document.getElementById('co-total').textContent = '\u20B9' + discountedTotal.toFixed(0);
+        var coTotWelcome = document.getElementById('co-total');
+        if (coTotWelcome) coTotWelcome.textContent = '\u20B9' + discountedTotal.toFixed(0);
     } else {
         appliedCoupon = null;
         appliedCouponCode = '';
@@ -181,7 +187,8 @@ export function closeCheckout() {
 
 export function goToStep(step) {
     document.querySelectorAll('.checkout-step').forEach(function(s) { s.classList.remove('active'); });
-    document.getElementById('checkout-step-' + step).classList.add('active');
+    var stepEl = document.getElementById('checkout-step-' + step);
+    if (stepEl) stepEl.classList.add('active');
     if (step === 3) setupPayment();
 }
 
@@ -190,7 +197,8 @@ export function setupPayment() {
     var total = totals.total;
     var totalStr = '\u20B9' + total.toFixed(0);
 
-    document.getElementById('pay-total').textContent = totalStr;
+    var payTotalEl = document.getElementById('pay-total');
+    if (payTotalEl) payTotalEl.textContent = totalStr;
     var codTotal = document.getElementById('cod-total');
     if (codTotal) codTotal.textContent = totalStr;
 
@@ -332,7 +340,8 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         }
     }
 
-    document.getElementById('confirm-detail').textContent = 'Payment: ' + payMethod + (paymentRef ? ' (Ref: ' + paymentRef + ')' : '') + ' | Total: \u20B9' + totals.total.toFixed(0);
+    var confirmDetailEl = document.getElementById('confirm-detail');
+    if (confirmDetailEl) confirmDetailEl.textContent = 'Payment: ' + payMethod + (paymentRef ? ' (Ref: ' + paymentRef + ')' : '') + ' | Total: \u20B9' + totals.total.toFixed(0);
 
     // Build WhatsApp message
     var msg = '*New Order - Amogha Cafe*\n\n';
@@ -349,7 +358,8 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
     if (paymentRef) msg += '\n*Payment Ref:* ' + paymentRef;
 
     var waLink = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
-    document.getElementById('whatsapp-link').href = waLink;
+    var waLinkEl = document.getElementById('whatsapp-link');
+    if (waLinkEl) waLinkEl.href = waLink;
 
     goToStep(4);
 
@@ -425,6 +435,17 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
                 }).catch(function(e) { console.error('Gift card deduction error:', e); });
             }
             appliedGiftCard = null;
+        }
+
+        // Deduct loyalty points only after successful order save (BUG-7 fix)
+        if (appliedCoupon && appliedCoupon._loyaltyPointsToDeduct) {
+            var loyaltyUser = getCurrentUser();
+            if (loyaltyUser) {
+                loyaltyUser.loyaltyPoints = (loyaltyUser.loyaltyPoints || 0) - appliedCoupon._loyaltyPointsToDeduct;
+                if (loyaltyUser.loyaltyPoints < 0) loyaltyUser.loyaltyPoints = 0;
+                setCurrentUser(loyaltyUser);
+                db.collection('users').doc(loyaltyUser.phone).update({ loyaltyPoints: loyaltyUser.loyaltyPoints }).catch(function(e) { console.error('Loyalty deduction error:', e); });
+            }
         }
 
         // Clear cart only after successful save
@@ -536,7 +557,8 @@ export function applyCoupon() {
         var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
         var discount = calcDiscount(coupon, subtotal);
         var total = subtotal - discount + deliveryFee;
-        document.getElementById('co-total').textContent = '\u20B9' + total.toFixed(0);
+        var coTotalCpn = document.getElementById('co-total');
+        if (coTotalCpn) coTotalCpn.textContent = '\u20B9' + total.toFixed(0);
     }
 
     var db = getDb();
@@ -613,7 +635,8 @@ export function applyGiftCard() {
         var afterCoupon = subtotal - couponDiscount + deliveryFee;
         var gcDeduction = Math.min(gc.balance, afterCoupon);
         var total = afterCoupon - gcDeduction;
-        document.getElementById('co-total').textContent = '\u20B9' + total.toFixed(0);
+        var coTotalGc = document.getElementById('co-total');
+        if (coTotalGc) coTotalGc.textContent = '\u20B9' + total.toFixed(0);
     }).catch(function(err) {
         msg.textContent = 'Error: ' + err.message;
         msg.className = 'coupon-msg error';
@@ -714,19 +737,14 @@ export function redeemLoyaltyAtCheckout() {
     if (discount <= 0) return;
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
     var total = subtotal - discount + deliveryFee;
-    appliedCoupon = { discount: discount, type: 'flat', label: 'Rs.' + discount + ' (Loyalty Points)' };
-    document.getElementById('co-total').textContent = 'Rs.' + total.toFixed(0);
+    appliedCoupon = { discount: discount, type: 'flat', label: 'Rs.' + discount + ' (Loyalty Points)', _loyaltyPointsToDeduct: pointsToUse };
+    var coTotalEl = document.getElementById('co-total');
+    if (coTotalEl) coTotalEl.textContent = 'Rs.' + total.toFixed(0);
     var msg = document.getElementById('coupon-msg');
-    msg.textContent = 'Redeemed ' + pointsToUse + ' points for Rs.' + discount + ' off!';
-    msg.className = 'coupon-msg success';
-    document.getElementById('coupon-code').value = 'LOYALTY';
-    // Deduct points
-    user.loyaltyPoints -= pointsToUse;
-    setCurrentUser(user);
-    var db = getDb();
-    if (db) {
-        db.collection('users').doc(user.phone).update({ loyaltyPoints: user.loyaltyPoints }).catch(function(e) { console.error('Loyalty update error:', e); });
-    }
+    if (msg) { msg.textContent = 'Redeemed ' + pointsToUse + ' points for Rs.' + discount + ' off!'; msg.className = 'coupon-msg success'; }
+    var couponInput = document.getElementById('coupon-code');
+    if (couponInput) couponInput.value = 'LOYALTY';
+    // Store intent only — actual deduction happens after order is placed in placeOrderToFirestore
     if (typeof window.updateLoyaltyWidget === 'function') window.updateLoyaltyWidget();
 }
 
