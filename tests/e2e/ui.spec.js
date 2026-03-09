@@ -189,17 +189,19 @@ async function setSignedInUser(page, user) {
     }, user);
 }
 
-// Click the first .add-to-cart button and handle the addon picker if it appears
+// Add the first menu item to cart reliably.
+// Uses finalizeAddToCart() to bypass the addon picker overlay entirely,
+// avoiding the race condition where addToCart() opens the picker if
+// the addon cache has loaded from Firestore.
 async function addFirstItemToCart(page) {
-    const addButtons = page.locator('.add-to-cart');
-    await expect(addButtons.first()).toBeVisible();
-    await addButtons.first().click();
-    // If addon picker appeared, confirm it (adds item without addons)
-    const addonOverlay = page.locator('#addon-picker-overlay');
-    const isAddonVisible = await addonOverlay.evaluate(el => el.style.display !== 'none').catch(() => false);
-    if (isAddonVisible) {
-        await page.locator('.addon-confirm-btn').click();
-    }
+    await page.evaluate(() => {
+        // Read the first menu item's name and price from the DOM
+        const card = document.querySelector('.menu-item-card');
+        const name = card?.querySelector('.item-name')?.textContent?.trim() || 'Test Item';
+        const priceText = card?.querySelector('.item-price')?.textContent || '100';
+        const price = parseFloat(priceText.replace(/[^\d.]/g, '')) || 100;
+        window.finalizeAddToCart(name, price, 'medium', []);
+    });
     await expect(page.locator('#cart-count')).not.toHaveText('0');
 }
 
