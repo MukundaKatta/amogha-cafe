@@ -34,7 +34,7 @@ export function loadInlineScript(htmlPath, extraGlobals = {}) {
 
     // Remove Firebase init (we mock db)
     script = script.replace(/firebase\.initializeApp\(\{[\s\S]*?\}\);/g, '');
-    script = script.replace(/var\s+db\s*=\s*firebase\.firestore\(\);?/g, '');
+    script = script.replace(/(?:var|const|let)\s+db\s*=\s*firebase\.firestore\(\);?/g, '');
 
     // Strip 'use strict' directives — they forbid with() which we need for sandboxing.
     // This is safe because we only use with() to inject mock globals, not to change semantics.
