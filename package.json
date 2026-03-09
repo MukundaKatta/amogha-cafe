@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "mkdir -p coverage/.tmp && vitest --run --coverage",
-    "test:e2e": "playwright test --config tests/e2e/playwright.config.js"
+    "test:e2e": "playwright test --config tests/e2e/playwright.config.js",
+    "build:ios": "npm run build && node scripts/prepare-ios.mjs && npx cap sync ios"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.0",
@@ -25,6 +26,7 @@
     "@capacitor/android": "^8.1.0",
     "@capacitor/cli": "^7.5.0",
     "@capacitor/core": "^8.1.0",
+    "@capacitor/ios": "^8.2.0",
     "@capacitor/status-bar": "^8.0.1",
     "lighthouse": "^12.8.2"
   }
