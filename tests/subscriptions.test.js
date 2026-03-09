@@ -20,6 +20,7 @@ import {
     closeSubscriptionModal,
     subscribeToPlan,
     cancelSubscription,
+    initSubscriptions,
 } from '../src/modules/subscriptions.js';
 import { setCurrentUser, getCurrentUser } from '../src/modules/auth.js';
 
@@ -991,5 +992,12 @@ describe('cancelSubscription — showAuthToast when not a function (line 214)', 
         expect(() => cancelSubscription()).not.toThrow();
         const user = getCurrentUser();
         expect(user.activeSubscription).toBeUndefined();
+    });
+});
+
+describe('initSubscriptions', () => {
+    it('is a callable no-op', () => {
+        expect(typeof initSubscriptions).toBe('function');
+        expect(() => initSubscriptions()).not.toThrow();
     });
 });
