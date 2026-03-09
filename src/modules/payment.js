@@ -27,7 +27,7 @@ function syncCouponToWindow() {
 // Keep a module-level reference that cart.getCheckoutTotal can access via window
 // (payment.js owns the coupon state so it re-exports a totals getter)
 export function getCheckoutTotals() {
-    var subtotal = cart.reduce(function(sum, item) { return sum + (item.price * item.quantity); }, 0);
+    var subtotal = cart.reduce(function(sum, item) { var addonTotal = (item.addons || []).reduce(function(s, a) { return s + a.price; }, 0); return sum + ((item.price + addonTotal) * item.quantity); }, 0);
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
     var discount = 0;
     var total = subtotal + deliveryFee;
@@ -416,7 +416,8 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
 
         // Deduct gift card balance if used
         if (appliedGiftCard && appliedGiftCard.code && typeof appliedGiftCard.balance === 'number') {
-            var gcDeduction = Math.min(appliedGiftCard.balance, orderData.total);
+            var preGcTotal = totals.subtotal - totals.discount + totals.deliveryFee;
+            var gcDeduction = Math.min(appliedGiftCard.balance, preGcTotal);
             var fvGc = getFieldValue();
             if (fvGc) {
                 db.collection('giftCards').doc(appliedGiftCard.code).update({

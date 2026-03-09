@@ -332,7 +332,7 @@ export function updateFloatingCartBar() {
     var bar = document.getElementById('floating-cart-bar');
     if (!bar) return;
     var count = cart.reduce(function(t, i) { return t + i.quantity; }, 0);
-    var subtotal = cart.reduce(function(t, i) { return t + i.price * i.quantity; }, 0);
+    var subtotal = cart.reduce(function(t, i) { var addonTotal = (i.addons || []).reduce(function(s, a) { return s + a.price; }, 0); return t + (i.price + addonTotal) * i.quantity; }, 0);
     if (count === 0) {
         bar.classList.remove('visible');
         return;
@@ -475,7 +475,7 @@ export function clearCart() {
 }
 
 export function getCheckoutTotal(couponData) {
-    var subtotal = cart.reduce(function(sum, item) { return sum + (item.price * item.quantity); }, 0);
+    var subtotal = cart.reduce(function(sum, item) { var addonTotal = (item.addons || []).reduce(function(s, a) { return s + a.price; }, 0); return sum + ((item.price + addonTotal) * item.quantity); }, 0);
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
     var discount = 0;
     var total = subtotal + deliveryFee;

@@ -79,7 +79,8 @@ export function generateTimeSlots(dateStr) {
         for (var m = 0; m < 60; m += 30) {
             if (h === endHour && m > 0) break;
             var timeStr = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-            var displayTime = (h === 0 ? 12 : h > 12 ? h - 12 : h) + ':' + String(m).padStart(2, '0') + (h >= 12 ? ' PM' : ' AM');
+            var displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+            var displayTime = displayHour + ':' + String(m).padStart(2, '0') + (h >= 12 ? ' PM' : ' AM');
             var slot = document.createElement('button');
             slot.type = 'button';
             slot.className = 'time-slot-btn';
@@ -138,7 +139,7 @@ export function submitReservation() {
         var displayTime = time;
         var h = parseInt(time.split(':')[0]);
         var mn = time.split(':')[1];
-        displayTime = (h > 12 ? h - 12 : h) + ':' + mn + (h >= 12 ? ' PM' : ' AM');
+        displayTime = (h === 0 ? 12 : h > 12 ? h - 12 : h) + ':' + mn + (h >= 12 ? ' PM' : ' AM');
         form.innerHTML =
             '<div class="res-confirmed">' +
                 '<div class="res-check">&#10003;</div>' +
@@ -164,10 +165,11 @@ export function initReservations() {
         resBtn.onclick = function() { openReservationModal(); };
     }
 
-    // Reservation form submission (basic fallback)
+    // Reservation form submission (basic fallback — only if form not enhanced)
     var reservationForm = document.getElementById('reservation-form');
     if (reservationForm) {
         reservationForm.addEventListener('submit', (e) => {
+            if (e.target.dataset.enhanced === 'true') return; // Enhanced form handles its own submit
             e.preventDefault();
             if (typeof showAuthToast === 'function') showAuthToast('Reservation request received! We will confirm shortly.');
             e.target.reset();

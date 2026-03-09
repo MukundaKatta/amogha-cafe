@@ -202,7 +202,7 @@ export function lockGroupCart() {
             data.participants.forEach(function(p) {
                 (p.items || []).forEach(function(item) {
                     if (typeof window.finalizeAddToCart === 'function') {
-                        window.finalizeAddToCart(item.name, item.price, 1);
+                        window.finalizeAddToCart(item.name, item.price, 'medium', []);
                     }
                 });
             });

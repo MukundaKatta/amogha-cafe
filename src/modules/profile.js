@@ -4,6 +4,12 @@ import { lockScroll, unlockScroll } from '../core/utils.js';
 
 // ===== CUSTOMER PROFILE MODULE =====
 
+function escapeProfileHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 var DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-Free'];
 var ALLERGEN_OPTIONS = ['Nuts', 'Dairy', 'Gluten', 'Eggs', 'Soy', 'Shellfish', 'Sesame', 'Fish'];
 
@@ -47,7 +53,7 @@ export function openProfileModal() {
     var addressListHTML = savedAddresses.length > 0
         ? savedAddresses.map(function(addr, i) {
             return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-light,#f9f9f9);border-radius:8px;margin-bottom:6px;">' +
-                '<div><strong>' + (addr.label || 'Address') + '</strong><br><span style="font-size:0.9em;color:#666;">' + (addr.address || '') + '</span></div>' +
+                '<div><strong>' + escapeProfileHtml(addr.label || 'Address') + '</strong><br><span style="font-size:0.9em;color:#666;">' + escapeProfileHtml(addr.address || '') + '</span></div>' +
                 '<button onclick="removeAddress(' + i + ')" style="background:none;border:none;color:#e53935;cursor:pointer;font-size:1.2em;" title="Remove">&times;</button>' +
                 '</div>';
         }).join('')

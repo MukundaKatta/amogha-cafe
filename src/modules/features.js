@@ -1129,8 +1129,7 @@ export function showReorderToast() {
 export function loadDailySpecial() {
     var section = document.getElementById('daily-special-section');
     if (!section) return;
-    var db = null;
-    try { db = window.db; } catch(e) {}
+    var db = getDb();
     if (!db) { section.style.display = 'none'; return; }
 
     db.collection('settings').doc('dailySpecial').get().then(function(doc) {
