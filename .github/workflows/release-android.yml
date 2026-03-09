@@ -1,0 +1,225 @@
+name: Release Android Apps
+
+# Builds signed AABs for Main, Kiosk, and POS apps and uploads to Google Play.
+# Triggered manually — select which app(s) to release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: 'Which app to release'
+        required: true
+        type: choice
+        options:
+          - all
+          - main
+          - kiosk
+          - pos
+      track:
+        description: 'Play Store track'
+        required: true
+        type: choice
+        default: internal
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+
+env:
+  NODE_VERSION: 20
+  JAVA_VERSION: 21
+
+jobs:
+  # ── Main App (Amogha Cafe) ──────────────────────────────────────────
+  release-main:
+    if: ${{ github.event.inputs.app == 'all' || github.event.inputs.app == 'main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web content
+        run: npm run build && node scripts/prepare-ios.mjs
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Decode keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+
+      - name: Build signed AAB
+        working-directory: android
+        env:
+          KEYSTORE_PATH: release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew bundleRelease
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amogha-cafe-release
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 90
+
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.amoghahotels.cafe
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: ${{ github.event.inputs.track }}
+          status: completed
+
+  # ── Kiosk App ───────────────────────────────────────────────────────
+  release-kiosk:
+    if: ${{ github.event.inputs.app == 'all' || github.event.inputs.app == 'kiosk' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build kiosk web content
+        run: sh scripts/build-kiosk.sh
+
+      - name: Patch Capacitor config for Kiosk
+        run: |
+          sed -i "s|webDir: 'ios-dist'|webDir: 'kiosk-dist'|g" capacitor.config.ts
+          sed -i "s|appName: 'Amogha Cafe'|appName: 'Amogha Kiosk'|g" capacitor.config.ts
+          sed -i "s|appId: 'com.amoghahotels.cafe'|appId: 'com.amoghahotels.kiosk'|g" capacitor.config.ts
+
+      - name: Patch Android app name for Kiosk
+        run: |
+          sed -i 's|<string name="app_name">Amogha Cafe</string>|<string name="app_name">Amogha Kiosk</string>|g' android/app/src/main/res/values/strings.xml
+          sed -i 's|<string name="title_activity_main">Amogha Cafe</string>|<string name="title_activity_main">Amogha Kiosk</string>|g' android/app/src/main/res/values/strings.xml
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Decode keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+
+      - name: Build signed AAB
+        working-directory: android
+        env:
+          KEYSTORE_PATH: release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew bundleRelease
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amogha-kiosk-release
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 90
+
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.amoghahotels.kiosk
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: ${{ github.event.inputs.track }}
+          status: completed
+
+  # ── POS App ─────────────────────────────────────────────────────────
+  release-pos:
+    if: ${{ github.event.inputs.app == 'all' || github.event.inputs.app == 'pos' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build POS web content
+        run: sh scripts/build-pos.sh
+
+      - name: Patch Capacitor config for POS
+        run: |
+          sed -i "s|webDir: 'ios-dist'|webDir: 'pos-dist'|g" capacitor.config.ts
+          sed -i "s|appName: 'Amogha Cafe'|appName: 'Amogha POS'|g" capacitor.config.ts
+          sed -i "s|appId: 'com.amoghahotels.cafe'|appId: 'com.amoghahotels.pos'|g" capacitor.config.ts
+
+      - name: Patch Android app name for POS
+        run: |
+          sed -i 's|<string name="app_name">Amogha Cafe</string>|<string name="app_name">Amogha POS</string>|g' android/app/src/main/res/values/strings.xml
+          sed -i 's|<string name="title_activity_main">Amogha Cafe</string>|<string name="title_activity_main">Amogha POS</string>|g' android/app/src/main/res/values/strings.xml
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Decode keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+
+      - name: Build signed AAB
+        working-directory: android
+        env:
+          KEYSTORE_PATH: release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew bundleRelease
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amogha-pos-release
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 90
+
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.amoghahotels.pos
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: ${{ github.event.inputs.track }}
+          status: completed

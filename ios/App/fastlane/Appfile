@@ -1,0 +1,5 @@
+# App identifiers for Amogha Cafe iOS apps
+app_identifier "com.amoghahotels.cafe"
+apple_id ENV["APPLE_ID"]
+team_id ENV["APPLE_TEAM_ID"]
+itc_team_id ENV["APPLE_ITC_TEAM_ID"]

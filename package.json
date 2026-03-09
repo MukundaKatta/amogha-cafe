@@ -10,7 +10,10 @@
     "test": "vitest",
     "test:coverage": "mkdir -p coverage/.tmp && vitest --run --coverage",
     "test:e2e": "playwright test --config tests/e2e/playwright.config.js",
-    "build:ios": "npm run build && node scripts/prepare-ios.mjs && npx cap sync ios"
+    "build:ios": "npm run build && node scripts/prepare-ios.mjs && npx cap sync ios",
+    "build:android": "npm run build && node scripts/prepare-ios.mjs && npx cap sync android",
+    "build:kiosk-android": "sh scripts/build-kiosk.sh && npx cap sync android",
+    "build:pos-android": "sh scripts/build-pos.sh && npx cap sync android"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.0",
