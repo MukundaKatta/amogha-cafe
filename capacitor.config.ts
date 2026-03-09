@@ -8,6 +8,8 @@ const config: CapacitorConfig = {
     allowNavigation: [
       'www.gstatic.com',
       'checkout.razorpay.com',
+      'api.razorpay.com',
+      'lux.razorpay.com',
       'fonts.googleapis.com',
       'fonts.gstatic.com',
       'firebasestorage.googleapis.com',

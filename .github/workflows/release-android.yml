@@ -31,8 +31,22 @@ env:
   JAVA_VERSION: 21
 
 jobs:
+  # ── Run tests before any release ────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Run unit tests
+        run: npm test -- --run
+
   # ── Main App (Amogha Cafe) ──────────────────────────────────────────
   release-main:
+    needs: test
     if: ${{ github.event.inputs.app == 'all' || github.event.inputs.app == 'main' }}
     runs-on: ubuntu-latest
     steps:
@@ -90,6 +104,7 @@ jobs:
 
   # ── Kiosk App ───────────────────────────────────────────────────────
   release-kiosk:
+    needs: test
     if: ${{ github.event.inputs.app == 'all' || github.event.inputs.app == 'kiosk' }}
     runs-on: ubuntu-latest
     steps:
@@ -158,6 +173,7 @@ jobs:
 
   # ── POS App ─────────────────────────────────────────────────────────
   release-pos:
+    needs: test
     if: ${{ github.event.inputs.app == 'all' || github.event.inputs.app == 'pos' }}
     runs-on: ubuntu-latest
     steps:

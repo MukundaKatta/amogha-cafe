@@ -1,5 +1,6 @@
 import { safeGetItem, safeSetItem } from '../core/utils.js';
 import { showAuthToast } from './auth.js';
+import { getDb } from '../core/firebase.js';
 
 // ===== PUSH NOTIFICATIONS (BROWSER API) =====
 
@@ -99,8 +100,9 @@ export function initFCM() {
 function saveFCMToken(token) {
     try {
         var user = JSON.parse(localStorage.getItem('amoghaUser'));
-        if (user && user.phone && window.db) {
-            window.db.collection('users').doc(user.phone).update({
+        var db = getDb();
+        if (user && user.phone && db) {
+            db.collection('users').doc(user.phone).update({
                 fcmToken: token,
                 fcmUpdatedAt: new Date().toISOString()
             }).catch(function(e) { console.error('FCM token save error:', e); });

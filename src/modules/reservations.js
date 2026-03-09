@@ -164,18 +164,6 @@ export function initReservations() {
     if (resBtn && resBtn.textContent.indexOf('Reserve') !== -1) {
         resBtn.onclick = function() { openReservationModal(); };
     }
-
-    // Reservation form submission (basic fallback)
-    var reservationForm = document.getElementById('reservation-form');
-    if (reservationForm) {
-        reservationForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (typeof showAuthToast === 'function') showAuthToast('Reservation request received! We will confirm shortly.');
-            e.target.reset();
-            var modal = document.getElementById('reservation-modal');
-            if (modal) modal.style.display = 'none';
-        });
-    }
 }
 
 Object.assign(window, { openReservationModal, closeReservationModal, submitReservation });

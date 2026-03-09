@@ -877,7 +877,8 @@ export function reorderFromHistory(orderId) {
                     addToCart(item.name, item.price);
                 }
             });
-            document.getElementById('myorders-modal').style.display = 'none';
+            var modal1 = document.getElementById('myorders-modal');
+            if (modal1) modal1.style.display = 'none';
             showAuthToast('Items added to cart! Review and checkout.');
             return;
         }
@@ -891,7 +892,8 @@ export function reorderFromHistory(orderId) {
                     addToCart(item.name, item.price);
                 }
             });
-            document.getElementById('myorders-modal').style.display = 'none';
+            var modal2 = document.getElementById('myorders-modal');
+            if (modal2) modal2.style.display = 'none';
             showAuthToast('Items added to cart! Review and checkout.');
         }
     });
@@ -1129,8 +1131,7 @@ export function showReorderToast() {
 export function loadDailySpecial() {
     var section = document.getElementById('daily-special-section');
     if (!section) return;
-    var db = null;
-    try { db = window.db; } catch(e) {}
+    var db = getDb();
     if (!db) { section.style.display = 'none'; return; }
 
     db.collection('settings').doc('dailySpecial').get().then(function(doc) {

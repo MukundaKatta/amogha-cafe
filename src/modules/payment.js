@@ -26,8 +26,13 @@ function syncCouponToWindow() {
 
 // Keep a module-level reference that cart.getCheckoutTotal can access via window
 // (payment.js owns the coupon state so it re-exports a totals getter)
+function itemSubtotal(item) {
+    var addonTotal = (item.addons || []).reduce(function(s, a) { return s + a.price; }, 0);
+    return (item.price + addonTotal) * item.quantity;
+}
+
 export function getCheckoutTotals() {
-    var subtotal = cart.reduce(function(sum, item) { return sum + (item.price * item.quantity); }, 0);
+    var subtotal = cart.reduce(function(sum, item) { return sum + itemSubtotal(item); }, 0);
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
     var discount = 0;
     var total = subtotal + deliveryFee;
@@ -94,13 +99,16 @@ export function checkout() {
 }
 
 export function openCheckout() {
-    var subtotal = cart.reduce(function(sum, item) { return sum + (item.price * item.quantity); }, 0);
+    var subtotal = cart.reduce(function(sum, item) { return sum + itemSubtotal(item); }, 0);
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
     var total = subtotal + deliveryFee;
 
     var itemsHtml = '';
     cart.forEach(function(item) {
-        itemsHtml += '<div class="co-item"><span>' + escapeHtml(item.name) + ' x' + item.quantity + '</span><span>\u20B9' + (item.price * item.quantity) + '</span></div>';
+        var addonTotal = (item.addons || []).reduce(function(s, a) { return s + a.price; }, 0);
+        var lineTotal = (item.price + addonTotal) * item.quantity;
+        var addonLabel = addonTotal > 0 ? ' (+\u20B9' + addonTotal + ')' : '';
+        itemsHtml += '<div class="co-item"><span>' + escapeHtml(item.name) + addonLabel + ' x' + item.quantity + '</span><span>\u20B9' + lineTotal + '</span></div>';
     });
     // Render upsell suggestions
     var upsellHtml = '';
@@ -420,13 +428,22 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
             setCurrentUser(currentUser);
             db.collection('users').doc(currentUser.phone).update({ usedWelcomeBonus: true }).catch(function(e) { console.error('Bonus update error:', e); });
         }
-        appliedCoupon = null;
-        appliedCouponCode = '';
-        syncCouponToWindow();
+        // Deduct loyalty points only after successful order save
+        if (appliedCoupon && appliedCoupon._loyaltyPointsToDeduct) {
+            var loyaltyUser = getCurrentUser();
+            if (loyaltyUser) {
+                loyaltyUser.loyaltyPoints = (loyaltyUser.loyaltyPoints || 0) - appliedCoupon._loyaltyPointsToDeduct;
+                if (loyaltyUser.loyaltyPoints < 0) loyaltyUser.loyaltyPoints = 0;
+                setCurrentUser(loyaltyUser);
+                db.collection('users').doc(loyaltyUser.phone).update({ loyaltyPoints: loyaltyUser.loyaltyPoints }).catch(function(e) { console.error('Loyalty deduction error:', e); });
+            }
+        }
 
         // Deduct gift card balance if used
         if (appliedGiftCard && appliedGiftCard.code && typeof appliedGiftCard.balance === 'number') {
-            var gcDeduction = Math.min(appliedGiftCard.balance, orderData.total);
+            // Compute how much of the gift card was actually used (pre-GC total minus final total)
+            var preGcTotal = totals.subtotal - totals.discount + totals.deliveryFee;
+            var gcDeduction = Math.min(appliedGiftCard.balance, preGcTotal);
             var fvGc = getFieldValue();
             if (fvGc) {
                 db.collection('giftCards').doc(appliedGiftCard.code).update({
@@ -437,16 +454,9 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
             appliedGiftCard = null;
         }
 
-        // Deduct loyalty points only after successful order save (BUG-7 fix)
-        if (appliedCoupon && appliedCoupon._loyaltyPointsToDeduct) {
-            var loyaltyUser = getCurrentUser();
-            if (loyaltyUser) {
-                loyaltyUser.loyaltyPoints = (loyaltyUser.loyaltyPoints || 0) - appliedCoupon._loyaltyPointsToDeduct;
-                if (loyaltyUser.loyaltyPoints < 0) loyaltyUser.loyaltyPoints = 0;
-                setCurrentUser(loyaltyUser);
-                db.collection('users').doc(loyaltyUser.phone).update({ loyaltyPoints: loyaltyUser.loyaltyPoints }).catch(function(e) { console.error('Loyalty deduction error:', e); });
-            }
-        }
+        appliedCoupon = null;
+        appliedCouponCode = '';
+        syncCouponToWindow();
 
         // Clear cart only after successful save
         cart.length = 0;
@@ -553,7 +563,7 @@ export function applyCoupon() {
         syncCouponToWindow();
         msg.textContent = 'Coupon applied! ' + coupon.label;
         msg.className = 'coupon-msg success';
-        var subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        var subtotal = cart.reduce(function(sum, item) { return sum + itemSubtotal(item); }, 0);
         var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
         var discount = calcDiscount(coupon, subtotal);
         var total = subtotal - discount + deliveryFee;
@@ -566,7 +576,7 @@ export function applyCoupon() {
         db.collection('coupons').doc(code).get().then(function(doc) {
             if (doc.exists) {
                 var c = doc.data();
-                var subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+                var subtotal = cart.reduce(function(s, i) { return s + itemSubtotal(i); }, 0);
                 var validation = validateCoupon(c, subtotal);
                 if (!validation.valid) {
                     msg.textContent = validation.reason;
@@ -611,6 +621,7 @@ export function removeCoupon() {
 export function applyGiftCard() {
     var input = document.getElementById('giftcard-code');
     var msg = document.getElementById('giftcard-msg');
+    if (!input || !msg) return;
     var code = input.value.trim().toUpperCase();
 
     if (!code) { msg.textContent = 'Please enter a gift card code'; msg.className = 'coupon-msg error'; return; }
@@ -629,7 +640,7 @@ export function applyGiftCard() {
         msg.className = 'coupon-msg success';
 
         // Recalculate total
-        var subtotal = cart.reduce(function(s, i) { return s + i.price * i.quantity; }, 0);
+        var subtotal = cart.reduce(function(s, i) { return s + itemSubtotal(i); }, 0);
         var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
         var couponDiscount = appliedCoupon ? calcDiscount(appliedCoupon, subtotal) : 0;
         var afterCoupon = subtotal - couponDiscount + deliveryFee;
@@ -732,7 +743,7 @@ export function redeemLoyaltyAtCheckout() {
     if (!user || !user.loyaltyPoints || user.loyaltyPoints < 100) return;
     var redeemable = Math.floor(user.loyaltyPoints / 100) * 10;
     var pointsToUse = Math.floor(user.loyaltyPoints / 100) * 100;
-    var subtotal = cart.reduce(function(s, i) { return s + i.price * i.quantity; }, 0);
+    var subtotal = cart.reduce(function(s, i) { return s + itemSubtotal(i); }, 0);
     var discount = Math.min(redeemable, subtotal);
     if (discount <= 0) return;
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;

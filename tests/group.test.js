@@ -1191,9 +1191,9 @@ describe('lockGroupCart — locks and merges items', () => {
         expect(statusUpdate).toBeDefined();
 
         // finalizeAddToCart should have been called for each item across all participants
-        expect(window.finalizeAddToCart).toHaveBeenCalledWith('Biryani', 180, 1);
-        expect(window.finalizeAddToCart).toHaveBeenCalledWith('Dosa', 80, 1);
-        expect(window.finalizeAddToCart).toHaveBeenCalledWith('Lassi', 60, 1);
+        expect(window.finalizeAddToCart).toHaveBeenCalledWith('Biryani', 180, 'medium', []);
+        expect(window.finalizeAddToCart).toHaveBeenCalledWith('Dosa', 80, 'medium', []);
+        expect(window.finalizeAddToCart).toHaveBeenCalledWith('Lassi', 60, 'medium', []);
         expect(window.finalizeAddToCart).toHaveBeenCalledTimes(3);
 
         expect(window.showAuthToast).toHaveBeenCalledWith('Group cart locked! Proceed to checkout.');
