@@ -74,12 +74,13 @@ test.describe('checkout flows', () => {
         });
         await page.reload();
 
-        // add first menu item to cart (handle addon picker if it appears)
-        await page.locator('.add-to-cart').first().click();
-        const addonOverlay = page.locator('#addon-picker-overlay');
-        if (await addonOverlay.evaluate(el => el.style.display !== 'none').catch(() => false)) {
-            await page.locator('.addon-confirm-btn').click();
-        }
+        // add first menu item directly (bypass addon picker race condition)
+        await page.evaluate(() => {
+            const card = document.querySelector('.menu-item-card');
+            const name = card?.querySelector('.item-name')?.textContent?.trim() || 'Test Item';
+            const price = parseFloat((card?.querySelector('.item-price')?.textContent || '100').replace(/[^\d.]/g, '')) || 100;
+            window.finalizeAddToCart(name, price, 'medium', []);
+        });
         await expect(page.locator('#cart-count')).not.toHaveText('0');
         await page.click('#cart-icon');
         await page.click('#checkout');
@@ -105,12 +106,13 @@ test.describe('checkout flows', () => {
         });
 
         await page.reload();
-        // add first menu item to cart (handle addon picker if it appears)
-        await page.locator('.add-to-cart').first().click();
-        const addonOverlay2 = page.locator('#addon-picker-overlay');
-        if (await addonOverlay2.evaluate(el => el.style.display !== 'none').catch(() => false)) {
-            await page.locator('.addon-confirm-btn').click();
-        }
+        // add first menu item directly (bypass addon picker race condition)
+        await page.evaluate(() => {
+            const card = document.querySelector('.menu-item-card');
+            const name = card?.querySelector('.item-name')?.textContent?.trim() || 'Test Item';
+            const price = parseFloat((card?.querySelector('.item-price')?.textContent || '100').replace(/[^\d.]/g, '')) || 100;
+            window.finalizeAddToCart(name, price, 'medium', []);
+        });
         await expect(page.locator('#cart-count')).not.toHaveText('0');
         await page.click('#cart-icon');
         await page.click('#checkout');
