@@ -27,6 +27,17 @@ jobs:
       - name: Build kiosk web content
         run: sh scripts/build-kiosk.sh
 
+      - name: Patch Capacitor config for Kiosk
+        run: |
+          sed -i "s|webDir: 'ios-dist'|webDir: 'kiosk-dist'|g" capacitor.config.ts
+          sed -i "s|appName: 'Amogha Cafe'|appName: 'Amogha Kiosk'|g" capacitor.config.ts
+          sed -i "s|appId: 'com.amoghahotels.cafe'|appId: 'com.amoghahotels.kiosk'|g" capacitor.config.ts
+
+      - name: Patch Android app name for Kiosk
+        run: |
+          sed -i 's|<string name="app_name">Amogha Cafe</string>|<string name="app_name">Amogha Kiosk</string>|g' android/app/src/main/res/values/strings.xml
+          sed -i 's|<string name="title_activity_main">Amogha Cafe</string>|<string name="title_activity_main">Amogha Kiosk</string>|g' android/app/src/main/res/values/strings.xml
+
       - name: Sync Capacitor
         run: npx cap sync android
 
