@@ -40,7 +40,7 @@ describe('RAZORPAY_KEY resolution', () => {
         expect(mod.MERCHANT_NAME).toBe('AMOGHA CAFE & RESTAURANT');
         expect(mod.FREE_DELIVERY_THRESHOLD).toBe(500);
         expect(mod.DELIVERY_FEE).toBe(49);
-        expect(mod.COMBO_DISCOUNT).toBe(0.20);
+        expect(mod.COMBO_DISCOUNT).toBe(0.15);
         expect(mod.CURRENT_BRANCH).toBe('main');
         expect(mod.BRANCHES).toHaveLength(1);
         expect(mod.BRANCHES[0].id).toBe('main');
