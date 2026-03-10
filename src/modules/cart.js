@@ -59,7 +59,14 @@ export function saveCart() {
 export function updateCartCount() {
     const count = cart.reduce((total, item) => total + item.quantity, 0);
     var el = document.getElementById('cart-count');
-    if (el) el.textContent = count;
+    if (el) {
+        el.textContent = count;
+        // Bump animation
+        el.classList.remove('bump');
+        void el.offsetWidth;
+        el.classList.add('bump');
+        setTimeout(function() { el.classList.remove('bump'); }, 300);
+    }
 }
 
 export function addToCart(itemName, price, btnEl) {

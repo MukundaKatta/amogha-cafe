@@ -1139,7 +1139,7 @@ export function initUI() {
         }
     })();
 
-    // ===== LAZY IMAGE LOAD COMPLETION =====
+    // ===== LAZY IMAGE LOAD COMPLETION (body-level fallback) =====
     document.querySelectorAll('img[loading="lazy"]').forEach(function(img) {
         if (img.complete) {
             img.classList.add('loaded');
@@ -1151,13 +1151,12 @@ export function initUI() {
     var imgMo = new MutationObserver(function(mutations) {
         mutations.forEach(function(m) {
             m.addedNodes.forEach(function(node) {
-                if (node.nodeType === 1) {
-                    var imgs = node.querySelectorAll ? node.querySelectorAll('img[loading="lazy"]') : [];
-                    imgs.forEach(function(img) {
-                        if (img.complete) { img.classList.add('loaded'); }
-                        else { img.addEventListener('load', function() { img.classList.add('loaded'); }); }
-                    });
-                }
+                if (node.nodeType !== 1) return;
+                var imgs = node.querySelectorAll ? node.querySelectorAll('img[loading="lazy"]') : [];
+                imgs.forEach(function(img) {
+                    if (img.complete) { img.classList.add('loaded'); }
+                    else { img.addEventListener('load', function() { img.classList.add('loaded'); }); }
+                });
             });
         });
     });
@@ -1460,20 +1459,6 @@ export function initUI() {
         };
     })();
 
-    // ===== LOADING SKELETONS FOR MENU =====
-    (function() {
-        var menuContainer = document.getElementById('dynamic-menu-container');
-        if (!menuContainer && !menuContainer?.children.length) return;
-
-        // If menu is empty, show skeleton placeholders until real data loads
-        if (menuContainer.children.length === 0) {
-            var skeletonHTML = '';
-            for (var s = 0; s < 6; s++) {
-                skeletonHTML += '<div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>';
-            }
-            menuContainer.innerHTML = skeletonHTML;
-        }
-    })();
 }
 
 Object.assign(window, { closeMobileMenu, launchConfetti });
