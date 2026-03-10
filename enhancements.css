@@ -77,39 +77,44 @@
 .open-status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: 20px;
+    gap: 7px;
+    padding: 6px 16px;
+    border-radius: 24px;
     font-size: .7rem;
-    font-weight: 600;
-    letter-spacing: .08em;
+    font-weight: 700;
+    letter-spacing: .1em;
     text-transform: uppercase;
-    background: rgba(34, 197, 94, .1);
-    border: 1px solid rgba(34, 197, 94, .25);
+    background: rgba(34, 197, 94, .08);
+    border: 1px solid rgba(34, 197, 94, .2);
     color: #4ade80;
     white-space: nowrap;
     transition: all .4s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    flex-shrink: 0;
+    order: -1;
+    margin-right: 12px;
 }
 .open-status-badge.is-closed {
-    background: rgba(239, 68, 68, .1);
-    border-color: rgba(239, 68, 68, .25);
+    background: rgba(239, 68, 68, .08);
+    border-color: rgba(239, 68, 68, .2);
     color: #f87171;
 }
 .open-status-badge.closing-soon {
-    background: rgba(251, 191, 36, .1);
-    border-color: rgba(251, 191, 36, .25);
+    background: rgba(251, 191, 36, .08);
+    border-color: rgba(251, 191, 36, .2);
     color: #fbbf24;
 }
 .open-status-badge.closing-soon .status-dot {
     background: #fbbf24 !important;
-    box-shadow: 0 0 8px rgba(251, 191, 36, .6) !important;
+    box-shadow: 0 0 8px rgba(251, 191, 36, .5) !important;
 }
 .status-dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: #22c55e;
-    box-shadow: 0 0 8px rgba(34, 197, 94, .6);
+    box-shadow: 0 0 10px rgba(34, 197, 94, .5);
     animation: statusPulse 2s ease-in-out infinite;
     flex-shrink: 0;
 }
