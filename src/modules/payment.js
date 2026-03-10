@@ -447,10 +447,10 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         var trackUrl = window.location.origin + '/track/index.html?id=' + docRef.id;
         var trackDiv = document.getElementById('order-tracking-link');
         if (trackDiv) {
-            trackDiv.innerHTML = '<div style="margin-top:1rem;padding:1rem;background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.15);border-radius:12px;text-align:center">' +
-                '<p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.5rem">Track your order in real-time:</p>' +
-                '<a href="' + trackUrl + '" target="_blank" rel="noopener noreferrer" style="color:var(--gold);font-weight:600;font-size:0.9rem;word-break:break-all">' + trackUrl + '</a>' +
-                '<br><button onclick="safeCopy(\'' + trackUrl + '\',this)" class="cta-button" style="margin-top:0.6rem;padding:0.4rem 1rem;font-size:0.78rem">Copy Link</button>' +
+            trackDiv.innerHTML = '<div class="order-track-card">' +
+                '<p class="order-track-label">Track your order in real-time:</p>' +
+                '<a href="' + trackUrl + '" target="_blank" rel="noopener noreferrer" class="order-track-link">' + trackUrl + '</a>' +
+                '<br><button onclick="safeCopy(\'' + trackUrl + '\',this)" class="cta-button order-track-copy">Copy Link</button>' +
                 '</div>';
         }
 

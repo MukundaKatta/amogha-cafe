@@ -1742,3 +1742,45 @@ footer::before {
         outline: 3px solid currentColor;
     }
 }
+
+/* ============================================================
+   PHASE 7 — Accessibility, Inline Style Extraction, Polish
+   ============================================================ */
+
+/* --- Reviewer Avatar Color Variants --- */
+.reviewer-avatar.avatar-rose { background: linear-gradient(135deg, #e8445a, #d4306a); }
+.reviewer-avatar.avatar-blue { background: linear-gradient(135deg, #4a90d9, #357abd); }
+.reviewer-avatar.avatar-green { background: linear-gradient(135deg, #50c878, #3ba55d); }
+.reviewer-avatar.avatar-amber { background: linear-gradient(135deg, #f5a623, #e8941a); }
+.reviewer-avatar.avatar-purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+.reviewer-avatar.avatar-red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+/* --- Order Tracking Link Card --- */
+.order-track-card {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(212, 160, 23, 0.08);
+    border: 1px solid rgba(212, 160, 23, 0.15);
+    border-radius: 12px;
+    text-align: center;
+}
+.order-track-label {
+    font-size: 0.82rem;
+    color: var(--text-muted, #888);
+    margin-bottom: 0.5rem;
+}
+.order-track-link {
+    color: var(--gold, #D4A017);
+    font-weight: 600;
+    font-size: 0.9rem;
+    word-break: break-all;
+}
+.order-track-copy {
+    margin-top: 0.6rem;
+    padding: 0.4rem 1rem;
+    font-size: 0.78rem;
+}
+body.dark-mode .order-track-card {
+    background: rgba(212, 160, 23, 0.05);
+    border-color: rgba(212, 160, 23, 0.1);
+}
