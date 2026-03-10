@@ -177,15 +177,13 @@ function openReferralModal() {
     document.body.style.overflow = 'hidden';
 
     // Event handlers
-    modal.querySelector('.modal-close').onclick = function() {
-        modal.classList.remove('active');
+    function closeModal() {
+        modal.remove();
         document.body.style.overflow = '';
-    };
+    }
+    modal.querySelector('.modal-close').onclick = closeModal;
     modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
+        if (e.target === modal) closeModal();
     });
 
     document.getElementById('refCopyCode').addEventListener('click', function() {

@@ -153,6 +153,10 @@ setTimeout(initAiForYou, 4500);
 // Init floating cart bar state
 updateFloatingCartBar();
 
+// Safety: clear stuck overflow from modals that didn't clean up
+document.body.style.overflow = '';
+document.body.classList.remove('modal-open');
+
 // Expose displayCart at window level (features.js hooks into this to add showRecommendations)
 window.displayCart = displayCart;
 
