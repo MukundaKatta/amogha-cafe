@@ -1237,6 +1237,73 @@ export function initUI() {
         });
         skeletonObserver.observe(menuContainer, { childList: true });
     })();
+
+    // ===== COOKIE CONSENT BANNER =====
+    (function() {
+        var consent = document.getElementById('cookie-consent');
+        var acceptBtn = document.getElementById('cookie-accept');
+        var declineBtn = document.getElementById('cookie-decline');
+        if (!consent) return;
+
+        var cookieChoice = safeGetItem('amogha-cookie-consent');
+        if (cookieChoice) return; // Already responded
+
+        // Show after a short delay to not compete with preloader
+        setTimeout(function() {
+            consent.style.display = '';
+        }, 2500);
+
+        function handleConsent(choice) {
+            safeSetItem('amogha-cookie-consent', choice);
+            consent.style.opacity = '0';
+            consent.style.transform = 'translateY(20px)';
+            setTimeout(function() { consent.style.display = 'none'; }, 400);
+        }
+
+        if (acceptBtn) acceptBtn.addEventListener('click', function() { handleConsent('accepted'); });
+        if (declineBtn) declineBtn.addEventListener('click', function() { handleConsent('essential'); });
+    })();
+
+    // ===== NEWSLETTER SIGNUP =====
+    (function() {
+        var form = document.getElementById('newsletter-form');
+        var emailInput = document.getElementById('newsletter-email');
+        var msg = document.getElementById('newsletter-msg');
+        if (!form || !emailInput) return;
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var email = emailInput.value.trim();
+            if (!email || !email.includes('@')) return;
+
+            // Store locally (in production this would call an API)
+            var subs = JSON.parse(safeGetItem('amogha-newsletter') || '[]');
+            if (subs.includes(email)) {
+                if (msg) msg.textContent = 'You\'re already subscribed!';
+                return;
+            }
+            subs.push(email);
+            safeSetItem('amogha-newsletter', JSON.stringify(subs));
+            emailInput.value = '';
+            if (msg) msg.textContent = 'Welcome! You\'ll receive our best offers.';
+            if (typeof window.showAuthToast === 'function') {
+                window.showAuthToast('Subscribed successfully! Watch for delicious updates.');
+            }
+            setTimeout(function() { if (msg) msg.textContent = ''; }, 5000);
+        });
+    })();
+
+    // ===== ENHANCED SCROLL PROGRESS BAR =====
+    (function() {
+        var progressBar = document.getElementById('scroll-progress');
+        if (!progressBar) return;
+
+        window.addEventListener('scroll', function() {
+            var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            var scrollPercent = docHeight > 0 ? (window.pageYOffset / docHeight) * 100 : 0;
+            progressBar.style.width = scrollPercent + '%';
+        }, { passive: true });
+    })();
 }
 
 Object.assign(window, { closeMobileMenu, launchConfetti });

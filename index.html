@@ -158,6 +158,17 @@
         <span class="ap ap7"></span><span class="ap ap8"></span>
     </div>
 
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent" class="cookie-consent" style="display:none" role="dialog" aria-label="Cookie consent">
+        <div class="cookie-consent-inner">
+            <p>We use cookies to enhance your experience, remember your preferences, and serve you the best flavors online. By continuing, you agree to our <a href="#" style="color:var(--gold);text-decoration:underline">Privacy Policy</a>.</p>
+            <div class="cookie-consent-actions">
+                <button class="cookie-btn cookie-btn-accept" id="cookie-accept">Accept All</button>
+                <button class="cookie-btn cookie-btn-decline" id="cookie-decline">Essential Only</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Preloader -->
     <div id="preloader">
         <div class="preloader-inner">
@@ -545,8 +556,8 @@
     <!-- Combo Builder Section -->
     <section id="combo-builder-section" class="combo-builder-section">
         <div class="container">
-            <h2 style="text-align:center;font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:var(--primary);margin-bottom:0.4rem;">Build Your Combo</h2>
-            <p class="section-subtitle" style="text-align:center;margin-bottom:2.5rem;">Mix &amp; match your favourites — save 15% on every combination</p>
+            <h2 class="combo-section-title">Build Your Combo</h2>
+            <p class="section-subtitle combo-section-sub">Mix &amp; match your favourites — save 15% on every combination</p>
             <div class="combo-builder-card">
                 <div class="combo-selects">
                     <div class="combo-select-wrap">
@@ -578,8 +589,8 @@
 
     <section id="reorder-section" class="reorder-section" style="display:none">
         <div class="container">
-            <h2 class="section-title" style="color:#D4A017">Order Again</h2>
-            <div class="reorder-cards" id="reorder-cards" style="display:flex;gap:1rem;overflow-x:auto;padding:1rem 0;scroll-snap-type:x mandatory"></div>
+            <h2 class="section-title reorder-title">Order Again</h2>
+            <div class="reorder-cards" id="reorder-cards"></div>
         </div>
     </section>
 
@@ -598,9 +609,9 @@
 
             <div class="allergen-filter-bar">
                 <button class="safe-for-me-toggle" id="safe-for-me-btn" onclick="toggleSafeForMe()">🛡️ Safe for Me</button>
-                <button onclick="createGroupCart()" style="padding:0.4rem 0.8rem;border-radius:20px;border:1px solid rgba(212,160,23,0.3);background:rgba(212,160,23,0.08);color:#D4A017;cursor:pointer;font-size:0.8rem;font-weight:600">👥 Group Order</button>
-                <button onclick="openSubscriptionModal()" style="padding:0.4rem 0.8rem;border-radius:20px;border:1px solid rgba(156,39,176,0.3);background:rgba(156,39,176,0.08);color:#CE93D8;cursor:pointer;font-size:0.8rem;font-weight:600">📋 Meal Plans</button>
-                <button onclick="openMealPlannerModal()" style="padding:0.4rem 0.8rem;border-radius:20px;border:1px solid rgba(39,174,96,0.3);background:rgba(39,174,96,0.08);color:#2ecc71;cursor:pointer;font-size:0.8rem;font-weight:600">🤖 AI Meal Planner</button>
+                <button onclick="createGroupCart()" class="allergen-pill allergen-pill--gold">👥 Group Order</button>
+                <button onclick="openSubscriptionModal()" class="allergen-pill allergen-pill--purple">📋 Meal Plans</button>
+                <button onclick="openMealPlannerModal()" class="allergen-pill allergen-pill--green">🤖 AI Meal Planner</button>
             </div>
 
             <!-- Swiggy-style Category Carousel -->
@@ -784,7 +795,7 @@
                     </form>
                 </div>
             </div>
-            <div style="margin-top:2rem; border-radius:12px; overflow:hidden; box-shadow:0 3px 15px rgba(0,0,0,0.1);">
+            <div class="map-container">
                 <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3805.5!2d78.3911!3d17.4935!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb91f7e2c7e5b5%3A0x5e3f2e3f2e3f2e3f!2sAddagutta+Society%2C+Pragathi+Nagar+Rd%2C+Kukatpally%2C+Hyderabad%2C+Telangana+500085!5e0!3m2!1sen!2sin!4v1700000000000" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" title="Google Maps - Amogha Cafe Location" referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
         </div>
@@ -863,9 +874,20 @@
             </div>
             <div class="footer-section">
                 <h4>Contact</h4>
-                <p>📞 <a href="tel:+919121004999" style="color:inherit;text-decoration:none;">+91 91210 04999</a><br>
+                <p>📞 <a href="tel:+919121004999" class="footer-contact-link">+91 91210 04999</a><br>
                 📍 Addagutta Society, Pragathi Nagar Rd,<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;Kukatpally, Hyderabad 500085</p>
+            </div>
+            <div class="footer-section footer-newsletter">
+                <h4>Stay Updated</h4>
+                <p class="newsletter-desc">Get exclusive offers, new dishes & seasonal specials delivered to your inbox.</p>
+                <form class="newsletter-form" id="newsletter-form" onsubmit="return false;">
+                    <input type="email" id="newsletter-email" placeholder="Your email address" required class="newsletter-input" aria-label="Email for newsletter">
+                    <button type="submit" class="newsletter-btn" aria-label="Subscribe">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    </button>
+                </form>
+                <p id="newsletter-msg" class="newsletter-msg"></p>
             </div>
         </div>
         <div class="trust-badges">

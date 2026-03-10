@@ -763,3 +763,353 @@ body.dark-mode .modal select {
     transition: color .3s ease;
     font-variant-numeric: tabular-nums;
 }
+
+/* --- Scroll Progress Bar --- */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
+    z-index: 100001;
+    transition: width .1s linear;
+    box-shadow: 0 0 8px rgba(212, 160, 23, .4);
+    pointer-events: none;
+}
+
+/* ===== PREMIUM ENHANCEMENTS PHASE 2 ===== */
+
+/* --- Material Ripple Effect --- */
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.4) 0%, rgba(255,255,255,0) 70%);
+    transform: scale(0);
+    animation: rippleExpand .6s ease-out forwards;
+    pointer-events: none;
+}
+@keyframes rippleExpand {
+    to { transform: scale(4); opacity: 0; }
+}
+
+/* --- Allergen Filter Pills (extracted from inline styles) --- */
+.allergen-pill {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    border: 1px solid;
+}
+.allergen-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+.allergen-pill:active { transform: scale(.96); }
+.allergen-pill--gold {
+    border-color: rgba(212, 160, 23, .3);
+    background: rgba(212, 160, 23, .08);
+    color: #D4A017;
+}
+.allergen-pill--purple {
+    border-color: rgba(156, 39, 176, .3);
+    background: rgba(156, 39, 176, .08);
+    color: #CE93D8;
+}
+.allergen-pill--green {
+    border-color: rgba(39, 174, 96, .3);
+    background: rgba(39, 174, 96, .08);
+    color: #2ecc71;
+}
+
+/* --- Combo Section Title (extracted from inline) --- */
+.combo-section-title {
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.4rem;
+}
+.combo-section-sub {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+/* --- Reorder Section --- */
+.reorder-title {
+    color: var(--gold);
+}
+.reorder-cards {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 1rem 0;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* --- Map Container --- */
+.map-container {
+    margin-top: 2rem;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 15px rgba(0,0,0,.1);
+}
+
+/* --- Footer Contact Link --- */
+.footer-contact-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+.footer-contact-link:hover {
+    color: var(--gold);
+}
+
+/* --- Newsletter Section --- */
+.footer-newsletter {
+    min-width: 220px;
+}
+.newsletter-desc {
+    font-size: 0.82rem;
+    opacity: .8;
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+}
+.newsletter-form {
+    display: flex;
+    gap: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(212, 160, 23, .25);
+    background: rgba(255,255,255,.04);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.newsletter-form:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, .1);
+}
+.newsletter-input {
+    flex: 1;
+    padding: 0.65rem 0.9rem;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 0.85rem;
+    outline: none;
+    min-width: 0;
+}
+.newsletter-input::placeholder {
+    color: rgba(255,255,255,.4);
+}
+.newsletter-btn {
+    padding: 0.65rem 1rem;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    border: none;
+    color: var(--dark);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.newsletter-btn:hover {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    transform: translateX(2px);
+}
+.newsletter-msg {
+    font-size: 0.78rem;
+    margin-top: 0.4rem;
+    color: #2ecc71;
+    min-height: 1.2em;
+}
+
+/* --- Cookie Consent Banner --- */
+.cookie-consent {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 99998;
+    background: rgba(20, 14, 8, .95);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border-top: 1px solid rgba(212, 160, 23, .15);
+    padding: 1rem 1.5rem;
+    animation: slideUpCookie .5s cubic-bezier(.16, 1, .3, 1);
+}
+@keyframes slideUpCookie {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.cookie-consent-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.cookie-consent-inner p {
+    flex: 1;
+    min-width: 250px;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,.85);
+    line-height: 1.5;
+    margin: 0;
+}
+.cookie-consent-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-shrink: 0;
+}
+.cookie-btn {
+    padding: 0.55rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    border: none;
+}
+.cookie-btn:hover { transform: translateY(-1px); }
+.cookie-btn:active { transform: scale(.97); }
+.cookie-btn-accept {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--dark);
+    box-shadow: 0 4px 16px rgba(212, 160, 23, .25);
+}
+.cookie-btn-decline {
+    background: rgba(255,255,255,.08);
+    color: rgba(255,255,255,.7);
+    border: 1px solid rgba(255,255,255,.12);
+}
+.cookie-btn-decline:hover {
+    background: rgba(255,255,255,.12);
+}
+
+/* --- Enhanced Special Cards with Gradient Border --- */
+.special-card {
+    position: relative;
+    overflow: hidden;
+}
+.special-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light), var(--gold), var(--gold-dark));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+    opacity: 0;
+    transition: opacity var(--transition-smooth);
+}
+.special-card:hover::before {
+    opacity: 1;
+}
+
+/* --- Special Badge Pulse --- */
+.special-badge {
+    animation: badgePulse 2s ease-in-out infinite;
+}
+@keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, .3); }
+    50% { box-shadow: 0 0 0 6px rgba(212, 160, 23, 0); }
+}
+
+/* --- Enhanced Review Cards --- */
+.review-card {
+    position: relative;
+}
+.review-text::before {
+    content: '\201C';
+    position: absolute;
+    top: -0.1em;
+    left: 0.3rem;
+    font-size: 3.5rem;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    color: var(--gold);
+    opacity: .15;
+    line-height: 1;
+    pointer-events: none;
+}
+
+/* --- Premium Reveal Animations for Left/Right --- */
+.reveal-left { opacity: 0; transform: translateX(-40px); transition: opacity .8s cubic-bezier(.16, 1, .3, 1), transform .8s cubic-bezier(.16, 1, .3, 1); }
+.reveal-right { opacity: 0; transform: translateX(40px); transition: opacity .8s cubic-bezier(.16, 1, .3, 1), transform .8s cubic-bezier(.16, 1, .3, 1); }
+.reveal-scale { opacity: 0; transform: scale(.9); transition: opacity .6s cubic-bezier(.16, 1, .3, 1), transform .6s cubic-bezier(.16, 1, .3, 1); }
+.reveal-left.visible, .reveal-right.visible, .reveal-scale.visible { opacity: 1; transform: none; }
+
+/* --- Image blur-to-sharp reveal --- */
+img[loading="lazy"] {
+    filter: blur(8px);
+    transition: filter .6s ease, opacity .6s ease;
+    opacity: .7;
+}
+img[loading="lazy"].loaded {
+    filter: blur(0);
+    opacity: 1;
+}
+
+/* --- Premium Section Divider Animation --- */
+.svg-ornament line, .svg-ornament path {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    transition: stroke-dashoffset 1.2s cubic-bezier(.16, 1, .3, 1);
+}
+.svg-ornament.visible line, .svg-ornament.visible path {
+    stroke-dashoffset: 0;
+}
+
+/* --- Fluid Typography --- */
+@supports (font-size: clamp(1rem, 2vw, 2rem)) {
+    .hero-title-shimmer { font-size: clamp(2.2rem, 5vw, 4.5rem); }
+    .hero-tagline .hero-text-inner { font-size: clamp(0.85rem, 1.5vw, 1.15rem); }
+    .hero-subtitle .hero-text-inner { font-size: clamp(0.8rem, 1.2vw, 1.05rem); }
+    h2 { font-size: clamp(1.6rem, 3vw, 2.8rem); }
+    .section-subtitle { font-size: clamp(0.85rem, 1.3vw, 1.05rem); }
+}
+
+/* --- Enhanced Mobile Nav (glassmorphism panel) --- */
+@media (max-width: 768px) {
+    .nav-links.active {
+        background: rgba(20, 14, 8, .92) !important;
+        backdrop-filter: blur(24px) saturate(1.5) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(1.5) !important;
+        border-left: 1px solid rgba(212, 160, 23, .1);
+    }
+    .nav-links.active li {
+        animation: fadeInUp .4s ease backwards;
+    }
+    .nav-links.active li:nth-child(1) { animation-delay: .05s; }
+    .nav-links.active li:nth-child(2) { animation-delay: .1s; }
+    .nav-links.active li:nth-child(3) { animation-delay: .15s; }
+    .nav-links.active li:nth-child(4) { animation-delay: .2s; }
+    .nav-links.active li:nth-child(5) { animation-delay: .25s; }
+    .nav-links.active li:nth-child(6) { animation-delay: .3s; }
+    .nav-links.active li:nth-child(7) { animation-delay: .35s; }
+    .nav-links.active li:nth-child(8) { animation-delay: .4s; }
+    .nav-links.active li:nth-child(9) { animation-delay: .45s; }
+    .nav-links.active li:nth-child(10) { animation-delay: .5s; }
+    .nav-links.active li:nth-child(11) { animation-delay: .55s; }
+
+    .cookie-consent-inner {
+        flex-direction: column;
+        gap: 0.8rem;
+        text-align: center;
+    }
+}
+
+/* --- Dark Mode: Phase 2 extensions --- */
+body.dark-mode .allergen-pill--gold { background: rgba(212, 160, 23, .12); }
+body.dark-mode .allergen-pill--purple { background: rgba(156, 39, 176, .12); }
+body.dark-mode .allergen-pill--green { background: rgba(39, 174, 96, .12); }
+body.dark-mode .newsletter-input::placeholder { color: rgba(255,255,255,.3); }
+body.dark-mode .map-container { box-shadow: 0 3px 15px rgba(0,0,0,.3); }
+body.dark-mode .cookie-consent { background: rgba(10, 7, 3, .96); }
+body.dark-mode img[loading="lazy"] { opacity: .65; }
+body.dark-mode img[loading="lazy"].loaded { opacity: 1; }
