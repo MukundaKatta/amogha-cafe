@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /track/
+Disallow: /*.json$
 
-Sitemap: https://amogha-cafe.web.app/sitemap.xml
+# Crawl-delay for polite crawling
+Crawl-delay: 2
+
+Sitemap: https://amoghahotels.com/sitemap.xml

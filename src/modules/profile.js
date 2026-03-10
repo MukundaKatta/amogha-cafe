@@ -52,33 +52,33 @@ export function openProfileModal() {
 
     var addressListHTML = savedAddresses.length > 0
         ? savedAddresses.map(function(addr, i) {
-            return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg-light,#f9f9f9);border-radius:8px;margin-bottom:6px;">' +
-                '<div><strong>' + escapeProfileHtml(addr.label || 'Address') + '</strong><br><span style="font-size:0.9em;color:#666;">' + escapeProfileHtml(addr.address || '') + '</span></div>' +
-                '<button onclick="removeAddress(' + i + ')" style="background:none;border:none;color:#e53935;cursor:pointer;font-size:1.2em;" title="Remove">&times;</button>' +
+            return '<div class="address-card">' +
+                '<div><strong>' + escapeProfileHtml(addr.label || 'Address') + '</strong><br><span style="font-size:0.9em;color:var(--text-secondary)">' + escapeProfileHtml(addr.address || '') + '</span></div>' +
+                '<button onclick="removeAddress(' + i + ')" style="background:none;border:none;color:var(--badge-error,#e53935);cursor:pointer;font-size:1.2em;" title="Remove">&times;</button>' +
                 '</div>';
         }).join('')
-        : '<p style="color:#999;font-size:0.9em;">No saved addresses yet.</p>';
+        : '<p style="color:var(--text-tertiary);font-size:0.9em;">No saved addresses yet.</p>';
 
     modal.querySelector('.modal-content').innerHTML =
         '<span class="close" onclick="closeProfileModal()">&times;</span>' +
         '<h2 style="margin:0 0 20px;font-size:1.4em;">My Profile</h2>' +
 
         // Name field
-        '<div style="margin-bottom:14px;">' +
-            '<label style="font-weight:600;font-size:0.9em;display:block;margin-bottom:4px;">Name</label>' +
-            '<input type="text" id="profile-name" value="' + (user.name || '').replace(/"/g, '&quot;') + '" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:1em;box-sizing:border-box;">' +
+        '<div class="profile-field" style="margin-bottom:14px;">' +
+            '<label class="premium-label">Name</label>' +
+            '<input type="text" id="profile-name" class="premium-input" value="' + (user.name || '').replace(/"/g, '&quot;') + '">' +
         '</div>' +
 
         // Phone field (read-only)
-        '<div style="margin-bottom:14px;">' +
-            '<label style="font-weight:600;font-size:0.9em;display:block;margin-bottom:4px;">Phone</label>' +
-            '<input type="text" id="profile-phone" value="' + (user.phone || '') + '" readonly style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:1em;box-sizing:border-box;background:#f0f0f0;color:#888;cursor:not-allowed;">' +
+        '<div class="profile-field" style="margin-bottom:14px;">' +
+            '<label class="premium-label">Phone</label>' +
+            '<input type="text" id="profile-phone" class="premium-input" value="' + (user.phone || '') + '" readonly>' +
         '</div>' +
 
         // Date of Birth field
-        '<div style="margin-bottom:14px;">' +
-            '<label style="font-weight:600;font-size:0.9em;display:block;margin-bottom:4px;">Date of Birth</label>' +
-            '<input type="date" id="profile-dob" value="' + (user.dob || '') + '" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:1em;box-sizing:border-box;">' +
+        '<div class="profile-field" style="margin-bottom:14px;">' +
+            '<label class="premium-label">Date of Birth</label>' +
+            '<input type="date" id="profile-dob" class="premium-input" value="' + (user.dob || '') + '">' +
         '</div>' +
 
         // Dietary Preferences
@@ -97,13 +97,13 @@ export function openProfileModal() {
         '<div style="margin-bottom:14px;">' +
             '<label style="font-weight:600;font-size:0.9em;display:block;margin-bottom:8px;">Saved Addresses</label>' +
             '<div id="profile-address-list">' + addressListHTML + '</div>' +
-            '<div style="margin-top:10px;padding:12px;border:1px dashed #ccc;border-radius:8px;">' +
+            '<div style="margin-top:10px;padding:12px;border:1px dashed var(--border-light);border-radius:8px;">' +
                 '<div style="display:flex;gap:8px;margin-bottom:8px;">' +
-                    '<input type="text" id="profile-addr-label" placeholder="Label (e.g. Home, Office)" style="flex:1;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:0.9em;">' +
+                    '<input type="text" id="profile-addr-label" placeholder="Label (e.g. Home, Office)" class="premium-input" style="flex:1;padding:8px 10px;font-size:0.9em;">' +
                 '</div>' +
                 '<div style="display:flex;gap:8px;">' +
-                    '<input type="text" id="profile-addr-address" placeholder="Full address" style="flex:1;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:0.9em;">' +
-                    '<button onclick="addAddress()" style="padding:8px 16px;background:var(--accent,#ff9800);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;white-space:nowrap;">Add</button>' +
+                    '<input type="text" id="profile-addr-address" placeholder="Full address" class="premium-input" style="flex:1;padding:8px 10px;font-size:0.9em;">' +
+                    '<button onclick="addAddress()" class="cta-button" style="padding:8px 16px;white-space:nowrap;font-size:0.9em;">Add</button>' +
                 '</div>' +
             '</div>' +
         '</div>' +

@@ -102,3 +102,10 @@ updateFloatingCartBar();
 window.displayCart = displayCart;
 
 window.loadMenuRatings = loadMenuRatings;
+
+// ===== PERFORMANCE MONITORING =====
+// Mark key rendering milestones for Core Web Vitals diagnostics
+if (typeof performance !== 'undefined' && performance.mark) {
+    performance.mark('amogha-app-init-complete');
+}
+

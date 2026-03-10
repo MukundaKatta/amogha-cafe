@@ -305,16 +305,21 @@ export function openRazorpay() {
 
     var btn = document.getElementById('razorpay-pay-btn');
     if (btn) { btn.disabled = true; btn.innerHTML = 'Opening payment...'; }
+    if (window._showPaymentProcessing) window._showPaymentProcessing();
 
     try {
         var rzp = new Razorpay(options);
         rzp.on('payment.failed', function(response) {
+            if (window._hidePaymentProcessing) window._hidePaymentProcessing();
             showAuthToast('Payment failed: ' + (response.error.description || 'Please try again'));
             var btn = document.getElementById('razorpay-pay-btn');
             if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Retry Payment'; }
         });
         rzp.open();
+        // Hide overlay once Razorpay modal opens (it has its own UI)
+        setTimeout(function() { if (window._hidePaymentProcessing) window._hidePaymentProcessing(); }, 1500);
     } catch(e) {
+        if (window._hidePaymentProcessing) window._hidePaymentProcessing();
         showAuthToast('Error opening payment: ' + e.message);
         if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Pay Now'; }
     }
@@ -328,8 +333,10 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
     var db = getDb();
     if (typeof db === 'undefined' || !db) {
         showAuthToast('Service unavailable. Please refresh and try again.');
+        if (window._hidePaymentProcessing) window._hidePaymentProcessing();
         return;
     }
+    if (window._showPaymentProcessing) window._showPaymentProcessing();
     var name = document.getElementById('co-name').value.trim();
     var phone = document.getElementById('co-phone').value.trim();
     var address = document.getElementById('co-address').value.trim();
@@ -395,6 +402,8 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
     var itemNames = cart.map(function(i) { return i.name; });
 
     db.collection('orders').add(orderData).then(function(docRef) {
+        if (window._hidePaymentProcessing) window._hidePaymentProcessing();
+
         // Analytics: purchase event
         try { if (window.analytics) window.analytics.logEvent('purchase', { transaction_id: docRef.id, value: orderData.total, payment_type: payMethod }); } catch(e) {}
 
@@ -406,9 +415,9 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         var trackDiv = document.getElementById('order-tracking-link');
         if (trackDiv) {
             trackDiv.innerHTML = '<div style="margin-top:1rem;padding:1rem;background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.15);border-radius:12px;text-align:center">' +
-                '<p style="font-size:0.82rem;color:#a09080;margin-bottom:0.5rem">Track your order in real-time:</p>' +
-                '<a href="' + trackUrl + '" target="_blank" rel="noopener noreferrer" style="color:#D4A017;font-weight:600;font-size:0.9rem;word-break:break-all">' + trackUrl + '</a>' +
-                '<br><button onclick="safeCopy(\'' + trackUrl + '\',this)" style="margin-top:0.6rem;padding:0.4rem 1rem;background:linear-gradient(135deg,#D4A017,#B8860B);color:#1a0f08;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.78rem">Copy Link</button>' +
+                '<p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.5rem">Track your order in real-time:</p>' +
+                '<a href="' + trackUrl + '" target="_blank" rel="noopener noreferrer" style="color:var(--gold);font-weight:600;font-size:0.9rem;word-break:break-all">' + trackUrl + '</a>' +
+                '<br><button onclick="safeCopy(\'' + trackUrl + '\',this)" class="cta-button" style="margin-top:0.6rem;padding:0.4rem 1rem;font-size:0.78rem">Copy Link</button>' +
                 '</div>';
         }
 
@@ -535,6 +544,7 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         }).catch(function(e) { console.error('Inventory fetch error:', e); });
 
     }).catch(function(err) {
+        if (window._hidePaymentProcessing) window._hidePaymentProcessing();
         console.error('Order save error:', err);
         showAuthToast('Order failed to save. Please try again or check your connection.');
     });

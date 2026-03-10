@@ -343,7 +343,7 @@ export function initMenuSync() {
         renderMenuCategories(menuData);
     }, function(error) {
         console.error('Menu listener error:', error);
-        if (container) container.innerHTML = '<p style="text-align:center;color:#9a9ab0;padding:40px">Could not load menu. Please refresh.</p>';
+        if (container) container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">Could not load menu. Please refresh.</p>';
     });
 
     // 2. Specials — cached .get() (changes rarely, saves reads vs onSnapshot)

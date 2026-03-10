@@ -59,7 +59,14 @@ export function saveCart() {
 export function updateCartCount() {
     const count = cart.reduce((total, item) => total + item.quantity, 0);
     var el = document.getElementById('cart-count');
-    if (el) el.textContent = count;
+    if (el) {
+        el.textContent = count;
+        // Bump animation
+        el.classList.remove('bump');
+        void el.offsetWidth;
+        el.classList.add('bump');
+        setTimeout(function() { el.classList.remove('bump'); }, 300);
+    }
 }
 
 export function addToCart(itemName, price, btnEl) {
@@ -149,6 +156,12 @@ export function finalizeAddToCart(itemName, price, spiceLevel, addons, btnEl) {
     updateButtonState(itemName);
     updateFloatingCart();
     updateFloatingCartBar();
+
+    // Announce to screen readers
+    if (window._ariaAnnounce) {
+        var qty = (existingItem ? existingItem.quantity : 1);
+        window._ariaAnnounce(itemName + ' added to cart. Quantity: ' + qty);
+    }
 
     // Analytics
     try { if (window.analytics) window.analytics.logEvent('add_to_cart', { item_name: itemName, value: price }); } catch(e) {}
@@ -386,7 +399,7 @@ export function displayCart() {
     if (!cartItemsContainer) return;
 
     if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
+        cartItemsContainer.innerHTML = '<div class="empty-cart"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.35;margin-bottom:.75rem"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg><span class="empty-cart-title">Your cart is empty</span><span class="empty-cart-sub">Browse our menu to add delicious items</span></div>';
         var subEl = document.getElementById('subtotal-amount');
         var totEl = document.getElementById('total-amount');
         if (subEl) subEl.textContent = '0.00';
@@ -401,8 +414,8 @@ export function displayCart() {
         const addonTotal = (item.addons || []).reduce((s, a) => s + a.price, 0);
         const itemTotal = (item.price + addonTotal) * item.quantity;
         subtotal += itemTotal;
-        const spiceTag = item.spiceLevel && item.spiceLevel !== 'medium' ? ' <span style="font-size:0.7rem;color:#e67e22">(' + item.spiceLevel + ')</span>' : '';
-        const addonTags = (item.addons || []).map(a => '<span style="font-size:0.7rem;color:var(--gold,#D4A017)">+ ' + a.name + ' ₹' + a.price + '</span>').join(' ');
+        const spiceTag = item.spiceLevel && item.spiceLevel !== 'medium' ? ' <span class="spice-tag">(' + item.spiceLevel + ')</span>' : '';
+        const addonTags = (item.addons || []).map(a => '<span class="addon-tag">+ ' + a.name + ' ₹' + a.price + '</span>').join(' ');
 
         html += `
             <div class="cart-item">
@@ -440,6 +453,9 @@ export function updateQuantity(index, change) {
 
     if (cart[index].quantity <= 0) {
         cart.splice(index, 1);
+        if (window._ariaAnnounce) window._ariaAnnounce(itemName + ' removed from cart');
+    } else {
+        if (window._ariaAnnounce) window._ariaAnnounce(itemName + ' quantity: ' + cart[index].quantity);
     }
 
     updateCartCount();
@@ -459,6 +475,7 @@ export function removeItem(index) {
     displayCart();
     updateButtonState(itemName);
     updateFloatingCart();
+    if (window._ariaAnnounce) window._ariaAnnounce(itemName + ' removed from cart');
 }
 
 // Clear cart
@@ -474,6 +491,7 @@ export function clearCart() {
         var cm = document.getElementById('cart-modal');
         if (cm) cm.style.display = 'none';
         unlockScroll();
+        if (window._ariaAnnounce) window._ariaAnnounce('Cart cleared');
     }
 }
 

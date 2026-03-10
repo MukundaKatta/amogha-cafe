@@ -45,6 +45,18 @@
       "icons": [{ "src": "amogha-logo.png", "sizes": "192x192" }]
     },
     {
+      "name": "Today's Specials",
+      "short_name": "Specials",
+      "url": "./index.html#specials",
+      "icons": [{ "src": "amogha-logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Reserve a Table",
+      "short_name": "Reserve",
+      "url": "./index.html#contact",
+      "icons": [{ "src": "amogha-logo.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Scan QR to Order",
       "short_name": "QR Order",
       "url": "./qr/index.html",
