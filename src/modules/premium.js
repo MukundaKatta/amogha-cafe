@@ -1,7 +1,9 @@
-// ===== PREMIUM INTERACTIONS MODULE V3 =====
+// ===== PREMIUM INTERACTIONS MODULE V4 =====
 // Scroll reveals, ripple effects, lazy image fades, header intelligence,
 // checkout progress stepper, cart empty state, form validation,
-// animated counters, section spy, keyboard shortcuts
+// animated counters, section spy, keyboard shortcuts,
+// 3D card tilt, skeleton loading, particle trails, parallax,
+// search glow, swipe-to-close, cart animations, order celebration
 
 export function initPremium() {
     initScrollReveal();
@@ -17,6 +19,16 @@ export function initPremium() {
     initAccessibilityEnhancements();
     initAddToCartFeedback();
     upgradeToast();
+    init3DCardTilt();
+    initMenuSkeleton();
+    initParticleTrail();
+    initParallaxDepth();
+    initSearchGlow();
+    initSwipeToClose();
+    initCartItemAnimations();
+    initOrderCelebration();
+    initComboPricingPulse();
+    initCartCountBump();
 }
 
 // ── Intersection Observer Scroll Reveal ──
@@ -518,4 +530,326 @@ function initAccessibilityEnhancements() {
         var hero = document.getElementById('home');
         if (hero) hero.setAttribute('role', 'main');
     }
+}
+
+// ── 3D Card Tilt Effect ──
+function init3DCardTilt() {
+    if (typeof window.matchMedia !== 'function') return;
+    if (window.matchMedia('(max-width: 768px)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var cards = document.querySelectorAll('.menu-item-card, .special-card');
+    cards.forEach(function(card) {
+        card.classList.add('tilt-card');
+
+        // Add shine overlay
+        var shine = document.createElement('div');
+        shine.className = 'tilt-shine';
+        card.appendChild(shine);
+
+        card.addEventListener('mousemove', function(e) {
+            var rect = card.getBoundingClientRect();
+            var x = ((e.clientX - rect.left) / rect.width) * 100;
+            var y = ((e.clientY - rect.top) / rect.height) * 100;
+
+            card.style.setProperty('--mouse-x', x + '%');
+            card.style.setProperty('--mouse-y', y + '%');
+
+            var rotateX = ((y - 50) / 50) * -4;
+            var rotateY = ((x - 50) / 50) * 4;
+            card.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.02)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            card.style.transform = '';
+        });
+    });
+}
+
+// ── Menu Skeleton Loading ──
+function initMenuSkeleton() {
+    var menuContainer = document.getElementById('dynamic-menu-container');
+    if (!menuContainer) return;
+
+    // Only show skeleton if container is empty (menu not loaded yet)
+    if (menuContainer.children.length > 0) return;
+
+    var grid = document.createElement('div');
+    grid.className = 'menu-skeleton-grid';
+    grid.id = 'menu-skeleton';
+
+    for (var i = 0; i < 6; i++) {
+        grid.innerHTML += '<div class="menu-skeleton-item">' +
+            '<div class="skel-title"></div>' +
+            '<div class="skel-desc"></div>' +
+            '<div class="skel-desc-2"></div>' +
+            '<div class="skel-price"></div>' +
+            '<div class="skel-btn"></div>' +
+        '</div>';
+    }
+
+    menuContainer.appendChild(grid);
+
+    // Remove skeleton when real content arrives
+    var observer = new MutationObserver(function() {
+        var skeleton = document.getElementById('menu-skeleton');
+        if (skeleton && menuContainer.querySelector('.menu-item-card')) {
+            skeleton.style.opacity = '0';
+            skeleton.style.transition = 'opacity .3s ease';
+            setTimeout(function() { skeleton.remove(); }, 300);
+            observer.disconnect();
+        }
+    });
+
+    observer.observe(menuContainer, { childList: true, subtree: true });
+}
+
+// ── Fly-to-Cart Particle Trail ──
+function initParticleTrail() {
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Observe for .cart-fly-item being added to DOM
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+            m.addedNodes.forEach(function(node) {
+                if (node.classList && node.classList.contains('cart-fly-item')) {
+                    spawnParticleTrail(node);
+                }
+            });
+        });
+    });
+
+    observer.observe(document.body, { childList: true });
+}
+
+function spawnParticleTrail(flyItem) {
+    var interval = setInterval(function() {
+        if (!document.body.contains(flyItem)) {
+            clearInterval(interval);
+            return;
+        }
+        var rect = flyItem.getBoundingClientRect();
+        var particle = document.createElement('div');
+        particle.className = 'cart-fly-particle';
+        particle.style.left = rect.left + 'px';
+        particle.style.top = rect.top + 'px';
+        document.body.appendChild(particle);
+        setTimeout(function() { particle.remove(); }, 500);
+    }, 50);
+
+    // Safety cleanup
+    setTimeout(function() { clearInterval(interval); }, 2000);
+}
+
+// ── Parallax Depth on Sections ──
+function initParallaxDepth() {
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var sections = document.querySelectorAll('.parallax-section .parallax-bg');
+    if (!sections.length) return;
+
+    var ticking = false;
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            requestAnimationFrame(function() {
+                var scrollY = window.scrollY || window.pageYOffset;
+                sections.forEach(function(bg) {
+                    var parent = bg.parentElement;
+                    var rect = parent.getBoundingClientRect();
+                    if (rect.bottom > 0 && rect.top < window.innerHeight) {
+                        var offset = (rect.top / window.innerHeight) * 30;
+                        bg.style.transform = 'translateY(' + offset + 'px)';
+                    }
+                });
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
+}
+
+// ── Premium Search Glow & Spinner ──
+function initSearchGlow() {
+    var searchInput = document.getElementById('menu-search');
+    if (!searchInput) return;
+
+    var wrapper = searchInput.parentElement;
+    if (!wrapper) return;
+
+    // Add glow element
+    if (!wrapper.querySelector('.search-glow')) {
+        wrapper.style.position = 'relative';
+        var glow = document.createElement('div');
+        glow.className = 'search-glow';
+        wrapper.appendChild(glow);
+    }
+
+    // Add spinner element
+    if (!wrapper.querySelector('.search-loading-spinner')) {
+        var spinner = document.createElement('div');
+        spinner.className = 'search-loading-spinner';
+        wrapper.appendChild(spinner);
+    }
+
+    var searchTimer = null;
+    searchInput.addEventListener('input', function() {
+        searchInput.classList.add('searching');
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function() {
+            searchInput.classList.remove('searching');
+        }, 400);
+    });
+}
+
+// ── Swipe-to-Close for Mobile Modals ──
+function initSwipeToClose() {
+    if (!('ontouchstart' in window)) return;
+
+    document.querySelectorAll('.modal .modal-content').forEach(function(content) {
+        // Add swipe indicator
+        if (!content.querySelector('.swipe-indicator')) {
+            var indicator = document.createElement('div');
+            indicator.className = 'swipe-indicator';
+            content.insertBefore(indicator, content.firstChild);
+        }
+
+        var startY = 0;
+        var currentY = 0;
+        var isDragging = false;
+
+        content.addEventListener('touchstart', function(e) {
+            var target = e.target;
+            if (target.classList.contains('swipe-indicator') || target === content) {
+                startY = e.touches[0].clientY;
+                isDragging = true;
+                content.classList.add('swiping');
+            }
+        }, { passive: true });
+
+        content.addEventListener('touchmove', function(e) {
+            if (!isDragging) return;
+            currentY = e.touches[0].clientY;
+            var dy = currentY - startY;
+            if (dy > 0) {
+                content.style.transform = 'translateY(' + dy + 'px)';
+                content.style.opacity = Math.max(0.5, 1 - dy / 400);
+            }
+        }, { passive: true });
+
+        content.addEventListener('touchend', function() {
+            if (!isDragging) return;
+            isDragging = false;
+            content.classList.remove('swiping');
+            var dy = currentY - startY;
+
+            if (dy > 120) {
+                // Close the modal
+                var modal = content.closest('.modal');
+                if (modal) modal.style.display = 'none';
+            }
+
+            content.style.transform = '';
+            content.style.opacity = '';
+            currentY = 0;
+        });
+    });
+}
+
+// ── Cart Item Slide Animations ──
+function initCartItemAnimations() {
+    var cartItems = document.getElementById('cart-items');
+    if (!cartItems) return;
+
+    // Watch for cart items being removed — animate out before DOM removal
+    var origRemoveChild = cartItems.removeChild.bind(cartItems);
+    cartItems.removeChild = function(child) {
+        if (child.classList && child.classList.contains('cart-item')) {
+            child.classList.add('removing');
+            setTimeout(function() {
+                try { origRemoveChild(child); } catch(e) { /* already removed */ }
+            }, 300);
+            return child;
+        }
+        return origRemoveChild(child);
+    };
+}
+
+// ── Order Confirmation Celebration ──
+function initOrderCelebration() {
+    // Watch for checkout step 4 (confirmation) becoming active
+    var checkoutStep4 = document.getElementById('checkout-step-4');
+    if (!checkoutStep4) return;
+
+    var observer = new MutationObserver(function() {
+        if (checkoutStep4.classList.contains('active')) {
+            var confirmed = checkoutStep4.querySelector('.order-confirmed');
+            if (confirmed && !confirmed.querySelector('.confirm-rings')) {
+                addCelebrationEffects(confirmed);
+            }
+        }
+    });
+
+    observer.observe(checkoutStep4, { attributes: true, attributeFilter: ['class'] });
+}
+
+function addCelebrationEffects(container) {
+    var icon = container.querySelector('.confirm-icon, h2, h3');
+    if (!icon) return;
+
+    // Add rings
+    var rings = document.createElement('div');
+    rings.className = 'confirm-rings';
+    rings.innerHTML = '<div class="confirm-ring"></div><div class="confirm-ring"></div><div class="confirm-ring"></div>';
+    icon.style.position = 'relative';
+    icon.appendChild(rings);
+
+    // Add particles
+    var colors = ['#22c55e', '#D4A017', '#f59e0b', '#10b981'];
+    for (var i = 0; i < 12; i++) {
+        var particle = document.createElement('div');
+        particle.className = 'confirm-particle';
+        var angle = (i / 12) * Math.PI * 2;
+        var dist = 60 + Math.random() * 40;
+        particle.style.cssText =
+            'background:' + colors[i % colors.length] + ';' +
+            '--dx:' + (Math.cos(angle) * dist) + 'px;' +
+            '--dy:' + (Math.sin(angle) * dist) + 'px;' +
+            'left:50%;top:50%;animation-delay:' + (i * .05) + 's;';
+        icon.appendChild(particle);
+    }
+
+    // Cleanup after animation
+    setTimeout(function() {
+        rings.remove();
+        container.querySelectorAll('.confirm-particle').forEach(function(p) { p.remove(); });
+    }, 3000);
+}
+
+// ── Combo Pricing Pulse ──
+function initComboPricingPulse() {
+    var pricing = document.querySelector('.combo-pricing');
+    if (!pricing) return;
+
+    var observer = new MutationObserver(function() {
+        pricing.classList.add('updated');
+        setTimeout(function() { pricing.classList.remove('updated'); }, 400);
+    });
+
+    observer.observe(pricing, { childList: true, subtree: true, characterData: true });
+}
+
+// ── Cart Count Badge Bump ──
+function initCartCountBump() {
+    var cartCount = document.getElementById('cart-count');
+    if (!cartCount) return;
+
+    var observer = new MutationObserver(function() {
+        var parent = cartCount.parentElement;
+        if (parent) {
+            parent.classList.add('cart-count-bump');
+            setTimeout(function() { parent.classList.remove('cart-count-bump'); }, 300);
+        }
+    });
+
+    observer.observe(cartCount, { childList: true, characterData: true, subtree: true });
 }
