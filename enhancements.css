@@ -507,5 +507,9 @@ body[data-theme="dark"] .newsletter-card {
 
 /* ── FAB Stack — Left Side (56px spacing) ── */
 .music-mini-player { display: none !important; }
+.music-toggle      { display: none !important; }
 .voice-order-btn   { position: fixed !important; bottom: 20px !important; left: 20px !important; right: auto !important; z-index: 900 !important; }
 .a11y-panel        { bottom: 76px !important; left: 20px !important; }
+
+/* Weather widget — don't overlap left FABs */
+#weather-recommendations { padding-left: 70px; }
