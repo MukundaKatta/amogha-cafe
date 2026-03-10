@@ -35,6 +35,8 @@
     <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://checkout.razorpay.com">
+    <!-- Preload hero image for faster LCP -->
+    <link rel="preload" as="image" href="bg.jpeg" fetchpriority="high">
     <!-- Load fonts non-blocking: preload triggers fetch, onload swaps to stylesheet -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+Telugu:wght@400;700&family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap" onload="this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+Telugu:wght@400;700&family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap"></noscript>
@@ -128,10 +130,34 @@
         ]
     }
     </script>
+    <!-- BreadcrumbList Schema for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://amoghahotels.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Menu", "item": "https://amoghahotels.com/#menu" },
+            { "@type": "ListItem", "position": 3, "name": "Specials", "item": "https://amoghahotels.com/#specials" },
+            { "@type": "ListItem", "position": 4, "name": "Gallery", "item": "https://amoghahotels.com/#gallery" },
+            { "@type": "ListItem", "position": 5, "name": "Reviews", "item": "https://amoghahotels.com/#reviews" },
+            { "@type": "ListItem", "position": 6, "name": "Contact", "item": "https://amoghahotels.com/#contact" }
+        ]
+    }
+    </script>
 </head>
 <body>
     <!-- Skip to Content (Accessibility) -->
     <a href="#menu" class="skip-to-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100000;padding:1rem 2rem;background:var(--gold);color:var(--dark);font-weight:700;border-radius:0 0 var(--radius-sm) var(--radius-sm);text-decoration:none;font-size:0.9rem;" onfocus="this.style.position='fixed';this.style.left='50%';this.style.transform='translateX(-50%)';this.style.top='0';this.style.width='auto';this.style.height='auto';" onblur="this.style.position='absolute';this.style.left='-9999px';this.style.width='1px';this.style.height='1px';">Skip to Menu</a>
+
+    <!-- ARIA Live Region for Screen Reader Announcements -->
+    <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Offline Detection Banner -->
+    <div id="offline-banner" class="offline-banner" style="display:none" role="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0119 12.55"/><path d="M5 12.55a10.94 10.94 0 015.17-2.39"/><path d="M10.71 5.05A16 16 0 0122.56 9"/><path d="M1.42 9a15.91 15.91 0 014.7-2.88"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+        <span>You're offline. Some features may be limited.</span>
+    </div>
 
     <!-- Scroll Progress Bar -->
     <div class="scroll-progress" id="scroll-progress"></div>

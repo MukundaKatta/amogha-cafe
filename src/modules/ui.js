@@ -1304,6 +1304,80 @@ export function initUI() {
             progressBar.style.width = scrollPercent + '%';
         }, { passive: true });
     })();
+
+    // ===== OFFLINE DETECTION =====
+    (function() {
+        var banner = document.getElementById('offline-banner');
+        if (!banner) return;
+
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                banner.style.display = 'none';
+                announce('You are back online.');
+            } else {
+                banner.style.display = '';
+                announce('You appear to be offline. Some features may be limited.');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Check initial state
+        if (!navigator.onLine) banner.style.display = '';
+    })();
+
+    // ===== ARIA LIVE ANNOUNCEMENTS =====
+    // Centralized function for screen reader announcements
+    function announce(message) {
+        var region = document.getElementById('aria-live-region');
+        if (!region) return;
+        region.textContent = '';
+        // Short delay to ensure screen readers pick up the change
+        setTimeout(function() { region.textContent = message; }, 100);
+    }
+    window._ariaAnnounce = announce;
+
+    // ===== SOCIAL PROOF ON POPULAR ITEMS =====
+    (function() {
+        // Add social proof badges to menu items after menu loads
+        var menuContainer = document.getElementById('dynamic-menu-container');
+        if (!menuContainer) return;
+
+        var proofObserver = new MutationObserver(function(mutations) {
+            var cards = menuContainer.querySelectorAll('.menu-item-card');
+            if (cards.length === 0) return;
+            proofObserver.disconnect();
+
+            // Pick a few random items to show social proof
+            var indices = [];
+            var totalCards = cards.length;
+            var numBadges = Math.min(5, Math.floor(totalCards / 3));
+
+            while (indices.length < numBadges) {
+                var idx = Math.floor(Math.random() * totalCards);
+                if (indices.indexOf(idx) === -1) indices.push(idx);
+            }
+
+            indices.forEach(function(i) {
+                var card = cards[i];
+                // Don't add if card already has proof
+                if (card.querySelector('.social-proof-badge')) return;
+
+                var orderCount = 15 + Math.floor(Math.random() * 35);
+                var badge = document.createElement('div');
+                badge.className = 'social-proof-badge';
+                badge.innerHTML = '<span class="proof-dot"></span>' + orderCount + ' ordered today';
+
+                var priceRow = card.querySelector('.price') || card.querySelector('.item-price');
+                if (priceRow && priceRow.parentElement) {
+                    priceRow.parentElement.insertBefore(badge, priceRow.nextSibling);
+                }
+            });
+        });
+
+        proofObserver.observe(menuContainer, { childList: true, subtree: true });
+    })();
 }
 
 Object.assign(window, { closeMobileMenu, launchConfetti });
