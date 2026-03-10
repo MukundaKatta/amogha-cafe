@@ -83,6 +83,24 @@ setTimeout(function() {
 
     // Premium interactions — scroll reveals, ripple effects, accessibility
     import('./modules/premium.js').then(function(m) { m.initPremium(); });
+
+    // ===== NEW WORLD-CLASS FEATURES =====
+    // Challenges & weekly goals
+    import('./modules/challenges.js').then(function(m) { m.initChallenges(); });
+    // Spin the wheel rewards
+    import('./modules/spinwheel.js').then(function(m) { m.initSpinWheel(); });
+    // Secret menu
+    import('./modules/secretmenu.js').then(function(m) { m.initSecretMenu(); });
+    // Feedback & tipping
+    import('./modules/feedback.js').then(function(m) { m.initFeedback(); });
+    // Social sharing
+    import('./modules/socialshare.js').then(function(m) { m.initSocialShare(); });
+    // Community polls
+    import('./modules/polls.js').then(function(m) { m.initPolls(); });
+    // Achievement milestones
+    import('./modules/milestones.js');
+    // Order tracker
+    import('./modules/ordertracker.js').then(function(m) { m.initOrderTracker(); });
 }, 1500);
 
 // Show reorder toast after short delay (needs DOM + auth to be ready)
@@ -91,6 +109,12 @@ setTimeout(function() {
     try { user = JSON.parse(localStorage.getItem('amoghaUser')); } catch(e) {}
     if (user) showReorderToast();
 }, 2500);
+
+// Seasonal theme + weather (delayed to not block main rendering)
+setTimeout(function() {
+    import('./modules/seasonal.js').then(function(m) { m.initSeasonal(); });
+    import('./modules/weather.js').then(function(m) { m.initWeather(); });
+}, 3000);
 
 // AI For You recommendations (delayed to not block load)
 setTimeout(initAiForYou, 4000);

@@ -542,6 +542,25 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         // Send push notification
         if (typeof window.sendPushNotification === 'function') window.sendPushNotification('Order Placed!', 'Your order from Amogha has been placed successfully.');
 
+        // ===== NEW WORLD-CLASS FEATURE HOOKS =====
+        // Award a spin on the rewards wheel
+        if (typeof window.awardSpin === 'function') window.awardSpin();
+        // Show real-time order tracker
+        if (typeof window.showOrderTracker === 'function') setTimeout(function() { window.showOrderTracker(docRef.id); }, 2000);
+        // Check & award milestones
+        if (typeof window.checkMilestones === 'function') window.checkMilestones(getCurrentUser(), orderData);
+        // Schedule post-order feedback/tipping prompt
+        if (typeof window.schedulePostOrderFeedback === 'function') window.schedulePostOrderFeedback(docRef.id, orderData.total);
+        // Update challenge progress
+        if (typeof window.updateChallengeProgress === 'function') {
+            window.updateChallengeProgress('spend', orderData.total);
+            // Check for morning orders (before noon)
+            if (new Date().getHours() < 12) window.updateChallengeProgress('morning_orders', 1);
+        }
+        // Share prompt (after a delay)
+        window._lastOrderItems = orderData.items;
+        window._lastOrderTotalForShare = orderData.total;
+
         // WhatsApp confirmation to customer
         if (phone) {
             var customerPhone = phone.replace(/\D/g, '');
