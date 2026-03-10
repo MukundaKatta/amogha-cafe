@@ -1493,4 +1493,9 @@ export function initUI() {
 
 }
 
-Object.assign(window, { closeMobileMenu, launchConfetti });
+function toggleFaq(el) {
+    const isOpen = el.classList.toggle('open');
+    el.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+
+Object.assign(window, { closeMobileMenu, launchConfetti, toggleFaq });

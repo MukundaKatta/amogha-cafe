@@ -1784,3 +1784,231 @@ body.dark-mode .order-track-card {
     background: rgba(212, 160, 23, 0.05);
     border-color: rgba(212, 160, 23, 0.1);
 }
+
+/* --- Phase 8: Inline Style Extractions & Accessibility --- */
+
+/* Screen reader only (visually hidden) */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Inline SVG icon alignment */
+.inline-icon {
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+/* Badge gallery button */
+.badge-gallery-btn {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+/* Share order button */
+.share-order-btn {
+    margin-top: 0.8rem;
+    padding: 0.6rem 1.2rem;
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.share-order-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+.share-order-btn:active {
+    transform: scale(0.97);
+}
+
+/* Split bill button */
+.split-bill-btn {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(212, 160, 23, 0.1);
+    color: #D4A017;
+    border: 1px solid rgba(212, 160, 23, 0.2);
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s, transform 0.2s;
+}
+.split-bill-btn:hover {
+    background: rgba(212, 160, 23, 0.18);
+    transform: translateY(-1px);
+}
+
+/* Gift card modal */
+.gc-modal-content {
+    max-width: 420px;
+}
+.gc-modal-title {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+.gc-modal-subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+}
+.gc-phone-input {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: 1px solid rgba(212, 160, 23, 0.2);
+    background: rgba(255, 255, 255, 0.03);
+    color: inherit;
+    font-size: 0.95rem;
+    margin-bottom: 0.8rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.gc-phone-input:focus {
+    border-color: var(--gold, #D4A017);
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.1);
+    outline: none;
+}
+.gc-amounts {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+.gc-buy-btn {
+    width: 100%;
+}
+.gc-code-input {
+    text-transform: uppercase;
+}
+
+/* Cookie consent privacy link */
+.cookie-privacy-link {
+    color: var(--gold);
+    text-decoration: underline;
+}
+
+/* Checkout step ARIA roles */
+.checkout-step[role="tabpanel"] {
+    outline: none;
+}
+
+/* Real-time form validation */
+.checkout-step input:user-invalid,
+.checkout-step textarea:user-invalid {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+.checkout-step input:user-valid,
+.checkout-step textarea:user-valid {
+    border-color: #27ae60;
+}
+.field-error {
+    color: #e74c3c;
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+    display: none;
+}
+.checkout-step input:user-invalid + .field-error,
+.checkout-step textarea:user-invalid + .field-error {
+    display: block;
+}
+
+/* CSS containment for performance */
+.menu-card {
+    contain: layout style;
+}
+.hero {
+    contain: layout style paint;
+}
+.testimonial-card {
+    contain: layout style;
+}
+section.reveal {
+    contain: layout style;
+}
+.modal {
+    contain: layout style;
+}
+
+/* Dark mode for Phase 8 elements */
+body.dark-mode .gc-phone-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(212, 160, 23, 0.15);
+}
+body.dark-mode .split-bill-btn {
+    background: rgba(212, 160, 23, 0.08);
+    border-color: rgba(212, 160, 23, 0.15);
+}
+body.dark-mode .share-order-btn {
+    box-shadow: 0 2px 10px rgba(37, 211, 102, 0.15);
+}
+
+/* --- Phase 9: Performance & Accessibility --- */
+
+/* content-visibility for below-fold sections (skip rendering until scrolled near) */
+.about,
+.stats-section,
+.chef-section,
+.specials,
+#gallery,
+.reviews,
+.testimonials,
+.contact,
+.faq {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
+}
+
+/* FAQ keyboard focus styling */
+.faq-item:focus-visible {
+    outline: 2px solid var(--gold, #D4A017);
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+.faq-item[aria-expanded="true"] .faq-toggle {
+    transform: rotate(45deg);
+}
+.faq-toggle {
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+
+/* Carousel/gallery button focus rings */
+.carousel-btn:focus-visible,
+.gallery-slide-btn:focus-visible {
+    outline: 2px solid var(--gold, #D4A017);
+    outline-offset: 2px;
+}
+
+/* Contact form enhanced focus */
+#contact-form input:focus,
+#contact-form textarea:focus {
+    border-color: var(--gold, #D4A017);
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.1);
+    outline: none;
+}
+
+/* Video lightbox accessibility */
+.video-lightbox:focus-visible {
+    outline: 2px solid var(--gold, #D4A017);
+}
+.lightbox-close:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
