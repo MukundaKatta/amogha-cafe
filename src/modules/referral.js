@@ -2,7 +2,7 @@
 // Dedicated referral system with tracking, shareable links, and dual rewards
 // Inspired by: Uber, Starbucks, Chick-fil-A referral programs
 
-import { db } from '../core/firebase.js';
+import { getDb } from '../core/firebase.js';
 
 var REFERRAL_REWARD_REFERRER = 100; // points for the referrer
 var REFERRAL_REWARD_REFEREE = 150;  // points for the new user (higher to incentivize sign-up)
@@ -71,6 +71,7 @@ function openReferralModal() {
     if (!user.referralCode) {
         user.referralCode = referralCode;
         localStorage.setItem('amoghaUser', JSON.stringify(user));
+        var db = getDb();
         if (db) {
             db.collection('users').doc(user.phone || user.uid).update({ referralCode: referralCode }).catch(function() {});
         }

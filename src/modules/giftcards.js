@@ -2,7 +2,7 @@
 // Digital gift cards — send to friends via link/WhatsApp/SMS
 // Like Starbucks gift cards but optimized for web
 
-import { db } from '../core/firebase.js';
+import { getDb } from '../core/firebase.js';
 
 const GIFT_CARD_DESIGNS = [
     { id: 'birthday', label: 'Happy Birthday', emoji: '🎂', gradient: 'linear-gradient(135deg, #ff6b9d, #c44569)' },
@@ -250,6 +250,7 @@ export function initGiftCards() {
         };
 
         // Save to Firestore
+        var db = getDb();
         if (db) {
             db.collection('giftcards').doc(code).set(giftData).then(function() {
                 showGiftSuccess(code, selectedDesign, selectedAmount, recipientName, senderName);
@@ -315,6 +316,7 @@ export function initGiftCards() {
 // Gift card redemption during checkout
 export function redeemGiftCard(code) {
     return new Promise(function(resolve, reject) {
+        var db = getDb();
         if (!db) return reject(new Error('Database not available'));
         db.collection('giftcards').doc(code.toUpperCase().replace(/\s/g, '')).get().then(function(doc) {
             if (!doc.exists) return reject(new Error('Invalid gift card code'));

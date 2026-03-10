@@ -2,7 +2,7 @@
 // Location-aware features: "I'm Here" button, proximity alerts, auto-prep
 // Inspired by: Chick-fil-A "I'm Here", McDonald's "Ready on Arrival"
 
-import { db } from '../core/firebase.js';
+import { getDb } from '../core/firebase.js';
 
 var STORE_LOCATION = { lat: 17.4935, lng: 78.3911 }; // Amogha Cafe coordinates
 var PROXIMITY_RADIUS_M = 200; // meters — trigger "nearby" state
@@ -72,6 +72,7 @@ function showImHereButton() {
 }
 
 function notifyArrival(orderId) {
+    var db = getDb();
     if (!db || !orderId) return;
 
     db.collection('orders').doc(orderId).update({
@@ -114,6 +115,7 @@ function showNearbyBanner() {
     document.body.appendChild(banner);
 
     // Notify backend to start preparation
+    var db = getDb();
     if (db && orderId) {
         db.collection('orders').doc(orderId).update({
             customerNearby: true,

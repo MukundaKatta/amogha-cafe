@@ -2,7 +2,7 @@
 // Real-time queue estimation and wait time predictions
 // Inspired by: Chick-fil-A estimated ready time, McDonald's Ready On Arrival
 
-import { db } from '../core/firebase.js';
+import { getDb } from '../core/firebase.js';
 
 var AVERAGE_PREP_TIMES = {
     'biryani': 20,
@@ -129,6 +129,7 @@ function renderCheckoutEstimate(cartItems) {
 }
 
 function subscribeToQueue() {
+    var db = getDb();
     if (!db) {
         // Use time-based estimation without real data
         var hour = new Date().getHours();
@@ -168,7 +169,7 @@ export function initLiveQueue() {
     subscribeToQueue();
 
     // Refresh every 30 seconds if not using real-time listener
-    if (!db) {
+    if (!getDb()) {
         setInterval(function() {
             subscribeToQueue();
         }, 30000);

@@ -2,7 +2,7 @@
 // Instagram-like stories for the cafe — daily specials, behind-the-scenes, UGC
 // Inspired by: Instagram Stories, Swiggy Stories, Zomato Stories
 
-import { db } from '../core/firebase.js';
+import { getDb } from '../core/firebase.js';
 
 var DEMO_STORIES = [
     {
@@ -60,6 +60,7 @@ var storiesFetched = false;
 var allStories = DEMO_STORIES;
 
 function fetchStories() {
+    var db = getDb();
     if (storiesFetched || !db) return Promise.resolve(allStories);
     return db.collection('stories')
         .where('active', '==', true)
