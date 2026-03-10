@@ -148,7 +148,7 @@
 </head>
 <body>
     <!-- Skip to Content (Accessibility) -->
-    <a href="#menu" class="skip-to-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100000;padding:1rem 2rem;background:var(--gold);color:var(--dark);font-weight:700;border-radius:0 0 var(--radius-sm) var(--radius-sm);text-decoration:none;font-size:0.9rem;" onfocus="this.style.position='fixed';this.style.left='50%';this.style.transform='translateX(-50%)';this.style.top='0';this.style.width='auto';this.style.height='auto';" onblur="this.style.position='absolute';this.style.left='-9999px';this.style.width='1px';this.style.height='1px';">Skip to Menu</a>
+    <a href="#menu" class="skip-to-content">Skip to Menu</a>
 
     <!-- ARIA Live Region for Screen Reader Announcements -->
     <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
@@ -1016,9 +1016,15 @@
     </div>
 
     <!-- Cart Modal -->
-    <div id="cart-modal" class="modal">
+    <!-- Payment Processing Overlay -->
+    <div id="payment-processing" class="payment-processing" role="alert" aria-live="assertive">
+        <div class="payment-spinner"></div>
+        <p>Processing your payment...</p>
+    </div>
+
+    <div id="cart-modal" class="modal" role="dialog" aria-modal="true" aria-label="Shopping cart">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close" aria-label="Close cart">&times;</span>
             <h2>Your Order</h2>
             <div id="cart-items"></div>
             <div class="cart-total">

@@ -1378,6 +1378,102 @@ export function initUI() {
 
         proofObserver.observe(menuContainer, { childList: true, subtree: true });
     })();
+
+    // ===== MODAL FOCUS TRAP (Accessibility) =====
+    (function() {
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Tab') return;
+            var modal = document.querySelector('.modal[style*="flex"], .modal[style*="block"]');
+            if (!modal) return;
+
+            var focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusable.length === 0) return;
+
+            var first = focusable[0];
+            var last = focusable[focusable.length - 1];
+
+            if (e.shiftKey) {
+                if (document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                }
+            } else {
+                if (document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        });
+    })();
+
+    // ===== GLOBAL ERROR BOUNDARY =====
+    (function() {
+        window.addEventListener('error', function(e) {
+            // Log but don't disrupt the user
+            console.error('[Amogha Error]', e.message, e.filename, e.lineno);
+            // Could integrate Sentry here: Sentry.captureException(e.error);
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('[Amogha Unhandled Promise]', e.reason);
+            // Prevent default browser console noise for known non-critical failures
+            if (e.reason && e.reason.code === 'permission-denied') {
+                e.preventDefault();
+            }
+        });
+    })();
+
+    // ===== TOAST STACK SYSTEM =====
+    (function() {
+        var stack = document.createElement('div');
+        stack.className = 'toast-stack';
+        stack.setAttribute('aria-live', 'polite');
+        document.body.appendChild(stack);
+
+        window._showToast = function(message, type, duration) {
+            type = type || '';
+            duration = duration || 3500;
+            var toast = document.createElement('div');
+            toast.className = 'toast-item' + (type ? ' ' + type : '');
+            toast.textContent = message;
+            stack.appendChild(toast);
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(30px)';
+                toast.style.transition = 'opacity 0.3s, transform 0.3s';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, duration);
+        };
+    })();
+
+    // ===== PAYMENT PROCESSING OVERLAY =====
+    (function() {
+        var overlay = document.getElementById('payment-processing');
+        if (!overlay) return;
+
+        window._showPaymentProcessing = function() {
+            overlay.classList.add('active');
+            if (window._ariaAnnounce) window._ariaAnnounce('Processing your payment, please wait');
+        };
+        window._hidePaymentProcessing = function() {
+            overlay.classList.remove('active');
+        };
+    })();
+
+    // ===== LOADING SKELETONS FOR MENU =====
+    (function() {
+        var menuContainer = document.getElementById('dynamic-menu-container');
+        if (!menuContainer && !menuContainer?.children.length) return;
+
+        // If menu is empty, show skeleton placeholders until real data loads
+        if (menuContainer.children.length === 0) {
+            var skeletonHTML = '';
+            for (var s = 0; s < 6; s++) {
+                skeletonHTML += '<div class="skeleton-card"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>';
+            }
+            menuContainer.innerHTML = skeletonHTML;
+        }
+    })();
 }
 
 Object.assign(window, { closeMobileMenu, launchConfetti });
