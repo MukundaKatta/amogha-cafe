@@ -2774,3 +2774,127 @@ body.dark-mode .feedback-comment textarea,
 body.dark-mode .tip-custom-input { background: #16213e; color: #e0e0e0; border-color: #333; }
 body.dark-mode .challenge-progress-bar,
 body.dark-mode .milestone-progress-bar { background: #333; }
+
+/* ===== TIME-BASED GREETING BANNER ===== */
+.time-greeting {
+    background: linear-gradient(135deg, var(--dark, #1e140e) 0%, #2a1c14 100%);
+    border-bottom: 1px solid rgba(212, 160, 23, 0.2);
+    padding: 0;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text, #ede2d2);
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.6s ease, opacity 0.6s ease, padding 0.6s ease;
+}
+.time-greeting--visible {
+    max-height: 60px;
+    opacity: 1;
+    padding: 12px 20px;
+}
+.time-greeting-emoji {
+    font-size: 1.15rem;
+    margin-right: 6px;
+}
+.time-greeting-text {
+    letter-spacing: 0.3px;
+}
+.time-greeting--morning { border-bottom-color: rgba(255, 183, 77, 0.3); }
+.time-greeting--lunch { border-bottom-color: rgba(212, 160, 23, 0.35); }
+.time-greeting--evening { border-bottom-color: rgba(255, 152, 0, 0.3); }
+.time-greeting--night { border-bottom-color: rgba(100, 149, 237, 0.3); }
+.time-greeting--late { border-bottom-color: rgba(156, 39, 176, 0.25); }
+
+/* ===== REORDER FLOATING BAR ===== */
+.reorder-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9990;
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.reorder-bar--visible {
+    transform: translateY(0);
+}
+.reorder-bar-inner {
+    background: linear-gradient(135deg, var(--dark, #1e140e), #2a1c14);
+    border-top: 1px solid rgba(212, 160, 23, 0.3);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+.reorder-bar-label {
+    color: var(--text, #ede2d2);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.reorder-bar-chips {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    overflow-x: auto;
+}
+.reorder-chip {
+    background: rgba(212, 160, 23, 0.12);
+    border: 1px solid var(--gold, #D4A017);
+    color: var(--gold, #D4A017);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+.reorder-chip:hover {
+    background: var(--gold, #D4A017);
+    color: var(--dark, #1e140e);
+    transform: scale(1.05);
+}
+.reorder-chip--added {
+    background: #2e7d32 !important;
+    border-color: #4caf50 !important;
+    color: #fff !important;
+}
+.reorder-bar-close {
+    background: none;
+    border: none;
+    color: var(--text, #ede2d2);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    line-height: 1;
+}
+.reorder-bar-close:hover {
+    opacity: 1;
+}
+
+@media (max-width: 600px) {
+    .reorder-bar-inner {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+    .reorder-bar-label {
+        font-size: 0.78rem;
+        flex-basis: 100%;
+    }
+    .reorder-chip {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+    }
+    .time-greeting {
+        font-size: 0.85rem;
+    }
+}

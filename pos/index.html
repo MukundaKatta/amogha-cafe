@@ -544,6 +544,25 @@ var cart = [];
 var activeCat = 'All';
 var categories = ['All'];
 var payMethod = 'Cash';
+
+// ── GST & Invoice ────────────────────────────────────────────
+var SHOP_GSTIN = '36XXXXX1234X1Z5';
+var GST_RATE = 5; // total GST %
+var CGST_RATE = 2.5;
+var SGST_RATE = 2.5;
+
+function getNextInvoiceNumber() {
+    var now = new Date();
+    var monthKey = now.getFullYear().toString() + ('0' + (now.getMonth()+1)).slice(-2);
+    var storageKey = 'posInvoice_' + monthKey;
+    var seq = parseInt(localStorage.getItem(storageKey) || '0') + 1;
+    localStorage.setItem(storageKey, seq);
+    // Clean up old month keys
+    Object.keys(localStorage).forEach(function(k) {
+        if (k.startsWith('posInvoice_') && k !== storageKey) localStorage.removeItem(k);
+    });
+    return 'INV-' + monthKey + '-' + ('0000' + seq).slice(-4);
+}
 // Loyalty state
 var custPoints = 0;
 var pointsRedeemed = false;
@@ -1021,8 +1040,12 @@ function placeOrder() {
     var notes = document.getElementById('pos-order-notes').value.trim();
     var subtotal = cart.reduce(function(s,c){ return s + c.price*c.qty; }, 0);
     var discount = (pointsRedeemed && subtotal >= REDEEM_MIN_ORDER) ? REDEEM_DISCOUNT : 0;
-    var total = Math.max(0, subtotal - discount);
+    var taxableAmount = Math.max(0, subtotal - discount);
+    var cgst = Math.round(taxableAmount * CGST_RATE) / 100;
+    var sgst = Math.round(taxableAmount * SGST_RATE) / 100;
+    var total = Math.round((taxableAmount + cgst + sgst) * 100) / 100;
     var token = nextToken();
+    var invoiceNumber = getNextInvoiceNumber();
     var pointsEarned = Math.floor(subtotal * POINTS_PER_RUPEE);
     var orderData = {
         customer: name,
@@ -1031,6 +1054,11 @@ function placeOrder() {
         total: total,
         subtotal: subtotal,
         discount: discount,
+        cgst: cgst,
+        sgst: sgst,
+        gstRate: GST_RATE,
+        invoiceNumber: invoiceNumber,
+        gstin: SHOP_GSTIN,
         pointsEarned: pointsEarned,
         pointsRedeemed: discount > 0 ? REDEEM_POINTS : 0,
         status: 'delivered',
@@ -1093,11 +1121,17 @@ function showBill(orderId, data, isReprint) {
         (data.customer && data.customer !== 'Walk-in' ? '<div class="bill-row label"><span>Customer</span><span>' + escH(data.customer) + '</span></div>' : '') +
         (data.phone && data.phone !== 'pos' ? '<div class="bill-row label"><span>Phone</span><span>' + escH(data.phone) + '</span></div>' : '') +
         (data.tableNumber ? '<div class="bill-row label"><span>Table</span><span>' + escH(data.tableNumber) + '</span></div>' : '') +
+        (data.invoiceNumber ? '<div class="bill-row label"><span>Invoice</span><span>' + escH(data.invoiceNumber) + '</span></div>' : '') +
         '<hr class="bill-divider">' +
         itemRows +
         '<hr class="bill-divider">' +
+        '<div class="bill-row"><span>Subtotal</span><span>₹' + data.subtotal + '</span></div>' +
+        (data.discount > 0 ? '<div class="bill-row" style="color:#e74c3c"><span>Discount</span><span>-₹' + data.discount + '</span></div>' : '') +
+        (data.cgst != null ? '<div class="bill-row label"><span>CGST @ ' + CGST_RATE + '%</span><span>₹' + data.cgst.toFixed(2) + '</span></div>' : '') +
+        (data.sgst != null ? '<div class="bill-row label"><span>SGST @ ' + SGST_RATE + '%</span><span>₹' + data.sgst.toFixed(2) + '</span></div>' : '') +
         '<div class="bill-row total"><span>TOTAL</span><span>₹' + data.total + '</span></div>' +
         '<div class="bill-row label" style="margin-top:4px"><span>Payment</span><span>' + escH(data.payment) + '</span></div>' +
+        (data.gstin ? '<div class="bill-row label"><span>GSTIN</span><span>' + escH(data.gstin) + '</span></div>' : '') +
         '<hr class="bill-divider">' +
         '<div style="text-align:center;font-size:.7rem;color:#777;margin-top:8px;font-style:italic">' + escH(randomBillQuote()) + '</div>' +
         actions;
@@ -1114,7 +1148,7 @@ function showOrderConfirm(orderId, data, ph) {
         '<div style="text-align:center;padding:1.25rem 0.5rem 0.75rem">' +
         '<div style="font-size:2.2rem;margin-bottom:0.4rem">&#x2705;</div>' +
         '<div style="font-size:1.1rem;font-weight:700;color:#111;margin-bottom:0.2rem">Order Placed!</div>' +
-        '<div style="font-size:0.85rem;color:#555">#' + orderId.slice(-6).toUpperCase() + ' &nbsp;&middot;&nbsp; Rs.' + data.total + ' &nbsp;&middot;&nbsp; ' + data.payment + '</div>' +
+        '<div style="font-size:0.85rem;color:#555">#' + orderId.slice(-6).toUpperCase() + (data.invoiceNumber ? ' &nbsp;&middot;&nbsp; ' + data.invoiceNumber : '') + ' &nbsp;&middot;&nbsp; Rs.' + data.total + ' &nbsp;&middot;&nbsp; ' + data.payment + '</div>' +
         (custName ? '<div style="font-size:0.82rem;color:#777;margin-top:0.2rem">' + escH(custName) + ' &nbsp;&middot;&nbsp; +91 ' + escH(ph) + '</div>' : '<div style="font-size:0.82rem;color:#777;margin-top:0.2rem">+91 ' + escH(ph) + '</div>') +
         '</div>' +
         '<div class="bill-actions">' +
@@ -1256,6 +1290,9 @@ function buildBillEscPos(data, orderId, shopName, footer, paperWidth) {
     if (data.tableNumber) {
         parts.push(escposRow('Table', data.tableNumber, w), escposLF());
     }
+    if (data.invoiceNumber) {
+        parts.push(escposRow('Invoice', data.invoiceNumber, w), escposLF());
+    }
     parts.push(escposDashes(w), escposLF());
 
     // Items
@@ -1265,6 +1302,20 @@ function buildBillEscPos(data, orderId, shopName, footer, paperWidth) {
         parts.push(escposRow(name, price, w), escposLF());
     });
 
+    parts.push(escposDashes(w), escposLF());
+
+    // GST breakdown
+    parts.push(escposRow('Subtotal', 'Rs.' + data.subtotal, w), escposLF());
+    if (data.discount > 0) {
+        parts.push(escposRow('Discount', '-Rs.' + data.discount, w), escposLF());
+    }
+    if (data.cgst != null) {
+        parts.push(escposRow('CGST @ ' + CGST_RATE + '%', 'Rs.' + data.cgst.toFixed(2), w), escposLF());
+    }
+    if (data.sgst != null) {
+        parts.push(escposRow('SGST @ ' + SGST_RATE + '%', 'Rs.' + data.sgst.toFixed(2), w), escposLF());
+    }
+
     parts.push(escposDoubleDashes(w), escposLF());
 
     // Total
@@ -1272,10 +1323,10 @@ function buildBillEscPos(data, orderId, shopName, footer, paperWidth) {
     parts.push(escposRow('TOTAL', 'Rs.' + data.total, w), escposLF());
     parts.push(escposBoldOff());
 
-    if (data.discount > 0) {
-        parts.push(escposRow('Loyalty discount', '-Rs.' + data.discount, w), escposLF());
-    }
     parts.push(escposRow('Payment', data.payment, w), escposLF());
+    if (data.gstin) {
+        parts.push(escposRow('GSTIN', data.gstin, w), escposLF());
+    }
 
     // Loyalty section
     if (data.phone && data.phone !== 'pos') {
@@ -1430,12 +1481,18 @@ function printBillHTML(data, orderId, shopName, printerConfig, footer) {
         (data.customer && data.customer !== 'Walk-in' ? '<div style="display:flex;justify-content:space-between"><span>Customer</span><span>' + escH(data.customer) + '</span></div>' : '') +
         (data.phone && data.phone !== 'pos' ? '<div style="display:flex;justify-content:space-between"><span>Phone</span><span>' + escH(data.phone) + '</span></div>' : '') +
         (data.tableNumber ? '<div style="display:flex;justify-content:space-between"><span>Table</span><span>' + escH(data.tableNumber) + '</span></div>' : '') +
+        (data.invoiceNumber ? '<div style="display:flex;justify-content:space-between"><span>Invoice</span><span>' + escH(data.invoiceNumber) + '</span></div>' : '') +
         '<div style="border-top:1px dashed #000;margin:6px 0"></div>' +
         itemRows +
+        '<div style="border-top:1px dashed #000;margin:6px 0"></div>' +
+        '<div style="display:flex;justify-content:space-between;font-size:.85em"><span>Subtotal</span><span>Rs.' + data.subtotal + '</span></div>' +
+        (data.discount > 0 ? '<div style="display:flex;justify-content:space-between;font-size:.8em;color:#555"><span>Discount</span><span>-Rs.' + data.discount + '</span></div>' : '') +
+        (data.cgst != null ? '<div style="display:flex;justify-content:space-between;font-size:.8em;color:#555"><span>CGST @ ' + CGST_RATE + '%</span><span>Rs.' + data.cgst.toFixed(2) + '</span></div>' : '') +
+        (data.sgst != null ? '<div style="display:flex;justify-content:space-between;font-size:.8em;color:#555"><span>SGST @ ' + SGST_RATE + '%</span><span>Rs.' + data.sgst.toFixed(2) + '</span></div>' : '') +
         '<div style="border-top:2px solid #000;margin:6px 0"></div>' +
         '<div style="display:flex;justify-content:space-between;font-weight:700;font-size:1.05em"><span>TOTAL</span><span>Rs.' + data.total + '</span></div>' +
-        (data.discount > 0 ? '<div style="font-size:.8em;color:#555">Loyalty discount: -Rs.' + data.discount + '</div>' : '') +
         '<div style="font-size:.8em;color:#555">Payment: ' + escH(data.payment) + '</div>' +
+        (data.gstin ? '<div style="font-size:.72em;color:#777;margin-top:2px">GSTIN: ' + escH(data.gstin) + '</div>' : '') +
         (function() {
             if (!data.phone || data.phone === 'pos') return '';
             var earned = data.pointsEarned || 0;
@@ -1539,10 +1596,15 @@ function sendWhatsAppBill() {
         var pad = 22 - itemLine.length;
         lines.push(itemLine + (pad > 0 ? ' '.repeat(pad) : '  ') + amt);
     });
+    if (data.invoiceNumber) lines.push('🧾 Invoice: ' + data.invoiceNumber);
     lines.push(divider);
+    lines.push('Subtotal: ₹' + data.subtotal);
     if (data.discount > 0) lines.push('🎁 Loyalty discount: -₹' + data.discount);
+    if (data.cgst != null) lines.push('CGST @ ' + CGST_RATE + '%: ₹' + data.cgst.toFixed(2));
+    if (data.sgst != null) lines.push('SGST @ ' + SGST_RATE + '%: ₹' + data.sgst.toFixed(2));
     lines.push('💳 *TOTAL: ₹' + data.total + '*');
     lines.push('💰 Payment: ' + data.payment);
+    if (data.gstin) lines.push('GSTIN: ' + data.gstin);
     lines.push(divider);
     if (data.pointsEarned > 0) lines.push('⭐ Points earned this visit: +' + data.pointsEarned);
     if (data.pointsRedeemed > 0) lines.push('🎁 Points redeemed: -' + data.pointsRedeemed);
