@@ -171,13 +171,13 @@ function renderStreakWidget() {
         widget.id = 'streakWidget';
         widget.className = 'streak-widget';
 
-        // Try to insert near loyalty widget
-        var loyaltySection = document.querySelector('.loyalty-widget') || document.querySelector('#loyaltySection');
-        if (loyaltySection) {
-            loyaltySection.parentNode.insertBefore(widget, loyaltySection.nextSibling);
+        // Insert as a standalone section after the header, not inside nav
+        var header = document.querySelector('header');
+        if (header && header.nextSibling) {
+            header.parentNode.insertBefore(widget, header.nextSibling);
         } else {
             var main = document.querySelector('main') || document.body;
-            main.appendChild(widget);
+            main.prepend(widget);
         }
     }
 

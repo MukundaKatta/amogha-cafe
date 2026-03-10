@@ -972,7 +972,7 @@ export function initFeatures() {
     // Language switcher (delayed)
     setTimeout(function() {
         var nav = document.querySelector('.nav-links');
-        if (!nav) return;
+        if (!nav || nav.querySelector('.lang-switcher')) return;
         var langLi = document.createElement('li');
         langLi.className = 'lang-switcher';
         langLi.innerHTML = '<button class="lang-btn' + (currentLang === 'en' ? ' active' : '') + '" data-lang="en" onclick="switchLanguage(\'en\')">EN</button>' +

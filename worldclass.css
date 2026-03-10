@@ -668,7 +668,7 @@
 }
 
 /* ── Streaks ── */
-.streak-widget { padding: 0 20px; margin: 20px 0; }
+.streak-widget { padding: 0 20px; margin: 20px auto; max-width: 320px; }
 .streak-card {
     background: rgba(255,255,255,.04);
     border: 1px solid rgba(255,255,255,.08);
