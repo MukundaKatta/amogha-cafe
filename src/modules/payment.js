@@ -248,15 +248,30 @@ export function validateAndPay() {
     var address = document.getElementById('co-address').value.trim();
     if (!name || !phone || !address) {
         showAuthToast('Please fill in all required fields.');
-        // Focus the first empty field
         if (!name) document.getElementById('co-name').focus();
         else if (!phone) document.getElementById('co-phone').focus();
         else document.getElementById('co-address').focus();
         return;
     }
-    if (phone.length < 10) {
-        showAuthToast('Please enter a valid phone number.');
+    // Strict input validation
+    if (name.length > 100) {
+        showAuthToast('Name is too long (max 100 characters).');
+        document.getElementById('co-name').focus();
+        return;
+    }
+    if (!/^\d{10}$/.test(phone)) {
+        showAuthToast('Please enter a valid 10-digit phone number.');
         document.getElementById('co-phone').focus();
+        return;
+    }
+    if (address.length < 10) {
+        showAuthToast('Please enter a complete delivery address.');
+        document.getElementById('co-address').focus();
+        return;
+    }
+    if (address.length > 500) {
+        showAuthToast('Address is too long (max 500 characters).');
+        document.getElementById('co-address').focus();
         return;
     }
     // Validate scheduled order fields if enabled

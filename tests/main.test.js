@@ -72,7 +72,10 @@ describe('main.js', () => {
         vi.useFakeTimers();
         await import('../src/main.js');
         // initProfile is in requestIdleCallback (100ms fallback), others in setTimeout(1500)
-        vi.advanceTimersByTime(2000);
+        // Use async version to also flush promise microtasks from safeImport's dynamic import()
+        await vi.advanceTimersByTimeAsync(2000);
+        // Run any additional timers that safeImport promise chains may have queued
+        await vi.runAllTimersAsync();
         const { initProfile } = await import('../src/modules/profile.js');
         const { initGroupOrdering } = await import('../src/modules/group.js');
         const { initChatbot } = await import('../src/modules/chatbot.js');

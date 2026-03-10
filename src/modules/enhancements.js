@@ -108,12 +108,14 @@ export function initCookieConsent() {
         requestAnimationFrame(function () { banner.classList.add('cc-visible'); });
     }, 3000);
 
-    document.getElementById('cookie-accept-btn').onclick = function () {
+    var acceptBtn = document.getElementById('cookie-accept-btn') || document.getElementById('cookie-accept');
+    var declineBtn = document.getElementById('cookie-decline-btn') || document.getElementById('cookie-decline');
+    if (acceptBtn) acceptBtn.onclick = function () {
         localStorage.setItem('amogha_cookie_consent', 'all');
         banner.classList.remove('cc-visible');
         setTimeout(function () { banner.style.display = 'none'; }, 400);
     };
-    document.getElementById('cookie-decline-btn').onclick = function () {
+    if (declineBtn) declineBtn.onclick = function () {
         localStorage.setItem('amogha_cookie_consent', 'essential');
         banner.classList.remove('cc-visible');
         setTimeout(function () { banner.style.display = 'none'; }, 400);
@@ -126,6 +128,13 @@ window.submitNewsletter = function () {
     var email = document.getElementById('newsletter-email').value.trim();
     var msg = document.getElementById('newsletter-msg');
     if (!email) return;
+
+    // Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+        msg.textContent = 'Please enter a valid email address.';
+        msg.style.color = '#ef4444';
+        return;
+    }
 
     // Save to Firestore if available
     if (window.db) {

@@ -65,6 +65,15 @@ deferInit(function() {
     import('./modules/badges.js');
 });
 
+// Safe dynamic import helper — logs failures gracefully without crashing the app
+function safeImport(path, initFn) {
+    return import(path).then(function(m) {
+        if (initFn && typeof m[initFn] === 'function') m[initFn]();
+    }).catch(function(err) {
+        console.error('[Amogha] Module load failed: ' + path, err.message || err);
+    });
+}
+
 // Lower-priority features deferred further + dynamically imported non-critical modules
 setTimeout(function() {
     loadDailySpecial();
@@ -73,34 +82,26 @@ setTimeout(function() {
     initOrderAgainSection();
 
     // Group ordering, chatbot, splitbill, subscriptions — separate chunks
-    import('./modules/group.js').then(function(m) { m.initGroupOrdering(); });
-    import('./modules/chatbot.js').then(function(m) { m.initChatbot(); });
-    import('./modules/splitbill.js');
-    import('./modules/subscriptions.js');
+    safeImport('./modules/group.js', 'initGroupOrdering');
+    safeImport('./modules/chatbot.js', 'initChatbot');
+    safeImport('./modules/splitbill.js');
+    safeImport('./modules/subscriptions.js');
 
     // Enhancements — open/closed status, social proof, cookie consent, tilt, search suggestions
-    import('./modules/enhancements.js').then(function(m) { m.initEnhancements(); });
+    safeImport('./modules/enhancements.js', 'initEnhancements');
 
     // Premium interactions — scroll reveals, ripple effects, accessibility
-    import('./modules/premium.js').then(function(m) { m.initPremium(); });
+    safeImport('./modules/premium.js', 'initPremium');
 
-    // ===== NEW WORLD-CLASS FEATURES =====
-    // Challenges & weekly goals
-    import('./modules/challenges.js').then(function(m) { m.initChallenges(); });
-    // Spin the wheel rewards
-    import('./modules/spinwheel.js').then(function(m) { m.initSpinWheel(); });
-    // Secret menu
-    import('./modules/secretmenu.js').then(function(m) { m.initSecretMenu(); });
-    // Feedback & tipping
-    import('./modules/feedback.js').then(function(m) { m.initFeedback(); });
-    // Social sharing
-    import('./modules/socialshare.js').then(function(m) { m.initSocialShare(); });
-    // Community polls
-    import('./modules/polls.js').then(function(m) { m.initPolls(); });
-    // Achievement milestones
-    import('./modules/milestones.js');
-    // Order tracker
-    import('./modules/ordertracker.js').then(function(m) { m.initOrderTracker(); });
+    // ===== WORLD-CLASS FEATURES =====
+    safeImport('./modules/challenges.js', 'initChallenges');
+    safeImport('./modules/spinwheel.js', 'initSpinWheel');
+    safeImport('./modules/secretmenu.js', 'initSecretMenu');
+    safeImport('./modules/feedback.js', 'initFeedback');
+    safeImport('./modules/socialshare.js', 'initSocialShare');
+    safeImport('./modules/polls.js', 'initPolls');
+    safeImport('./modules/milestones.js');
+    safeImport('./modules/ordertracker.js', 'initOrderTracker');
 }, 1500);
 
 // Show reorder toast after short delay (needs DOM + auth to be ready)
@@ -112,37 +113,27 @@ setTimeout(function() {
 
 // Seasonal theme + weather (delayed to not block main rendering)
 setTimeout(function() {
-    import('./modules/seasonal.js').then(function(m) { m.initSeasonal(); });
-    import('./modules/weather.js').then(function(m) { m.initWeather(); });
+    safeImport('./modules/seasonal.js', 'initSeasonal');
+    safeImport('./modules/weather.js', 'initWeather');
 }, 3000);
 
 // ===== WORLD-CLASS FEATURES (Phase 12) =====
 setTimeout(function() {
-    // Stories / Reels (Instagram-like social content feed)
-    import('./modules/stories.js').then(function(m) { m.initStories(); });
-    // Mood-based ordering (order by how you feel)
-    import('./modules/moodorder.js').then(function(m) { m.initMoodOrder(); });
-    // Live wait time estimation (real-time queue)
-    import('./modules/livequeue.js').then(function(m) { m.initLiveQueue(); });
-    // Daily streak rewards (consecutive visit bonuses)
-    import('./modules/streaks.js').then(function(m) { m.initStreaks(); });
-    // Digital gift cards (send to friends)
-    import('./modules/giftcards.js').then(function(m) { m.initGiftCards(); });
-    // Refer-a-friend with tracking & rewards
-    import('./modules/referral.js').then(function(m) { m.initReferral(); });
-    // Ambient music player (cafe atmosphere)
-    import('./modules/musicplayer.js').then(function(m) { m.initMusicPlayer(); });
-    // AR menu preview (see food on your table)
-    import('./modules/arpreview.js').then(function(m) { m.initARPreview(); });
-    // Voice ordering (hands-free)
-    import('./modules/voiceorder.js').then(function(m) { m.initVoiceOrder(); });
-    // Geofencing & "I'm Here" (location-aware order prep)
-    import('./modules/geofence.js').then(function(m) { m.initGeofence(); });
+    safeImport('./modules/stories.js', 'initStories');
+    safeImport('./modules/moodorder.js', 'initMoodOrder');
+    safeImport('./modules/livequeue.js', 'initLiveQueue');
+    safeImport('./modules/streaks.js', 'initStreaks');
+    safeImport('./modules/giftcards.js', 'initGiftCards');
+    safeImport('./modules/referral.js', 'initReferral');
+    safeImport('./modules/musicplayer.js', 'initMusicPlayer');
+    safeImport('./modules/arpreview.js', 'initARPreview');
+    safeImport('./modules/voiceorder.js', 'initVoiceOrder');
+    safeImport('./modules/geofence.js', 'initGeofence');
 }, 3500);
 
 // ===== WORLD-CLASS FEATURES (Phase 13) =====
 setTimeout(function() {
-    import('./modules/worldclass2.js').then(function(m) { m.initWorldClass2(); });
+    safeImport('./modules/worldclass2.js', 'initWorldClass2');
 }, 4000);
 
 // AI For You recommendations (delayed to not block load)
@@ -156,9 +147,45 @@ window.displayCart = displayCart;
 
 window.loadMenuRatings = loadMenuRatings;
 
+// ===== GLOBAL ERROR BOUNDARY =====
+// Catch unhandled errors to prevent silent failures
+window.addEventListener('error', function(event) {
+    console.error('[Amogha] Unhandled error:', event.message, 'at', event.filename, ':', event.lineno);
+});
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('[Amogha] Unhandled promise rejection:', event.reason);
+});
+
 // ===== PERFORMANCE MONITORING =====
 // Mark key rendering milestones for Core Web Vitals diagnostics
 if (typeof performance !== 'undefined' && performance.mark) {
     performance.mark('amogha-app-init-complete');
+}
+
+// Report Core Web Vitals (LCP, FID, CLS) when available
+if (typeof PerformanceObserver !== 'undefined') {
+    try {
+        // Largest Contentful Paint
+        new PerformanceObserver(function(list) {
+            var entries = list.getEntries();
+            var last = entries[entries.length - 1];
+            if (last) console.info('[Amogha] LCP:', Math.round(last.startTime) + 'ms');
+        }).observe({ type: 'largest-contentful-paint', buffered: true });
+
+        // Cumulative Layout Shift
+        var clsValue = 0;
+        new PerformanceObserver(function(list) {
+            list.getEntries().forEach(function(entry) {
+                if (!entry.hadRecentInput) clsValue += entry.value;
+            });
+        }).observe({ type: 'layout-shift', buffered: true });
+
+        // Report CLS when page is hidden
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden' && clsValue > 0) {
+                console.info('[Amogha] CLS:', clsValue.toFixed(4));
+            }
+        });
+    } catch(e) { /* PerformanceObserver not supported for this entry type */ }
 }
 

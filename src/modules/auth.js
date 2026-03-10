@@ -85,11 +85,18 @@ export function handleSignUp() {
     var password = document.getElementById('signup-password').value;
     var msg = document.getElementById('signup-msg');
 
-    if (!name) {
-        msg.textContent = 'Please enter your name.';
+    if (!name || name.length < 2) {
+        msg.textContent = 'Please enter your name (at least 2 characters).';
         msg.className = 'auth-msg error';
         return;
     }
+    if (name.length > 100) {
+        msg.textContent = 'Name is too long (max 100 characters).';
+        msg.className = 'auth-msg error';
+        return;
+    }
+    // Strip any HTML tags from name to prevent stored XSS
+    name = name.replace(/<[^>]*>/g, '').trim();
     if (!/^\d{10}$/.test(phone)) {
         msg.textContent = 'Please enter a valid 10-digit phone number.';
         msg.className = 'auth-msg error';
