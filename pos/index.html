@@ -641,7 +641,7 @@ function startPOS() {
 // ── Load Menu ────────────────────────────────────────────────
 function loadPOSMenu() {
     db.collection('menu').where('shopId','==',shopId).where('available','==',true)
-      .onSnapshot(function(snap) {
+      .get().then(function(snap) {
         allMenu = [];
         snap.forEach(function(doc) {
             var d = doc.data();
@@ -1712,29 +1712,33 @@ function randomBillQuote() {
 // ── Today's Sales Counter ─────────────────────────────────────
 function startSalesCounter() {
     if (!shopId) return;
-    db.collection('orders')
-      .where('shopId', '==', shopId)
-      .orderBy('createdAt', 'desc')
-      .limit(200)
-      .onSnapshot(function(snap) {
-          var todayStart = new Date(); todayStart.setHours(0,0,0,0);
-          var total = 0, count = 0;
-          snap.forEach(function(doc) {
-              var d = doc.data();
-              if (d.status === 'voided' || d.status === 'cancelled') return;
-              if (toJsDate(d.createdAt) < todayStart) return;
-              total += d.total || 0;
-              count++;
-          });
-          var el = document.getElementById('pos-sales-counter');
-          if (el) {
-              el.style.display = 'flex';
-              el.style.flexDirection = 'column';
-              el.style.alignItems = 'center';
-              el.style.lineHeight = '1.1';
-              document.getElementById('pos-sales-total').textContent = '₹' + total.toLocaleString('en-IN') + ' · ' + count;
-          }
-      }, function(err) { console.warn('Sales counter error:', err); });
+    function fetchSales() {
+        db.collection('orders')
+          .where('shopId', '==', shopId)
+          .orderBy('createdAt', 'desc')
+          .limit(200)
+          .get().then(function(snap) {
+              var todayStart = new Date(); todayStart.setHours(0,0,0,0);
+              var total = 0, count = 0;
+              snap.forEach(function(doc) {
+                  var d = doc.data();
+                  if (d.status === 'voided' || d.status === 'cancelled') return;
+                  if (toJsDate(d.createdAt) < todayStart) return;
+                  total += d.total || 0;
+                  count++;
+              });
+              var el = document.getElementById('pos-sales-counter');
+              if (el) {
+                  el.style.display = 'flex';
+                  el.style.flexDirection = 'column';
+                  el.style.alignItems = 'center';
+                  el.style.lineHeight = '1.1';
+                  document.getElementById('pos-sales-total').textContent = '₹' + total.toLocaleString('en-IN') + ' · ' + count;
+              }
+          }).catch(function(err) { console.warn('Sales counter error:', err); });
+    }
+    fetchSales();
+    setInterval(fetchSales, 60000); // refresh every 60s instead of real-time
 }
 
 // ── Recent Orders ─────────────────────────────────────────────

@@ -1017,7 +1017,7 @@ function getMaxPrepTime(items){
 }
 
 function loadOrders(){
-    db.collection('orders').orderBy('createdAt','desc').onSnapshot(function(snap){
+    db.collection('orders').orderBy('createdAt','desc').limit(100).onSnapshot(function(snap){
         var today=todayISO(),cIds=new Set(),newO=[];
         orders=[];
         snap.forEach(function(doc){

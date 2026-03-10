@@ -851,6 +851,7 @@
         db.collection('orders')
             .where('createdAt', '>=', todayISO)
             .orderBy('createdAt', 'desc')
+            .limit(100)
             .onSnapshot(function(snapshot) {
                 var orders = [];
                 snapshot.forEach(function(doc) {

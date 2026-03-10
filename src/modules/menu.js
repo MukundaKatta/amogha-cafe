@@ -336,14 +336,13 @@ export function initMenuSync() {
         container.innerHTML = sk + sk;
     }
 
-    // 1. Menu items — live listener, full re-render on change
-    db.collection('menu').onSnapshot(function(snapshot) {
+    // 1. Menu items — cached .get() with 5-min TTL (saves thousands of reads vs onSnapshot)
+    cachedGet('menu', 'menu_cache', 300, function(snap) {
         var menuData = {};
-        snapshot.forEach(function(doc) { menuData[doc.id] = doc.data(); });
+        snap.forEach(function(doc) { menuData[doc.id] = doc.data(); });
+        return menuData;
+    }, function(menuData) {
         renderMenuCategories(menuData);
-    }, function(error) {
-        console.error('Menu listener error:', error);
-        if (container) container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">Could not load menu. Please refresh.</p>';
     });
 
     // 2. Specials — cached .get() (changes rarely, saves reads vs onSnapshot)
