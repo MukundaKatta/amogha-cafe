@@ -12,6 +12,7 @@ process.env.ADMIN_API_KEY = 'test-api-key-12345';
 // Mock Firestore collections with controllable responses
 const mockAdd = jest.fn(() => Promise.resolve({ id: 'test-order-id-abc' }));
 const mockGet = jest.fn();
+const mockMenuGet = jest.fn();
 const mockDocGet = jest.fn();
 const mockDocRef = { get: mockDocGet, set: jest.fn(() => Promise.resolve()) };
 const mockCollection = {
@@ -22,7 +23,18 @@ const mockCollection = {
     orderBy: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
 };
-const mockDb = { collection: jest.fn(() => ({ ...mockCollection })) };
+const mockMenuCollection = {
+    doc: jest.fn(() => mockDocRef),
+    add: mockAdd,
+    get: mockMenuGet,
+    where: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+};
+const mockDb = { collection: jest.fn((name) => {
+    if (name === 'menu') return { ...mockMenuCollection };
+    return { ...mockCollection };
+}) };
 
 jest.mock('firebase-admin', () => ({
     initializeApp: jest.fn(),
@@ -55,7 +67,7 @@ jest.mock('@google-cloud/vertexai', () => ({
 
 // ── Load app after mocks ────────────────────────────────────────────────────
 const request = require('supertest');
-const { _app: app } = require('../index.js');
+const { _app: app, _menuCache } = require('../index.js');
 
 // ── Helper to mock Firestore snapshot ──────────────────────────────────────
 function makeSnap(docs) {
@@ -67,16 +79,36 @@ function makeSnap(docs) {
     };
 }
 
+// All menu items used across order tests
+const menuItems = [
+    { _id: 'Chicken Biryani', category: 'Biryani', price: 249, available: true, isVeg: false },
+    { _id: 'Veg Biryani', category: 'Biryani', price: 199, available: true, isVeg: true },
+    { _id: 'Mutton Biryani', category: 'Biryani', price: 349, available: true, isVeg: false },
+    { _id: 'Raita', category: 'Sides', price: 40, available: true, isVeg: true },
+    { _id: 'Tea', category: 'Beverages', price: 30, available: true, isVeg: true },
+    { _id: 'Lassi', category: 'Beverages', price: 50, available: true, isVeg: true },
+];
+
 beforeEach(() => {
     jest.clearAllMocks();
+    // Reset menu cache so getMenuData() re-queries Firestore
+    _menuCache.items = null;
+    _menuCache.ts = 0;
     // Re-apply implementations cleared by clearAllMocks
     mockAdd.mockResolvedValue({ id: 'test-order-id-abc' });
     mockGet.mockResolvedValue(makeSnap([]));
+    mockMenuGet.mockResolvedValue(makeSnap(menuItems));
     mockDocGet.mockResolvedValue({ exists: false, data: () => ({}) });
     mockCollection.where = jest.fn().mockReturnThis();
     mockCollection.orderBy = jest.fn().mockReturnThis();
     mockCollection.limit = jest.fn().mockReturnThis();
-    mockDb.collection = jest.fn(() => ({ ...mockCollection }));
+    mockMenuCollection.where = jest.fn().mockReturnThis();
+    mockMenuCollection.orderBy = jest.fn().mockReturnThis();
+    mockMenuCollection.limit = jest.fn().mockReturnThis();
+    mockDb.collection = jest.fn((name) => {
+        if (name === 'menu') return { ...mockMenuCollection };
+        return { ...mockCollection };
+    });
     const admin = require('firebase-admin');
     admin.firestore.mockReturnValue(mockDb);
 });
@@ -86,7 +118,7 @@ beforeEach(() => {
 // ═══════════════════════════════════════════════════════════════════════════
 describe('GET /menu', () => {
     it('returns 200 with items array', async () => {
-        mockGet.mockResolvedValue(makeSnap([
+        mockMenuGet.mockResolvedValue(makeSnap([
             { _id: 'Chicken Biryani', category: 'Biryani', price: 249, available: true, isVeg: false },
             { _id: 'Veg Biryani', category: 'Biryani', price: 199, available: true, isVeg: true },
         ]));
@@ -97,7 +129,7 @@ describe('GET /menu', () => {
     });
 
     it('excludes unavailable items', async () => {
-        mockGet.mockResolvedValue(makeSnap([
+        mockMenuGet.mockResolvedValue(makeSnap([
             { _id: 'Available Item', category: 'X', price: 100, available: true },
             { _id: 'Hidden Item', category: 'X', price: 100, available: false },
         ]));
@@ -108,7 +140,7 @@ describe('GET /menu', () => {
     });
 
     it('returns empty items when menu collection is empty', async () => {
-        mockGet.mockResolvedValue(makeSnap([]));
+        mockMenuGet.mockResolvedValue(makeSnap([]));
         const res = await request(app).get('/menu');
         expect(res.status).toBe(200);
         expect(res.body.items).toHaveLength(0);
@@ -116,7 +148,7 @@ describe('GET /menu', () => {
     });
 
     it('returns 500 on Firestore error', async () => {
-        mockGet.mockRejectedValue(new Error('Firestore unavailable'));
+        mockMenuGet.mockRejectedValue(new Error('Firestore unavailable'));
         const res = await request(app).get('/menu');
         expect(res.status).toBe(500);
         expect(res.body.error).toBeDefined();

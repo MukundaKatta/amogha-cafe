@@ -35,7 +35,8 @@ async function getMenuData() {
             allergens: d.allergens || [], available: d.available !== false, badge: d.badge || ''
         });
     });
-    _menuCache = { items: items, ts: Date.now() };
+    _menuCache.items = items;
+    _menuCache.ts = Date.now();
     return items;
 }
 
@@ -507,8 +508,9 @@ app.post('/auth/delivery-login', async function(req, res) {
 });
 
 exports.api = functions.https.onRequest(app);
-// Export bare Express app for unit testing
+// Export bare Express app and cache handle for unit testing
 exports._app = app;
+exports._menuCache = _menuCache;
 
 // -----------------------------------------------------------------------
 // SCHEDULED: Birthday Auto-Rewards — runs daily at 8 AM IST
