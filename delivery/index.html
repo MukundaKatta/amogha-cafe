@@ -522,17 +522,24 @@ function doLogin() {
     if (!pin) { err.textContent = 'Enter your PIN.'; return; }
     err.textContent = '';
 
-    db.collection('deliveryPersons').doc(phone).get().then(function(doc) {
-        if (!doc.exists) { err.textContent = 'Phone number not registered. Contact admin.'; return; }
-        var d = doc.data();
-        if (!d.active) { err.textContent = 'Your account is inactive. Contact admin.'; return; }
-        if (d.pin !== pin) { err.textContent = 'Incorrect PIN. Try again.'; document.getElementById('login-pin').value = ''; return; }
-
-        // Login success
-        myPhone = phone;
-        myName  = d.name || 'Delivery Partner';
-        sessionStorage.setItem('dp_session', JSON.stringify({ phone: myPhone, name: myName }));
-        startApp();
+    // Authenticate via Cloud Function (credentials never exposed to client)
+    fetch('/api/auth/delivery-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phone, pin: pin })
+    }).then(function(resp) { return resp.json().then(function(data) { return { ok: resp.ok, data: data }; }); })
+    .then(function(result) {
+        if (result.ok && result.data.success) {
+            myPhone = result.data.phone;
+            myName  = result.data.name;
+            sessionStorage.setItem('dp_session', JSON.stringify({ phone: myPhone, name: myName }));
+            startApp();
+        } else {
+            err.textContent = result.data.error || 'Login failed.';
+            if (result.data.error && result.data.error.indexOf('PIN') !== -1) {
+                document.getElementById('login-pin').value = '';
+            }
+        }
     }).catch(function(err2) {
         console.error('Login error:', err2);
         err.textContent = 'Login failed. Check your connection.';
