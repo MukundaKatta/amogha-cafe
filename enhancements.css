@@ -93,7 +93,8 @@
     -webkit-backdrop-filter: blur(8px);
     flex-shrink: 0;
     order: -1;
-    margin-right: 12px;
+    margin-left: 1.5rem;
+    margin-right: 0;
 }
 .open-status-badge.is-closed {
     background: rgba(239, 68, 68, .08);
