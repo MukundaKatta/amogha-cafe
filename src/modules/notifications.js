@@ -82,7 +82,7 @@ export function initFCM() {
                 saveFCMToken(token);
             }
         }).catch(function(err) {
-            console.log('FCM token error (expected on some browsers):', err.message);
+            console.warn('FCM token error (expected on some browsers):', err.message);
         });
 
         // Handle foreground messages

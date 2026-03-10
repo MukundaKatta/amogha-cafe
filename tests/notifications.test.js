@@ -350,7 +350,7 @@ describe('initFCM', () => {
     });
 
     it('logs error when getToken rejects (line 84)', async () => {
-        const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+        const consoleLog = vi.spyOn(console, 'warn').mockImplementation(() => {});
         const onMessageMock = vi.fn();
         const getTokenMock = vi.fn(() => Promise.reject(new Error('token denied')));
         const messagingMock = { getToken: getTokenMock, onMessage: onMessageMock };

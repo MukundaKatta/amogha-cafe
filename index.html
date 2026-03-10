@@ -220,7 +220,7 @@
     </div>
 
     <header>
-        <nav>
+        <nav aria-label="Main navigation">
             <div class="logo"><img src="amogha-logo.png" alt="Amogha Cafe & Restaurant" class="logo-img"></div>
             <div class="header-slideshow" id="header-slideshow">
                 <div class="slide active">
@@ -400,9 +400,9 @@
         </svg>
     </div>
 
-    <section id="about" class="about section-wipe">
+    <section id="about" class="about section-wipe" aria-labelledby="about-heading">
         <div class="container">
-            <h2 data-i18n="ourStory">Our Story</h2>
+            <h2 id="about-heading" data-i18n="ourStory">Our Story</h2>
             <p class="section-subtitle">A legacy of flavors, crafted with love since generations</p>
             <div class="about-content">
                 <div class="about-text reveal reveal-delay-1">
@@ -431,7 +431,7 @@
     </section>
 
     <!-- Stats Counter -->
-    <section class="stats-section">
+    <section class="stats-section" aria-label="Statistics">
         <div class="container">
             <div class="stats-grid">
                 <div class="stat-item">
@@ -455,7 +455,7 @@
     </section>
 
     <!-- Chef Section -->
-    <section class="chef-section">
+    <section class="chef-section" aria-label="Our chefs">
         <div class="container">
             <h2>Meet Our Chefs</h2>
             <div class="chef-content">
@@ -742,27 +742,27 @@
                 <div class="reviews-carousel" id="reviews-carousel">
                     <div class="review-card">
                         <p class="review-text">"Amazing food and wonderful service! The flavors are authentic and portions are generous. Will definitely come back!"</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar" style="background: linear-gradient(135deg, #e8445a, #d4306a);">PS</span><div><p class="reviewer">Priya S.</p><p class="review-stars">★★★★★</p></div></div>
+                        <div class="reviewer-info"><span class="reviewer-avatar avatar-rose">PS</span><div><p class="reviewer">Priya S.</p><p class="review-stars">★★★★★</p></div></div>
                     </div>
                     <div class="review-card">
                         <p class="review-text">"Best Indian restaurant in the area. The biryani is outstanding and the ambiance is perfect for family dining."</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar" style="background: linear-gradient(135deg, #4a90d9, #357abd);">RM</span><div><p class="reviewer">Rahul M.</p><p class="review-stars">★★★★★</p></div></div>
+                        <div class="reviewer-info"><span class="reviewer-avatar avatar-blue">RM</span><div><p class="reviewer">Rahul M.</p><p class="review-stars">★★★★★</p></div></div>
                     </div>
                     <div class="review-card">
                         <p class="review-text">"Fresh ingredients and traditional cooking methods. The gongura chicken is a must-try. Highly recommend!"</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar" style="background: linear-gradient(135deg, #50c878, #3ba55d);">AK</span><div><p class="reviewer">Ananya K.</p><p class="review-stars">★★★★★</p></div></div>
+                        <div class="reviewer-info"><span class="reviewer-avatar avatar-green">AK</span><div><p class="reviewer">Ananya K.</p><p class="review-stars">★★★★★</p></div></div>
                     </div>
                     <div class="review-card">
                         <p class="review-text">"The paneer butter masala is to die for! Perfect spice levels and the naan is always fresh. A hidden gem!"</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar" style="background: linear-gradient(135deg, #f5a623, #e8941a);">SR</span><div><p class="reviewer">Sneha R.</p><p class="review-stars">★★★★★</p></div></div>
+                        <div class="reviewer-info"><span class="reviewer-avatar avatar-amber">SR</span><div><p class="reviewer">Sneha R.</p><p class="review-stars">★★★★★</p></div></div>
                     </div>
                     <div class="review-card">
                         <p class="review-text">"Ordered online and was amazed by the packaging and taste. The chicken 65 biryani is now our family favorite!"</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">VP</span><div><p class="reviewer">Vikram P.</p><p class="review-stars">★★★★★</p></div></div>
+                        <div class="reviewer-info"><span class="reviewer-avatar avatar-purple">VP</span><div><p class="reviewer">Vikram P.</p><p class="review-stars">★★★★★</p></div></div>
                     </div>
                     <div class="review-card">
                         <p class="review-text">"Exceptional catering service for our event. Every guest loved the food. Thank you Amogha team!"</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">LD</span><div><p class="reviewer">Lakshmi D.</p><p class="review-stars">★★★★★</p></div></div>
+                        <div class="reviewer-info"><span class="reviewer-avatar avatar-red">LD</span><div><p class="reviewer">Lakshmi D.</p><p class="review-stars">★★★★★</p></div></div>
                     </div>
                 </div>
                 <button class="carousel-btn carousel-next" onclick="moveCarousel(1)">&#10095;</button>
@@ -771,7 +771,7 @@
     </section>
 
     <!-- Testimonials Video Section -->
-    <section class="testimonials section-wipe">
+    <section class="testimonials section-wipe" aria-label="Customer testimonials">
         <div class="container">
             <h2>Customer Stories</h2>
             <p class="section-subtitle">Real experiences from our food lovers</p>
@@ -830,7 +830,7 @@
         </div>
     </section>
 
-    <section class="faq">
+    <section class="faq" aria-label="Frequently asked questions">
         <div class="container">
             <h2>Frequently Asked Questions</h2>
             <div class="faq-grid">
@@ -863,7 +863,7 @@
     </section>
 
     <!-- Social Feed Section -->
-    <section class="social-feed">
+    <section class="social-feed" aria-label="Social media feed">
         <div class="container">
             <h2>Follow Our Journey</h2>
             <p class="section-subtitle">Fresh from our kitchen to your feed</p>
@@ -872,7 +872,7 @@
     </section>
 
     <!-- Newsletter Signup -->
-    <section class="newsletter-section">
+    <section class="newsletter-section" aria-label="Newsletter signup">
         <div class="container">
             <div class="newsletter-card">
                 <div class="newsletter-content">
@@ -1068,7 +1068,7 @@
     </div>
 
     <!-- Checkout Modal -->
-    <div id="checkout-modal" class="modal">
+    <div id="checkout-modal" class="modal" role="dialog" aria-modal="true" aria-label="Checkout">
         <div class="modal-content checkout-content">
             <span class="close" onclick="closeCheckout()">&times;</span>
 

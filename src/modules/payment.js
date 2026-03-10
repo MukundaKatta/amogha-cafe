@@ -196,7 +196,19 @@ export function closeCheckout() {
 export function goToStep(step) {
     document.querySelectorAll('.checkout-step').forEach(function(s) { s.classList.remove('active'); });
     var stepEl = document.getElementById('checkout-step-' + step);
-    if (stepEl) stepEl.classList.add('active');
+    if (stepEl) {
+        stepEl.classList.add('active');
+        // Focus the step for keyboard users
+        stepEl.setAttribute('tabindex', '-1');
+        stepEl.focus({ preventScroll: true });
+    }
+
+    // Announce step change to screen readers
+    var stepNames = { 1: 'Order Summary', 2: 'Customer Details', 3: 'Payment', 4: 'Order Confirmation' };
+    if (window._ariaAnnounce && stepNames[step]) {
+        window._ariaAnnounce('Checkout step ' + step + ': ' + stepNames[step]);
+    }
+
     if (step === 3) setupPayment();
 }
 
@@ -219,18 +231,34 @@ export function switchPayTab(tab) {
     ['razorpay', 'cod'].forEach(function(t) {
         var tabEl = document.getElementById('tab-' + t);
         var panelEl = document.getElementById('pay-panel-' + t);
-        if (tabEl) tabEl.classList.toggle('active', t === tab);
+        if (tabEl) {
+            tabEl.classList.toggle('active', t === tab);
+            tabEl.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+        }
         if (panelEl) panelEl.classList.toggle('active', t === tab);
     });
     selectedPayment = tab;
+    var tabNames = { razorpay: 'Razorpay (UPI, Cards, Net Banking)', cod: 'Cash on Delivery' };
+    if (window._ariaAnnounce && tabNames[tab]) window._ariaAnnounce('Payment method: ' + tabNames[tab]);
 }
 
 export function validateAndPay() {
     var name = document.getElementById('co-name').value.trim();
     var phone = document.getElementById('co-phone').value.trim();
     var address = document.getElementById('co-address').value.trim();
-    if (!name || !phone || !address) { showAuthToast('Please fill in all required fields.'); return; }
-    if (phone.length < 10) { showAuthToast('Please enter a valid phone number.'); return; }
+    if (!name || !phone || !address) {
+        showAuthToast('Please fill in all required fields.');
+        // Focus the first empty field
+        if (!name) document.getElementById('co-name').focus();
+        else if (!phone) document.getElementById('co-phone').focus();
+        else document.getElementById('co-address').focus();
+        return;
+    }
+    if (phone.length < 10) {
+        showAuthToast('Please enter a valid phone number.');
+        document.getElementById('co-phone').focus();
+        return;
+    }
     // Validate scheduled order fields if enabled
     var schedule = window.getScheduleInfo ? window.getScheduleInfo() : null;
     if (schedule && (!schedule.date || !schedule.time)) {
@@ -404,6 +432,11 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
     db.collection('orders').add(orderData).then(function(docRef) {
         if (window._hidePaymentProcessing) window._hidePaymentProcessing();
 
+        // Celebrate with confetti and screen reader announcement
+        if (typeof window.launchConfetti === 'function') window.launchConfetti();
+        if (window._ariaAnnounce) window._ariaAnnounce('Order placed successfully! Thank you for your order.');
+        if (window._showToast) window._showToast('Order placed successfully!', 'success');
+
         // Analytics: purchase event
         try { if (window.analytics) window.analytics.logEvent('purchase', { transaction_id: docRef.id, value: orderData.total, payment_type: payMethod }); } catch(e) {}
 
@@ -414,10 +447,10 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         var trackUrl = window.location.origin + '/track/index.html?id=' + docRef.id;
         var trackDiv = document.getElementById('order-tracking-link');
         if (trackDiv) {
-            trackDiv.innerHTML = '<div style="margin-top:1rem;padding:1rem;background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.15);border-radius:12px;text-align:center">' +
-                '<p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.5rem">Track your order in real-time:</p>' +
-                '<a href="' + trackUrl + '" target="_blank" rel="noopener noreferrer" style="color:var(--gold);font-weight:600;font-size:0.9rem;word-break:break-all">' + trackUrl + '</a>' +
-                '<br><button onclick="safeCopy(\'' + trackUrl + '\',this)" class="cta-button" style="margin-top:0.6rem;padding:0.4rem 1rem;font-size:0.78rem">Copy Link</button>' +
+            trackDiv.innerHTML = '<div class="order-track-card">' +
+                '<p class="order-track-label">Track your order in real-time:</p>' +
+                '<a href="' + trackUrl + '" target="_blank" rel="noopener noreferrer" class="order-track-link">' + trackUrl + '</a>' +
+                '<br><button onclick="safeCopy(\'' + trackUrl + '\',this)" class="cta-button order-track-copy">Copy Link</button>' +
                 '</div>';
         }
 

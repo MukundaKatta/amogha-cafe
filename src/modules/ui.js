@@ -1088,6 +1088,38 @@ export function initUI() {
             if (e.key === 'Escape') {
                 dropdown.classList.remove('visible');
                 searchEl.blur();
+                return;
+            }
+
+            // Arrow key navigation in autocomplete dropdown
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                var items = dropdown.querySelectorAll('.ac-item');
+                if (items.length === 0) return;
+                e.preventDefault();
+
+                var current = dropdown.querySelector('.ac-item.focused');
+                var idx = current ? Array.from(items).indexOf(current) : -1;
+
+                if (current) current.classList.remove('focused');
+
+                if (e.key === 'ArrowDown') {
+                    idx = (idx + 1) % items.length;
+                } else {
+                    idx = idx <= 0 ? items.length - 1 : idx - 1;
+                }
+
+                items[idx].classList.add('focused');
+                items[idx].scrollIntoView({ block: 'nearest' });
+                return;
+            }
+
+            // Enter selects the focused item
+            if (e.key === 'Enter') {
+                var focused = dropdown.querySelector('.ac-item.focused');
+                if (focused) {
+                    e.preventDefault();
+                    focused.click();
+                }
             }
         });
 
