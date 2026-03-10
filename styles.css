@@ -2012,3 +2012,67 @@ body.dark-mode .share-order-btn {
     outline: 2px solid #fff;
     outline-offset: 2px;
 }
+
+/* --- Phase 10: Global Focus, Performance Hints, Utility Classes --- */
+
+/* Global focus-visible for all interactive elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--gold, #D4A017);
+    outline-offset: 2px;
+}
+/* Override for dark backgrounds */
+.hero button:focus-visible,
+.hero a:focus-visible,
+footer button:focus-visible,
+footer a:focus-visible {
+    outline-color: var(--gold, #D4A017);
+    outline-offset: 3px;
+}
+
+/* will-change hints for animated elements */
+.hero-slide {
+    will-change: opacity;
+}
+.chef-slide {
+    will-change: opacity;
+}
+.reviews-carousel {
+    will-change: transform;
+}
+.gallery-slideshow {
+    will-change: transform;
+}
+.scroll-progress {
+    will-change: width;
+}
+.cart-count.bump {
+    will-change: transform;
+}
+
+/* Smooth image decode for lazy-loaded images */
+img[loading="lazy"] {
+    decoding: async;
+}
+
+/* Improved touch targets for mobile (min 44x44px) */
+@media (pointer: coarse) {
+    .faq-item h4 {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+    .carousel-btn,
+    .gallery-slide-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .cookie-btn-accept,
+    .cookie-btn-decline {
+        min-height: 44px;
+    }
+}
