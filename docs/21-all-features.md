@@ -106,7 +106,7 @@ Reference docs:
 
 ### POS terminal (`/pos/`)
 Reference: [22-pos.md](22-pos.md)
-- Staff PIN login — PIN validated against `shops` collection
+- Staff login via Cloud Function `POST /auth/kiosk-login` — credentials validated server-side
 - 3-column layout on tablet/desktop; bottom-drawer cart on mobile
 - Customer CRM lookup by phone — auto-fills name, loads loyalty balance
 - Loyalty earn + redeem flow in cart (redeem button when ≥ 100 pts + ≥ ₹250 order)
@@ -137,7 +137,7 @@ Reference: [22-pos.md](22-pos.md)
 - Public/front-of-house order status display
 
 ### Delivery app
-- Delivery-person login
+- Delivery-person login via Cloud Function `POST /auth/delivery-login` — credentials validated server-side
 - Available order pickup and active-delivery workflow
 - Navigation/call shortcuts for delivery staff
 - Earnings and history dashboards
@@ -198,6 +198,10 @@ Reference docs:
 ### Key features
 - Firestore collections for ordering, loyalty, staff ops, delivery, and marketing content
 - Rule-based field-level protections on sensitive updates (e.g., coupons/gift cards)
+- **Server-side price validation** — `POST /order` looks up menu prices from DB, ignoring client-supplied prices
+- **Server-side auth endpoints** — POS and delivery login via Cloud Functions (`/auth/kiosk-login`, `/auth/delivery-login`); credentials never sent to the client
+- **Delivery credentials fully locked** — `deliveryPersons` collection has `allow read: if false` in Firestore rules
+- **Kiosk field validation** — create requires `username`, `shopId`, `password`; updates restricted to allowed fields
 - Collection model ready for expansion (including future branch support)
 
 ---
@@ -226,4 +230,4 @@ Reference docs:
 
 ---
 
-Last updated: March 2, 2026
+Last updated: March 9, 2026

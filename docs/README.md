@@ -60,6 +60,8 @@ serves as the canonical index for new developers or reviewers.*
   - `POST /order`
   - `GET /order/{orderId}`
 - **Additional deployed endpoints in `functions/index.js`:**
+  - `POST /auth/kiosk-login` (POS terminal authentication — server-side)
+  - `POST /auth/delivery-login` (delivery partner authentication — server-side)
   - `POST /parse-bill`
   - `POST /notify`
   - `POST /chat`
@@ -86,7 +88,7 @@ serves as the canonical index for new developers or reviewers.*
 - **Push:** Firebase Cloud Messaging (background notifications)
 - **PWA:** Service workers + Web App Manifest
 - **CI/CD:** GitHub Actions (test → deploy on push to master)
-- **Tests:** Vitest (2,059 unit/integration tests) + Playwright E2E
+- **Tests:** Vitest (2,059+ unit/integration tests) + Playwright E2E
 
 ## Project Structure
 

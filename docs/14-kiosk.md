@@ -23,6 +23,8 @@ The kiosk supports multiple independent shops on a single deployment. Each shop 
 3. All Firestore queries (menu, orders) are filtered by `shopId`
 4. Shop name, logo, tagline, and theme are applied dynamically
 
+> **Note:** The POS terminal (`/pos/`) uses a separate server-side auth flow via Cloud Function `POST /api/auth/kiosk-login` — see [22-pos.md](22-pos.md).
+
 **Shop config document (`shops/{shopId}`):**
 ```json
 {

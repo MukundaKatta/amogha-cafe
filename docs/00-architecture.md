@@ -20,18 +20,22 @@ Amogha Cafe is a multi-surface restaurant platform built on Firebase:
 
 ```text
 [Browser Clients]
-  |  (Firestore SDK reads/writes)
-  v
-[Cloud Firestore] <---- [Firestore Rules]
-  ^
-  |  (Admin SDK)
-[Cloud Functions: Express API + Scheduled Jobs]
-  |
-  +--> Vertex AI (Gemini)
+  |  (Firestore SDK reads/writes)     |  (fetch /api/*)
+  v                                    v
+[Cloud Firestore] <-- [Rules]    [Cloud Functions: Express API]
+  ^                                    |
+  |  (Admin SDK)                       +--> Vertex AI (Gemini)
+  +------------------------------------+
+                                       +--> Scheduled Jobs (birthdayRewards)
 
 [Firebase Hosting]
   |- serves static files from repo root
   |- rewrites /api/** to Cloud Function "api"
+
+Auth flows:
+  POS terminal ---fetch---> /api/auth/kiosk-login ---Admin SDK---> kiosks collection
+  Delivery app ---fetch---> /api/auth/delivery-login ---Admin SDK---> deliveryPersons collection
+  (Credentials never exposed to client-side Firestore reads)
 ```
 
 ## 3. Frontend Architecture
@@ -97,12 +101,15 @@ Primary backend is `functions/index.js`:
 - Pub/Sub scheduled function `exports.birthdayRewards`
 - CORS allowlist for deployed Firebase domains
 - Uses Firestore Admin SDK
+- Rate limiting on AI endpoints (30 req/min per IP)
+- Admin auth middleware (`requireAdminAuth`) for sensitive endpoints
 
-Representative API endpoints:
+API endpoints:
 
-- `GET /menu`, `GET /specials`
-- `POST /order`, `GET /order/:id`
-- AI endpoints: `/parse-bill`, `/chat`, `/smart-search`, `/recommend`, `/summarize-reviews`, `/forecast`, `/menu-insights`, `/smart-notify`, `/meal-plan`, `/smart-combo`, `/analytics-query`
+- **Public**: `GET /menu`, `GET /specials`, `POST /order` (server-side price validation), `GET /order/:id`
+- **Auth**: `POST /auth/kiosk-login` (POS terminal auth), `POST /auth/delivery-login` (delivery partner auth)
+- **Admin** (requires `x-api-key`): `/notify`, `/analytics-query`, `/forecast`, `/menu-insights`
+- **AI**: `/parse-bill`, `/chat`, `/smart-search`, `/recommend`, `/summarize-reviews`, `/smart-notify`, `/meal-plan`, `/smart-combo`
 
 AI endpoints call Vertex AI Gemini (`gemini-2.0-flash-001`) and use JSON-formatted responses.
 
@@ -130,9 +137,14 @@ Consequences:
 
 Mitigations currently present:
 
-- field validation in Firestore rules
-- restricted writes on sensitive collections
-- blocked deletes in most collections
+- Field validation in Firestore rules (required fields, type checks, value ranges)
+- Restricted writes on sensitive collections (update-only specific fields)
+- Blocked deletes on all collections
+- **Server-side price validation**: `POST /order` looks up menu prices from DB, ignoring client-supplied prices
+- **Server-side auth endpoints**: POS and delivery login go through Cloud Functions (`/auth/kiosk-login`, `/auth/delivery-login`) — credentials are never sent to the client
+- **Delivery credentials fully locked**: `deliveryPersons` collection has `read: false` in Firestore rules
+- **Kiosk field validation**: create requires `username`, `shopId`, `password`; updates restricted to allowed fields
+- Admin-only endpoints protected by API key middleware
 
 ## 7. Key Runtime Flows
 
@@ -191,10 +203,12 @@ Commands:
 ## 11. Recommended Evolution Path
 
 1. Introduce Firebase Auth (at least anonymous/phone auth) to enable secure per-user rules.
-2. Move critical business invariants (pricing/discount validation) to callable/server endpoints.
-3. Reduce global `window` API surface by introducing explicit module contracts.
-4. Add schema/version checks for key collections (`orders`, `coupons`, `giftCards`).
-5. Strengthen contract tests around checkout/payment and admin mutation paths.
+2. ~~Move critical business invariants (pricing/discount validation) to callable/server endpoints.~~ ✅ Done — API order prices validated server-side.
+3. Move admin panel writes (menu, settings, staff, expenses, kiosks) behind Cloud Function endpoints with API key auth.
+4. Hash kiosk/delivery passwords (bcrypt) instead of storing plaintext.
+5. Reduce global `window` API surface by introducing explicit module contracts.
+6. Add schema/version checks for key collections (`orders`, `coupons`, `giftCards`).
+7. Strengthen contract tests around checkout/payment and admin mutation paths.
 
 ## 12. Reference Files
 
