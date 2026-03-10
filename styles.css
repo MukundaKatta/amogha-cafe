@@ -1958,3 +1958,57 @@ body.dark-mode .split-bill-btn {
 body.dark-mode .share-order-btn {
     box-shadow: 0 2px 10px rgba(37, 211, 102, 0.15);
 }
+
+/* --- Phase 9: Performance & Accessibility --- */
+
+/* content-visibility for below-fold sections (skip rendering until scrolled near) */
+.about,
+.stats-section,
+.chef-section,
+.specials,
+#gallery,
+.reviews,
+.testimonials,
+.contact,
+.faq {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
+}
+
+/* FAQ keyboard focus styling */
+.faq-item:focus-visible {
+    outline: 2px solid var(--gold, #D4A017);
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+.faq-item[aria-expanded="true"] .faq-toggle {
+    transform: rotate(45deg);
+}
+.faq-toggle {
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+
+/* Carousel/gallery button focus rings */
+.carousel-btn:focus-visible,
+.gallery-slide-btn:focus-visible {
+    outline: 2px solid var(--gold, #D4A017);
+    outline-offset: 2px;
+}
+
+/* Contact form enhanced focus */
+#contact-form input:focus,
+#contact-form textarea:focus {
+    border-color: var(--gold, #D4A017);
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.1);
+    outline: none;
+}
+
+/* Video lightbox accessibility */
+.video-lightbox:focus-visible {
+    outline: 2px solid var(--gold, #D4A017);
+}
+.lightbox-close:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}

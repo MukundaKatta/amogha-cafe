@@ -1,4 +1,4 @@
-const CACHE_NAME = 'amogha-v71';
+const CACHE_NAME = 'amogha-v72';
 const ASSETS = [
   './',
   './index.html',

@@ -200,7 +200,7 @@
     <!-- Preloader -->
     <div id="preloader">
         <div class="preloader-inner">
-            <img src="amogha-logo.png" alt="Loading..." class="preloader-logo">
+            <img src="amogha-logo.png" alt="Loading Amogha Cafe" class="preloader-logo" fetchpriority="high">
             <div class="preloader-bar"><div class="preloader-progress"></div></div>
         </div>
     </div>
@@ -710,7 +710,7 @@
                 </div>
             </div>
             <div class="gallery-slideshow-wrapper">
-                <button class="gallery-slide-btn gallery-prev" onclick="moveGallerySlide(-1)">&#10094;</button>
+                <button class="gallery-slide-btn gallery-prev" onclick="moveGallerySlide(-1)" aria-label="Previous gallery image">&#10094;</button>
                 <div class="gallery-slideshow" id="gallery-slideshow">
                     <div class="gallery-slide active">
                         <div class="gallery-slide-item">
@@ -727,7 +727,7 @@
                         </div>
                     </div>
                 </div>
-                <button class="gallery-slide-btn gallery-next" onclick="moveGallerySlide(1)">&#10095;</button>
+                <button class="gallery-slide-btn gallery-next" onclick="moveGallerySlide(1)" aria-label="Next gallery image">&#10095;</button>
                 <div class="gallery-dots" id="gallery-dots"></div>
             </div>
         </div>
@@ -738,7 +738,7 @@
             <h2>What Our Guests Say</h2>
             <p class="section-subtitle">Real stories from our cherished guests</p>
             <div class="reviews-carousel-wrapper">
-                <button class="carousel-btn carousel-prev" onclick="moveCarousel(-1)">&#10094;</button>
+                <button class="carousel-btn carousel-prev" onclick="moveCarousel(-1)" aria-label="Previous review">&#10094;</button>
                 <div class="reviews-carousel" id="reviews-carousel">
                     <div class="review-card">
                         <p class="review-text">"Amazing food and wonderful service! The flavors are authentic and portions are generous. Will definitely come back!"</p>
@@ -765,7 +765,7 @@
                         <div class="reviewer-info"><span class="reviewer-avatar avatar-red">LD</span><div><p class="reviewer">Lakshmi D.</p><p class="review-stars">★★★★★</p></div></div>
                     </div>
                 </div>
-                <button class="carousel-btn carousel-next" onclick="moveCarousel(1)">&#10095;</button>
+                <button class="carousel-btn carousel-next" onclick="moveCarousel(1)" aria-label="Next review">&#10095;</button>
             </div>
         </div>
     </section>
@@ -780,8 +780,8 @@
     </section>
 
     <!-- Video Lightbox -->
-    <div id="video-lightbox" class="video-lightbox" style="display:none;" onclick="closeVideoLightbox()">
-        <span class="lightbox-close">&times;</span>
+    <div id="video-lightbox" class="video-lightbox" style="display:none;" onclick="closeVideoLightbox()" role="dialog" aria-modal="true" aria-label="Video player">
+        <button class="lightbox-close" onclick="closeVideoLightbox()" aria-label="Close video">&times;</button>
         <video id="lightbox-video" controls></video>
     </div>
 
@@ -816,10 +816,14 @@
                 <div class="contact-form-section">
                     <h3>Send Us a Message</h3>
                     <form id="contact-form">
-                        <input type="text" name="name" placeholder="Your Name" required>
-                        <input type="email" name="email" placeholder="Your Email" required>
-                        <input type="tel" name="phone" placeholder="Phone Number">
-                        <textarea name="message" placeholder="Your Message" rows="5" required></textarea>
+                        <label for="contact-name" class="sr-only">Your Name</label>
+                        <input type="text" id="contact-name" name="name" placeholder="Your Name" required autocomplete="name" aria-required="true">
+                        <label for="contact-email" class="sr-only">Your Email</label>
+                        <input type="email" id="contact-email" name="email" placeholder="Your Email" required autocomplete="email" aria-required="true">
+                        <label for="contact-phone" class="sr-only">Phone Number</label>
+                        <input type="tel" id="contact-phone" name="phone" placeholder="Phone Number" autocomplete="tel">
+                        <label for="contact-message" class="sr-only">Your Message</label>
+                        <textarea id="contact-message" name="message" placeholder="Your Message" rows="5" required aria-required="true"></textarea>
                         <button type="submit" class="cta-button">Send Message</button>
                     </form>
                 </div>
@@ -833,30 +837,30 @@
     <section class="faq" aria-label="Frequently asked questions">
         <div class="container">
             <h2>Frequently Asked Questions</h2>
-            <div class="faq-grid">
-                <div class="faq-item" onclick="this.classList.toggle('open')">
-                    <h4>Do you offer delivery? <span class="faq-toggle">+</span></h4>
-                    <div class="faq-answer"><p>Yes! We offer free delivery for orders over &#8377;500 within a 5 km radius. Delivery typically takes 30-45 minutes.</p></div>
+            <div class="faq-grid" role="list">
+                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
+                    <h4>Do you offer delivery? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <div class="faq-answer" role="region"><p>Yes! We offer free delivery for orders over &#8377;500 within a 5 km radius. Delivery typically takes 30-45 minutes.</p></div>
                 </div>
-                <div class="faq-item" onclick="this.classList.toggle('open')">
-                    <h4>Do you have vegetarian options? <span class="faq-toggle">+</span></h4>
-                    <div class="faq-answer"><p>Absolutely! We have an extensive vegetarian menu with over 30 dishes including vegan options.</p></div>
+                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
+                    <h4>Do you have vegetarian options? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <div class="faq-answer" role="region"><p>Absolutely! We have an extensive vegetarian menu with over 30 dishes including vegan options.</p></div>
                 </div>
-                <div class="faq-item" onclick="this.classList.toggle('open')">
-                    <h4>Can you accommodate dietary restrictions? <span class="faq-toggle">+</span></h4>
-                    <div class="faq-answer"><p>Yes, we can adjust spice levels and accommodate most dietary needs. Please inform us when ordering.</p></div>
+                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
+                    <h4>Can you accommodate dietary restrictions? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <div class="faq-answer" role="region"><p>Yes, we can adjust spice levels and accommodate most dietary needs. Please inform us when ordering.</p></div>
                 </div>
-                <div class="faq-item" onclick="this.classList.toggle('open')">
-                    <h4>Do you offer catering services? <span class="faq-toggle">+</span></h4>
-                    <div class="faq-answer"><p>Yes! We cater for events of all sizes. Contact us at catering@amogha.com for custom menus.</p></div>
+                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
+                    <h4>Do you offer catering services? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <div class="faq-answer" role="region"><p>Yes! We cater for events of all sizes. Contact us at catering@amogha.com for custom menus.</p></div>
                 </div>
-                <div class="faq-item" onclick="this.classList.toggle('open')">
-                    <h4>Is parking available? <span class="faq-toggle">+</span></h4>
-                    <div class="faq-answer"><p>Yes, we have free parking available for all guests. The restaurant is also wheelchair accessible.</p></div>
+                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
+                    <h4>Is parking available? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <div class="faq-answer" role="region"><p>Yes, we have free parking available for all guests. The restaurant is also wheelchair accessible.</p></div>
                 </div>
-                <div class="faq-item" onclick="this.classList.toggle('open')">
-                    <h4>Do you take reservations? <span class="faq-toggle">+</span></h4>
-                    <div class="faq-answer"><p>Yes! You can book online through our website or call us directly at +91 91210 04999.</p></div>
+                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
+                    <h4>Do you take reservations? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <div class="faq-answer" role="region"><p>Yes! You can book online through our website or call us directly at +91 91210 04999.</p></div>
                 </div>
             </div>
         </div>
