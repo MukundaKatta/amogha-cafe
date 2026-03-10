@@ -632,6 +632,20 @@
         </div>
     </section>
 
+    <!-- Quick Features Hub -->
+    <section class="features-hub" aria-label="Quick features">
+        <div class="container">
+            <div class="hub-scroll">
+                <button class="hub-chip" onclick="openChallengesModal()" aria-label="Weekly Challenges"><span class="hub-icon">🎯</span> Challenges</button>
+                <button class="hub-chip" onclick="openSpinWheel()" aria-label="Spin the Wheel"><span class="hub-icon">🎰</span> Spin & Win</button>
+                <button class="hub-chip" onclick="openSecretMenu()" aria-label="Secret Menu"><span class="hub-icon">🤫</span> Secret Menu</button>
+                <button class="hub-chip" onclick="openPollsModal()" aria-label="Community Polls"><span class="hub-icon">📊</span> Vote</button>
+                <button class="hub-chip" onclick="openMilestonesModal()" aria-label="Milestones"><span class="hub-icon">🏆</span> Milestones</button>
+                <button class="hub-chip" onclick="openBadgeGallery()" aria-label="Badge Gallery"><span class="hub-icon">🏅</span> Badges</button>
+            </div>
+        </div>
+    </section>
+
     <section id="menu" class="menu section-wipe" aria-label="Our Menu">
         <div class="container">
             <h2>Our Menu</h2>
@@ -1500,6 +1514,79 @@
             <span class="sp-time"></span>
         </div>
     </div>
+
+    <!-- ===== NEW WORLD-CLASS FEATURES ===== -->
+
+    <!-- Order Tracker Overlay -->
+    <div id="order-tracker-overlay" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Order tracker">
+        <div class="order-tracker-content overlay-card"></div>
+    </div>
+
+    <!-- Challenges Modal -->
+    <div id="challenges-modal" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Weekly challenges">
+        <div class="overlay-card challenges-card">
+            <button class="overlay-close" onclick="closeChallengesModal()" aria-label="Close">&times;</button>
+            <h3 class="overlay-title">Weekly Challenges</h3>
+            <p class="overlay-subtitle">Complete challenges to earn bonus points!</p>
+            <div id="challenges-list"></div>
+        </div>
+    </div>
+
+    <!-- Spin the Wheel Overlay -->
+    <div id="spin-wheel-overlay" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Rewards wheel">
+        <div class="overlay-card spin-card">
+            <button class="overlay-close" onclick="closeSpinWheel()" aria-label="Close">&times;</button>
+            <h3 class="overlay-title">Rewards Wheel</h3>
+            <p id="spins-available" class="overlay-subtitle">0 spins available</p>
+            <div class="spin-wheel-container">
+                <div class="spin-pointer">&#9660;</div>
+                <canvas id="spin-canvas" width="300" height="300"></canvas>
+            </div>
+            <button class="spin-btn" onclick="spinTheWheel()">SPIN!</button>
+            <div id="spin-result" class="spin-result" style="display:none"></div>
+        </div>
+    </div>
+
+    <!-- Secret Menu Modal -->
+    <div id="secret-menu-modal" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Secret menu">
+        <div class="overlay-card secret-menu-content"></div>
+    </div>
+
+    <!-- Feedback Overlay -->
+    <div id="feedback-overlay" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Order feedback">
+        <div class="overlay-card feedback-content"></div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Share">
+        <div class="overlay-card share-modal-content"></div>
+    </div>
+
+    <!-- Polls Modal -->
+    <div id="polls-modal" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Community polls">
+        <div class="overlay-card polls-card">
+            <button class="overlay-close" onclick="closePollsModal()" aria-label="Close">&times;</button>
+            <h3 class="overlay-title">Community Polls</h3>
+            <p class="overlay-subtitle">Vote on what comes next!</p>
+            <div id="polls-container"></div>
+        </div>
+    </div>
+
+    <!-- Milestones Modal -->
+    <div id="milestones-modal" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Achievement milestones">
+        <div class="overlay-card milestones-card">
+            <button class="overlay-close" onclick="closeMilestonesModal()" aria-label="Close">&times;</button>
+            <h3 class="overlay-title">Milestones</h3>
+            <p class="overlay-subtitle">Track your Amogha journey!</p>
+            <div id="milestones-list"></div>
+        </div>
+    </div>
+
+    <!-- Weather Recommendations Widget -->
+    <div id="weather-recommendations" style="display:none"></div>
+
+    <!-- Limited Time Offer Countdown -->
+    <div id="lto-countdown" class="lto-countdown"></div>
 
     <!-- Cookie Consent Banner -->
     <div id="cookie-consent" class="cookie-consent" style="display:none">
