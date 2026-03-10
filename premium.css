@@ -1,4 +1,4 @@
-/* ===== PREMIUM V2 — Ultra-Luxury Enhancements ===== */
+/* ===== PREMIUM V3 — Ultimate Luxury Experience ===== */
 
 /* ── Smooth Page-Wide Transitions ── */
 *, *::before, *::after {
@@ -25,7 +25,128 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     color: inherit;
 }
 
-/* ── Enhanced Header / Nav ── */
+/* ══════════════════════════════════════════════════════
+   PRELOADER — Luxury Branded Experience
+   ══════════════════════════════════════════════════════ */
+#preloader {
+    background: radial-gradient(ellipse at 50% 40%, #3d2217 0%, var(--dark) 40%, var(--dark-deep) 100%);
+}
+
+.preloader-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.preloader-logo {
+    animation: preloaderFloat 2s ease-in-out infinite, preloader-pulse 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 40px rgba(212, 160, 23, .2));
+}
+
+@keyframes preloaderFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.preloader-bar {
+    position: relative;
+}
+
+.preloader-bar::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212, 160, 23, .15), transparent);
+}
+
+.preloader-bar::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212, 160, 23, .15), transparent);
+}
+
+#preloader.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.05);
+    transition: opacity .8s ease, visibility .8s ease, transform .8s ease;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   PREMIUM TOAST NOTIFICATION SYSTEM
+   ══════════════════════════════════════════════════════ */
+#auth-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translate(-50%) translateY(100px) scale(.9);
+    background: linear-gradient(135deg, rgba(30, 17, 11, .97), rgba(44, 24, 16, .97));
+    color: var(--gold);
+    padding: 1rem 1.8rem;
+    border-radius: var(--radius-md);
+    font-family: Poppins, sans-serif;
+    font-size: .88rem;
+    font-weight: 600;
+    z-index: 10001;
+    opacity: 0;
+    transition: all .5s cubic-bezier(.22, 1, .36, 1);
+    pointer-events: none;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .35), 0 0 0 1px rgba(212, 160, 23, .12);
+    border: 1px solid rgba(212, 160, 23, .18);
+    white-space: nowrap;
+    max-width: 90vw;
+    text-align: center;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+#auth-toast::before {
+    content: '';
+    width: 4px;
+    height: 60%;
+    min-height: 16px;
+    border-radius: 4px;
+    background: linear-gradient(to bottom, var(--gold), var(--gold-dark));
+    flex-shrink: 0;
+}
+
+#auth-toast.visible {
+    opacity: 1;
+    transform: translate(-50%) translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+#auth-toast.toast-success {
+    border-color: rgba(34, 197, 94, .25);
+}
+
+#auth-toast.toast-success::before {
+    background: linear-gradient(to bottom, #22c55e, #16a34a);
+}
+
+#auth-toast.toast-error {
+    border-color: rgba(239, 68, 68, .25);
+}
+
+#auth-toast.toast-error::before {
+    background: linear-gradient(to bottom, #ef4444, #dc2626);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   ENHANCED HEADER / NAV
+   ══════════════════════════════════════════════════════ */
 header {
     backdrop-filter: blur(24px) saturate(1.8);
     -webkit-backdrop-filter: blur(24px) saturate(1.8);
@@ -35,6 +156,10 @@ header {
 
 header.scrolled {
     box-shadow: 0 4px 30px rgba(0, 0, 0, .15), 0 1px 0 rgba(212, 160, 23, .06);
+}
+
+header.header-hidden {
+    transform: translateY(-100%);
 }
 
 .nav-links a {
@@ -54,12 +179,20 @@ header.scrolled {
 }
 
 .nav-links a:hover::after,
-.nav-links a.active::after {
+.nav-links a.active-section::after {
     width: 100%;
     left: 0;
 }
 
-/* ── Hero Premium Upgrades ── */
+/* ── Active Section Indicator ── */
+.nav-links a.active-section {
+    color: var(--gold);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   HERO — Premium Upgrades
+   ══════════════════════════════════════════════════════ */
 .hero {
     position: relative;
 }
@@ -110,7 +243,24 @@ header.scrolled {
     left: 100%;
 }
 
-/* ── Section Headers — Premium Typography ── */
+/* ── Hero Slide Transition Enhancement ── */
+.hero-slide {
+    transition: opacity 1.2s cubic-bezier(.22, 1, .36, 1), transform 1.2s cubic-bezier(.22, 1, .36, 1);
+}
+
+.hero-slide.active {
+    animation: heroKenBurns 8s ease-in-out forwards;
+}
+
+@keyframes heroKenBurns {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.06); }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   SECTION HEADERS — Premium Typography
+   ══════════════════════════════════════════════════════ */
 .section-wipe h2, .specials h2, .reviews h2, .gallery h2,
 .contact h2, .faq h2, .chef-section h2, .stats-section h2,
 .testimonials h2, .social-feed h2 {
@@ -142,7 +292,10 @@ header.scrolled {
     letter-spacing: .02em;
 }
 
-/* ── Premium Cards — Glass Effect ── */
+
+/* ══════════════════════════════════════════════════════
+   PREMIUM CARDS — Glass Effect
+   ══════════════════════════════════════════════════════ */
 .special-card {
     position: relative;
     overflow: hidden;
@@ -169,11 +322,15 @@ header.scrolled {
     box-shadow: 0 20px 60px rgba(0, 0, 0, .12), 0 0 0 1px rgba(212, 160, 23, .1), 0 0 40px rgba(212, 160, 23, .06) !important;
 }
 
-/* ── Menu Item Cards — Luxury Hover ── */
+
+/* ══════════════════════════════════════════════════════
+   MENU ITEM CARDS — Luxury Hover + 3D Tilt
+   ══════════════════════════════════════════════════════ */
 .menu-item-card {
     transition: transform .4s cubic-bezier(.22, 1, .36, 1), box-shadow .4s ease, border-color .4s ease;
     position: relative;
     overflow: hidden;
+    will-change: transform;
 }
 
 .menu-item-card::after {
@@ -200,9 +357,37 @@ header.scrolled {
     border-color: rgba(212, 160, 23, .15);
 }
 
-/* ── Review Cards — Subtle Float ── */
+/* Item badge shimmer */
+.menu-item-card .special-badge,
+.menu-item-card .bestseller-badge {
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-item-card .special-badge::after,
+.menu-item-card .bestseller-badge::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent);
+    animation: badgeShimmer 3s ease-in-out infinite;
+}
+
+@keyframes badgeShimmer {
+    0%, 100% { left: -100%; }
+    50% { left: 150%; }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   REVIEW CARDS — Float & Quote
+   ══════════════════════════════════════════════════════ */
 .review-card {
     transition: transform .5s cubic-bezier(.22, 1, .36, 1), box-shadow .5s ease;
+    position: relative;
 }
 
 .review-card:hover {
@@ -210,23 +395,27 @@ header.scrolled {
     box-shadow: 0 16px 48px rgba(0, 0, 0, .1), 0 0 0 1px rgba(212, 160, 23, .06);
 }
 
-.review-text::before {
-    content: '\201C';
-    font-family: 'Cormorant Garamond', 'Playfair Display', serif;
-    font-size: 3rem;
-    color: var(--gold);
-    opacity: .3;
-    position: absolute;
-    top: -10px;
-    left: 10px;
-    line-height: 1;
-}
-
-.review-card {
+.review-text {
     position: relative;
 }
 
-/* ── Gallery Premium Effects ── */
+.review-text::before {
+    content: '\201C';
+    font-family: 'Cormorant Garamond', 'Playfair Display', serif;
+    font-size: 3.5rem;
+    color: var(--gold);
+    opacity: .2;
+    position: absolute;
+    top: -16px;
+    left: 6px;
+    line-height: 1;
+    pointer-events: none;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   GALLERY — Premium Effects
+   ══════════════════════════════════════════════════════ */
 .gallery-item {
     overflow: hidden;
     border-radius: var(--radius-md);
@@ -247,20 +436,51 @@ header.scrolled {
     filter: brightness(1.05) contrast(1.02);
 }
 
-/* ── Stats Counter — Premium Animated ── */
+/* Lightbox premium */
+.lightbox {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.lightbox img {
+    border-radius: 12px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .5);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   STATS COUNTER — Animated + Hover
+   ══════════════════════════════════════════════════════ */
 .stat-item {
     transition: transform .4s cubic-bezier(.22, 1, .36, 1);
+    position: relative;
 }
 
 .stat-item:hover {
     transform: translateY(-6px) scale(1.05);
 }
 
-.stat-value {
-    position: relative;
+.stat-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width .4s cubic-bezier(.22, 1, .36, 1);
 }
 
-/* ── FAQ Accordion Premium ── */
+.stat-item:hover::after {
+    width: 40px;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   FAQ ACCORDION — Premium
+   ══════════════════════════════════════════════════════ */
 .faq-item {
     transition: all .4s cubic-bezier(.22, 1, .36, 1);
     border-left: 3px solid transparent;
@@ -285,7 +505,14 @@ header.scrolled {
     transform: rotate(45deg);
 }
 
-/* ── Premium CTA Buttons ── */
+.faq-answer {
+    transition: max-height .4s cubic-bezier(.22, 1, .36, 1), opacity .3s ease, padding .3s ease;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   CTA BUTTONS — Premium
+   ══════════════════════════════════════════════════════ */
 .cta-button {
     position: relative;
     overflow: hidden;
@@ -306,7 +533,10 @@ header.scrolled {
     box-shadow: 0 8px 25px rgba(212, 160, 23, .3), 0 0 0 1px rgba(212, 160, 23, .15);
 }
 
-/* ── Add to Cart Button — Premium Feedback ── */
+
+/* ══════════════════════════════════════════════════════
+   ADD TO CART — Premium Feedback
+   ══════════════════════════════════════════════════════ */
 .add-to-cart {
     position: relative;
     overflow: hidden;
@@ -323,8 +553,9 @@ header.scrolled {
     transition-duration: .1s;
 }
 
-/* Ripple effect on add-to-cart */
-.add-to-cart.ripple::after {
+/* Ripple effect */
+.add-to-cart.ripple::after,
+.cta-button.ripple::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -341,10 +572,20 @@ header.scrolled {
     to { width: 200px; height: 200px; opacity: 0; }
 }
 
-/* ── Premium Modals ── */
+/* Added-to-cart success flash */
+.add-to-cart.cart-added {
+    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   PREMIUM MODALS
+   ══════════════════════════════════════════════════════ */
 .modal {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px) brightness(.7);
+    -webkit-backdrop-filter: blur(12px) brightness(.7);
 }
 
 .modal-content {
@@ -363,7 +604,182 @@ header.scrolled {
     }
 }
 
-/* ── Chef Section Premium ── */
+
+/* ══════════════════════════════════════════════════════
+   CHECKOUT — Premium Progress Stepper
+   ══════════════════════════════════════════════════════ */
+.checkout-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 0 auto 1.5rem;
+    padding: 0 1rem;
+}
+
+.checkout-progress-step {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .75rem;
+    font-weight: 600;
+    color: rgba(160, 144, 128, .5);
+    transition: all .4s cubic-bezier(.22, 1, .36, 1);
+    white-space: nowrap;
+}
+
+.checkout-progress-step.active {
+    color: var(--gold);
+}
+
+.checkout-progress-step.completed {
+    color: #22c55e;
+}
+
+.checkout-progress-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .7rem;
+    font-weight: 700;
+    border: 2px solid rgba(160, 144, 128, .2);
+    background: transparent;
+    transition: all .4s cubic-bezier(.22, 1, .36, 1);
+    flex-shrink: 0;
+}
+
+.checkout-progress-step.active .checkout-progress-num {
+    border-color: var(--gold);
+    background: rgba(212, 160, 23, .1);
+    color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(212, 160, 23, .08);
+}
+
+.checkout-progress-step.completed .checkout-progress-num {
+    border-color: #22c55e;
+    background: #22c55e;
+    color: #fff;
+}
+
+.checkout-progress-line {
+    width: 40px;
+    height: 2px;
+    background: rgba(160, 144, 128, .15);
+    margin: 0 .4rem;
+    border-radius: 2px;
+    transition: background .4s ease;
+    flex-shrink: 0;
+}
+
+.checkout-progress-line.completed {
+    background: linear-gradient(90deg, #22c55e, var(--gold));
+}
+
+.checkout-step {
+    animation: stepFadeIn .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+@keyframes stepFadeIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Cart empty state */
+.cart-empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+}
+
+.cart-empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: .4;
+    animation: emptyCartFloat 3s ease-in-out infinite;
+}
+
+@keyframes emptyCartFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.cart-empty-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    color: var(--gold);
+    margin-bottom: .5rem;
+}
+
+.cart-empty-text {
+    color: var(--text-muted);
+    font-size: .85rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Animated total */
+.cart-total-animated {
+    transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.cart-total-animated.bump {
+    transform: scale(1.1);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   FORM VALIDATION — Premium Feedback
+   ══════════════════════════════════════════════════════ */
+.field-valid,
+input:valid:not(:placeholder-shown):not([type="checkbox"]) {
+    border-color: rgba(34, 197, 94, .4) !important;
+}
+
+.field-invalid,
+.checkout-step input:invalid:not(:placeholder-shown):not(:focus) {
+    border-color: rgba(239, 68, 68, .4) !important;
+    animation: fieldShake .4s ease;
+}
+
+@keyframes fieldShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-4px); }
+    40% { transform: translateX(4px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(2px); }
+}
+
+.field-error-msg {
+    color: #ef4444;
+    font-size: .72rem;
+    margin-top: 4px;
+    opacity: 0;
+    max-height: 0;
+    transition: all .3s ease;
+    overflow: hidden;
+}
+
+.field-error-msg.show {
+    opacity: 1;
+    max-height: 30px;
+}
+
+/* Floating label effect */
+.premium-field {
+    position: relative;
+}
+
+.premium-field input:focus + label,
+.premium-field input:not(:placeholder-shown) + label {
+    transform: translateY(-22px) scale(.8);
+    color: var(--gold);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   CHEF SECTION — Premium
+   ══════════════════════════════════════════════════════ */
 .chef-slideshow img {
     transition: transform .6s cubic-bezier(.22, 1, .36, 1);
 }
@@ -381,30 +797,32 @@ header.scrolled {
     box-shadow: 0 4px 12px rgba(212, 160, 23, .15);
 }
 
-/* ── Contact Form Premium ── */
+
+/* ══════════════════════════════════════════════════════
+   CONTACT FORM — Premium
+   ══════════════════════════════════════════════════════ */
 #contact-form input,
-#contact-form textarea {
+#contact-form textarea,
+.checkout-step input,
+.checkout-step textarea,
+.checkout-step select {
     transition: all .3s cubic-bezier(.22, 1, .36, 1);
 }
 
 #contact-form input:focus,
-#contact-form textarea:focus {
+#contact-form textarea:focus,
+.checkout-step input:focus,
+.checkout-step textarea:focus,
+.checkout-step select:focus {
     border-color: var(--gold);
     box-shadow: 0 0 0 3px rgba(212, 160, 23, .1), 0 4px 16px rgba(212, 160, 23, .06);
     transform: translateY(-1px);
 }
 
-/* ── Checkout Steps — Progress Feel ── */
-.checkout-step {
-    animation: stepFadeIn .4s cubic-bezier(.22, 1, .36, 1);
-}
 
-@keyframes stepFadeIn {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-/* ── Premium Loading Skeleton ── */
+/* ══════════════════════════════════════════════════════
+   PREMIUM LOADING SKELETON
+   ══════════════════════════════════════════════════════ */
 @keyframes skeletonShimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
@@ -434,7 +852,17 @@ header.scrolled {
     border: 1px solid rgba(212, 160, 23, .06);
 }
 
-/* ── Premium Tooltip ── */
+.menu-skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   PREMIUM TOOLTIP
+   ══════════════════════════════════════════════════════ */
 [data-tooltip] {
     position: relative;
 }
@@ -467,7 +895,10 @@ header.scrolled {
     transform: translateX(-50%) translateY(0);
 }
 
-/* ── Premium Footer Upgrades ── */
+
+/* ══════════════════════════════════════════════════════
+   FOOTER — Premium Upgrades
+   ══════════════════════════════════════════════════════ */
 footer {
     position: relative;
     overflow: hidden;
@@ -508,7 +939,19 @@ footer::before {
     box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
 }
 
-/* ── Premium Back to Top ── */
+.footer-section ul li a {
+    transition: color .3s ease, padding-left .3s ease;
+}
+
+.footer-section ul li a:hover {
+    color: var(--gold);
+    padding-left: 4px;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   BACK TO TOP — Premium
+   ══════════════════════════════════════════════════════ */
 .back-to-top {
     transition: all .4s cubic-bezier(.22, 1, .36, 1);
 }
@@ -518,11 +961,15 @@ footer::before {
     box-shadow: 0 8px 25px rgba(212, 160, 23, .3);
 }
 
-/* ── Floating Cart Bar Premium ── */
+
+/* ══════════════════════════════════════════════════════
+   MOBILE — Premium Enhancements
+   ══════════════════════════════════════════════════════ */
 .floating-cart-bar {
     backdrop-filter: blur(20px) saturate(1.8);
     -webkit-backdrop-filter: blur(20px) saturate(1.8);
     transition: all .4s cubic-bezier(.22, 1, .36, 1);
+    border-top: 1px solid rgba(255, 255, 255, .08);
 }
 
 .floating-cart-btn {
@@ -543,13 +990,52 @@ footer::before {
     transform: translateX(100%);
 }
 
-/* ── Sticky Order Bar — Frosted Glass ── */
+/* Mobile menu premium slide */
+.nav-links.active {
+    animation: mobileMenuSlide .35s cubic-bezier(.22, 1, .36, 1);
+}
+
+@keyframes mobileMenuSlide {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Pull-to-refresh indicator */
+.pull-to-refresh {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(-60px);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(30, 20, 14, .95);
+    border: 1px solid rgba(212, 160, 23, .15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: transform .3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, .2);
+}
+
+.pull-to-refresh.visible {
+    transform: translateX(-50%) translateY(20px);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   STICKY ORDER BAR — Frosted Glass
+   ══════════════════════════════════════════════════════ */
 .sticky-order-bar {
     backdrop-filter: blur(20px) saturate(1.6);
     -webkit-backdrop-filter: blur(20px) saturate(1.6);
 }
 
-/* ── WhatsApp Float — Premium Pulse ── */
+
+/* ══════════════════════════════════════════════════════
+   WHATSAPP FLOAT — Premium Pulse
+   ══════════════════════════════════════════════════════ */
 .whatsapp-float {
     transition: all .3s cubic-bezier(.22, 1, .36, 1);
     animation: whatsappPulse 3s ease-in-out infinite;
@@ -566,7 +1052,10 @@ footer::before {
     box-shadow: 0 8px 30px rgba(37, 211, 102, .4);
 }
 
-/* ── Premium Input Styling ── */
+
+/* ══════════════════════════════════════════════════════
+   SEARCH & FILTERS — Premium
+   ══════════════════════════════════════════════════════ */
 .menu-search-input {
     transition: all .3s cubic-bezier(.22, 1, .36, 1);
 }
@@ -576,7 +1065,6 @@ footer::before {
     border-color: rgba(212, 160, 23, .4);
 }
 
-/* ── Filter Buttons — Pill Enhancement ── */
 .filter-btn {
     transition: all .3s cubic-bezier(.22, 1, .36, 1);
 }
@@ -590,7 +1078,6 @@ footer::before {
     box-shadow: 0 4px 16px rgba(212, 160, 23, .2);
 }
 
-/* ── Category Carousel Items — Bounce ── */
 .category-carousel .cat-pill,
 .category-carousel .cat-card {
     transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
@@ -601,7 +1088,10 @@ footer::before {
     transform: translateY(-4px) scale(1.05);
 }
 
-/* ── Premium Badges ── */
+
+/* ══════════════════════════════════════════════════════
+   BADGES & BANNERS — Premium
+   ══════════════════════════════════════════════════════ */
 .special-badge {
     animation: badgeShine 3s ease-in-out infinite;
     position: relative;
@@ -613,7 +1103,6 @@ footer::before {
     50% { box-shadow: 0 2px 16px rgba(212, 160, 23, .3); }
 }
 
-/* ── Delivery Banner Premium ── */
 .delivery-banner {
     transition: all .3s ease;
 }
@@ -623,7 +1112,6 @@ footer::before {
     box-shadow: 0 6px 20px rgba(0, 0, 0, .06);
 }
 
-/* ── Combo Banner — Animated Glow ── */
 .combo-banner {
     transition: all .4s cubic-bezier(.22, 1, .36, 1);
     position: relative;
@@ -651,7 +1139,10 @@ footer::before {
     box-shadow: 0 8px 30px rgba(212, 160, 23, .12);
 }
 
-/* ── Smooth Reveal Animation ── */
+
+/* ══════════════════════════════════════════════════════
+   SCROLL REVEAL — Smooth Animation
+   ══════════════════════════════════════════════════════ */
 .reveal-premium {
     opacity: 0;
     transform: translateY(30px);
@@ -663,7 +1154,10 @@ footer::before {
     transform: translateY(0);
 }
 
-/* ── Auth Modal Premium ── */
+
+/* ══════════════════════════════════════════════════════
+   AUTH MODAL — Premium
+   ══════════════════════════════════════════════════════ */
 .auth-modal-content {
     position: relative;
     overflow: hidden;
@@ -690,7 +1184,10 @@ footer::before {
     50% { box-shadow: 0 4px 20px rgba(39, 174, 96, .25); }
 }
 
-/* ── PWA Install Prompt Premium ── */
+
+/* ══════════════════════════════════════════════════════
+   PWA INSTALL PROMPT — Premium
+   ══════════════════════════════════════════════════════ */
 .pwa-prompt {
     animation: pwaSlideIn .5s cubic-bezier(.22, 1, .36, 1);
     backdrop-filter: blur(20px);
@@ -702,7 +1199,10 @@ footer::before {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Image Lazy Load Fade-In ── */
+
+/* ══════════════════════════════════════════════════════
+   IMAGE LAZY LOAD FADE-IN
+   ══════════════════════════════════════════════════════ */
 img[loading="lazy"] {
     opacity: 0;
     transition: opacity .6s ease;
@@ -713,12 +1213,14 @@ img[loading="lazy"][complete] {
     opacity: 1;
 }
 
-/* Override for images that are already loaded */
 img:not([loading="lazy"]) {
     opacity: 1;
 }
 
-/* ── Scroll Progress Bar Premium ── */
+
+/* ══════════════════════════════════════════════════════
+   SCROLL PROGRESS BAR — Premium
+   ══════════════════════════════════════════════════════ */
 .scroll-progress {
     background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light), var(--gold));
     background-size: 300% 100%;
@@ -731,7 +1233,27 @@ img:not([loading="lazy"]) {
     100% { background-position: 300% 50%; }
 }
 
-/* ── Dark Mode Premium Adjustments ── */
+
+/* ══════════════════════════════════════════════════════
+   ADDON PICKER — Premium Bottom Sheet
+   ══════════════════════════════════════════════════════ */
+.addon-overlay {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.addon-sheet {
+    box-shadow: 0 -16px 60px rgba(0, 0, 0, .35);
+}
+
+.addon-sheet-header {
+    border-bottom: 1px solid rgba(212, 160, 23, .1);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   DARK MODE — Premium Adjustments
+   ══════════════════════════════════════════════════════ */
 .dark-mode .special-card:hover {
     box-shadow: 0 20px 60px rgba(0, 0, 0, .25), 0 0 0 1px rgba(212, 160, 23, .12), 0 0 50px rgba(212, 160, 23, .04) !important;
 }
@@ -752,7 +1274,44 @@ img:not([loading="lazy"]) {
     opacity: .2;
 }
 
-/* ── Reduced Motion — Accessibility ── */
+/* Dark mode enhanced section separators */
+.dark-mode .section-wipe,
+.dark-mode .specials,
+.dark-mode .reviews,
+.dark-mode .gallery,
+.dark-mode .contact,
+.dark-mode .faq {
+    border-bottom: 1px solid rgba(212, 160, 23, .04);
+}
+
+/* Dark mode richer backgrounds */
+.dark-mode .about {
+    background: linear-gradient(180deg, var(--dark-deep) 0%, rgba(26, 18, 10, 1) 100%);
+}
+
+.dark-mode .stats-section {
+    background: linear-gradient(135deg, rgba(212, 160, 23, .04), rgba(139, 26, 26, .04));
+}
+
+.dark-mode .chef-section {
+    background: linear-gradient(180deg, rgba(26, 18, 10, 1) 0%, var(--dark-deep) 100%);
+}
+
+/* Dark mode toast */
+.dark-mode #auth-toast {
+    background: linear-gradient(135deg, rgba(20, 12, 8, .97), rgba(30, 20, 14, .97));
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .5), 0 0 0 1px rgba(212, 160, 23, .15);
+}
+
+/* Dark mode smooth transitions */
+.dark-mode * {
+    transition-property: background-color, color, border-color, box-shadow, opacity, transform;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   REDUCED MOTION — Accessibility
+   ══════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -760,11 +1319,9 @@ img:not([loading="lazy"]) {
         transition-duration: 0.01ms !important;
     }
 
-    .hero-title-shimmer {
-        animation: none;
-    }
-
-    .whatsapp-float {
+    .hero-title-shimmer,
+    .whatsapp-float,
+    .hero-slide.active {
         animation: none;
     }
 
@@ -772,9 +1329,16 @@ img:not([loading="lazy"]) {
         opacity: 1;
         transform: none;
     }
+
+    .cart-empty-icon {
+        animation: none;
+    }
 }
 
-/* ── Responsive Premium Tweaks ── */
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — Premium Tweaks
+   ══════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
     .special-card:hover {
         transform: translateY(-4px) scale(1.01);
@@ -799,16 +1363,51 @@ img:not([loading="lazy"]) {
     .social-links a:hover {
         transform: translateY(-2px) scale(1.1);
     }
+
+    .checkout-progress {
+        gap: 0;
+    }
+
+    .checkout-progress-step span:not(.checkout-progress-num) {
+        display: none;
+    }
+
+    .checkout-progress-line {
+        width: 24px;
+    }
+
+    #auth-toast {
+        font-size: .82rem;
+        padding: .8rem 1.4rem;
+        bottom: 20px;
+        max-width: 92vw;
+    }
+
+    #auth-toast {
+        bottom: max(20px, env(safe-area-inset-bottom));
+    }
 }
 
-/* ── Print Styles ── */
+@media (max-width: 480px) {
+    .checkout-progress-num {
+        width: 24px;
+        height: 24px;
+        font-size: .65rem;
+    }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   PRINT STYLES
+   ══════════════════════════════════════════════════════ */
 @media print {
     .scroll-progress, .cursor-glow, .food-particles,
     .grain-overlay, .ambient-particles, .whatsapp-float,
     .back-to-top, .floating-cart-bar, .sticky-order-bar,
     .social-proof-toast, .cookie-consent, .pwa-prompt,
     .music-toggle, #preloader, .page-transition,
-    .mobile-menu-overlay, #confetti-canvas {
+    .mobile-menu-overlay, #confetti-canvas,
+    .checkout-progress, #auth-toast {
         display: none !important;
     }
 
@@ -834,7 +1433,10 @@ img:not([loading="lazy"]) {
     }
 }
 
-/* ── High Contrast Mode Support ── */
+
+/* ══════════════════════════════════════════════════════
+   HIGH CONTRAST MODE
+   ══════════════════════════════════════════════════════ */
 @media (forced-colors: active) {
     .cta-button, .add-to-cart, .filter-btn {
         border: 2px solid ButtonText;
@@ -842,5 +1444,9 @@ img:not([loading="lazy"]) {
 
     .special-badge {
         border: 1px solid ButtonText;
+    }
+
+    .checkout-progress-num {
+        border: 2px solid ButtonText;
     }
 }
