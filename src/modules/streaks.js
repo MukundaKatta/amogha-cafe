@@ -165,26 +165,32 @@ function renderStreakWidget() {
     var best = getBestStreak();
     var data = getStreakData();
 
-    // Attach dropdown to the open-status badge
-    var statusBadge = document.getElementById('open-status');
-    if (!statusBadge) return;
+    var group = document.querySelector('.nav-status-group');
+    if (!group) return;
 
-    var wrapper = statusBadge.parentElement;
-    if (!wrapper.classList.contains('streak-dropdown-wrap')) {
-        wrapper.style.position = 'relative';
-        wrapper.classList.add('streak-dropdown-wrap');
+    // Create streak toggle button if not exists
+    var streakBtn = document.getElementById('streakToggleBtn');
+    if (!streakBtn) {
+        streakBtn = document.createElement('button');
+        streakBtn.id = 'streakToggleBtn';
+        streakBtn.className = 'streak-toggle-btn';
+        group.appendChild(streakBtn);
+        group.style.position = 'relative';
     }
+
+    var isActive = streak > 0 && (isToday(data.lastOrderDate) || isYesterday(data.lastOrderDate));
+    streakBtn.innerHTML = (isActive ? '🔥' : '❄️') + ' ' + streak + 'd';
+    streakBtn.title = isActive ? 'Streak: ' + streak + ' days' : 'Start a streak!';
 
     var widget = document.getElementById('streakWidget');
     if (!widget) {
         widget = document.createElement('div');
         widget.id = 'streakWidget';
         widget.className = 'streak-dropdown';
-        wrapper.appendChild(widget);
+        group.appendChild(widget);
 
         // Toggle on click
-        statusBadge.style.cursor = 'pointer';
-        statusBadge.addEventListener('click', function(e) {
+        streakBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             widget.classList.toggle('streak-dropdown--open');
         });
@@ -205,7 +211,6 @@ function renderStreakWidget() {
         }
     }
 
-    var isActive = streak > 0 && (isToday(data.lastOrderDate) || isYesterday(data.lastOrderDate));
     var streakClass = isActive ? 'active' : 'inactive';
 
     widget.innerHTML =

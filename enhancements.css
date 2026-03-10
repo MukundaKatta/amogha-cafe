@@ -94,9 +94,42 @@
     flex-shrink: 0;
 }
 
-/* Push logo to the left edge */
+/* Nav layout */
 header > nav { max-width: none; padding-left: 1.5rem; padding-right: 1.5rem; }
 header > nav .logo { padding-left: 0; padding-right: 0.8rem; }
+
+/* Status + Streak group next to logo */
+.nav-status-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: auto;
+    position: relative;
+}
+
+/* Streak toggle button */
+.streak-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    background: rgba(255, 107, 0, .08);
+    border: 1px solid rgba(255, 107, 0, .2);
+    color: #ff8c00;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .3s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.streak-toggle-btn:hover {
+    background: rgba(255, 107, 0, .15);
+    border-color: rgba(255, 107, 0, .35);
+}
 .open-status-badge.is-closed {
     background: rgba(239, 68, 68, .08);
     border-color: rgba(239, 68, 68, .2);
