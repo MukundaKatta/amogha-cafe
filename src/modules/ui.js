@@ -815,11 +815,13 @@ export function initUI() {
                 var itemImg = card.dataset.imageUrl;
                 if (itemImg) {
                     previewImg.src = itemImg;
+                    previewImg.style.display = '';
                     previewImg.classList.add('active');
                 } else {
                     var cat = getCategoryForCard(card);
                     if (cat && categoryImages[cat]) {
                         previewImg.src = categoryImages[cat];
+                        previewImg.style.display = '';
                         previewImg.classList.add('active');
                     }
                 }
@@ -832,6 +834,7 @@ export function initUI() {
 
             card.addEventListener('mouseleave', function() {
                 previewImg.classList.remove('active');
+                previewImg.style.display = 'none';
             });
         });
     })();
