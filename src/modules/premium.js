@@ -1,9 +1,7 @@
-// ===== PREMIUM INTERACTIONS MODULE V4 =====
-// Scroll reveals, ripple effects, lazy image fades, header intelligence,
-// checkout progress stepper, cart empty state, form validation,
-// animated counters, section spy, keyboard shortcuts,
-// 3D card tilt, skeleton loading, particle trails, parallax,
-// search glow, swipe-to-close, cart animations, order celebration
+// ===== PREMIUM INTERACTIONS MODULE V5 — WORLD CLASS =====
+// V1-V4: Scroll reveals, ripple, 3D tilt, skeleton, particles, parallax, etc.
+// V5: Dark mode spin, FAQ accordion, review quotes, gallery zoom,
+//     countdown tick, floating cart bump, theme transitions, premium nav
 
 export function initPremium() {
     initScrollReveal();
@@ -29,6 +27,14 @@ export function initPremium() {
     initOrderCelebration();
     initComboPricingPulse();
     initCartCountBump();
+    // V5
+    initDarkModeTransition();
+    initFaqAccordionPremium();
+    initGalleryZoom();
+    initCountdownTick();
+    initFloatingCartBump();
+    initPremiumNavHighlight();
+    initImageRevealOnLoad();
 }
 
 // ── Intersection Observer Scroll Reveal ──
@@ -852,4 +858,107 @@ function initCartCountBump() {
     });
 
     observer.observe(cartCount, { childList: true, characterData: true, subtree: true });
+}
+
+// ══════════════════════════════════════════════════════
+// V5 — WORLD CLASS ENHANCEMENTS
+// ══════════════════════════════════════════════════════
+
+// ── Dark Mode Transition Spin ──
+function initDarkModeTransition() {
+    var toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+
+    toggle.addEventListener('click', function() {
+        document.body.classList.add('theme-transitioning');
+        setTimeout(function() {
+            document.body.classList.remove('theme-transitioning');
+        }, 500);
+    });
+}
+
+// ── Premium FAQ Accordion ──
+function initFaqAccordionPremium() {
+    document.querySelectorAll('.faq-item').forEach(function(item) {
+        var heading = item.querySelector('h4');
+        if (!heading) return;
+
+        heading.addEventListener('click', function() {
+            // Close other items
+            document.querySelectorAll('.faq-item.open').forEach(function(other) {
+                if (other !== item) other.classList.remove('open');
+            });
+            item.classList.toggle('open');
+        });
+    });
+}
+
+// ── Gallery Zoom on Click ──
+function initGalleryZoom() {
+    document.querySelectorAll('.gallery-item img').forEach(function(img) {
+        img.style.cursor = 'zoom-in';
+    });
+}
+
+// ── Countdown Timer Tick Animation ──
+function initCountdownTick() {
+    var countdownNums = document.querySelectorAll('.countdown-num');
+    if (!countdownNums.length) return;
+
+    // Watch for text changes and add tick class
+    countdownNums.forEach(function(num) {
+        var observer = new MutationObserver(function() {
+            num.classList.add('tick');
+            setTimeout(function() { num.classList.remove('tick'); }, 300);
+        });
+        observer.observe(num, { childList: true, characterData: true, subtree: true });
+    });
+}
+
+// ── Floating Cart Bar Bump on Update ──
+function initFloatingCartBump() {
+    var bar = document.getElementById('floating-cart-bar');
+    if (!bar) return;
+
+    var total = bar.querySelector('.floating-cart-total');
+    if (!total) return;
+
+    var observer = new MutationObserver(function() {
+        bar.classList.add('floating-cart-bar-bump');
+        setTimeout(function() { bar.classList.remove('floating-cart-bar-bump'); }, 300);
+    });
+
+    observer.observe(total, { childList: true, characterData: true, subtree: true });
+}
+
+// ── Premium Nav Link Highlight ──
+function initPremiumNavHighlight() {
+    document.querySelectorAll('.nav-links a').forEach(function(link) {
+        link.addEventListener('mouseenter', function() {
+            link.style.textShadow = '0 0 8px rgba(212, 160, 23, .2)';
+        });
+        link.addEventListener('mouseleave', function() {
+            link.style.textShadow = '';
+        });
+    });
+}
+
+// ── Image Reveal on Load ──
+function initImageRevealOnLoad() {
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    document.querySelectorAll('.gallery-item img, .chef-slide img, .special-card img').forEach(function(img) {
+        if (img.complete && img.naturalWidth > 0) {
+            img.classList.add('img-revealed');
+            return;
+        }
+        img.style.opacity = '0';
+        img.style.transition = 'opacity .5s ease, transform .5s ease';
+        img.style.transform = 'scale(1.03)';
+        img.addEventListener('load', function() {
+            img.style.opacity = '1';
+            img.style.transform = 'scale(1)';
+            img.classList.add('img-revealed');
+        });
+    });
 }
