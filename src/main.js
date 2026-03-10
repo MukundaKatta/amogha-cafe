@@ -140,8 +140,13 @@ setTimeout(function() {
     import('./modules/geofence.js').then(function(m) { m.initGeofence(); });
 }, 3500);
 
+// ===== WORLD-CLASS FEATURES (Phase 13) =====
+setTimeout(function() {
+    import('./modules/worldclass2.js').then(function(m) { m.initWorldClass2(); });
+}, 4000);
+
 // AI For You recommendations (delayed to not block load)
-setTimeout(initAiForYou, 4000);
+setTimeout(initAiForYou, 4500);
 
 // Init floating cart bar state
 updateFloatingCartBar();

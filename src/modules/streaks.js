@@ -2,7 +2,7 @@
 // Consecutive visit/order streaks with escalating rewards
 // Inspired by: Duolingo streaks, Starbucks bonus stars, Snapchat streaks
 
-import { db } from '../core/firebase.js';
+import { getDb } from '../core/firebase.js';
 
 var STREAK_MILESTONES = [
     { days: 3, reward: 50, label: '3-Day Streak', emoji: '🔥', description: 'Order 3 days in a row' },
@@ -113,6 +113,7 @@ function recordDailyOrder() {
 function syncStreak(data) {
     var user = null;
     try { user = JSON.parse(localStorage.getItem('amoghaUser')); } catch(e) {}
+    var db = getDb();
     if (!user || !db) return;
 
     db.collection('users').doc(user.phone || user.uid).update({
