@@ -713,12 +713,12 @@ export function initUI() {
                 const centerY = cachedRect.height / 2;
                 const rotateX = ((y - centerY) / centerY) * -maxTilt;
                 const rotateY = ((x - centerX) / centerX) * maxTilt;
-                card.style.transform = 'perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-4px)';
+                card.style.transform = 'perspective(1200px) rotateX(' + (rotateX * 0.5) + 'deg) rotateY(' + (rotateY * 0.5) + 'deg) translateY(-2px)';
             });
             card.addEventListener('mouseleave', function() {
                 cachedRect = null;
                 card.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) translateY(0)';
+                card.style.transform = 'perspective(1200px) rotateX(0) rotateY(0) translateY(0)';
                 setTimeout(function() { card.style.transition = ''; }, 500);
             });
         });
@@ -746,11 +746,14 @@ export function initUI() {
             glow.classList.remove('active');
         });
 
+        // Use transform instead of left/top to avoid layout reflow
+        glow.style.left = '0';
+        glow.style.top = '0';
+        glow.style.willChange = 'transform';
         function animate() {
             gx += (mx - gx) * 0.12;
             gy += (my - gy) * 0.12;
-            glow.style.left = gx + 'px';
-            glow.style.top = gy + 'px';
+            glow.style.transform = 'translate3d(' + gx + 'px,' + gy + 'px,0)';
             requestAnimationFrame(animate);
         }
         animate();

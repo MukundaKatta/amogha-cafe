@@ -1582,7 +1582,8 @@ img:not([loading="lazy"]) {
     background-size: cover;
     background-position: center;
     will-change: transform;
-    transition: transform .1s linear;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     z-index: -1;
 }
 

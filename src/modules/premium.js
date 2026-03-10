@@ -561,10 +561,12 @@ function init3DCardTilt() {
         shine.className = 'tilt-shine';
         card.appendChild(shine);
 
+        var cachedRect = null;
+        card.addEventListener('mouseenter', function() { cachedRect = card.getBoundingClientRect(); });
         card.addEventListener('mousemove', function(e) {
-            var rect = card.getBoundingClientRect();
-            var x = ((e.clientX - rect.left) / rect.width) * 100;
-            var y = ((e.clientY - rect.top) / rect.height) * 100;
+            if (!cachedRect) cachedRect = card.getBoundingClientRect();
+            var x = ((e.clientX - cachedRect.left) / cachedRect.width) * 100;
+            var y = ((e.clientY - cachedRect.top) / cachedRect.height) * 100;
 
             card.style.setProperty('--mouse-x', x + '%');
             card.style.setProperty('--mouse-y', y + '%');
@@ -575,6 +577,7 @@ function init3DCardTilt() {
         });
 
         card.addEventListener('mouseleave', function() {
+            cachedRect = null;
             card.style.transform = '';
         });
     });
