@@ -502,7 +502,8 @@ body[data-theme="dark"] .newsletter-card {
 .whatsapp-float    { position: fixed !important; bottom: 20px !important; right: 20px !important; z-index: 900 !important; }
 .ai-chat-fab       { bottom: 76px !important; right: 20px !important; }
 .voice-order-fab   { display: none !important; }
-.gift-card-fab     { bottom: 132px !important; right: 20px !important; }
+.gift-card-fab     { display: none !important; }
+.back-to-top       { bottom: 132px !important; right: 20px !important; }
 .referral-fab      { bottom: 192px !important; right: 20px !important; }
 
 /* ── FAB Stack — Left Side (56px spacing) ── */
