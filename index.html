@@ -26,6 +26,7 @@
     <link rel="icon" type="image/png" href="amogha-logo.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c1810">
+    <meta name="color-scheme" content="light dark">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Amogha">
@@ -174,7 +175,7 @@
     <div class="food-particles" id="food-particles"></div>
 
     <!-- Menu Item Image Preview -->
-    <img class="menu-preview-img" id="menu-preview-img" alt="">
+    <img class="menu-preview-img" id="menu-preview-img" alt="Menu item preview">
 
     <!-- Grain Texture Overlay -->
     <div class="grain-overlay"></div>
@@ -207,7 +208,7 @@
 
 
     <!-- PWA Install Prompt -->
-    <div id="pwa-prompt" class="pwa-prompt" style="display:none;">
+    <div id="pwa-prompt" class="pwa-prompt" style="display:none">
         <button class="pwa-dismiss" id="pwa-dismiss-btn" aria-label="Dismiss">&times;</button>
         <div class="pwa-icon">
             <img src="amogha-logo.png" alt="Amogha" width="52" height="52">
@@ -780,7 +781,7 @@
     </section>
 
     <!-- Video Lightbox -->
-    <div id="video-lightbox" class="video-lightbox" style="display:none;" onclick="closeVideoLightbox()" role="dialog" aria-modal="true" aria-label="Video player">
+    <div id="video-lightbox" class="video-lightbox" style="display:none" onclick="closeVideoLightbox()" role="dialog" aria-modal="true" aria-label="Video player">
         <button class="lightbox-close" onclick="closeVideoLightbox()" aria-label="Close video">&times;</button>
         <video id="lightbox-video" controls></video>
     </div>
