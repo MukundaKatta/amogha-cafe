@@ -28,23 +28,20 @@ function saveStreakData(data) {
     localStorage.setItem('amogha_streak', JSON.stringify(data));
 }
 
+function todayStr() {
+    return new Date().toISOString().split('T')[0];
+}
+
 function isToday(dateStr) {
     if (!dateStr) return false;
-    var d = new Date(dateStr);
-    var now = new Date();
-    return d.getFullYear() === now.getFullYear() &&
-           d.getMonth() === now.getMonth() &&
-           d.getDate() === now.getDate();
+    return dateStr === todayStr();
 }
 
 function isYesterday(dateStr) {
     if (!dateStr) return false;
-    var d = new Date(dateStr);
     var yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    return d.getFullYear() === yesterday.getFullYear() &&
-           d.getMonth() === yesterday.getMonth() &&
-           d.getDate() === yesterday.getDate();
+    return dateStr === yesterday.toISOString().split('T')[0];
 }
 
 function getCurrentStreak() {

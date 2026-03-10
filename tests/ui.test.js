@@ -930,8 +930,8 @@ describe('initUI — parallax hero slideshow on scroll', () => {
         Object.defineProperty(window, 'pageYOffset', { value: 200, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         const heroSlideshow = document.querySelector('.hero-slideshow');
-        expect(heroSlideshow.style.transform).toContain('translateY(');
-        expect(heroSlideshow.style.transform).toContain('70px'); // 200 * 0.35
+        expect(heroSlideshow.style.transform).toContain('translate3d(0,');
+        expect(heroSlideshow.style.transform).toContain('30px'); // 200 * 0.15
     });
 
     it('does not throw when hero-slideshow is absent', () => {
@@ -1504,19 +1504,21 @@ describe('initUI — chef slideshow', () => {
     it('does not start slideshow when only one slide exists', () => {
         setupDOM('<div id="chef-slideshow"><div class="chef-slide active"></div></div>');
         initUI();
-        vi.advanceTimersByTime(4000);
+        vi.advanceTimersByTime(5000);
         expect(document.querySelectorAll('.chef-slide.active').length).toBe(1);
     });
 
-    it('advances to the next slide after 4000ms', () => {
+    it('advances to the next slide after 5000ms', () => {
         setupDOM(`
             <div id="chef-slideshow">
                 <div class="chef-slide active"></div>
                 <div class="chef-slide"></div>
             </div>
+            <div class="chef-info-slide active"></div>
+            <div class="chef-info-slide"></div>
         `);
         initUI();
-        vi.advanceTimersByTime(4000);
+        vi.advanceTimersByTime(5000);
         const slides = document.querySelectorAll('.chef-slide');
         expect(slides[0].classList.contains('active')).toBe(false);
         expect(slides[1].classList.contains('active')).toBe(true);
@@ -1528,10 +1530,12 @@ describe('initUI — chef slideshow', () => {
                 <div class="chef-slide active"></div>
                 <div class="chef-slide"></div>
             </div>
+            <div class="chef-info-slide active"></div>
+            <div class="chef-info-slide"></div>
         `);
         initUI();
-        vi.advanceTimersByTime(4000); // slide 0 -> 1
-        vi.advanceTimersByTime(4000); // slide 1 -> 0
+        vi.advanceTimersByTime(5000); // slide 0 -> 1
+        vi.advanceTimersByTime(5000); // slide 1 -> 0
         const slides = document.querySelectorAll('.chef-slide');
         expect(slides[0].classList.contains('active')).toBe(true);
     });
@@ -1546,7 +1550,7 @@ describe('initUI — chef slideshow', () => {
             <div class="chef-info-slide"></div>
         `);
         initUI();
-        vi.advanceTimersByTime(4000);
+        vi.advanceTimersByTime(5000);
         const infoSlides = document.querySelectorAll('.chef-info-slide');
         expect(infoSlides[0].classList.contains('active')).toBe(false);
         expect(infoSlides[1].classList.contains('active')).toBe(true);
@@ -1726,22 +1730,22 @@ describe('initUI — header hide/show on scroll direction (desktop only)', () =>
         Object.defineProperty(window, 'pageYOffset', { value: 0, configurable: true });
     });
 
-    it('hides header with translateY(-100%) when scrolling down past 100px', () => {
+    it('hides header with translate3d(0,-100%,0) when scrolling down past 100px', () => {
         setupDOM('<header></header>');
         initUI();
         // lastScroll starts at 0, scroll to 200: 200>0 && 200>100 → hide
         Object.defineProperty(window, 'pageYOffset', { value: 200, configurable: true });
         window.dispatchEvent(new Event('scroll'));
-        expect(document.querySelector('header').style.transform).toBe('translateY(-100%)');
+        expect(document.querySelector('header').style.transform).toBe('translate3d(0,-100%,0)');
     });
 
-    it('shows header with translateY(0) when scrolling up', () => {
-        setupDOM('<header style="transform:translateY(-100%)"></header>');
+    it('shows header with translate3d(0,0,0) when scrolling up', () => {
+        setupDOM('<header style="transform:translate3d(0,-100%,0)"></header>');
         initUI();
-        // lastScroll starts at 0, scroll to 50: 50>0 but 50<=100 → show (translateY(0))
+        // lastScroll starts at 0, scroll to 50: 50>0 but 50<=100 → show
         Object.defineProperty(window, 'pageYOffset', { value: 50, configurable: true });
         window.dispatchEvent(new Event('scroll'));
-        expect(document.querySelector('header').style.transform).toBe('translateY(0)');
+        expect(document.querySelector('header').style.transform).toBe('translate3d(0,0,0)');
     });
 });
 
@@ -2184,7 +2188,7 @@ describe('initUI — parallax for about/chef/stats (desktop scroll)', () => {
         Object.defineProperty(window, 'pageYOffset', { value: 300, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         const chefContent = document.querySelector('.chef-content');
-        expect(chefContent.style.transform).toContain('translateY');
+        expect(chefContent.style.transform).toContain('translate3d(0,');
     });
 
     it('sets transform on .stats-grid element during scroll', () => {
@@ -2199,7 +2203,7 @@ describe('initUI — parallax for about/chef/stats (desktop scroll)', () => {
         Object.defineProperty(window, 'pageYOffset', { value: 400, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         const statsGrid = document.querySelector('.stats-grid');
-        expect(statsGrid.style.transform).toContain('translateY');
+        expect(statsGrid.style.transform).toContain('translate3d(0,');
     });
 });
 
@@ -2471,7 +2475,7 @@ describe('initUI — 3D card tilt effect', () => {
         card.getBoundingClientRect = vi.fn(() => ({ left: 0, top: 0, width: 200, height: 150 }));
         card.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
         card.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 50, clientY: 30 }));
-        expect(card.style.transform).toContain('perspective(800px)');
+        expect(card.style.transform).toContain('perspective(1200px)');
         expect(card.style.transform).toContain('rotateX');
         expect(card.style.transform).toContain('rotateY');
     });
@@ -2672,7 +2676,7 @@ describe('initUI — magnetic cursor on gallery/chef images', () => {
         img.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
         img.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 100, clientY: 100 }));
         expect(img.style.transform).toContain('translate');
-        expect(img.style.transform).toContain('scale(1.02)');
+        expect(img.style.transform).toContain('scale(1.01)');
     });
 
     it('resets transform on mouseleave', () => {
@@ -4703,7 +4707,7 @@ describe('initUI — scroll handler branches (lines 283-362)', () => {
         window.dispatchEvent(new Event('scroll'));
         // rAF was called, hero slideshow should have transform
         const hero = document.body.querySelector('.hero-slideshow');
-        expect(hero.style.transform).toContain('translateY');
+        expect(hero.style.transform).toContain('translate3d(0,');
     });
 
     it('shows sticky order bar when scroll exceeds hero height (line 362)', () => {
@@ -4781,7 +4785,7 @@ describe('initUI — header hide/show on scroll (line 402)', () => {
         Object.defineProperty(window, 'pageYOffset', { value: 200, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         const header = document.body.querySelector('header');
-        expect(header.style.transform).toBe('translateY(-100%)');
+        expect(header.style.transform).toBe('translate3d(0,-100%,0)');
     });
 
     it('shows header on upward scroll (line 402)', () => {
@@ -4793,7 +4797,7 @@ describe('initUI — header hide/show on scroll (line 402)', () => {
         Object.defineProperty(window, 'pageYOffset', { value: 100, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         const header = document.body.querySelector('header');
-        expect(header.style.transform).toBe('translateY(0)');
+        expect(header.style.transform).toBe('translate3d(0,0,0)');
     });
 });
 

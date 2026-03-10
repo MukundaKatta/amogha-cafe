@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock firebase for all modules
-vi.mock('../src/core/firebase.js', () => ({ db: null }));
+vi.mock('../src/core/firebase.js', () => ({
+    db: null,
+    getDb: () => null,
+    getFieldValue: () => null,
+}));
 
 beforeEach(() => {
     localStorage.clear();
