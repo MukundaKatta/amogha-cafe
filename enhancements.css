@@ -95,7 +95,8 @@
 }
 
 /* Push logo to the left edge */
-nav .logo { padding-left: 0.4rem; }
+nav .logo { padding-left: 0; padding-right: 0.8rem; }
+nav { padding-left: 1rem; }
 .open-status-badge.is-closed {
     background: rgba(239, 68, 68, .08);
     border-color: rgba(239, 68, 68, .2);
