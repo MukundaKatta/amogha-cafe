@@ -569,9 +569,9 @@ function init3DCardTilt() {
             card.style.setProperty('--mouse-x', x + '%');
             card.style.setProperty('--mouse-y', y + '%');
 
-            var rotateX = ((y - 50) / 50) * -4;
-            var rotateY = ((x - 50) / 50) * 4;
-            card.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.02)';
+            var rotateX = ((y - 50) / 50) * -2;
+            var rotateY = ((x - 50) / 50) * 2;
+            card.style.transform = 'perspective(1200px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.01)';
         });
 
         card.addEventListener('mouseleave', function() {
@@ -671,8 +671,8 @@ function initParallaxDepth() {
                     var parent = bg.parentElement;
                     var rect = parent.getBoundingClientRect();
                     if (rect.bottom > 0 && rect.top < window.innerHeight) {
-                        var offset = (rect.top / window.innerHeight) * 30;
-                        bg.style.transform = 'translateY(' + offset + 'px)';
+                        var offset = (rect.top / window.innerHeight) * 15;
+                        bg.style.transform = 'translate3d(0,' + offset + 'px,0)';
                     }
                 });
                 ticking = false;

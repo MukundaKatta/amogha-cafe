@@ -200,16 +200,24 @@ export function initUI() {
             resizeTimer = setTimeout(setupMobileNav, 100);
         });
 
-        mobileMenuToggle.addEventListener('click', () => {
-            const isActive = navLinks.classList.toggle('active');
+        function toggleMobileMenu(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            var isActive = navLinks.classList.toggle('active');
             if (mobileMenuOverlay) mobileMenuOverlay.classList.toggle('active', isActive);
             mobileMenuToggle.textContent = isActive ? '\u2715' : '\u2630';
+            mobileMenuToggle.setAttribute('aria-expanded', isActive ? 'true' : 'false');
             if (isActive) {
                 lockScroll();
             } else {
                 unlockScroll();
             }
-        });
+        }
+        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        // Also handle touchend for more reliable mobile response
+        mobileMenuToggle.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            toggleMobileMenu(e);
+        }, { passive: false });
 
         if (mobileMenuOverlay) {
             mobileMenuOverlay.addEventListener('click', closeMobileMenu);
@@ -325,23 +333,23 @@ export function initUI() {
                 var currentScroll = window.pageYOffset;
                 var isDesktop = window.innerWidth > 768;
 
-                // Parallax hero (desktop only)
+                // Parallax hero (desktop only, reduced intensity to prevent shakiness)
                 if (heroSlideshow && isDesktop) {
-                    heroSlideshow.style.transform = 'translateY(' + (currentScroll * 0.35) + 'px)';
+                    heroSlideshow.style.transform = 'translate3d(0,' + (currentScroll * 0.15) + 'px,0)';
                 }
 
-                // Parallax for About, Chef, Stats (desktop only)
+                // Parallax for About, Chef, Stats (desktop only, reduced for stability)
                 if (isDesktop) {
                     var wh = window.innerHeight;
                     if (_aboutEl && currentScroll > _aboutTop - wh && currentScroll < _aboutTop + _aboutEl.offsetHeight) {
-                        var offset = (currentScroll - _aboutTop + wh) * 0.06;
+                        var offset = (currentScroll - _aboutTop + wh) * 0.03;
                         _aboutEl.style.setProperty('--section-parallax', offset + 'px');
                     }
                     if (_chefContentEl && currentScroll > _chefTop - wh && currentScroll < _chefTop + 800) {
-                        _chefContentEl.style.transform = 'translateY(' + ((currentScroll - _chefTop + wh) * 0.04) + 'px)';
+                        _chefContentEl.style.transform = 'translate3d(0,' + ((currentScroll - _chefTop + wh) * 0.02) + 'px,0)';
                     }
                     if (_statsGridEl && currentScroll > _statsTop - wh && currentScroll < _statsTop + 600) {
-                        _statsGridEl.style.transform = 'translateY(' + ((currentScroll - _statsTop + wh) * 0.035) + 'px)';
+                        _statsGridEl.style.transform = 'translate3d(0,' + ((currentScroll - _statsTop + wh) * 0.015) + 'px,0)';
                     }
                 }
 
@@ -352,12 +360,12 @@ export function initUI() {
                     _scrollIndicator.style.opacity = 0;
                 }
 
-                // Header hide/show (desktop only)
+                // Header hide/show (desktop only, use translate3d for GPU layer)
                 if (header && isDesktop) {
                     if (currentScroll > lastScroll && currentScroll > 100) {
-                        header.style.transform = 'translateY(-100%)';
+                        header.style.transform = 'translate3d(0,-100%,0)';
                     } else {
-                        header.style.transform = 'translateY(0)';
+                        header.style.transform = 'translate3d(0,0,0)';
                     }
                 }
                 lastScroll = currentScroll;
@@ -460,18 +468,29 @@ export function initUI() {
     })();
 
     // ===== CHEF SLIDESHOW =====
+    // Synchronized image + info rotation — ensures image always matches text
     (function() {
-        const slides = document.querySelectorAll('#chef-slideshow .chef-slide');
-        const infoSlides = document.querySelectorAll('.chef-info-slide');
+        var slides = document.querySelectorAll('#chef-slideshow .chef-slide');
+        var infoSlides = document.querySelectorAll('.chef-info-slide');
         if (slides.length <= 1) return;
-        let current = 0;
-        setInterval(() => {
-            slides[current].classList.remove('active');
-            if (infoSlides[current]) infoSlides[current].classList.remove('active');
-            current = (current + 1) % slides.length;
-            slides[current].classList.add('active');
-            if (infoSlides[current]) infoSlides[current].classList.add('active');
-        }, 4000);
+        var current = 0;
+        var totalSlides = Math.min(slides.length, infoSlides.length);
+
+        function showChefSlide(index) {
+            // Remove active from ALL slides first to prevent desync
+            for (var i = 0; i < totalSlides; i++) {
+                slides[i].classList.remove('active');
+                infoSlides[i].classList.remove('active');
+            }
+            // Activate the matching pair
+            slides[index].classList.add('active');
+            infoSlides[index].classList.add('active');
+        }
+
+        setInterval(function() {
+            current = (current + 1) % totalSlides;
+            showChefSlide(current);
+        }, 5000); // Increased to 5s for less frantic rotation
     })();
 
     // ===== CATEGORY CAROUSEL =====
@@ -819,7 +838,7 @@ export function initUI() {
         if (window.innerWidth <= 768) return;
 
         var magneticImgs = document.querySelectorAll('.chef-slide, .gallery-slide-item img, .gallery-item img');
-        var strength = 0.03;
+        var strength = 0.015;
 
         magneticImgs.forEach(function(img) {
             img.classList.add('magnetic-image');
@@ -829,7 +848,7 @@ export function initUI() {
                 if (!cachedRect) return;
                 var x = e.clientX - cachedRect.left - cachedRect.width / 2;
                 var y = e.clientY - cachedRect.top - cachedRect.height / 2;
-                img.style.transform = 'translate(' + (x * strength) + 'px, ' + (y * strength) + 'px) scale(1.02)';
+                img.style.transform = 'translate3d(' + (x * strength) + 'px,' + (y * strength) + 'px,0) scale(1.01)';
             });
             img.addEventListener('mouseleave', function() {
                 cachedRect = null;
