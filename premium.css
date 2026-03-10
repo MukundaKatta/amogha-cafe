@@ -3182,6 +3182,884 @@ footer::before {
 
 
 /* ══════════════════════════════════════════════════════
+   V6 — MOBILE MENU OVERLAY
+   ══════════════════════════════════════════════════════ */
+.mobile-menu-overlay {
+    transition: opacity .4s cubic-bezier(.22, 1, .36, 1);
+    backdrop-filter: blur(6px);
+}
+
+.mobile-menu-overlay.active {
+    animation: overlayFadeIn .3s ease;
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; backdrop-filter: blur(0); }
+    to { opacity: 1; backdrop-filter: blur(6px); }
+}
+
+/* Mobile nav links stagger entrance */
+.nav-links.active a {
+    animation: mobileNavSlide .4s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.nav-links.active a:nth-child(1) { animation-delay: .05s; }
+.nav-links.active a:nth-child(2) { animation-delay: .1s; }
+.nav-links.active a:nth-child(3) { animation-delay: .15s; }
+.nav-links.active a:nth-child(4) { animation-delay: .2s; }
+.nav-links.active a:nth-child(5) { animation-delay: .25s; }
+.nav-links.active a:nth-child(6) { animation-delay: .3s; }
+.nav-links.active a:nth-child(7) { animation-delay: .35s; }
+.nav-links.active a:nth-child(8) { animation-delay: .4s; }
+
+@keyframes mobileNavSlide {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Hamburger morphing */
+#mobile-menu-toggle {
+    transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+#mobile-menu-toggle:active {
+    transform: scale(.85);
+}
+
+#mobile-menu-toggle.active {
+    transform: rotate(90deg);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — SVG ORNAMENT ANIMATIONS
+   ══════════════════════════════════════════════════════ */
+.section-ornament-wrap {
+    opacity: 0;
+    transition: opacity .8s ease;
+}
+
+.section-ornament-wrap.revealed {
+    opacity: 1;
+}
+
+.section-ornament-wrap.revealed .svg-ornament line {
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+    animation: ornamentLineDraw .8s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+
+.section-ornament-wrap.revealed .svg-ornament path {
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+    animation: ornamentLineDraw .6s cubic-bezier(.22, 1, .36, 1) .3s forwards;
+}
+
+@keyframes ornamentLineDraw {
+    to { stroke-dashoffset: 0; }
+}
+
+.svg-ornament path {
+    transition: fill .4s ease;
+}
+
+.section-ornament-wrap:hover .svg-ornament path {
+    fill: rgba(212, 160, 23, .08);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — FEATURES LIST (About Section)
+   ══════════════════════════════════════════════════════ */
+.features-list {
+    list-style: none;
+    padding: 0;
+}
+
+.features-list li {
+    opacity: 0;
+    transform: translateX(-12px);
+    transition: all .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+.features-list li.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.features-list li:hover {
+    color: var(--gold);
+    padding-left: 4px;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — PRELOADER PREMIUM
+   ══════════════════════════════════════════════════════ */
+.preloader-bar {
+    position: relative;
+    overflow: hidden;
+}
+
+.preloader-progress {
+    position: relative;
+}
+
+.preloader-progress::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, .3) 50%,
+        transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: preloaderShimmer 1s ease-in-out infinite;
+}
+
+@keyframes preloaderShimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+
+/* Preloader text glow */
+.preloader-inner p {
+    animation: preloaderTextGlow 2s ease-in-out infinite;
+}
+
+@keyframes preloaderTextGlow {
+    0%, 100% { text-shadow: 0 0 10px rgba(212, 160, 23, .1); }
+    50% { text-shadow: 0 0 20px rgba(212, 160, 23, .3); }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — SOCIAL LINKS PREMIUM
+   ══════════════════════════════════════════════════════ */
+.social-links a {
+    transition: all .4s cubic-bezier(.34, 1.56, .64, 1);
+    position: relative;
+}
+
+.social-links a::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212, 160, 23, .1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity .3s ease;
+    pointer-events: none;
+}
+
+.social-links a:hover {
+    transform: translateY(-4px) scale(1.15);
+    color: var(--gold);
+}
+
+.social-links a:hover::before {
+    opacity: 1;
+}
+
+.social-links a:active {
+    transform: scale(.9);
+}
+
+/* Social links stagger on scroll */
+.footer-section .social-links.revealed a {
+    animation: socialLinkPop .4s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+.footer-section .social-links.revealed a:nth-child(1) { animation-delay: .05s; }
+.footer-section .social-links.revealed a:nth-child(2) { animation-delay: .1s; }
+.footer-section .social-links.revealed a:nth-child(3) { animation-delay: .15s; }
+.footer-section .social-links.revealed a:nth-child(4) { animation-delay: .2s; }
+
+@keyframes socialLinkPop {
+    from { opacity: 0; transform: scale(0) rotate(-15deg); }
+    to { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — SPICE LEVEL SELECTOR
+   ══════════════════════════════════════════════════════ */
+.spice-btn, [data-filter] {
+    transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.spice-btn:hover, [data-filter]:hover {
+    transform: translateY(-2px) scale(1.05);
+}
+
+.spice-btn.active {
+    position: relative;
+}
+
+.spice-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 2px;
+    animation: spiceUnderline .3s cubic-bezier(.22, 1, .36, 1);
+}
+
+@keyframes spiceUnderline {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — NOTIFICATION BANNER
+   ══════════════════════════════════════════════════════ */
+.notif-banner, [id*="notif-banner"] {
+    animation: notifBannerSlide .5s cubic-bezier(.22, 1, .36, 1);
+    backdrop-filter: blur(8px);
+}
+
+@keyframes notifBannerSlide {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.notif-banner button, [id*="notif-banner"] button {
+    transition: all .3s cubic-bezier(.22, 1, .36, 1);
+}
+
+.notif-banner button:hover, [id*="notif-banner"] button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(212, 160, 23, .15);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — LOYALTY WIDGET PREMIUM
+   ══════════════════════════════════════════════════════ */
+#loyalty-widget {
+    transition: all .3s cubic-bezier(.22, 1, .36, 1);
+    cursor: pointer;
+}
+
+#loyalty-widget:hover {
+    transform: scale(1.08);
+    text-shadow: 0 0 8px rgba(212, 160, 23, .2);
+}
+
+/* Loyalty points earned — floating animation */
+.loyalty-points-float {
+    position: fixed;
+    pointer-events: none;
+    font-weight: 700;
+    font-size: .9rem;
+    color: var(--gold);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+    z-index: 99999;
+    animation: pointsFloat 1.5s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+
+@keyframes pointsFloat {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    60% { opacity: 1; transform: translateY(-40px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-70px) scale(.8); }
+}
+
+/* Loyalty tier celebration */
+.loyalty-tier-up {
+    animation: tierUpCelebrate .6s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+@keyframes tierUpCelebrate {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.3) rotate(-5deg); }
+    60% { transform: scale(1.1) rotate(3deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+/* Loyalty modal — premium styling */
+.loyalty-modal-content {
+    animation: loyaltyModalReveal .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+@keyframes loyaltyModalReveal {
+    from { opacity: 0; transform: scale(.92) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Loyalty progress bar fill */
+.loyalty-progress-fill {
+    transition: width 1s cubic-bezier(.22, 1, .36, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.loyalty-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+    background-size: 200% 100%;
+    animation: preloaderShimmer 1.5s ease-in-out infinite;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — RESERVATION MODAL PREMIUM
+   ══════════════════════════════════════════════════════ */
+#reservation-modal .modal-content {
+    animation: reservationReveal .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+@keyframes reservationReveal {
+    from { opacity: 0; transform: scale(.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Time slot buttons */
+.time-slot-btn {
+    transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.time-slot-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(212, 160, 23, .12);
+}
+
+.time-slot-btn.selected, .time-slot-btn.active {
+    box-shadow: 0 0 0 2px var(--gold), 0 4px 12px rgba(212, 160, 23, .15);
+    transform: scale(1.05);
+}
+
+/* Party size buttons */
+.party-btn {
+    transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.party-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(212, 160, 23, .12);
+}
+
+.party-btn.selected, .party-btn.active {
+    box-shadow: 0 0 0 2px var(--gold);
+    animation: partyBtnPop .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+@keyframes partyBtnPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1.1); }
+}
+
+/* Reservation success */
+.reservation-success {
+    animation: confirmReveal .6s cubic-bezier(.22, 1, .36, 1);
+}
+
+.reservation-success .confirm-icon {
+    animation: confirmBounce .6s cubic-bezier(.34, 1.56, .64, 1) .2s both;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — AI FEATURES PREMIUM
+   ══════════════════════════════════════════════════════ */
+
+/* AI recommendation cards */
+.ai-card, .ai-pick-card, .reco-card {
+    transition: all .4s cubic-bezier(.22, 1, .36, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-card::before, .ai-pick-card::before, .reco-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+
+.ai-card:hover, .ai-pick-card:hover, .reco-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+}
+
+.ai-card:hover::before, .ai-pick-card:hover::before, .reco-card:hover::before {
+    opacity: 1;
+}
+
+/* AI badge glow */
+.ai-badge, [class*="ai-badge"] {
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-badge::after, [class*="ai-badge"]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+    transform: skewX(-20deg);
+    animation: badgeShine 3s ease-in-out infinite;
+}
+
+/* AI loading skeleton */
+.ai-loading-card {
+    border-radius: var(--radius-md, 12px);
+    padding: 1rem;
+    background: rgba(255, 255, 255, .02);
+    border: 1px solid rgba(212, 160, 23, .06);
+}
+
+.ai-loading-card .ai-skel-line {
+    height: 12px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg,
+        rgba(212, 160, 23, .04) 0%,
+        rgba(212, 160, 23, .1) 40%,
+        rgba(212, 160, 23, .04) 80%
+    );
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+.ai-loading-card .ai-skel-line:nth-child(1) { width: 70%; }
+.ai-loading-card .ai-skel-line:nth-child(2) { width: 90%; }
+.ai-loading-card .ai-skel-line:nth-child(3) { width: 50%; }
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — VIDEO LIGHTBOX PREMIUM
+   ══════════════════════════════════════════════════════ */
+#video-lightbox {
+    backdrop-filter: blur(12px);
+}
+
+#video-lightbox.active {
+    animation: videoLightboxIn .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+@keyframes videoLightboxIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#lightbox-video {
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+    animation: videoZoomIn .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+@keyframes videoZoomIn {
+    from { transform: scale(.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — BIRTHDAY BANNER
+   ══════════════════════════════════════════════════════ */
+.birthday-banner, [class*="birthday-banner"] {
+    animation: birthdaySlide .5s cubic-bezier(.22, 1, .36, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes birthdaySlide {
+    from { opacity: 0; transform: translateY(-20px) scale(.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.birthday-banner::after, [class*="birthday-banner"]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+    transform: skewX(-20deg);
+    animation: bannerShine 4s ease-in-out infinite;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — TESTIMONIALS GRID
+   ══════════════════════════════════════════════════════ */
+#testimonials-grid > * {
+    transition: all .4s cubic-bezier(.22, 1, .36, 1);
+    overflow: hidden;
+    border-radius: var(--radius-md, 12px);
+}
+
+#testimonials-grid > *:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .15);
+}
+
+/* Play button overlay on video thumbnails */
+#testimonials-grid [onclick*="video"] {
+    cursor: pointer;
+    position: relative;
+}
+
+#testimonials-grid [onclick*="video"]::after {
+    content: '▶';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, .5);
+    transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+    pointer-events: none;
+}
+
+#testimonials-grid [onclick*="video"]:hover::after {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — HERO CONTENT STAGGER ENTRANCE
+   ══════════════════════════════════════════════════════ */
+.hero-content > * {
+    animation: heroContentStagger .8s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.hero-content > *:nth-child(1) { animation-delay: .1s; }
+.hero-content > *:nth-child(2) { animation-delay: .25s; }
+.hero-content > *:nth-child(3) { animation-delay: .4s; }
+.hero-content > *:nth-child(4) { animation-delay: .55s; }
+.hero-content > *:nth-child(5) { animation-delay: .7s; }
+
+@keyframes heroContentStagger {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — SECTION HEADINGS PREMIUM
+   ══════════════════════════════════════════════════════ */
+section h2 {
+    position: relative;
+}
+
+section h2::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 8px auto 0;
+    transition: width .6s cubic-bezier(.22, 1, .36, 1);
+}
+
+section h2.revealed::after {
+    width: 60px;
+}
+
+.section-subtitle {
+    transition: opacity .6s ease .2s;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — ADDON PICKER STAGGER
+   ══════════════════════════════════════════════════════ */
+.addon-sheet-list > * {
+    animation: addonItemSlide .3s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.addon-sheet-list > *:nth-child(1) { animation-delay: .05s; }
+.addon-sheet-list > *:nth-child(2) { animation-delay: .1s; }
+.addon-sheet-list > *:nth-child(3) { animation-delay: .15s; }
+.addon-sheet-list > *:nth-child(4) { animation-delay: .2s; }
+.addon-sheet-list > *:nth-child(5) { animation-delay: .25s; }
+.addon-sheet-list > *:nth-child(6) { animation-delay: .3s; }
+
+@keyframes addonItemSlide {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Addon checkbox animation */
+.addon-option input[type="checkbox"]:checked + label,
+.addon-sheet-list input[type="checkbox"]:checked + label {
+    transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+    transform: scale(1.02);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — REORDER TOAST
+   ══════════════════════════════════════════════════════ */
+.reorder-toast, [class*="reorder-toast"] {
+    animation: reorderSlideIn .5s cubic-bezier(.22, 1, .36, 1);
+    backdrop-filter: blur(12px);
+}
+
+@keyframes reorderSlideIn {
+    from { opacity: 0; transform: translateY(40px) scale(.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.reorder-toast button, [class*="reorder-toast"] button {
+    transition: all .3s cubic-bezier(.22, 1, .36, 1);
+}
+
+.reorder-toast button:hover, [class*="reorder-toast"] button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(212, 160, 23, .15);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — ORDER AGAIN SECTION
+   ══════════════════════════════════════════════════════ */
+.order-again-card, [class*="order-again"] .card {
+    transition: all .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+.order-again-card:hover, [class*="order-again"] .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — SPLIT BILL MODAL
+   ══════════════════════════════════════════════════════ */
+.split-bill-card, [class*="split-bill"] .modal-content {
+    animation: cateringReveal .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+.split-bill-btn {
+    transition: all .3s cubic-bezier(.22, 1, .36, 1);
+}
+
+.split-bill-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(212, 160, 23, .15);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — GROUP ORDERING
+   ══════════════════════════════════════════════════════ */
+.group-order-card, [class*="group-order"] {
+    transition: all .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+.group-order-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — SUBSCRIPTION CARDS
+   ══════════════════════════════════════════════════════ */
+.subscription-card, .sub-plan-card {
+    transition: all .4s cubic-bezier(.22, 1, .36, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.subscription-card:hover, .sub-plan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+}
+
+.subscription-card.popular::before, .sub-plan-card.popular::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), #f0c850, var(--gold));
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — CHATBOT
+   ══════════════════════════════════════════════════════ */
+.chatbot-container, [class*="chatbot"] {
+    transition: all .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+.chatbot-toggle {
+    transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+    animation: whatsappFloat 3s ease-in-out infinite;
+}
+
+.chatbot-toggle:hover {
+    transform: scale(1.12) !important;
+    box-shadow: 0 8px 24px rgba(212, 160, 23, .2);
+}
+
+.chatbot-message {
+    animation: chatBubble .3s cubic-bezier(.22, 1, .36, 1);
+}
+
+@keyframes chatBubble {
+    from { opacity: 0; transform: translateY(10px) scale(.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — SMOOTH SCROLL BEHAVIOR
+   ══════════════════════════════════════════════════════ */
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   V6 — SECTION WIPE TRANSITIONS
+   ══════════════════════════════════════════════════════ */
+.section-wipe {
+    position: relative;
+}
+
+.section-wipe::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(180deg, rgba(0,0,0,.03) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   HIGH CONTRAST MODE
+   ══════════════════════════════════════════════════════ */
+@media (forced-colors: active) {
+    .cta-button, .add-to-cart, .filter-btn {
+        border: 2px solid ButtonText;
+    }
+
+    .special-badge {
+        border: 1px solid ButtonText;
+    }
+
+    .checkout-progress-num {
+        border: 2px solid ButtonText;
+    }
+
+    .faq-item {
+        border-left-color: ButtonText;
+    }
+
+    .svg-ornament line, .svg-ornament path {
+        stroke: ButtonText;
+    }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+    .hero-tagline {
+        animation: none;
+        -webkit-text-fill-color: unset;
+        background: none;
+    }
+
+    .hero-scroll-indicator,
+    .whatsapp-float,
+    .daily-special-badge,
+    .chatbot-toggle {
+        animation: none;
+    }
+
+    .special-badge::after,
+    .trust-badge::after,
+    .auth-bonus-banner::after,
+    .delivery-banner::after,
+    .combo-banner::after,
+    .birthday-banner::after,
+    .ai-badge::after {
+        animation: none;
+    }
+
+    #scroll-progress {
+        animation: none;
+        background: var(--gold);
+    }
+
+    .gallery-item:hover img {
+        transform: none;
+    }
+
+    .pwa-icon {
+        animation: none;
+    }
+
+    .hero-content > * {
+        animation: none;
+        opacity: 1;
+    }
+
+    .nav-links.active a {
+        animation: none;
+        opacity: 1;
+    }
+
+    .section-ornament-wrap {
+        opacity: 1;
+    }
+
+    .section-ornament-wrap .svg-ornament line,
+    .section-ornament-wrap .svg-ornament path {
+        stroke-dasharray: none;
+        stroke-dashoffset: 0;
+        animation: none;
+    }
+
+    .features-list li {
+        opacity: 1;
+        transform: none;
+    }
+
+    .preloader-progress::after {
+        animation: none;
+    }
+}
+
+
+/* ══════════════════════════════════════════════════════
    MOBILE PREMIUM EXTRAS
    ══════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
@@ -3208,8 +4086,16 @@ footer::before {
     .info-block:hover,
     .stat-item:hover,
     .review-card:hover,
-    .special-card:hover {
+    .special-card:hover,
+    .ai-card:hover,
+    .ai-pick-card:hover,
+    .reco-card:hover,
+    #testimonials-grid > *:hover {
         transform: none;
+    }
+
+    .hero-content > * {
+        animation-delay: 0s !important;
     }
 }
 

@@ -35,6 +35,14 @@ export function initPremium() {
     initFloatingCartBump();
     initPremiumNavHighlight();
     initImageRevealOnLoad();
+    // V6
+    initOrnamentReveal();
+    initFeaturesListReveal();
+    initSocialLinksReveal();
+    initSectionHeadingReveal();
+    initLoyaltyPointsAnimation();
+    initMobileMenuAnimation();
+    initHamburgerMorph();
 }
 
 // ── Intersection Observer Scroll Reveal ──
@@ -960,5 +968,140 @@ function initImageRevealOnLoad() {
             img.style.transform = 'scale(1)';
             img.classList.add('img-revealed');
         });
+    });
+}
+
+// ══════════════════════════════════════════════════════
+// V6 — TOP OF ALL ENHANCEMENTS
+// ══════════════════════════════════════════════════════
+
+// ── SVG Ornament Line-Draw Reveal ──
+function initOrnamentReveal() {
+    var ornaments = document.querySelectorAll('.section-ornament-wrap');
+    if (!ornaments.length || !('IntersectionObserver' in window)) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    ornaments.forEach(function(el) { observer.observe(el); });
+}
+
+// ── Features List Stagger Reveal ──
+function initFeaturesListReveal() {
+    var lists = document.querySelectorAll('.features-list');
+    if (!lists.length || !('IntersectionObserver' in window)) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                var items = entry.target.querySelectorAll('li');
+                items.forEach(function(li, i) {
+                    setTimeout(function() {
+                        li.classList.add('revealed');
+                    }, i * 100);
+                });
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+
+    lists.forEach(function(list) { observer.observe(list); });
+}
+
+// ── Social Links Stagger on Footer Scroll ──
+function initSocialLinksReveal() {
+    var socialLinks = document.querySelectorAll('.social-links');
+    if (!socialLinks.length || !('IntersectionObserver' in window)) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    socialLinks.forEach(function(el) { observer.observe(el); });
+}
+
+// ── Section Heading Underline Reveal ──
+function initSectionHeadingReveal() {
+    var headings = document.querySelectorAll('section h2');
+    if (!headings.length || !('IntersectionObserver' in window)) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    headings.forEach(function(h) { observer.observe(h); });
+}
+
+// ── Loyalty Points Float Animation ──
+function initLoyaltyPointsAnimation() {
+    // Listen for loyalty point awards — watch for toast messages about points
+    var origToast = window.showAuthToast;
+    if (typeof origToast !== 'function') return;
+
+    window.showAuthToast = function(message, type) {
+        origToast(message, type);
+
+        // If message contains points info, show floating points
+        var pointsMatch = message.match(/(\+?\d+)\s*points?/i);
+        if (pointsMatch) {
+            showFloatingPoints('+' + pointsMatch[1] + ' pts');
+        }
+    };
+}
+
+function showFloatingPoints(text) {
+    var widget = document.getElementById('loyalty-widget');
+    var target = widget || document.getElementById('cart-icon');
+    if (!target) return;
+
+    var rect = target.getBoundingClientRect();
+    var float = document.createElement('div');
+    float.className = 'loyalty-points-float';
+    float.textContent = text;
+    float.style.left = rect.left + 'px';
+    float.style.top = rect.top + 'px';
+    document.body.appendChild(float);
+
+    setTimeout(function() { float.remove(); }, 1500);
+}
+
+// ── Mobile Menu Animation Enhancement ──
+function initMobileMenuAnimation() {
+    var overlay = document.getElementById('mobile-menu-overlay');
+    if (!overlay) return;
+
+    // Watch for overlay becoming active
+    var observer = new MutationObserver(function() {
+        if (overlay.classList.contains('active')) {
+            overlay.style.display = '';
+        }
+    });
+
+    observer.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+}
+
+// ── Hamburger Menu Morph ──
+function initHamburgerMorph() {
+    var toggle = document.getElementById('mobile-menu-toggle');
+    if (!toggle) return;
+
+    toggle.addEventListener('click', function() {
+        toggle.classList.toggle('active');
     });
 }
