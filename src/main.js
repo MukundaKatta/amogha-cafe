@@ -116,6 +116,30 @@ setTimeout(function() {
     import('./modules/weather.js').then(function(m) { m.initWeather(); });
 }, 3000);
 
+// ===== WORLD-CLASS FEATURES (Phase 12) =====
+setTimeout(function() {
+    // Stories / Reels (Instagram-like social content feed)
+    import('./modules/stories.js').then(function(m) { m.initStories(); });
+    // Mood-based ordering (order by how you feel)
+    import('./modules/moodorder.js').then(function(m) { m.initMoodOrder(); });
+    // Live wait time estimation (real-time queue)
+    import('./modules/livequeue.js').then(function(m) { m.initLiveQueue(); });
+    // Daily streak rewards (consecutive visit bonuses)
+    import('./modules/streaks.js').then(function(m) { m.initStreaks(); });
+    // Digital gift cards (send to friends)
+    import('./modules/giftcards.js').then(function(m) { m.initGiftCards(); });
+    // Refer-a-friend with tracking & rewards
+    import('./modules/referral.js').then(function(m) { m.initReferral(); });
+    // Ambient music player (cafe atmosphere)
+    import('./modules/musicplayer.js').then(function(m) { m.initMusicPlayer(); });
+    // AR menu preview (see food on your table)
+    import('./modules/arpreview.js').then(function(m) { m.initARPreview(); });
+    // Voice ordering (hands-free)
+    import('./modules/voiceorder.js').then(function(m) { m.initVoiceOrder(); });
+    // Geofencing & "I'm Here" (location-aware order prep)
+    import('./modules/geofence.js').then(function(m) { m.initGeofence(); });
+}, 3500);
+
 // AI For You recommendations (delayed to not block load)
 setTimeout(initAiForYou, 4000);
 
