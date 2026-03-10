@@ -189,7 +189,7 @@
     <!-- Cookie Consent Banner -->
     <div id="cookie-consent" class="cookie-consent" style="display:none" role="dialog" aria-label="Cookie consent">
         <div class="cookie-consent-inner">
-            <p>We use cookies to enhance your experience, remember your preferences, and serve you the best flavors online. By continuing, you agree to our <a href="#" style="color:var(--gold);text-decoration:underline">Privacy Policy</a>.</p>
+            <p>We use cookies to enhance your experience, remember your preferences, and serve you the best flavors online. By continuing, you agree to our <a href="#" class="cookie-privacy-link">Privacy Policy</a>.</p>
             <div class="cookie-consent-actions">
                 <button class="cookie-btn cookie-btn-accept" id="cookie-accept">Accept All</button>
                 <button class="cookie-btn cookie-btn-decline" id="cookie-decline">Essential Only</button>
@@ -349,7 +349,7 @@
                     </a>
                 </li>
                 <li><span id="loyalty-widget" class="loyalty-widget" style="display:none"></span></li>
-                <li><button onclick="openBadgeGallery()" class="theme-toggle" aria-label="View Badges" title="My Badges" style="font-size:1.1rem;line-height:1">🏅</button></li>
+                <li><button onclick="openBadgeGallery()" class="theme-toggle badge-gallery-btn" aria-label="View Badges" title="My Badges">🏅</button></li>
                 <li><a href="#" id="cart-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><span id="cart-count">0</span></a></li>
                 <li><button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button></li>
             </ul>
@@ -662,9 +662,9 @@
 
             <!-- Delivery Banner -->
             <div class="delivery-banner">
-                <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Estimated Delivery: 30-45 mins</span>
+                <span><svg class="inline-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Estimated Delivery: 30-45 mins</span>
                 <span>|</span>
-                <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free delivery on orders above ₹500</span>
+                <span><svg class="inline-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free delivery on orders above ₹500</span>
             </div>
 
             <!-- Combo Meal Banner -->
@@ -1073,8 +1073,8 @@
             <span class="close" onclick="closeCheckout()">&times;</span>
 
             <!-- Step 1: Order Summary -->
-            <div id="checkout-step-1" class="checkout-step active">
-                <h2>Order Summary</h2>
+            <div id="checkout-step-1" class="checkout-step active" role="tabpanel" aria-labelledby="checkout-step-1-title">
+                <h2 id="checkout-step-1-title">Order Summary</h2>
                 <div id="checkout-items"></div>
                 <div class="checkout-totals">
                     <div class="checkout-row"><span>Subtotal</span><span id="co-subtotal"></span></div>
@@ -1091,7 +1091,7 @@
                 </div>
                 <div class="giftcard-section">
                     <div class="coupon-input-row">
-                        <input type="text" id="giftcard-code" placeholder="Gift card code" class="coupon-input" style="text-transform:uppercase">
+                        <input type="text" id="giftcard-code" placeholder="Gift card code" class="coupon-input gc-code-input">
                         <button type="button" class="coupon-apply-btn" onclick="applyGiftCard()">Redeem</button>
                     </div>
                     <p id="giftcard-msg" class="coupon-msg"></p>
@@ -1100,12 +1100,16 @@
             </div>
 
             <!-- Step 2: Customer Details -->
-            <div id="checkout-step-2" class="checkout-step">
-                <h2>Your Details</h2>
-                <form id="checkout-form" onsubmit="return false;">
-                    <input type="text" id="co-name" placeholder="Full Name" required>
-                    <input type="tel" id="co-phone" placeholder="Phone Number" required>
-                    <textarea id="co-address" placeholder="Delivery Address" rows="3" required></textarea>
+            <div id="checkout-step-2" class="checkout-step" role="tabpanel" aria-labelledby="checkout-step-2-title">
+                <h2 id="checkout-step-2-title">Your Details</h2>
+                <form id="checkout-form" onsubmit="return false;" novalidate>
+                    <label for="co-name" class="sr-only">Full Name</label>
+                    <input type="text" id="co-name" placeholder="Full Name" required autocomplete="name" aria-required="true">
+                    <label for="co-phone" class="sr-only">Phone Number</label>
+                    <input type="tel" id="co-phone" placeholder="Phone Number" required autocomplete="tel" pattern="[0-9]{10}" aria-required="true">
+                    <label for="co-address" class="sr-only">Delivery Address</label>
+                    <textarea id="co-address" placeholder="Delivery Address" rows="3" required autocomplete="street-address" aria-required="true"></textarea>
+                    <label for="co-notes" class="sr-only">Special Instructions</label>
                     <textarea id="co-notes" placeholder="Special Instructions (Optional)" rows="2"></textarea>
                 </form>
                 <!-- Scheduled Orders -->
@@ -1130,7 +1134,7 @@
             </div>
 
             <!-- Step 3: Premium Payment -->
-            <div id="checkout-step-3" class="checkout-step">
+            <div id="checkout-step-3" class="checkout-step" role="tabpanel" aria-labelledby="pay-hero-label">
                 <!-- Payment Amount Hero -->
                 <div class="pay-hero">
                     <p class="pay-hero-label">Total Amount</p>
@@ -1192,7 +1196,7 @@
             </div>
 
             <!-- Step 4: Confirmation -->
-            <div id="checkout-step-4" class="checkout-step">
+            <div id="checkout-step-4" class="checkout-step" role="tabpanel" aria-label="Order confirmation">
                 <div class="order-confirmed">
                     <div class="confirm-icon">&#10003;</div>
                     <h2>Order Placed!</h2>
@@ -1200,11 +1204,11 @@
                     <p class="confirm-sub" id="confirm-detail"></p>
                     <a id="whatsapp-link" class="whatsapp-btn" href="#" target="_blank">Send Order via WhatsApp</a>
                     <div id="order-tracking-link"></div>
-                    <button class="share-order-btn" onclick="shareOrder()" style="margin-top:0.8rem;padding:0.6rem 1.2rem;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.85rem;display:inline-flex;align-items:center;gap:0.4rem">
+                    <button class="share-order-btn" onclick="shareOrder()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
                         Share &amp; Earn 10 pts
                     </button>
-                    <button onclick="openSplitBill(window._lastOrderId || '', window._lastOrderTotal || 0)" style="margin-top:0.5rem;padding:0.5rem 1rem;background:rgba(212,160,23,0.1);color:#D4A017;border:1px solid rgba(212,160,23,0.2);border-radius:10px;font-weight:700;cursor:pointer;font-size:0.8rem">Split Bill</button>
+                    <button class="split-bill-btn" onclick="openSplitBill(window._lastOrderId || '', window._lastOrderTotal || 0)">Split Bill</button>
                     <button class="cta-button" onclick="closeCheckout()">Done</button>
                 </div>
             </div>
@@ -1335,19 +1339,19 @@
 
     <!-- Gift Card Modal -->
     <div id="giftcard-modal" class="modal">
-        <div class="modal-content" style="max-width:420px">
+        <div class="modal-content gc-modal-content">
             <span class="close" onclick="closeGiftCardModal()">&times;</span>
-            <h2 style="text-align:center;margin-bottom:0.5rem">🎁 Gift a Meal</h2>
-            <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin-bottom:1.5rem">Send the joy of Amogha to someone special</p>
-            <input type="tel" id="gc-recipient-phone" placeholder="Recipient's phone number" maxlength="10" style="width:100%;padding:0.8rem;border-radius:10px;border:1px solid rgba(212,160,23,0.2);background:rgba(255,255,255,0.03);color:inherit;font-size:0.95rem;margin-bottom:0.8rem">
-            <div class="gc-amounts" style="display:flex;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap">
+            <h2 class="gc-modal-title">🎁 Gift a Meal</h2>
+            <p class="gc-modal-subtitle">Send the joy of Amogha to someone special</p>
+            <input type="tel" id="gc-recipient-phone" placeholder="Recipient's phone number" maxlength="10" class="gc-phone-input">
+            <div class="gc-amounts">
                 <button class="gc-amount-btn" onclick="selectGcAmount(250, this)">&#8377;250</button>
                 <button class="gc-amount-btn active" onclick="selectGcAmount(500, this)">&#8377;500</button>
                 <button class="gc-amount-btn" onclick="selectGcAmount(1000, this)">&#8377;1000</button>
                 <button class="gc-amount-btn" onclick="selectGcAmount(2000, this)">&#8377;2000</button>
             </div>
             <p id="gc-msg" class="coupon-msg"></p>
-            <button class="cta-button primary" onclick="buyGiftCard()" style="width:100%">Buy Gift Card</button>
+            <button class="cta-button primary gc-buy-btn" onclick="buyGiftCard()">Buy Gift Card</button>
         </div>
     </div>
 
@@ -1432,7 +1436,7 @@
             </div>
         </div>
         <button class="bar-cta" onclick="window.scrollTo({top: document.getElementById('menu').offsetTop - 80, behavior: 'smooth'})">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Order Now
+            <svg class="inline-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Order Now
         </button>
     </div>
 
