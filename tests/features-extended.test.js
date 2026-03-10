@@ -670,7 +670,7 @@ describe('openMyOrders', () => {
         await new Promise(r => setTimeout(r, 0));
         const listEl = document.getElementById('myorders-list');
         expect(listEl.innerHTML).toContain('Biryani');
-        expect(listEl.innerHTML).toContain('DELIVERED');
+        expect(listEl.innerHTML).toContain('delivered');
     });
 });
 
@@ -3263,10 +3263,10 @@ describe('openMyOrders branch coverage', () => {
         openMyOrders();
         await new Promise(r => setTimeout(r, 0));
         const listEl = document.getElementById('myorders-list');
-        expect(listEl.innerHTML).toContain('CONFIRMED');
-        expect(listEl.innerHTML).toContain('PREPARING');
-        expect(listEl.innerHTML).toContain('CANCELLED');
-        expect(listEl.innerHTML).toContain('UNKNOWN_STATUS');
+        expect(listEl.innerHTML).toContain('confirmed');
+        expect(listEl.innerHTML).toContain('preparing');
+        expect(listEl.innerHTML).toContain('cancelled');
+        expect(listEl.innerHTML).toContain('unknown_status');
     });
 
     it('catch path renders from cache with createdAt handling (lines 851-854)', async () => {
@@ -4549,8 +4549,8 @@ describe('openMyOrders: renders orders with items array (lines 828-836)', () => 
         expect(listEl.innerHTML).toContain('Biryani x2');
         expect(listEl.innerHTML).toContain('Raita x1');
         expect(listEl.innerHTML).toContain('Tea x1');
-        expect(listEl.innerHTML).toContain('DELIVERED');
-        expect(listEl.innerHTML).toContain('PENDING');
+        expect(listEl.innerHTML).toContain('delivered');
+        expect(listEl.innerHTML).toContain('pending');
         expect(listEl.innerHTML).toContain('538');
     });
 });
@@ -5760,7 +5760,7 @@ describe('openMyOrders: order with null createdAt defaults to new Date (line 828
         await new Promise(r => setTimeout(r, 10));
         const listEl = document.getElementById('myorders-list');
         expect(listEl.innerHTML).toContain('Naan x3');
-        expect(listEl.innerHTML).toContain('DELIVERED');
+        expect(listEl.innerHTML).toContain('delivered');
     });
 });
 
@@ -6148,7 +6148,7 @@ describe('openMyOrders: order with falsy items/status/total (lines 828-836)', ()
         openMyOrders();
         await new Promise(r => setTimeout(r, 10));
         const listEl = document.getElementById('myorders-list');
-        expect(listEl.innerHTML).toContain('PENDING'); // fallback status
+        expect(listEl.innerHTML).toContain('pending'); // fallback status
         expect(listEl.innerHTML).toContain('Rs.0'); // fallback total
         expect(listEl.innerHTML).toContain('myorder-card');
     });

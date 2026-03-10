@@ -386,7 +386,7 @@ export function displayCart() {
     if (!cartItemsContainer) return;
 
     if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<div class="empty-cart">Your cart is empty</div>';
+        cartItemsContainer.innerHTML = '<div class="empty-cart">Your cart is empty<br><span style="font-size:0.85em;opacity:.7;margin-top:.5rem;display:block">Browse our menu to add delicious items</span></div>';
         var subEl = document.getElementById('subtotal-amount');
         var totEl = document.getElementById('total-amount');
         if (subEl) subEl.textContent = '0.00';
@@ -401,8 +401,8 @@ export function displayCart() {
         const addonTotal = (item.addons || []).reduce((s, a) => s + a.price, 0);
         const itemTotal = (item.price + addonTotal) * item.quantity;
         subtotal += itemTotal;
-        const spiceTag = item.spiceLevel && item.spiceLevel !== 'medium' ? ' <span style="font-size:0.7rem;color:#e67e22">(' + item.spiceLevel + ')</span>' : '';
-        const addonTags = (item.addons || []).map(a => '<span style="font-size:0.7rem;color:var(--gold,#D4A017)">+ ' + a.name + ' ₹' + a.price + '</span>').join(' ');
+        const spiceTag = item.spiceLevel && item.spiceLevel !== 'medium' ? ' <span class="spice-tag">(' + item.spiceLevel + ')</span>' : '';
+        const addonTags = (item.addons || []).map(a => '<span class="addon-tag">+ ' + a.name + ' ₹' + a.price + '</span>').join(' ');
 
         html += `
             <div class="cart-item">

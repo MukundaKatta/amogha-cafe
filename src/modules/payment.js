@@ -406,9 +406,9 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         var trackDiv = document.getElementById('order-tracking-link');
         if (trackDiv) {
             trackDiv.innerHTML = '<div style="margin-top:1rem;padding:1rem;background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.15);border-radius:12px;text-align:center">' +
-                '<p style="font-size:0.82rem;color:#a09080;margin-bottom:0.5rem">Track your order in real-time:</p>' +
-                '<a href="' + trackUrl + '" target="_blank" rel="noopener noreferrer" style="color:#D4A017;font-weight:600;font-size:0.9rem;word-break:break-all">' + trackUrl + '</a>' +
-                '<br><button onclick="safeCopy(\'' + trackUrl + '\',this)" style="margin-top:0.6rem;padding:0.4rem 1rem;background:linear-gradient(135deg,#D4A017,#B8860B);color:#1a0f08;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.78rem">Copy Link</button>' +
+                '<p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.5rem">Track your order in real-time:</p>' +
+                '<a href="' + trackUrl + '" target="_blank" rel="noopener noreferrer" style="color:var(--gold);font-weight:600;font-size:0.9rem;word-break:break-all">' + trackUrl + '</a>' +
+                '<br><button onclick="safeCopy(\'' + trackUrl + '\',this)" class="cta-button" style="margin-top:0.6rem;padding:0.4rem 1rem;font-size:0.78rem">Copy Link</button>' +
                 '</div>';
         }
 

@@ -808,15 +808,15 @@ export function openMyOrders() {
     }
     modal.style.display = 'block';
     var listEl = document.getElementById('myorders-list');
-    listEl.innerHTML = '<p style="text-align:center;color:#a09080">Loading orders...</p>';
+    listEl.innerHTML = '<p style="text-align:center;color:var(--text-muted)">Loading orders...</p>';
     var db = getDb();
     if (!db) {
-        listEl.innerHTML = '<p style="text-align:center;color:#a09080;padding:2rem">Service unavailable. Please refresh.</p>';
+        listEl.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem">Service unavailable. Please refresh.</p>';
         return;
     }
     db.collection('orders').where('userId', '==', user.phone).orderBy('createdAt', 'desc').limit(10).get().then(function(snap) {
         if (snap.empty) {
-            listEl.innerHTML = '<p style="text-align:center;color:#a09080;padding:2rem">No orders yet. Place your first order!</p>';
+            listEl.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem">No orders yet. Place your first order!</p>';
             return;
         }
         var html = '';
@@ -824,13 +824,12 @@ export function openMyOrders() {
             var o = doc.data();
             var d = o.createdAt ? new Date(o.createdAt) : new Date();
             var dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-            var statusColors = { pending: '#f39c12', confirmed: '#3498db', preparing: '#e67e22', delivered: '#27ae60', cancelled: '#e74c3c' };
-            var statusColor = statusColors[o.status] || '#999';
+            var statusClass = 'status-badge status-badge--' + (o.status || 'pending');
             var items = (o.items || []).map(function(i) { return i.name + ' x' + i.qty; }).join(', ');
             html += '<div class="myorder-card">' +
                 '<div class="myorder-header">' +
                     '<span class="myorder-date">' + dateStr + '</span>' +
-                    '<span class="myorder-status" style="color:' + statusColor + '">' + (o.status || 'pending').toUpperCase() + '</span>' +
+                    '<span class="' + statusClass + '">' + (o.status || 'pending') + '</span>' +
                 '</div>' +
                 '<p class="myorder-items">' + items + '</p>' +
                 '<div class="myorder-footer">' +
@@ -1379,7 +1378,7 @@ export function initOrderAgainSection() {
         var itemCount = (o.items || []).reduce(function(sum, i) { return sum + (i.qty || 1); }, 0);
         var total = o.total || 0;
         html += '<div class="reorder-card" style="min-width:220px;background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.15);border-radius:14px;padding:1rem;scroll-snap-align:start;flex-shrink:0">' +
-            '<div style="font-size:0.8rem;color:#a09080;margin-bottom:0.4rem">' + dateStr + '</div>' +
+            '<div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem">' + dateStr + '</div>' +
             '<div style="font-size:0.95rem;font-weight:600;color:var(--text-primary,#1a0f08);margin-bottom:0.3rem">' + itemCount + ' item' + (itemCount !== 1 ? 's' : '') + '</div>' +
             '<div style="font-size:1.05rem;font-weight:700;color:#D4A017;margin-bottom:0.7rem">Rs.' + total + '</div>' +
             '<button onclick="reorderFromHistory(\'' + entry.id + '\')" style="width:100%;padding:0.5rem;background:linear-gradient(135deg,#D4A017,#B8860B);color:#1a0f08;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem">Reorder</button>' +
@@ -1545,7 +1544,7 @@ export function openMealPlannerModal() {
         '<div class="meal-planner-card">' +
             '<div class="meal-planner-header">' +
                 '<h2><span class="ai-badge">AI</span> 7-Day Meal Planner</h2>' +
-                '<button onclick="closeMealPlanner()" style="background:none;border:none;color:#a09080;font-size:1.5rem;cursor:pointer">&times;</button>' +
+                '<button onclick="closeMealPlanner()" style="background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer">&times;</button>' +
             '</div>' +
             '<div class="meal-planner-controls">' +
                 '<select id="mp-dietary"><option value="all">All</option><option value="veg">Veg Only</option><option value="non-veg">Non-Veg Only</option></select>' +

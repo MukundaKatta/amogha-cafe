@@ -439,3 +439,327 @@ body.light-mode .insight-summary p,.insight-theme,.insight-suggestions li,.forec
     background: rgba(212, 160, 23, .25);
     color: inherit;
 }
+
+/* ============================================================
+   DARK MODE — Comprehensive Theme System
+   ============================================================ */
+
+/* Extended CSS variables for themeable inline styles */
+:root {
+    --surface: #faf7f2;
+    --surface-elevated: #fff;
+    --surface-hover: rgba(212, 160, 23, .04);
+    --border-light: #e0d5c8;
+    --border-medium: #c8baa8;
+    --text-secondary: #666;
+    --text-tertiary: #999;
+    --text-disabled: #aaa;
+    --input-bg: #fff;
+    --input-border: #d5cec4;
+    --input-disabled-bg: #f0ede8;
+    --badge-success: #27ae60;
+    --badge-warning: #f39c12;
+    --badge-error: #e74c3c;
+    --badge-info: #3498db;
+}
+
+body.dark-mode {
+    --surface: #1e140e;
+    --surface-elevated: #2a1c14;
+    --surface-hover: rgba(212, 160, 23, .08);
+    --border-light: rgba(212, 160, 23, .12);
+    --border-medium: rgba(212, 160, 23, .2);
+    --text: #ede2d2;
+    --text-light: #c8baa8;
+    --text-secondary: #b8a898;
+    --text-tertiary: #8a7a6a;
+    --text-muted: #7a6a5a;
+    --text-disabled: #6a5a4a;
+    --input-bg: rgba(255,255,255,.04);
+    --input-border: rgba(212,160,23,.15);
+    --input-disabled-bg: rgba(255,255,255,.02);
+    --cream: #1e140e;
+    --cream-dark: #2a1c14;
+    --warm-white: #1e140e;
+    --glass-bg: rgba(30, 20, 14, .85);
+    --glass-border: rgba(212, 160, 23, .1);
+}
+
+/* --- Profile Modal Dark Mode --- */
+body.dark-mode .profile-field input,
+body.dark-mode .profile-field select,
+body.dark-mode .profile-field textarea {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text);
+}
+body.dark-mode .profile-field input:disabled,
+body.dark-mode .profile-field input[readonly] {
+    background: var(--input-disabled-bg);
+    color: var(--text-disabled);
+}
+
+/* --- Cart Empty State Enhancement --- */
+.empty-cart {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+.empty-cart::before {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.2rem;
+    background: linear-gradient(135deg, rgba(212,160,23,.08), rgba(139,26,26,.08));
+    border-radius: 50%;
+    position: relative;
+}
+.empty-cart::after {
+    content: '🛒';
+    display: block;
+    font-size: 2rem;
+    margin-top: -4.5rem;
+    margin-bottom: 1.5rem;
+    opacity: .5;
+    animation: emptyCartBounce 2s ease-in-out infinite;
+}
+@keyframes emptyCartBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* --- Cart Item Enhancement --- */
+.cart-item {
+    transition: background var(--transition-fast), transform var(--transition-fast);
+    border-radius: var(--radius-sm);
+}
+.cart-item:hover {
+    background: var(--surface-hover);
+}
+
+/* --- Spice & Addon Tags --- */
+.spice-tag {
+    font-size: 0.7rem;
+    color: #e67e22;
+    font-weight: 500;
+}
+.addon-tag {
+    font-size: 0.7rem;
+    color: var(--gold);
+    font-weight: 500;
+}
+body.dark-mode .spice-tag { color: #f0a050; }
+
+/* --- Order Status Badges --- */
+.status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0.02em;
+}
+.status-badge--pending { background: rgba(243,156,18,.12); color: #f39c12; }
+.status-badge--confirmed { background: rgba(52,152,219,.12); color: #3498db; }
+.status-badge--preparing { background: rgba(230,126,34,.12); color: #e67e22; }
+.status-badge--delivered { background: rgba(39,174,96,.12); color: #27ae60; }
+.status-badge--cancelled { background: rgba(231,76,60,.12); color: #e74c3c; }
+body.dark-mode .status-badge--pending { background: rgba(243,156,18,.15); color: #ffc04d; }
+body.dark-mode .status-badge--confirmed { background: rgba(52,152,219,.15); color: #5dade2; }
+body.dark-mode .status-badge--preparing { background: rgba(230,126,34,.15); color: #f0a050; }
+body.dark-mode .status-badge--delivered { background: rgba(39,174,96,.15); color: #52d68a; }
+body.dark-mode .status-badge--cancelled { background: rgba(231,76,60,.15); color: #f07060; }
+
+/* --- Premium Input Styles (for dynamically created forms) --- */
+.premium-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
+    background: var(--input-bg);
+    color: var(--text);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.premium-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, .12);
+    outline: none;
+}
+.premium-input:disabled, .premium-input[readonly] {
+    background: var(--input-disabled-bg);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+}
+
+/* --- Premium Label Styles --- */
+.premium-label {
+    font-weight: 600;
+    font-size: 0.9em;
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+/* --- Premium Address Card --- */
+.address-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.address-card:hover {
+    background: var(--surface-hover);
+    border-color: var(--gold-muted);
+}
+
+/* --- Premium Modal Entrance --- */
+.modal[style*="flex"] .modal-content,
+.modal[style*="block"] .modal-content {
+    animation: modalSlideIn .35s cubic-bezier(.16, 1, .3, 1);
+}
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(24px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- Chat Message Entrance --- */
+.ai-msg { animation: chatMsgIn .3s cubic-bezier(.16, 1, .3, 1); }
+@keyframes chatMsgIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Premium notification toast --- */
+.auth-toast {
+    animation: toastSlideIn .4s cubic-bezier(.34, 1.56, .64, 1);
+}
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* --- Dark mode: contact section --- */
+body.dark-mode .contact-info-section h3,
+body.dark-mode .contact-form-section h3 {
+    color: var(--gold);
+}
+body.dark-mode .contact-info-section p,
+body.dark-mode .info-block p {
+    color: var(--text-light);
+}
+body.dark-mode .contact-link {
+    color: var(--gold);
+}
+body.dark-mode .contact-form-section input,
+body.dark-mode .contact-form-section textarea {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text);
+}
+
+/* --- Dark mode: FAQ section --- */
+body.dark-mode .faq-item {
+    border-color: var(--border-light);
+}
+body.dark-mode .faq-item h4 {
+    color: var(--text);
+}
+body.dark-mode .faq-answer p {
+    color: var(--text-light);
+}
+
+/* --- Dark mode: checkout & payment --- */
+body.dark-mode .checkout-content input,
+body.dark-mode .checkout-content textarea,
+body.dark-mode .checkout-content select {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text);
+}
+body.dark-mode .coupon-input {
+    background: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text) !important;
+}
+
+/* --- Dark mode: reservation form --- */
+body.dark-mode .modal input,
+body.dark-mode .modal textarea,
+body.dark-mode .modal select {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text);
+}
+
+/* --- Gallery overlay enhancement --- */
+.gallery-item::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.4) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity var(--transition-smooth);
+    pointer-events: none;
+    border-radius: inherit;
+}
+.gallery-item:hover::after {
+    opacity: 1;
+}
+
+/* --- Combo builder select enhancement --- */
+.combo-select-wrap select {
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.combo-select-wrap select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, .12);
+}
+
+/* --- Premium Counter Animation --- */
+.stat-number {
+    font-variant-numeric: tabular-nums;
+    transition: color var(--transition-fast);
+}
+
+/* --- Social links hover --- */
+.social-links a {
+    transition: transform var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast);
+}
+.social-links a:hover {
+    transform: translateY(-3px) scale(1.1);
+    opacity: .8;
+}
+
+/* --- Premium WhatsApp float --- */
+.whatsapp-float {
+    transition: transform var(--transition-spring), box-shadow var(--transition-fast);
+}
+.whatsapp-float:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 30px rgba(37, 211, 102, .35);
+}
+
+/* --- Premium music toggle --- */
+.music-toggle {
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+.music-toggle:hover {
+    transform: scale(1.1);
+}
+
+/* --- Smooth number transitions --- */
+#subtotal-amount, #total-amount, #co-subtotal, #co-delivery, #co-total,
+.floating-cart-total, .floating-cart-count {
+    transition: color .3s ease;
+    font-variant-numeric: tabular-nums;
+}
