@@ -190,7 +190,7 @@ export function initHero() {
                 for (var k = 0; k < kbClasses.length; k++) slides[current].classList.remove(kbClasses[k]);
                 slides[current].classList.add(kbClasses[Math.floor(Math.random() * kbClasses.length)]);
                 slides[current].classList.add('active');
-            }, 2000);
+            }, 5000);
         }
     }
     startSlideshow();
@@ -249,7 +249,7 @@ export function initHero() {
                 // Play video on incoming slide
                 var newVid = slides[current].querySelector('video');
                 if (newVid) { newVid.currentTime = 0; newVid.play(); }
-            }, 2000);
+            }, 5000);
         }
     };
 

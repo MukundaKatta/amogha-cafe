@@ -171,17 +171,17 @@ header.header-hidden {
     position: absolute;
     bottom: -2px;
     left: 50%;
+    transform: translateX(-50%);
     width: 0;
     height: 2px;
     background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    transition: width .4s cubic-bezier(.22, 1, .36, 1), left .4s cubic-bezier(.22, 1, .36, 1);
+    transition: width .4s cubic-bezier(.22, 1, .36, 1);
     border-radius: 2px;
 }
 
 .nav-links a:hover::after,
 .nav-links a.active-section::after {
     width: 100%;
-    left: 0;
 }
 
 /* ── Active Section Indicator ── */
