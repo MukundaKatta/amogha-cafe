@@ -45,6 +45,7 @@
     .section-reveal{opacity:1!important;transform:none!important}
     </style>
     <link rel="stylesheet" href="styles.css?v=67" media="all">
+    <link rel="stylesheet" href="enhancements.css?v=1" media="all">
     <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
 
     <!-- Restaurant Schema Markup for SEO -->
@@ -236,6 +237,7 @@
                     </div>
                 </div>
             </div>
+            <span id="open-status" class="open-status-badge"><span class="status-dot"></span><span class="status-text">Open Now</span></span>
             <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open navigation menu">☰</button>
             <ul class="nav-links" id="nav-links">
                 <li><a href="#home" data-i18n="home">Home</a></li>
@@ -771,6 +773,26 @@
             <h2>Follow Our Journey</h2>
             <p class="section-subtitle">Fresh from our kitchen to your feed</p>
             <div class="social-feed-strip" id="social-feed-strip"></div>
+        </div>
+    </section>
+
+    <!-- Newsletter Signup -->
+    <section class="newsletter-section">
+        <div class="container">
+            <div class="newsletter-card">
+                <div class="newsletter-content">
+                    <h2 class="newsletter-title">Stay in the Loop</h2>
+                    <p class="newsletter-desc">Get exclusive deals, new menu alerts & festival specials delivered to your inbox</p>
+                </div>
+                <form class="newsletter-form" id="newsletter-form" onsubmit="event.preventDefault(); submitNewsletter();">
+                    <div class="newsletter-input-group">
+                        <input type="email" id="newsletter-email" placeholder="Your email address" required class="newsletter-input">
+                        <button type="submit" class="newsletter-btn">Subscribe</button>
+                    </div>
+                    <p class="newsletter-msg" id="newsletter-msg"></p>
+                    <p class="newsletter-privacy">No spam, ever. Unsubscribe anytime.</p>
+                </form>
+            </div>
         </div>
     </section>
 
@@ -1347,6 +1369,26 @@
         </div>
         <span class="floating-cart-total">₹0</span>
         <button class="floating-cart-btn" onclick="document.getElementById('cart-icon').click()">View Cart</button>
+    </div>
+
+    <!-- Social Proof Toast -->
+    <div id="social-proof-toast" class="social-proof-toast" style="display:none">
+        <span class="sp-avatar"></span>
+        <div class="sp-content">
+            <span class="sp-text"></span>
+            <span class="sp-time"></span>
+        </div>
+    </div>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent" class="cookie-consent" style="display:none">
+        <div class="cookie-inner">
+            <p class="cookie-text">We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.</p>
+            <div class="cookie-actions">
+                <button class="cookie-accept" id="cookie-accept-btn">Accept All</button>
+                <button class="cookie-decline" id="cookie-decline-btn">Essential Only</button>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase SDK -->

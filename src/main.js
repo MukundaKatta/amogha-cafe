@@ -77,6 +77,9 @@ setTimeout(function() {
     import('./modules/chatbot.js').then(function(m) { m.initChatbot(); });
     import('./modules/splitbill.js');
     import('./modules/subscriptions.js');
+
+    // Enhancements — open/closed status, social proof, cookie consent, tilt, search suggestions
+    import('./modules/enhancements.js').then(function(m) { m.initEnhancements(); });
 }, 1500);
 
 // Show reorder toast after short delay (needs DOM + auth to be ready)
