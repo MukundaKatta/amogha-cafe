@@ -1174,6 +1174,69 @@ export function initUI() {
             }, 2000);
         }
     }
+
+    // ===== PREMIUM: HAPTIC FEEDBACK ON MOBILE =====
+    (function() {
+        if (!navigator.vibrate) return;
+
+        document.addEventListener('click', function(e) {
+            var target = e.target;
+            if (!target || typeof target.closest !== 'function') return;
+            if (target.closest('.add-to-cart, .cta-button, .btn-primary, .filter-btn')) {
+                navigator.vibrate(8);
+            }
+        });
+    })();
+
+    // ===== PREMIUM: KEYBOARD SHORTCUTS =====
+    (function() {
+        document.addEventListener('keydown', function(e) {
+            // Escape to close any open modal
+            if (e.key === 'Escape') {
+                var openModal = document.querySelector('.modal[style*="flex"], .modal[style*="block"]');
+                if (openModal) {
+                    var closeBtn = openModal.querySelector('.close');
+                    if (closeBtn) closeBtn.click();
+                }
+            }
+            // '/' to focus search (like GitHub/YouTube)
+            if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+                var activeEl = document.activeElement;
+                if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) return;
+                var searchInput = document.getElementById('menu-search');
+                if (searchInput) {
+                    e.preventDefault();
+                    searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(function() { searchInput.focus(); }, 300);
+                }
+            }
+        });
+    })();
+
+    // ===== PREMIUM: SMOOTH SKELETON LOADING FOR DYNAMIC CONTENT =====
+    (function() {
+        var menuContainer = document.getElementById('dynamic-menu-container');
+        if (!menuContainer || menuContainer.children.length > 0) return;
+
+        // Show skeleton placeholders while menu loads from Firestore
+        var skeletonHTML = '';
+        for (var i = 0; i < 6; i++) {
+            skeletonHTML += '<div class="skeleton" style="height:120px;margin-bottom:1rem;border-radius:var(--radius-md)"></div>';
+        }
+        menuContainer.innerHTML = '<div style="padding:1rem">' + skeletonHTML + '</div>';
+
+        // Remove skeletons once real content arrives
+        var skeletonObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(m) {
+                if (m.addedNodes.length > 0) {
+                    var skeleton = menuContainer.querySelector('.skeleton');
+                    if (skeleton) skeleton.parentElement.remove();
+                    skeletonObserver.disconnect();
+                }
+            });
+        });
+        skeletonObserver.observe(menuContainer, { childList: true });
+    })();
 }
 
 Object.assign(window, { closeMobileMenu, launchConfetti });

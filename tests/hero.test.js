@@ -531,10 +531,12 @@ describe('initHero — sets up _scrambleReveal on window when taglineEl exists',
         expect(typeof window._scrambleReveal).toBe('function');
     });
 
-    it('_scrambleReveal sets textContent of the supplied element', () => {
+    it('_scrambleReveal sets textContent of the supplied element (after animation completes)', () => {
         initHero();
         const el = document.querySelector('.hero-tagline .hero-text-inner');
         window._scrambleReveal('New Text', el);
+        // Advance all scramble timeouts (25 frames * 35ms = 875ms max)
+        vi.advanceTimersByTime(1000);
         expect(el.textContent).toBe('New Text');
     });
 
@@ -553,11 +555,15 @@ describe('initHero — sets up _scrambleReveal on window when taglineEl exists',
         expect(el.style.opacity).toBe('1');
     });
 
-    it('_scrambleReveal adds blur-reveal class to trigger the CSS animation', () => {
+    it('_scrambleReveal progressively reveals text with decrypt animation', () => {
         initHero();
         const el = document.querySelector('.hero-tagline .hero-text-inner');
         window._scrambleReveal('Animate', el);
-        expect(el.classList.contains('blur-reveal')).toBe(true);
+        // Text should be set (possibly scrambled) immediately on first tick
+        expect(el.textContent.length).toBe('Animate'.length);
+        // After all frames complete, text should match exactly
+        vi.advanceTimersByTime(1000);
+        expect(el.textContent).toBe('Animate');
     });
 
     it('_scrambleReveal is called automatically after a 2800ms delay on load', () => {
@@ -570,8 +576,8 @@ describe('initHero — sets up _scrambleReveal on window when taglineEl exists',
 
         vi.advanceTimersByTime(2800);
 
-        // The tagline element should have received the blur-reveal animation
-        expect(el.classList.contains('blur-reveal')).toBe(true);
+        // The spy should have been called with the tagline text
+        expect(spy).toHaveBeenCalled();
     });
 
     it('does NOT define window._scrambleReveal when taglineEl is absent', () => {

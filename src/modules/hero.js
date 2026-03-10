@@ -253,20 +253,58 @@ export function initHero() {
         }
     };
 
-    // ===== SOFT BLUR UNREVEAL EFFECT — cinematic focus pull =====
+    // ===== PREMIUM DECRYPT REVEAL — cinematic character-by-character unscramble =====
     var taglineEl = document.querySelector('.hero-tagline .hero-text-inner');
     if (taglineEl) {
+        var scrambleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
         window._scrambleReveal = function(text, element) {
-            element.textContent = text;
             element.classList.remove('fade-out');
             element.style.opacity = '1';
             element.style.transform = 'translateY(0)';
-            element.classList.remove('blur-reveal');
-            void element.offsetWidth; // force reflow
-            element.classList.add('blur-reveal');
+
+            // Skip scramble on reduced-motion preference
+            if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                element.textContent = text;
+                return;
+            }
+
+            var chars = text.split('');
+            var resolved = new Array(chars.length).fill(false);
+            var frame = 0;
+            var maxFrames = 25;
+            var interval = 35;
+
+            function tick() {
+                var display = '';
+                for (var i = 0; i < chars.length; i++) {
+                    if (resolved[i] || chars[i] === ' ') {
+                        display += chars[i];
+                    } else {
+                        display += scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+                    }
+                }
+                element.textContent = display;
+
+                // Resolve characters left-to-right with slight randomness
+                var resolveUpTo = Math.floor((frame / maxFrames) * chars.length * 1.2);
+                for (var j = 0; j < resolveUpTo && j < chars.length; j++) {
+                    if (!resolved[j] && (Math.random() > 0.3 || frame > maxFrames * 0.8)) {
+                        resolved[j] = true;
+                    }
+                }
+
+                frame++;
+                if (frame <= maxFrames) {
+                    setTimeout(tick, interval);
+                } else {
+                    element.textContent = text;
+                }
+            }
+            tick();
         };
 
-        // Run blur reveal on first load
+        // Run decrypt reveal on first load
         setTimeout(function() {
             window._scrambleReveal(taglineEl.textContent, taglineEl);
         }, 2800);

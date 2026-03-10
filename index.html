@@ -4,19 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Amogha Cafe & Restaurant | Authentic Indian Cuisine</title>
-    <meta name="description" content="Experience authentic Indian cuisine at Amogha Cafe & Restaurant. Order online for delivery and takeout. Fresh ingredients, traditional recipes.">
-    <meta property="og:title" content="Amogha Cafe & Restaurant | Authentic Indian Cuisine">
-    <meta property="og:description" content="Experience authentic Indian cuisine. Order online for delivery and takeout. Fresh ingredients, traditional recipes.">
+    <meta name="description" content="Amogha Cafe & Restaurant — Hyderabad's finest authentic Indian cuisine. Order Hyderabadi biryani, Andhra curries & tandoori specialties online. Free delivery on orders above ₹500. FSSAI licensed, 4.8★ rated.">
+    <meta property="og:title" content="Amogha Cafe & Restaurant | Hyderabad's Finest Indian Cuisine">
+    <meta property="og:description" content="Authentic Hyderabadi biryani, Andhra curries & tandoori specialties. Order online for delivery in 30-45 mins. Free delivery above ₹500. 4.8★ rated by 10,000+ customers.">
     <meta property="og:image" content="https://amogha-cafe.web.app/amogha-logo.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="Amogha Cafe & Restaurant logo">
     <meta property="og:type" content="restaurant">
-    <meta property="og:url" content="https://amogha-cafe.web.app/">
+    <meta property="og:url" content="https://amoghahotels.com/">
     <meta property="og:site_name" content="Amogha Cafe & Restaurant">
+    <meta property="og:locale" content="en_IN">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Amogha Cafe & Restaurant | Authentic Indian Cuisine">
-    <meta name="twitter:description" content="Experience authentic Indian cuisine. Order online for delivery and takeout.">
+    <meta name="twitter:description" content="Hyderabad's finest biryani & Indian cuisine. Order online, free delivery above ₹500.">
     <meta name="twitter:image" content="https://amogha-cafe.web.app/amogha-logo.png">
-    <meta name="keywords" content="Amogha Cafe, Indian restaurant, Hyderabad, biryani, online ordering, authentic cuisine, delivery">
+    <meta name="keywords" content="Amogha Cafe, Indian restaurant, Hyderabad, biryani, Hyderabadi biryani, online ordering, authentic cuisine, delivery, Kukatpally, Andhra cuisine, South Indian food, tandoori, best biryani Hyderabad">
     <meta name="format-detection" content="telephone=no">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <link rel="canonical" href="https://amoghahotels.com/">
     <link rel="icon" type="image/png" href="amogha-logo.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c1810">
@@ -53,9 +59,14 @@
         "@context": "https://schema.org",
         "@type": "Restaurant",
         "name": "Amogha Cafe & Restaurant",
-        "image": "https://amogha-cafe.web.app/amogha-logo.png",
-        "servesCuisine": ["Indian", "South Indian", "Hyderabadi"],
+        "alternateName": "Amogha Hotels",
+        "description": "Hyderabad's finest authentic Indian cuisine — Hyderabadi biryani, Andhra curries, tandoori specialties. Order online for delivery in 30-45 mins.",
+        "image": ["https://amogha-cafe.web.app/amogha-logo.png"],
+        "logo": "https://amogha-cafe.web.app/amogha-logo.png",
+        "url": "https://amoghahotels.com",
+        "servesCuisine": ["Indian", "South Indian", "Hyderabadi", "Andhra"],
         "priceRange": "₹₹",
+        "acceptsReservations": "True",
         "address": {
             "@type": "PostalAddress",
             "streetAddress": "Ground Floor, 2-23-310/83C, Pragathi Nagar Rd, Addagutta Society, Jal Vayu Vihar, Kukatpally",
@@ -64,18 +75,64 @@
             "postalCode": "500085",
             "addressCountry": "IN"
         },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "17.4935",
+            "longitude": "78.3911"
+        },
         "telephone": "+919121004999",
         "openingHoursSpecification": [
             { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday"], "opens": "11:00", "closes": "21:30" },
             { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Friday","Saturday"], "opens": "11:00", "closes": "22:30" },
             { "@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "12:00", "closes": "21:00" }
         ],
-        "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "1250" },
-        "hasMenu": "#menu"
+        "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "bestRating": "5", "worstRating": "1", "reviewCount": "1250" },
+        "hasMenu": "https://amoghahotels.com/#menu",
+        "paymentAccepted": "Cash, UPI, Credit Card, Debit Card, Net Banking, Wallets",
+        "currenciesAccepted": "INR",
+        "amenityFeature": [
+            { "@type": "LocationFeatureSpecification", "name": "Free Parking", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "Wheelchair Accessible", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "Online Ordering", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "Delivery", "value": true },
+            { "@type": "LocationFeatureSpecification", "name": "Catering", "value": true }
+        ]
+    }
+    </script>
+    <!-- FAQ Schema for rich snippets -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "Do you offer delivery?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Yes! We offer free delivery for orders over ₹500 within a 5 km radius. Delivery typically takes 30-45 minutes." }
+            },
+            {
+                "@type": "Question",
+                "name": "Do you have vegetarian options?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Absolutely! We have an extensive vegetarian menu with over 30 dishes including vegan options." }
+            },
+            {
+                "@type": "Question",
+                "name": "Do you offer catering services?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Yes! We cater for events of all sizes. Contact us for custom menus." }
+            },
+            {
+                "@type": "Question",
+                "name": "Do you take reservations?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Yes! You can book online through our website or call us directly at +91 91210 04999." }
+            }
+        ]
     }
     </script>
 </head>
 <body>
+    <!-- Skip to Content (Accessibility) -->
+    <a href="#menu" class="skip-to-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100000;padding:1rem 2rem;background:var(--gold);color:var(--dark);font-weight:700;border-radius:0 0 var(--radius-sm) var(--radius-sm);text-decoration:none;font-size:0.9rem;" onfocus="this.style.position='fixed';this.style.left='50%';this.style.transform='translateX(-50%)';this.style.top='0';this.style.width='auto';this.style.height='auto';" onblur="this.style.position='absolute';this.style.left='-9999px';this.style.width='1px';this.style.height='1px';">Skip to Menu</a>
+
     <!-- Scroll Progress Bar -->
     <div class="scroll-progress" id="scroll-progress"></div>
 
@@ -259,7 +316,7 @@
         </nav>
     </header>
 
-    <section id="home" class="hero">
+    <section id="home" class="hero" role="banner" aria-label="Welcome to Amogha Cafe">
         <div class="hero-slideshow" id="hero-slideshow">
             <div class="hero-slide active" style="background-image: url('bg.jpeg');"></div>
             <div class="hero-slide food" style="background-image: url('pics/Gemini_Generated_Image_gax5k7gax5k7gax5.png');"></div>
@@ -534,7 +591,7 @@
         </div>
     </section>
 
-    <section id="menu" class="menu section-wipe">
+    <section id="menu" class="menu section-wipe" aria-label="Our Menu">
         <div class="container">
             <h2>Our Menu</h2>
             <p class="section-subtitle">Explore our carefully curated collection of authentic flavors</p>
@@ -594,7 +651,7 @@
         </div>
     </section>
 
-    <section id="gallery" class="gallery">
+    <section id="gallery" class="gallery" aria-label="Photo Gallery">
         <div class="container">
             <h2>Gallery</h2>
             <p class="section-subtitle">A glimpse into the Amogha experience</p>
@@ -636,7 +693,7 @@
         </div>
     </section>
 
-    <section id="reviews" class="reviews">
+    <section id="reviews" class="reviews" aria-label="Customer Reviews">
         <div class="container">
             <h2>What Our Guests Say</h2>
             <p class="section-subtitle">Real stories from our cherished guests</p>
@@ -688,7 +745,7 @@
         <video id="lightbox-video" controls></video>
     </div>
 
-    <section id="contact" class="contact">
+    <section id="contact" class="contact" aria-label="Contact Us">
         <div class="container">
             <h2>Visit Us</h2>
             <div class="contact-grid">
@@ -774,7 +831,7 @@
         </div>
     </section>
 
-    <footer>
+    <footer role="contentinfo">
         <div class="footer-content">
             <div class="footer-section">
                 <h3><span class="amogha-brand"><img class="amogha-a" src="pics/image.png" alt="అ" loading="lazy">mogha</span></h3>
