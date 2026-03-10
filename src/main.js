@@ -80,6 +80,9 @@ setTimeout(function() {
 
     // Enhancements — open/closed status, social proof, cookie consent, tilt, search suggestions
     import('./modules/enhancements.js').then(function(m) { m.initEnhancements(); });
+
+    // Premium interactions — scroll reveals, ripple effects, accessibility
+    import('./modules/premium.js').then(function(m) { m.initPremium(); });
 }, 1500);
 
 // Show reorder toast after short delay (needs DOM + auth to be ready)
