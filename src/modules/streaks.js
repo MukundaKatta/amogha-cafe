@@ -165,20 +165,35 @@ function renderStreakWidget() {
     var best = getBestStreak();
     var data = getStreakData();
 
+    // Attach dropdown to the open-status badge
+    var statusBadge = document.getElementById('open-status');
+    if (!statusBadge) return;
+
+    var wrapper = statusBadge.parentElement;
+    if (!wrapper.classList.contains('streak-dropdown-wrap')) {
+        wrapper.style.position = 'relative';
+        wrapper.classList.add('streak-dropdown-wrap');
+    }
+
     var widget = document.getElementById('streakWidget');
     if (!widget) {
         widget = document.createElement('div');
         widget.id = 'streakWidget';
-        widget.className = 'streak-widget';
+        widget.className = 'streak-dropdown';
+        wrapper.appendChild(widget);
 
-        // Insert as a standalone section after the header, not inside nav
-        var header = document.querySelector('header');
-        if (header && header.nextSibling) {
-            header.parentNode.insertBefore(widget, header.nextSibling);
-        } else {
-            var main = document.querySelector('main') || document.body;
-            main.prepend(widget);
-        }
+        // Toggle on click
+        statusBadge.style.cursor = 'pointer';
+        statusBadge.addEventListener('click', function(e) {
+            e.stopPropagation();
+            widget.classList.toggle('streak-dropdown--open');
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', function() {
+            widget.classList.remove('streak-dropdown--open');
+        });
+        widget.addEventListener('click', function(e) { e.stopPropagation(); });
     }
 
     // Next milestone
