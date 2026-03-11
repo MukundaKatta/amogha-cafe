@@ -2478,7 +2478,9 @@
             <div class="panel-header">
                 <h2 class="panel-title">Menu Items</h2>
                 <button class="bulk-toggle-btn" id="bulk-toggle-btn" onclick="toggleBulkMode(true)">☑ Bulk Edit</button>
+                <button class="add-special-btn" onclick="triggerBulkUpload()">⬆ Upload Excel</button>
                 <button class="add-special-btn" onclick="showAddMenuItem()">+ Add Item</button>
+                <input type="file" id="bulk-upload-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleBulkUpload(this)">
             </div>
             <div class="bulk-bar" id="bulk-bar" style="display:none">
                 <label class="bulk-select-label">
@@ -3186,6 +3188,25 @@
     </div>
 
     <!-- Add Menu Item Modal -->
+    <div id="bulk-upload-modal" class="admin-modal" style="display:none;">
+        <div class="admin-modal-content" style="max-width:700px;max-height:80vh;overflow:auto;">
+            <div class="admin-modal-header">
+                <h3>Bulk Upload Menu Items</h3>
+                <button class="modal-close" onclick="hideBulkUpload()">&times;</button>
+            </div>
+            <p style="font-size:0.85rem;color:#8a7a6a;margin:0 0 0.5rem;">
+                Excel columns: <strong>Name</strong> (required), <strong>Price</strong> (required), <strong>Category</strong> (required), <strong>Type</strong> (veg/non-veg, default veg), <strong>Badge</strong> (optional).
+                <a href="#" onclick="downloadBulkTemplate();return false;" style="color:#d4a017;">Download template</a>
+            </p>
+            <div id="bulk-upload-preview" style="margin:0.5rem 0;"></div>
+            <div id="bulk-upload-errors" style="color:#e74c3c;font-size:0.85rem;margin:0.3rem 0;"></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:0.5rem;">
+                <button class="bulk-cancel-btn" onclick="hideBulkUpload()">Cancel</button>
+                <button class="add-special-confirm" id="bulk-upload-confirm-btn" onclick="confirmBulkUpload()" disabled>Add 0 Items</button>
+            </div>
+        </div>
+    </div>
+
     <div id="add-menu-modal" class="admin-modal" style="display:none;">
         <div class="admin-modal-content">
             <div class="admin-modal-header">
@@ -4409,6 +4430,138 @@
             if (confirm('Remove "' + itemId + '" from the menu? This cannot be undone.')) {
                 db.collection('menu').doc(itemId).delete().catch(function(err) { console.error('Remove menu item error:', err); });
             }
+        }
+
+        // ─── BULK UPLOAD FROM EXCEL ───
+        var pendingBulkItems = [];
+
+        function triggerBulkUpload() {
+            document.getElementById('bulk-upload-input').value = '';
+            document.getElementById('bulk-upload-input').click();
+        }
+
+        function handleBulkUpload(input) {
+            var file = input.files[0];
+            if (!file) return;
+            if (typeof XLSX === 'undefined') { alert('Excel library not loaded. Please refresh and try again.'); return; }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var wb = XLSX.read(e.target.result, { type: 'array' });
+                var ws = wb.Sheets[wb.SheetNames[0]];
+                var rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+                processBulkRows(rows);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processBulkRows(rows) {
+            pendingBulkItems = [];
+            var errors = [];
+            var existingNames = allMenuItems.map(function(i) { return i.name.toLowerCase(); });
+            var seenNames = {};
+
+            rows.forEach(function(row, idx) {
+                var name = String(row.Name || row.name || row.NAME || '').trim();
+                var price = parseInt(row.Price || row.price || row.PRICE);
+                var category = String(row.Category || row.category || row.CATEGORY || '').trim();
+                var type = String(row.Type || row.type || row.TYPE || 'veg').trim().toLowerCase();
+                var badge = String(row.Badge || row.badge || row.BADGE || '').trim();
+
+                if (!name) { errors.push('Row ' + (idx + 2) + ': Missing name'); return; }
+                if (isNaN(price) || price < 0) { errors.push('Row ' + (idx + 2) + ': Invalid price for "' + name + '"'); return; }
+                if (!category) { errors.push('Row ' + (idx + 2) + ': Missing category for "' + name + '"'); return; }
+                if (type !== 'veg' && type !== 'non-veg') type = 'veg';
+                if (existingNames.indexOf(name.toLowerCase()) !== -1) { errors.push('Row ' + (idx + 2) + ': "' + name + '" already exists'); return; }
+                if (seenNames[name.toLowerCase()]) { errors.push('Row ' + (idx + 2) + ': Duplicate "' + name + '"'); return; }
+                seenNames[name.toLowerCase()] = true;
+
+                pendingBulkItems.push({ name: name, price: price, category: category, type: type, badge: badge });
+            });
+
+            // Render preview
+            var html = '';
+            if (pendingBulkItems.length) {
+                html = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">' +
+                    '<tr style="background:rgba(212,160,23,0.08);"><th style="padding:4px 8px;text-align:left;">Name</th><th style="padding:4px 8px;text-align:right;">Price</th><th style="padding:4px 8px;text-align:left;">Category</th><th style="padding:4px 8px;text-align:left;">Type</th><th style="padding:4px 8px;text-align:left;">Badge</th></tr>';
+                pendingBulkItems.forEach(function(item) {
+                    html += '<tr style="border-bottom:1px solid rgba(0,0,0,0.06);">' +
+                        '<td style="padding:4px 8px;">' + item.name + '</td>' +
+                        '<td style="padding:4px 8px;text-align:right;">₹' + item.price + '</td>' +
+                        '<td style="padding:4px 8px;">' + item.category + '</td>' +
+                        '<td style="padding:4px 8px;">' + item.type + '</td>' +
+                        '<td style="padding:4px 8px;">' + (item.badge || '—') + '</td></tr>';
+                });
+                html += '</table>';
+            }
+            document.getElementById('bulk-upload-preview').innerHTML = html;
+            document.getElementById('bulk-upload-errors').innerHTML = errors.length ? errors.join('<br>') : '';
+            var btn = document.getElementById('bulk-upload-confirm-btn');
+            btn.textContent = 'Add ' + pendingBulkItems.length + ' Item' + (pendingBulkItems.length !== 1 ? 's' : '');
+            btn.disabled = pendingBulkItems.length === 0;
+            document.getElementById('bulk-upload-modal').style.display = 'flex';
+        }
+
+        function confirmBulkUpload() {
+            if (!pendingBulkItems.length) return;
+            var btn = document.getElementById('bulk-upload-confirm-btn');
+            btn.disabled = true;
+            btn.textContent = 'Uploading...';
+            var maxSort = allMenuItems.reduce(function(max, item) { return Math.max(max, item.sortOrder || 0); }, 0);
+            var items = pendingBulkItems.slice();
+
+            // Firestore batch limit is 500; chunk at 400
+            var chunks = [];
+            for (var i = 0; i < items.length; i += 400) chunks.push(items.slice(i, i + 400));
+            var sortBase = maxSort;
+
+            var promises = chunks.map(function(chunk) {
+                var batch = db.batch();
+                chunk.forEach(function(item) {
+                    sortBase++;
+                    var docId = currentShopId === 'amogha' ? item.name : currentShopId + '__' + item.name;
+                    var ref = db.collection('menu').doc(docId);
+                    batch.set(ref, {
+                        name: item.name,
+                        price: item.price,
+                        category: item.category,
+                        type: item.type,
+                        badge: item.badge || '',
+                        available: true,
+                        shopId: currentShopId,
+                        sortOrder: sortBase,
+                        createdAt: new Date().toISOString()
+                    });
+                });
+                return batch.commit();
+            });
+
+            Promise.all(promises).then(function() {
+                hideBulkUpload();
+                alert(items.length + ' menu item' + (items.length !== 1 ? 's' : '') + ' added successfully!');
+            }).catch(function(err) {
+                alert('Bulk upload failed: ' + err.message);
+                btn.textContent = 'Add ' + items.length + ' Items';
+                btn.disabled = false;
+            });
+        }
+
+        function hideBulkUpload() {
+            document.getElementById('bulk-upload-modal').style.display = 'none';
+            pendingBulkItems = [];
+            document.getElementById('bulk-upload-preview').innerHTML = '';
+            document.getElementById('bulk-upload-errors').innerHTML = '';
+        }
+
+        function downloadBulkTemplate() {
+            if (typeof XLSX === 'undefined') { alert('Excel library not loaded.'); return; }
+            var data = [
+                { Name: 'Example Item', Price: 250, Category: 'Starters', Type: 'veg', Badge: 'New' },
+                { Name: 'Another Item', Price: 350, Category: 'Curries', Type: 'non-veg', Badge: '' }
+            ];
+            var ws = XLSX.utils.json_to_sheet(data);
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Menu Items');
+            XLSX.writeFile(wb, 'menu_upload_template.xlsx');
         }
 
         // Preview image in Add Menu Item modal
