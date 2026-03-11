@@ -178,6 +178,7 @@ async function rateLimiter(req, res, next) {
             var expiredCutoff = now - RATE_LIMIT_WINDOW * 2;
             var expiredSnap = await db.collection('_rateLimits')
                 .where('windowStart', '<', expiredCutoff)
+                .limit(500)
                 .get();
             if (!expiredSnap.empty) {
                 var batch = db.batch();
@@ -233,7 +234,7 @@ function requireAdminAuth(req, res, next) {
     // Allow requests from the web app with a valid Firebase ID token or API key
     // For now, check for a shared API key (set via Firebase Functions config)
     var configKey = process.env.ADMIN_API_KEY || '';
-    if (configKey && (apiKey === configKey || authHeader === 'Bearer ' + configKey)) {
+    if (configKey && (timingSafeEqual(apiKey, configKey) || timingSafeEqual(authHeader, 'Bearer ' + configKey))) {
         return next();
     }
     // Require API key — reject if not configured (prevents accidental open access)
@@ -254,6 +255,10 @@ var LOGIN_MAX_ATTEMPTS = 5;
 
 function checkLoginThrottle(identifier) {
     var now = Date.now();
+    // Cleanup stale login attempt entries inline
+    Object.keys(_loginAttempts).forEach(function(k) {
+        if (now - _loginAttempts[k].firstAttempt > LOGIN_LOCKOUT_WINDOW) delete _loginAttempts[k];
+    });
     var entry = _loginAttempts[identifier];
     if (!entry || now - entry.firstAttempt > LOGIN_LOCKOUT_WINDOW) {
         _loginAttempts[identifier] = { firstAttempt: now, count: 1 };
@@ -268,13 +273,6 @@ function clearLoginAttempts(identifier) {
     delete _loginAttempts[identifier];
 }
 
-// Cleanup stale login attempt entries periodically
-setInterval(function() {
-    var now = Date.now();
-    Object.keys(_loginAttempts).forEach(function(k) {
-        if (now - _loginAttempts[k].firstAttempt > LOGIN_LOCKOUT_WINDOW) delete _loginAttempts[k];
-    });
-}, 60000);
 
 // -----------------------------------------------------------------------
 // GET /health — API health check and uptime monitoring
@@ -360,10 +358,10 @@ app.post('/order', async function(req, res) {
     try {
         var body     = req.body || {};
         var items    = body.items;
-        var customer = (body.customer || '').replace(/<[^>]*>/g, '').trim().slice(0, 100);
-        var phone    = (body.phone    || '').replace(/<[^>]*>/g, '').trim().slice(0, 15);
-        var address  = (body.address  || '').replace(/<[^>]*>/g, '').trim().slice(0, 500);
-        var notes    = (body.notes    || '').replace(/<[^>]*>/g, '').trim().slice(0, 500);
+        var customer = String(body.customer || '').replace(/<[^>]*>/g, '').trim().slice(0, 100);
+        var phone    = String(body.phone    || '').replace(/<[^>]*>/g, '').trim().slice(0, 15);
+        var address  = String(body.address  || '').replace(/<[^>]*>/g, '').trim().slice(0, 500);
+        var notes    = String(body.notes    || '').replace(/<[^>]*>/g, '').trim().slice(0, 500);
 
         // Validate required fields
         if (!Array.isArray(items) || items.length === 0) {
@@ -847,7 +845,7 @@ exports.birthdayRewards = functions.pubsub
                         usedCount: 0,
                         minOrder: 200,
                         description: 'Happy Birthday! 30% off your order',
-                        expiresAt: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7).toISOString(),
+                        expiresAt: new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + 7)).toISOString(),
                         createdAt: today.toISOString(),
                         source: 'birthday-auto'
                     }, { merge: true });
@@ -949,7 +947,7 @@ app.post('/chat', async function(req, res) {
             'AVAILABLE MENU:\n' + JSON.stringify(available) + '\n\n' +
             'CURRENT CART: ' + JSON.stringify(cartItems) + '\n' +
             'USER PREFERENCES: ' + JSON.stringify(userPrefs) + '\n' +
-            'CONVERSATION HISTORY:\n' + history.map(function(h) { return h.role + ': ' + h.text; }).join('\n') + '\n\n' +
+            'CONVERSATION HISTORY:\n' + history.filter(function(h) { return h && h.role && h.text; }).map(function(h) { return h.role + ': ' + h.text; }).join('\n') + '\n\n' +
             'Respond with JSON: { "reply": "your message", "suggestedItems": [{"name":"exact item name from menu","price":number}], "action": null|"addToCart"|"checkout"|"showMenu" }\n' +
             'Keep replies friendly, concise (under 150 words). Use Rs. for prices. Only suggest items from the menu above.';
 
@@ -1006,7 +1004,7 @@ app.post('/recommend', async function(req, res) {
         var timeOfDay = body.timeOfDay || new Date().getHours();
         var isVegOnly = body.isVegOnly || false;
 
-        var available = (await getMenuData()).filter(function(i) { return i.available; });
+        var available = (await getMenuData()).filter(function(i) { return i.available && (!isVegOnly || i.isVeg); });
 
         var systemPrompt = 'You are a personalized food recommendation engine for Amogha Cafe.\n' +
             'Analyze the user\'s history and context to suggest items they would enjoy.\n\n' +

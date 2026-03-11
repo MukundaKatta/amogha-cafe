@@ -55,7 +55,7 @@
     .section-reveal{opacity:1!important;transform:none!important}
     </style>
     <link rel="stylesheet" href="styles.css?v=68" media="all" fetchpriority="high">
-    <link rel="modulepreload" href="script.js">
+    <link rel="modulepreload" href="/script.js">
     <!-- Non-critical CSS loaded async to improve LCP -->
     <link rel="stylesheet" href="enhancements.css?v=2" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="premium.css?v=2" media="print" onload="this.media='all'">
@@ -821,7 +821,7 @@
     <!-- Video Lightbox -->
     <div id="video-lightbox" class="video-lightbox" style="display:none" onclick="closeVideoLightbox()" role="dialog" aria-modal="true" aria-label="Video player">
         <button class="lightbox-close" onclick="closeVideoLightbox()" aria-label="Close video">&times;</button>
-        <video id="lightbox-video" controls></video>
+        <video id="lightbox-video" controls onclick="event.stopPropagation()"></video>
     </div>
 
     <section id="contact" class="contact" aria-label="Contact Us">
@@ -973,13 +973,13 @@
             <div class="footer-section footer-newsletter">
                 <h4>Stay Updated</h4>
                 <p class="newsletter-desc">Get exclusive offers, new dishes & seasonal specials delivered to your inbox.</p>
-                <form class="newsletter-form" id="newsletter-form" onsubmit="return false;">
-                    <input type="email" id="newsletter-email" placeholder="Your email address" required class="newsletter-input" aria-label="Email for newsletter">
+                <form class="newsletter-form" id="footer-newsletter-form" onsubmit="event.preventDefault(); submitNewsletter('footer-newsletter-email', 'footer-newsletter-msg');">
+                    <input type="email" id="footer-newsletter-email" placeholder="Your email address" required class="newsletter-input" aria-label="Email for newsletter">
                     <button type="submit" class="newsletter-btn" aria-label="Subscribe">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                     </button>
                 </form>
-                <p id="newsletter-msg" class="newsletter-msg"></p>
+                <p id="footer-newsletter-msg" class="newsletter-msg"></p>
             </div>
         </div>
         <div class="trust-badges">
@@ -1090,7 +1090,7 @@
 
     <div id="cart-modal" class="modal" role="dialog" aria-modal="true" aria-label="Shopping cart">
         <div class="modal-content">
-            <span class="close" aria-label="Close cart">&times;</span>
+            <span class="close" aria-label="Close cart" onclick="document.getElementById('cart-modal').style.display='none'">&times;</span>
             <h2>Your Order</h2>
             <div id="cart-items"></div>
             <div class="cart-total">
@@ -1163,7 +1163,7 @@
                 <div id="schedule-picker" class="schedule-picker">
                     <div>
                         <label for="schedule-date">Date</label>
-                        <input type="date" id="schedule-date" min="">
+                        <input type="date" id="schedule-date">
                     </div>
                     <div>
                         <label for="schedule-time">Time</label>
@@ -1180,7 +1180,7 @@
             <div id="checkout-step-3" class="checkout-step" role="tabpanel" aria-labelledby="pay-hero-label">
                 <!-- Payment Amount Hero -->
                 <div class="pay-hero">
-                    <p class="pay-hero-label">Total Amount</p>
+                    <p class="pay-hero-label" id="pay-hero-label">Total Amount</p>
                     <h2 class="pay-hero-amount" id="pay-total"></h2>
                     <div class="pay-hero-secure"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Secure Payment</div>
                 </div>

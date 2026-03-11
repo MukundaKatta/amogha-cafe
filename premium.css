@@ -1093,12 +1093,12 @@ footer::before {
    BADGES & BANNERS — Premium
    ══════════════════════════════════════════════════════ */
 .special-badge {
-    animation: badgeShine 3s ease-in-out infinite;
+    animation: badgeShinePulse 3s ease-in-out infinite;
     position: relative;
     overflow: hidden;
 }
 
-@keyframes badgeShine {
+@keyframes badgeShinePulse {
     0%, 100% { box-shadow: 0 2px 8px rgba(212, 160, 23, .15); }
     50% { box-shadow: 0 2px 16px rgba(212, 160, 23, .3); }
 }
@@ -1208,8 +1208,7 @@ img[loading="lazy"] {
     transition: opacity .6s ease;
 }
 
-img[loading="lazy"].loaded,
-img[loading="lazy"][complete] {
+img[loading="lazy"].loaded {
     opacity: 1;
 }
 

@@ -910,11 +910,6 @@
                 $countReady.textContent = ready.length;
 
                 // Render Stats
-                renderStats(orders.concat(
-                    // Also count cancelled for stats? No, we already filtered them.
-                    // But we need delivered ones which are in 'ready' array
-                ));
-                // Actually let's get all non-cancelled for stats
                 renderStats(orders);
 
             }, function(err) {

@@ -1264,7 +1264,7 @@ function notifyCustomer(id){
     var o=orders.find(function(x){return x.id===id;});if(!o||!o.phone)return;
     var num='#'+o.id.slice(-4).toUpperCase();
     var msg='Hi '+(o.customer||'')+'! Your order '+num+' from Amogha Cafe is READY for pickup/delivery. Thank you!';
-    window.open('https://wa.me/91'+o.phone.replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
+    var phNum=o.phone.replace(/\D/g,'');if(phNum.length>10&&phNum.startsWith('91')){}else{phNum='91'+phNum;}window.open('https://wa.me/'+phNum+'?text='+encodeURIComponent(msg),'_blank');
     toast('&#128172;','WhatsApp sent');
 }
 
@@ -1278,7 +1278,7 @@ function printTicket(id){
     if(o.phone)h+='<p>Phone: '+esc(o.phone)+'</p>';
     if(o.address)h+='<p>Address: '+esc(o.address)+'</p>';
     h+='<div class="tl"></div>';
-    (o.items||[]).forEach(function(i){h+='<div class="ti"><span>'+esc(i.name)+' x'+i.qty+'</span><span>&#8377;'+(i.price*i.qty)+'</span></div>';});
+    (o.items||[]).forEach(function(i){h+='<div class="ti"><span>'+esc(i.name)+' x'+i.qty+'</span><span>&#8377;'+((i.price||0)*i.qty)+'</span></div>';});
     h+='<div class="tl"></div><div class="ti"><strong>TOTAL</strong><strong>&#8377;'+(o.total||0)+'</strong></div>';
     if(o.notes)h+='<div class="tl"></div><p><em>Note: '+esc(o.notes)+'</em></p>';
     h+='<div class="tl"></div><div class="tf">Thank you! &mdash; Amogha Cafe</div>';
@@ -1348,7 +1348,7 @@ function updateStats(){
 function renderAllDay(){
     var counts={};
     orders.forEach(function(o){
-        if(o.status==='cancelled'||o.status==='delivered')return;
+        if(o.status==='cancelled')return;
         (o.items||[]).forEach(function(i){counts[i.name]=(counts[i.name]||0)+i.qty;});
     });
     var keys=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];});
@@ -1366,7 +1366,7 @@ function add86(name){if(!name)return;soldOut.push(name);localStorage.setItem('kd
 function remove86(idx){var name=soldOut[idx];soldOut.splice(idx,1);localStorage.setItem('kds-86',JSON.stringify(soldOut));render86();renderBoard();toast('&#9989;',name+' back on menu');}
 
 // === CLOCK ===
-function startClock(){function u(){var n=new Date(),h=n.getHours(),m=n.getMinutes(),a=h>=12?'PM':'AM';h=h%12||12;E.clk.textContent=h+':'+(m<10?'0':'')+m+' '+a;}u();clockInt=setInterval(u,10000);}
+function startClock(){function u(){var n=new Date(),h=n.getHours(),m=n.getMinutes(),a=h>=12?'PM':'AM';h=h%12||12;E.clk.textContent=h+':'+(m<10?'0':'')+m+' '+a;}u();clockInt=setInterval(u,60000);}
 
 // === SOUND ===
 function initAudio(){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
@@ -1542,7 +1542,7 @@ function learnPrepTime(o){
     if(!o.kitchenStartedAt||!o.completedAt||!o.items)return;
     var mins=(new Date(o.completedAt)-new Date(o.kitchenStartedAt))/60000;
     if(mins<=0||mins>120)return;
-    var perItem=mins/o.items.reduce(function(s,i){return s+i.qty;},0);
+    var totalQty=o.items.reduce(function(s,i){return s+i.qty;},0);if(totalQty<=0)return;var perItem=mins/totalQty;
     o.items.forEach(function(item){
         var key=item.name;
         if(!prepTimes[key])prepTimes[key]={avg:perItem,count:1};
@@ -1618,8 +1618,8 @@ function toggleChat(){
 }
 function initChat(){
     try{
-    chatUnsub=db.collection('messages').orderBy('timestamp','asc').limitToLast(50).onSnapshot(function(snap){
-        chatMsgs=[];snap.forEach(function(doc){chatMsgs.push(doc.data());});
+    chatUnsub=db.collection('messages').orderBy('timestamp','desc').limit(50).onSnapshot(function(snap){
+        chatMsgs=[];snap.forEach(function(doc){chatMsgs.push(doc.data());});chatMsgs.reverse();
         renderChat();
         if(!chatOpen&&chatMsgs.length>0){var last=chatMsgs[chatMsgs.length-1];if(last.sender!=='kitchen'){chatUnread++;updateChatBadge();}}
     });
@@ -1689,7 +1689,7 @@ function enhancedNotify(id){
     }else{
         msg='Hi '+(o.customer||'')+'! Your order '+num+' from Amogha Cafe has been confirmed. We will start preparing it shortly!'+nl+nl+'Items: '+items+nl+'Total: \u20B9'+(o.total||0);
     }
-    window.open('https://wa.me/91'+o.phone.replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
+    var phNum=o.phone.replace(/\D/g,'');if(phNum.length>10&&phNum.startsWith('91')){}else{phNum='91'+phNum;}window.open('https://wa.me/'+phNum+'?text='+encodeURIComponent(msg),'_blank');
     toast('&#128172;','WhatsApp sent');
 }
 
