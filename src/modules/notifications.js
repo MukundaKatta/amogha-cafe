@@ -111,10 +111,51 @@ function saveFCMToken(token) {
     safeSetItem('amoghaFcmToken', token);
 }
 
+// ===== REAL-TIME ORDER STATUS NOTIFICATIONS =====
+var _orderStatusUnsub = null;
+
+export function watchOrderStatus(orderId) {
+    if (_orderStatusUnsub) _orderStatusUnsub();
+    var db = getDb();
+    if (!db || !orderId) return;
+
+    var prevStatus = null;
+    _orderStatusUnsub = db.collection('orders').doc(orderId).onSnapshot(function(doc) {
+        if (!doc.exists) return;
+        var data = doc.data();
+        var status = data.status;
+        if (prevStatus && status !== prevStatus) {
+            var messages = {
+                'preparing': { title: '👨‍🍳 Order Being Prepared', body: 'Your order is now being freshly prepared in our kitchen!' },
+                'ready': { title: '✅ Order Ready!', body: data.orderType === 'delivery' ? 'Your order is ready and will be picked up soon!' : 'Your order is ready for pickup!' },
+                'out_for_delivery': { title: '🛵 Out for Delivery', body: 'Your order is on its way! Estimated arrival: ' + (data.etaMinutes || 30) + ' mins' },
+                'delivered': { title: '🎉 Order Delivered!', body: 'Enjoy your meal! Don\'t forget to rate your experience.' },
+                'cancelled': { title: '❌ Order Cancelled', body: 'Your order has been cancelled. Contact us for help.' }
+            };
+            var msg = messages[status];
+            if (msg) {
+                sendPushNotification(msg.title, msg.body);
+                showAuthToast(msg.body);
+            }
+        }
+        prevStatus = status;
+    });
+}
+
+export function stopWatchingOrder() {
+    if (_orderStatusUnsub) {
+        _orderStatusUnsub();
+        _orderStatusUnsub = null;
+    }
+}
+
 export function initNotifications() {
     setTimeout(requestNotificationPermission, 5000);
     // Try FCM after a delay
     setTimeout(initFCM, 8000);
+    // Watch active order if one exists
+    var lastOrderId = safeGetItem('amoghaLastOrderId');
+    if (lastOrderId) watchOrderStatus(lastOrderId);
 }
 
 // ===== AI-POWERED SMART NOTIFICATIONS =====
@@ -143,4 +184,4 @@ export async function sendSmartNotification(context) {
     }
 }
 
-Object.assign(window, { enableNotifications, dismissNotifBanner, sendPushNotification, initFCM, sendSmartNotification });
+Object.assign(window, { enableNotifications, dismissNotifBanner, sendPushNotification, initFCM, sendSmartNotification, watchOrderStatus, stopWatchingOrder });

@@ -199,9 +199,7 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /giftCards/{code} {
       allow read: if true;
-      allow create: if hasFields(['code', 'balance', 'recipientPhone', 'createdAt'])
-                    && isNumber(request.resource.data.balance)
-                    && request.resource.data.balance > 0;
+      allow create: if false;  // Gift card creation restricted to admin/payment webhook
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['balance', 'redeemedAt'])
                     && request.resource.data.balance >= 0
@@ -241,7 +239,8 @@ service cloud.firestore {
     // INVENTORY — kitchen staff updates stock counts
     // -------------------------------------------------------------------------
     match /inventory/{itemId} {
-      allow read: if true;
+      // Stock levels are internal data — admin/kitchen reads via Console
+      allow read: if false;
       allow create: if false;
       allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['quantity'])
                     && request.resource.data.quantity >= 0;
@@ -317,7 +316,8 @@ service cloud.firestore {
     // EXPENSES — admin-only, full read/write from admin panel
     // -------------------------------------------------------------------------
     match /expenses/{expenseId} {
-      allow read: if true;
+      // Admin reads via Console/Admin SDK only — financial data must not be public
+      allow read: if false;
       allow create: if hasFields(['date', 'category', 'amount', 'description', 'createdAt'])
                     && isString(request.resource.data.date)
                     && isString(request.resource.data.category)
@@ -334,7 +334,8 @@ service cloud.firestore {
     // STAFF — managed by admin panel (validate required fields)
     // -------------------------------------------------------------------------
     match /staff/{staffId} {
-      allow read: if true;
+      // Admin reads via Console/Admin SDK only — employee data must not be public
+      allow read: if false;
       allow create: if hasFields(['name', 'role'])
                     && isString(request.resource.data.name)
                     && isString(request.resource.data.role);
@@ -388,7 +389,8 @@ service cloud.firestore {
     // CHAT HISTORY — AI chatbot conversation context
     // -------------------------------------------------------------------------
     match /chatHistory/{id} {
-      allow read: if true;
+      // Private conversations — readable only via Cloud Functions with phone verification
+      allow read: if false;
       allow create: if hasFields(['userPhone', 'createdAt']);
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['messages', 'updatedAt']);
@@ -399,7 +401,8 @@ service cloud.firestore {
     // MEAL PLANS — AI-generated saved meal plans
     // -------------------------------------------------------------------------
     match /mealPlans/{id} {
-      allow read: if true;
+      // Private meal plans — readable only via Cloud Functions with phone verification
+      allow read: if false;
       allow create: if hasFields(['userPhone', 'createdAt'])
                     && isString(request.resource.data.userPhone);
       allow update: if false;

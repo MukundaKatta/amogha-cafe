@@ -226,8 +226,8 @@ describe('openLoyaltyModal', () => {
         expect(modal.textContent).toContain('Rs.30'); // 300pts → Rs.30
     });
 
-    it('shows highest tier message when at Gold', () => {
-        setCurrentUser({ name: 'Test', phone: '1234567890', loyaltyPoints: 2000 });
+    it('shows highest tier message when at Platinum', () => {
+        setCurrentUser({ name: 'Test', phone: '1234567890', loyaltyPoints: 3000 });
         openLoyaltyModal();
         expect(document.getElementById('loyalty-modal').textContent).toMatch(/highest tier/i);
     });
@@ -774,15 +774,15 @@ describe('openLoyaltyModal — nextTier ternaries (lines 94-100)', () => {
         expect(modal.textContent).toContain('Gold');
     });
 
-    it('shows "highest tier" when user is Gold (no nextTier)', () => {
-        setCurrentUser({ name: 'Gold User', phone: '1234567890', loyaltyPoints: 1500 });
+    it('shows "highest tier" when user is Platinum (no nextTier)', () => {
+        setCurrentUser({ name: 'Platinum User', phone: '1234567890', loyaltyPoints: 3000 });
         openLoyaltyModal();
         const modal = document.getElementById('loyalty-modal');
         expect(modal.textContent).toMatch(/highest tier/i);
     });
 
     it('progress bar is 100% when at highest tier', () => {
-        setCurrentUser({ name: 'Max Tier', phone: '1234567890', loyaltyPoints: 2000 });
+        setCurrentUser({ name: 'Max Tier', phone: '1234567890', loyaltyPoints: 3000 });
         openLoyaltyModal();
         const modal = document.getElementById('loyalty-modal');
         const fill = modal.querySelector('.loyalty-progress-fill');
@@ -803,7 +803,7 @@ describe('openLoyaltyModal — nextTier ternaries (lines 94-100)', () => {
         openLoyaltyModal();
         const modal = document.getElementById('loyalty-modal');
         const items = modal.querySelectorAll('.loyalty-tier-item');
-        expect(items.length).toBe(3); // Bronze, Silver, Gold
+        expect(items.length).toBe(4); // Bronze, Silver, Gold, Platinum
     });
 
     it('marks current tier item as active', () => {

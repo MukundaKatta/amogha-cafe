@@ -32,8 +32,8 @@ describe('Loyalty Tiers', () => {
         expect(getLoyaltyTier(1000).name).toBe('Gold');
     });
 
-    it('returns Gold tier for very high points (10000)', () => {
-        expect(getLoyaltyTier(10000).name).toBe('Gold');
+    it('returns Platinum tier for very high points (10000)', () => {
+        expect(getLoyaltyTier(10000).name).toBe('Platinum');
     });
 
     it('higher points returns higher or equal tier', () => {

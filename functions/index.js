@@ -64,7 +64,12 @@ async function getMenuData() {
 function sanitizeForPrompt(input) {
     if (typeof input !== 'string') return String(input || '');
     // Strip control characters and limit length
-    return input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').slice(0, 2000);
+    input = input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').slice(0, 2000);
+    // Strip potential prompt injection patterns
+    input = input.replace(/ignore\s+(all\s+)?(previous|above|prior)\s+(instructions?|prompts?|rules?)/gi, '[filtered]');
+    input = input.replace(/system\s*prompt/gi, '[filtered]');
+    input = input.replace(/you\s+are\s+(now|a)\s+/gi, '[filtered]');
+    return input;
 }
 
 // Robust JSON extraction from Gemini response
@@ -191,6 +196,19 @@ async function rateLimiter(req, res, next) {
         console.error('Rate limiter error:', e);
         next();
     }
+}
+
+// Phone-based order rate limiting (max 5 orders per phone per hour)
+var _orderLimits = {};
+function checkOrderRateLimit(phone) {
+    var now = Date.now();
+    var key = phone;
+    if (!_orderLimits[key]) _orderLimits[key] = [];
+    // Clean old entries
+    _orderLimits[key] = _orderLimits[key].filter(function(t) { return now - t < 3600000; });
+    if (_orderLimits[key].length >= 5) return false;
+    _orderLimits[key].push(now);
+    return true;
 }
 
 // Apply rate limiting to AI-powered endpoints (expensive Gemini calls)
@@ -344,6 +362,10 @@ app.post('/order', async function(req, res) {
         if (!customer) return res.status(400).json({ error: 'customer name is required' });
         if (!phone)    return res.status(400).json({ error: 'phone number is required' });
         if (!address)  return res.status(400).json({ error: 'delivery address is required' });
+
+        if (!checkOrderRateLimit(phone)) {
+            return res.status(429).json({ error: 'Too many orders. Please try again later.' });
+        }
 
         // Validate each item has required fields
         for (var i = 0; i < items.length; i++) {
@@ -569,10 +591,16 @@ app.post('/auth/kiosk-login', async function(req, res) {
                 } else if (storedPw.startsWith('$2')) {
                     isMatch = bcrypt.compareSync(password, storedPw);
                 } else {
-                    isMatch = timingSafeEqual(password, storedPw);
+                    console.warn('Kiosk account ' + doc.id + ' has plaintext password — rejecting login. Please re-hash.');
+                    isMatch = false;
                 }
             } catch (_e) {
-                isMatch = timingSafeEqual(password, storedPw);
+                if (!storedPw.startsWith('$2')) {
+                    console.warn('Kiosk account ' + doc.id + ' has plaintext password — rejecting login. Please re-hash.');
+                    isMatch = false;
+                } else {
+                    isMatch = false;
+                }
             }
             if (isMatch) {
                 matched = { id: doc.id, shopId: d.shopId, name: d.name || '' };
@@ -604,10 +632,16 @@ app.post('/auth/kiosk-login', async function(req, res) {
                     } else if (storedPin.startsWith('$2')) {
                         pinMatch = bcrypt.compareSync(password, storedPin);
                     } else {
-                        pinMatch = timingSafeEqual(password, storedPin);
+                        console.warn('Kiosk admin account ' + doc.id + ' has plaintext PIN — rejecting login. Please re-hash.');
+                        pinMatch = false;
                     }
                 } catch (_e) {
-                    pinMatch = timingSafeEqual(password, storedPin);
+                    if (!storedPin.startsWith('$2')) {
+                        console.warn('Kiosk admin account ' + doc.id + ' has plaintext PIN — rejecting login. Please re-hash.');
+                        pinMatch = false;
+                    } else {
+                        pinMatch = false;
+                    }
                 }
                 if (pinMatch) {
                     legacy = { id: doc.id, name: d.name || doc.id, tagline: d.tagline || '', theme: d.theme || '' };
@@ -668,10 +702,16 @@ app.post('/auth/delivery-login', async function(req, res) {
             } else if (storedPin.startsWith('$2')) {
                 pinMatch = bcrypt.compareSync(pin, storedPin);
             } else {
-                pinMatch = timingSafeEqual(pin, storedPin);
+                console.warn('Delivery account ' + phone + ' has plaintext PIN — rejecting login. Please re-hash.');
+                pinMatch = false;
             }
         } catch (_e) {
-            pinMatch = timingSafeEqual(pin, storedPin);
+            if (!storedPin.startsWith('$2')) {
+                console.warn('Delivery account ' + phone + ' has plaintext PIN — rejecting login. Please re-hash.');
+                pinMatch = false;
+            } else {
+                pinMatch = false;
+            }
         }
         if (!pinMatch) {
             return res.status(401).json({ error: 'Incorrect PIN. Try again.' });

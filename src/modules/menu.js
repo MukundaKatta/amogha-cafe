@@ -233,6 +233,7 @@ function renderItemCard(item) {
         ? '<div class="menu-item-img-wrap has-image"><img class="menu-item-img loaded" src="' + escH(item.imageUrl) + '" alt="' + escH(item.name) + '" loading="lazy" decoding="async"></div>'
         : '';
     var allergens = (item.allergens || []).join(',');
+    var itemType = isVeg ? 'veg' : 'non-veg';
     var unavailCls = item.available === false ? ' item-unavailable' : '';
     var unavailStyle = item.available === false ? ' style="opacity:.45;pointer-events:none;filter:grayscale(.3)"' : '';
     var descHtml = item.description ? '<p class="item-description">' + escH(item.description) + '</p>' : '';
@@ -243,7 +244,7 @@ function renderItemCard(item) {
             item.allergens.map(function(a){ return '<span class="allergen-icon">'+(allergenMeta[a]||'')+' '+escH(a)+'</span>'; }).join('') +
             '</div>';
     }
-    return '<div class="menu-item-card' + unavailCls + '" data-id="' + escH(item.name) + '" data-allergens="' + escH(allergens) + '"' + unavailStyle + '>' +
+    return '<div class="menu-item-card' + unavailCls + '" data-id="' + escH(item.name) + '" data-allergens="' + escH(allergens) + '" data-type="' + itemType + '"' + unavailStyle + '>' +
         imgHtml +
         '<div class="item-header">' + badge + '<h4>' + escH(item.name) + '</h4><span class="price">&#8377;' + (item.price || 0) + '</span></div>' +
         descHtml + allergenHtml +
@@ -502,5 +503,81 @@ export function checkAllergenWarning(cartItems, callback) {
     document.body.insertAdjacentHTML('beforeend', html);
 }
 
+// ===== ALLERGEN & DIETARY FILTERS =====
+var activeAllergenFilters = [];
+
+export function toggleAllergenFilter(filter) {
+    var idx = activeAllergenFilters.indexOf(filter);
+    if (idx >= 0) {
+        activeAllergenFilters.splice(idx, 1);
+    } else {
+        activeAllergenFilters.push(filter);
+    }
+    // Update button states
+    document.querySelectorAll('.allergen-filter-btn').forEach(function(btn) {
+        var f = btn.dataset.filter;
+        if (f) btn.classList.toggle('active', activeAllergenFilters.indexOf(f) >= 0);
+    });
+    var clearBtn = document.getElementById('clearFiltersBtn');
+    if (clearBtn) clearBtn.style.display = activeAllergenFilters.length > 0 ? '' : 'none';
+    applyAllergenFilters();
+}
+
+export function clearAllergenFilters() {
+    activeAllergenFilters = [];
+    document.querySelectorAll('.allergen-filter-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    var clearBtn = document.getElementById('clearFiltersBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    applyAllergenFilters();
+}
+
+function applyAllergenFilters() {
+    var cards = document.querySelectorAll('.menu-item-card');
+    cards.forEach(function(card) {
+        if (activeAllergenFilters.length === 0) {
+            card.style.display = '';
+            return;
+        }
+        var show = true;
+        var itemAllergens = (card.dataset.allergens || '').split(',').filter(Boolean);
+        var itemType = card.dataset.type || '';
+
+        activeAllergenFilters.forEach(function(filter) {
+            if (filter === 'veg' && itemType !== 'veg') show = false;
+            if (filter === 'jain' && itemType !== 'veg') show = false;
+            if (filter === 'nut-free' && itemAllergens.indexOf('nuts') >= 0) show = false;
+            if (filter === 'dairy-free' && itemAllergens.indexOf('dairy') >= 0) show = false;
+            if (filter === 'gluten-free' && itemAllergens.indexOf('gluten') >= 0) show = false;
+        });
+        card.style.display = show ? '' : 'none';
+    });
+
+    // Update count
+    var visible = document.querySelectorAll('.menu-item-card[style=""], .menu-item-card:not([style])').length;
+    var total = cards.length;
+    if (activeAllergenFilters.length > 0 && visible < total) {
+        showFilterCount(visible, total);
+    } else {
+        var existing = document.getElementById('filterCount');
+        if (existing) existing.remove();
+    }
+}
+
+function showFilterCount(visible, total) {
+    var existing = document.getElementById('filterCount');
+    if (!existing) {
+        existing = document.createElement('div');
+        existing.id = 'filterCount';
+        existing.className = 'filter-count';
+        var bar = document.getElementById('allergenFilterBar');
+        if (bar) bar.appendChild(existing);
+    }
+    existing.textContent = 'Showing ' + visible + ' of ' + total + ' items';
+}
+
+window.toggleAllergenFilter = toggleAllergenFilter;
+window.clearAllergenFilters = clearAllergenFilters;
 window.toggleSafeForMe = toggleSafeForMe;
 window.checkAllergenWarning = checkAllergenWarning;

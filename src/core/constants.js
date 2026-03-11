@@ -14,9 +14,10 @@ export const DELIVERY_FEE = 49;
 export const COMBO_DISCOUNT = 0.15;
 
 export var LOYALTY_TIERS = [
-    { name: 'Bronze', min: 0, color: '#cd7f32', icon: '🥉' },
-    { name: 'Silver', min: 500, color: '#c0c0c0', icon: '🥈' },
-    { name: 'Gold', min: 1000, color: '#D4A017', icon: '🥇' }
+    { name: 'Bronze', min: 0, color: '#cd7f32', icon: '🥉', discount: 0, freeDelivery: false, birthdayBonus: 50, perks: ['Earn 1 pt per ₹10 spent', '2x streak bonus'] },
+    { name: 'Silver', min: 500, color: '#c0c0c0', icon: '🥈', discount: 5, freeDelivery: false, birthdayBonus: 100, perks: ['5% off all orders', 'Priority preparation', '100 pts birthday bonus'] },
+    { name: 'Gold', min: 1000, color: '#D4A017', icon: '🥇', discount: 10, freeDelivery: true, birthdayBonus: 200, perks: ['10% off all orders', 'Free delivery always', '200 pts birthday bonus', 'Early access to specials'] },
+    { name: 'Platinum', min: 2500, color: '#E5E4E2', icon: '💎', discount: 15, freeDelivery: true, birthdayBonus: 500, perks: ['15% off all orders', 'Free delivery always', '500 pts birthday bonus', 'Exclusive menu items', 'Priority support'] }
 ];
 
 export var HAPPY_HOURS = [

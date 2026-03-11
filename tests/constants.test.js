@@ -48,9 +48,9 @@ describe('RAZORPAY_KEY resolution', () => {
 });
 
 describe('LOYALTY_TIERS structure', () => {
-    it('has 3 tiers with correct structure', async () => {
+    it('has 4 tiers with correct structure', async () => {
         const { LOYALTY_TIERS } = await import('../src/core/constants.js');
-        expect(LOYALTY_TIERS).toHaveLength(3);
+        expect(LOYALTY_TIERS).toHaveLength(4);
         LOYALTY_TIERS.forEach(tier => {
             expect(tier).toHaveProperty('name');
             expect(tier).toHaveProperty('min');

@@ -1,7 +1,7 @@
 import { lockScroll, unlockScroll } from '../core/utils.js';
 import { getCurrentUser, setCurrentUser, showAuthToast } from './auth.js';
 import { cart, getCheckoutTotal, updateCartCount, saveCart, updateButtonState, updateFloatingCart } from './cart.js';
-import { RAZORPAY_KEY, MERCHANT_NAME, WHATSAPP_NUMBER, FREE_DELIVERY_THRESHOLD, DELIVERY_FEE } from '../core/constants.js';
+import { RAZORPAY_KEY, MERCHANT_NAME, WHATSAPP_NUMBER, FREE_DELIVERY_THRESHOLD, DELIVERY_FEE, LOYALTY_TIERS } from '../core/constants.js';
 import { getDb, getFieldValue } from '../core/firebase.js';
 
 // ===== CHECKOUT FLOW =====
@@ -40,7 +40,25 @@ export function getCheckoutTotals() {
     var subtotal = cart.reduce(function(sum, item) { return sum + itemSubtotal(item); }, 0);
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
     var discount = 0;
+    var loyaltyDiscount = 0;
     var total = subtotal + deliveryFee;
+
+    // Apply loyalty tier discount
+    var user = getCurrentUser();
+    if (user) {
+        var pts = user.loyaltyPoints || 0;
+        var tier = null;
+        for (var i = LOYALTY_TIERS.length - 1; i >= 0; i--) {
+            if (pts >= LOYALTY_TIERS[i].min) { tier = LOYALTY_TIERS[i]; break; }
+        }
+        if (tier) {
+            if (tier.freeDelivery) deliveryFee = 0;
+            if (tier.discount > 0) {
+                loyaltyDiscount = Math.floor(subtotal * tier.discount / 100);
+            }
+        }
+    }
+
     if (appliedCoupon) {
         if (appliedCoupon.type === 'percent') {
             discount = Math.floor(subtotal * appliedCoupon.discount / 100);
@@ -48,14 +66,17 @@ export function getCheckoutTotals() {
             discount = appliedCoupon.discount;
         }
         discount = Math.min(discount, subtotal);
-        total = subtotal - discount + deliveryFee;
     }
+    // Use higher of coupon or loyalty discount (don't stack)
+    var effectiveDiscount = Math.max(discount, loyaltyDiscount);
+    total = subtotal - effectiveDiscount + deliveryFee;
+
     // Apply gift card (validate balance exists and is a number)
     if (appliedGiftCard && typeof appliedGiftCard.balance === 'number' && appliedGiftCard.balance > 0) {
         var gcDeduction = Math.min(appliedGiftCard.balance, total);
         total = Math.max(0, total - gcDeduction);
     }
-    return { subtotal: subtotal, deliveryFee: deliveryFee, discount: discount, total: total };
+    return { subtotal: subtotal, deliveryFee: deliveryFee, discount: effectiveDiscount, loyaltyDiscount: loyaltyDiscount, total: total };
 }
 
 // ===== PURE FUNCTIONS FOR TESTABILITY =====

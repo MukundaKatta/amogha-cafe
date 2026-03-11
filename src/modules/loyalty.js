@@ -147,7 +147,12 @@ export function openLoyaltyModal() {
         '<div class="loyalty-tiers-list">' +
             LOYALTY_TIERS.map(function(t) {
                 var active = t.name === tier.name ? ' active' : '';
-                return '<div class="loyalty-tier-item' + active + '"><span>' + t.icon + ' ' + t.name + '</span><span>' + t.min + '+ pts</span></div>';
+                var locked = t.min > points ? ' locked' : '';
+                var perksHtml = (t.perks || []).map(function(p) { return '<li>' + p + '</li>'; }).join('');
+                return '<div class="loyalty-tier-item' + active + locked + '">' +
+                    '<div class="tier-header"><span>' + t.icon + ' ' + t.name + '</span><span>' + t.min + '+ pts</span></div>' +
+                    '<ul class="tier-perks">' + perksHtml + '</ul>' +
+                '</div>';
             }).join('') +
         '</div>';
     modal.style.display = 'block';

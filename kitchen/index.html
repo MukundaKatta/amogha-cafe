@@ -135,6 +135,10 @@
         .dash.vis{display:flex}
 
         /* ===== SUB-HEADER ===== */
+        .station-bar { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; background: rgba(0,0,0,.3); border-bottom: 1px solid rgba(255,255,255,.1); }
+        .station-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.05); color: #ccc; font-size: .85rem; cursor: pointer; white-space: nowrap; transition: all .2s; }
+        .station-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+        .station-btn.active { background: linear-gradient(135deg, #D4A017, #B8860B); color: #1a0f08; border-color: #D4A017; font-weight: 700; }
         .subhdr{display:flex;align-items:center;justify-content:space-between;padding:.4rem 1rem;background:var(--bg2);backdrop-filter:blur(12px);border-bottom:1px solid var(--bdr);flex-shrink:0;gap:.5rem;flex-wrap:wrap}
         .station-tabs{display:flex;gap:3px;overflow-x:auto}
         .stab{padding:.22rem .65rem;border-radius:var(--rp);font-size:.64rem;font-weight:600;color:var(--txt3);cursor:pointer;transition:all .3s var(--ease);white-space:nowrap;border:1px solid transparent}
@@ -752,6 +756,19 @@
     <!-- Flash Banner -->
     <div id="flash" class="flash-banner"></div>
 
+    <!-- Station Routing Bar -->
+    <div class="station-bar" id="stationBar">
+        <button class="station-btn active" onclick="K.filterStation('all')">&#127869; All</button>
+        <button class="station-btn" onclick="K.filterStation('starters')">&#129367; Starters</button>
+        <button class="station-btn" onclick="K.filterStation('curries')">&#127835; Curries</button>
+        <button class="station-btn" onclick="K.filterStation('biryanis')">&#127834; Biryanis</button>
+        <button class="station-btn" onclick="K.filterStation('grill')">&#128293; Grill</button>
+        <button class="station-btn" onclick="K.filterStation('noodles')">&#127836; Noodles</button>
+        <button class="station-btn" onclick="K.filterStation('breads')">&#129747; Breads</button>
+        <button class="station-btn" onclick="K.filterStation('drinks')">&#129380; Drinks</button>
+        <button class="station-btn" onclick="K.filterStation('desserts')">&#127856; Desserts</button>
+    </div>
+
     <!-- 3-Column Board -->
     <div class="board" id="board">
         <div class="kcol cn"><div class="col-hdr" id="chN"><div class="col-hdr-l"><span class="ct">&#9679; NEW</span><span class="cc" id="ccN">0</span></div><button class="batch" id="baS">START ALL</button></div><div class="col-body" id="cN"></div></div>
@@ -904,7 +921,7 @@
 'use strict';
 var PIN='240124',BUMP=60,T_GRN=5,T_YLW=10,URGENT=10,CRITICAL=15,SS_IDLE=120,ETA_PER_ITEM=4,PEAK_WIN=60;
 var ALLERGENS=['allergy','allergic','allergen','nut','peanut','gluten','dairy','lactose','shellfish','egg','soy','celiac','vegan'];
-var STATIONS={starters:['manchurian','65','gobi','paneer tikka','mushroom','spring roll','kebab','tandoori','seekh','malai'],curries:['curry','masala','butter','korma','vindaloo','rogan','kadai','do pyaza','gongura','pepper'],biryanis:['biryani','pulao','dum','hyderabadi'],grill:['tandoori','kebab','seekh','tikka','grill','roast','chicken fry'],noodles:['noodles','fried rice','hakka','schezwan','chow','manchurian rice'],breads:['naan','roti','paratha','kulcha','bread','chapati']};
+var STATIONS={starters:['manchurian','65','gobi','paneer tikka','mushroom','spring roll','kebab','tandoori','seekh','malai'],curries:['curry','masala','butter','korma','vindaloo','rogan','kadai','do pyaza','gongura','pepper'],biryanis:['biryani','pulao','dum','hyderabadi'],grill:['tandoori','kebab','seekh','tikka','grill','roast','chicken fry'],noodles:['noodles','fried rice','hakka','schezwan','chow','manchurian rice'],breads:['naan','roti','paratha','kulcha','bread','chapati'],drinks:['tea','coffee','juice','lassi','buttermilk','shake','soda','water','nimbu','chaas'],desserts:['gulab','jamun','halwa','kheer','ice cream','rasmalai','jalebi','payasam','sweet']};
 
 firebase.initializeApp({apiKey:"AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",authDomain:"amogha-cafe.firebaseapp.com",projectId:"amogha-cafe",storageBucket:"amogha-cafe.firebasestorage.app",messagingSenderId:"1000994409697",appId:"1:1000994409697:web:983214bafab529d6a2fba0"});
 var db=firebase.firestore();
@@ -2183,8 +2200,20 @@ function initRptAutoPrompt(){
     },60000);
 }
 
+function filterStation(station) {
+    curStation = station;
+    document.querySelectorAll('.station-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.textContent.toLowerCase().includes(station === 'all' ? 'all' : station));
+    });
+    // Also sync the subhdr station tabs
+    document.querySelectorAll('.stab').forEach(function(s) {
+        s.classList.toggle('active', s.dataset.station === station);
+    });
+    renderBoard();
+}
+
 // === EXPOSE ===
-window.K={start:startOrder,done:doneOrder,recall:recallOrder,rush:rushOrder,chk:chkItem,print:printTicket,notify:enhancedNotify,un86:remove86,rmStaff:removeStaff,recipe:showRecipe,assignStart:assignAndStart,closeBatch:closeBatchView,exportCSV:exportCSV,invAdj:invAdjust,tblCycle:tblCycleStatus};
+window.K={start:startOrder,done:doneOrder,recall:recallOrder,rush:rushOrder,chk:chkItem,print:printTicket,notify:enhancedNotify,un86:remove86,rmStaff:removeStaff,recipe:showRecipe,assignStart:assignAndStart,closeBatch:closeBatchView,exportCSV:exportCSV,invAdj:invAdjust,tblCycle:tblCycleStatus,filterStation:filterStation};
 
 // === INIT ===
 document.addEventListener('DOMContentLoaded',function(){
