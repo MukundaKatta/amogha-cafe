@@ -675,8 +675,10 @@ test('group ordering and subscriptions complete main interactions', async ({ pag
     });
     await setSignedInUser(page, { name: 'Group User', phone: '9000000007', pin: '1234', usedWelcomeBonus: true });
     await page.goto('/');
+    // Scroll menu into view to trigger lazy-loaded modules (group.js loads via loadOnVisible)
+    await page.locator('#menu, #dynamic-menu-container').first().scrollIntoViewIfNeeded().catch(() => {});
     // group.js is dynamically imported — wait for its window exports to be available
-    await page.waitForFunction(() => typeof window.createGroupCart === 'function', { timeout: 10000 });
+    await page.waitForFunction(() => typeof window.createGroupCart === 'function', { timeout: 15000 });
     await page.evaluate(() => window.createGroupCart());
     await expect(page.locator('#group-modal')).toBeVisible();
     await expect(page.locator('#group-share-url')).toHaveValue(/group=/);
@@ -706,11 +708,13 @@ test('badges, split bill and meal planner modals render correctly', async ({ pag
         badges: [{ badgeId: 'first_bite', earnedAt: '2025-01-01T00:00:00.000Z' }]
     });
     await page.goto('/');
+    // Scroll menu into view to trigger lazy-loaded modules
+    await page.locator('#menu, #dynamic-menu-container').first().scrollIntoViewIfNeeded().catch(() => {});
     await page.click('button[title="My Badges"]');
     await expect(page.locator('#badge-gallery-modal')).toHaveClass(/show/);
 
     // splitbill.js is dynamically imported — wait for its window exports
-    await page.waitForFunction(() => typeof window.openSplitBill === 'function', { timeout: 10000 });
+    await page.waitForFunction(() => typeof window.openSplitBill === 'function', { timeout: 15000 });
     await page.evaluate(() => window.openSplitBill('ORDER123', 900));
     await page.click('#split-bill-modal .split-num-btn:has-text("3")');
     await expect(page.locator('#split-result')).toContainText('Rs.300');

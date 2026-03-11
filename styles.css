@@ -945,7 +945,7 @@ body.dark-mode .modal select {
     to { transform: translateY(0); opacity: 1; }
 }
 .cookie-consent-inner {
-    max-width: 1200px;
+    max-width: min(1200px, 100%);
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -1590,6 +1590,7 @@ body {
     -moz-osx-font-smoothing: grayscale;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
 }
 
 /* --- Search Autocomplete Keyboard Navigation --- */
