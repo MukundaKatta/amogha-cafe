@@ -53,11 +53,18 @@
     /* Ensure dynamically-loaded sections are visible (reveal animation can miss them) */
     .section-reveal{opacity:1!important;transform:none!important}
     </style>
-    <link rel="stylesheet" href="styles.css?v=67" media="all">
-    <link rel="stylesheet" href="enhancements.css?v=1" media="all">
-    <link rel="stylesheet" href="premium.css?v=1" media="all">
-    <link rel="stylesheet" href="worldclass.css?v=1" media="all">
-    <link rel="stylesheet" href="worldclass2.css?v=1" media="all">
+    <link rel="stylesheet" href="styles.css?v=68" media="all">
+    <!-- Non-critical CSS loaded async to improve LCP -->
+    <link rel="stylesheet" href="enhancements.css?v=2" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="premium.css?v=2" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="worldclass.css?v=2" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="worldclass2.css?v=2" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="enhancements.css?v=2">
+        <link rel="stylesheet" href="premium.css?v=2">
+        <link rel="stylesheet" href="worldclass.css?v=2">
+        <link rel="stylesheet" href="worldclass2.css?v=2">
+    </noscript>
     <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
     <script>if('scrollRestoration' in history) history.scrollRestoration='manual'; window.scrollTo(0,0);</script>
 
@@ -467,9 +474,9 @@
             <div class="chef-content">
                 <div class="chef-image">
                     <div class="chef-slideshow" id="chef-slideshow">
-                        <img class="chef-slide active" src="pics/WhatsApp Image 2026-02-22 at 11.48.37 AM.jpeg" alt="Master Chef Polina">
-                        <img class="chef-slide" src="pics/WhatsApp Image 2026-02-22 at 11.56.52 AM.jpeg" alt="Chef Usha">
-                        <img class="chef-slide" src="pics/WhatsApp Image 2026-02-24 at 4.46.56 AM.jpeg" alt="Chef Bhavana">
+                        <img class="chef-slide active" src="pics/WhatsApp Image 2026-02-22 at 11.48.37 AM.jpeg" alt="Master Chef Polina" loading="lazy">
+                        <img class="chef-slide" src="pics/WhatsApp Image 2026-02-22 at 11.56.52 AM.jpeg" alt="Chef Usha" loading="lazy">
+                        <img class="chef-slide" src="pics/WhatsApp Image 2026-02-24 at 4.46.56 AM.jpeg" alt="Chef Bhavana" loading="lazy">
                     </div>
                 </div>
                 <div class="chef-info" id="chef-info">

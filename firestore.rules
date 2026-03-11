@@ -55,8 +55,11 @@ service cloud.firestore {
       allow create: if hasFields(['name', 'phone', 'createdAt'])
                     && isString(request.resource.data.name)
                     && isString(request.resource.data.phone)
-                    && request.resource.data.phone == phone;
-      allow update: if !request.resource.data.diff(resource.data).affectedKeys().hasAny(['phone', 'pin']);
+                    && request.resource.data.phone == phone
+                    && request.resource.data.name.size() <= 100
+                    && request.resource.data.phone.size() == 10;
+      allow update: if !request.resource.data.diff(resource.data).affectedKeys().hasAny(['phone', 'pin', 'createdAt'])
+                    && request.resource.data.keys().size() <= 20;
       allow delete: if false;
     }
 
@@ -70,8 +73,12 @@ service cloud.firestore {
                     && isString(request.resource.data.phone)
                     && isNumber(request.resource.data.total)
                     && request.resource.data.total > 0
+                    && request.resource.data.total < 100000
                     && request.resource.data.items is list
-                    && request.resource.data.items.size() > 0;
+                    && request.resource.data.items.size() > 0
+                    && request.resource.data.items.size() <= 50
+                    && request.resource.data.customer.size() <= 100
+                    && request.resource.data.phone.size() == 10;
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['status','kitchenStartedAt','preparingAt','etaMinutes','readyAt',
                                    'deliveredAt','scheduledFor','deliveryPerson','outForDeliveryAt',
@@ -146,15 +153,18 @@ service cloud.firestore {
     // Admin panel still reads/manages kiosks directly
     // TODO: Move admin kiosk CRUD to Cloud Functions to fully lock this down
     // -------------------------------------------------------------------------
+    // KIOSKS — POS terminal credentials
+    // WARNING: This collection contains passwords. Read access is restricted.
+    // Auth goes through Cloud Function /auth/kiosk-login (server-side validation).
+    // Admin panel can still create/manage kiosks via these rules.
     match /kiosks/{kioskId} {
-      allow read: if true;
-      allow create: if hasFields(['username', 'shopId', 'active', 'password', 'createdAt'])
+      allow read: if false;  // Credentials must NOT be readable from client
+      allow create: if hasFields(['username', 'shopId', 'active', 'createdAt'])
                     && isString(request.resource.data.username)
-                    && isString(request.resource.data.shopId)
-                    && isString(request.resource.data.password);
+                    && isString(request.resource.data.shopId);
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
-                         .hasOnly(['active', 'password', 'name', 'username', 'shopId']);
-      allow delete: if true;
+                         .hasOnly(['active', 'passwordHash', 'name', 'username', 'shopId']);
+      allow delete: if false;  // Use admin console for deletion
     }
 
     // -------------------------------------------------------------------------

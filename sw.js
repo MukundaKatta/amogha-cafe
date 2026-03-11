@@ -1,9 +1,9 @@
-const CACHE_NAME = 'amogha-v72';
+const CACHE_NAME = 'amogha-v73';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=67',
-  './script.js?v=20260305c',
+  './styles.css?v=68',
+  './script.js?v=20260310',
   './manifest.json',
   './amogha-logo.png',
   // Hero slideshow images
@@ -58,30 +58,35 @@ self.addEventListener('activate', function(e) {
   );
 });
 
-// Fetch — network first for documents/CSS/JS, cache first for images
+// Fetch — tiered caching strategy
 self.addEventListener('fetch', function(e) {
   var url = new URL(e.request.url);
 
   // Skip non-GET requests and external URLs
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
 
-  // HTML documents, CSS, JS — always network first
+  // Skip API requests from caching (they have their own caching in-app)
+  if (url.pathname.startsWith('/api')) return;
+
+  // HTML documents, CSS, JS — stale-while-revalidate (fast + fresh)
   var isDocument = e.request.destination === 'document';
   var isStyle = e.request.destination === 'style' || url.pathname.endsWith('.css');
   var isScript = e.request.destination === 'script' || url.pathname.endsWith('.js');
 
   if (isDocument || isStyle || isScript) {
     e.respondWith(
-      fetch(e.request).then(function(response) {
-        if (response.ok && response.type !== 'opaque') {
-          var clone = response.clone();
-          caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
-        }
-        return response;
-      }).catch(function() {
-        return caches.match(e.request).then(function(cached) {
+      caches.match(e.request).then(function(cached) {
+        var fetchPromise = fetch(e.request).then(function(response) {
+          if (response.ok && response.type !== 'opaque') {
+            var clone = response.clone();
+            caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
+          }
+          return response;
+        }).catch(function() {
           return cached || (isDocument ? caches.match('./index.html') : new Response('', { status: 503 }));
         });
+        // Return cached immediately if available, revalidate in background
+        return cached || fetchPromise;
       })
     );
     return;

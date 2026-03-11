@@ -69,18 +69,17 @@ describe('main.js', () => {
     });
 
     it('calls initProfile, initGroupOrdering, and initChatbot after deferred init', async () => {
-        vi.useFakeTimers();
         await import('../src/main.js');
         // initProfile is in requestIdleCallback (100ms fallback), others in setTimeout(1500)
-        vi.advanceTimersByTime(2000);
+        // Wait for setTimeout(1500) + dynamic import resolution
+        await new Promise(resolve => setTimeout(resolve, 2000));
         const { initProfile } = await import('../src/modules/profile.js');
         const { initGroupOrdering } = await import('../src/modules/group.js');
         const { initChatbot } = await import('../src/modules/chatbot.js');
         expect(initProfile).toHaveBeenCalled();
         expect(initGroupOrdering).toHaveBeenCalled();
         expect(initChatbot).toHaveBeenCalled();
-        vi.useRealTimers();
-    });
+    }, 10000);
 
     it('calls restoreButtonStates, updateCartFab, and defers initAddonCache', async () => {
         vi.useFakeTimers();

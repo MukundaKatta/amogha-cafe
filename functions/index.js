@@ -8,6 +8,25 @@ const bcrypt    = require('bcryptjs');
 
 admin.initializeApp();
 const db = admin.firestore();
+const crypto = require('crypto');
+
+// Constant-time string comparison to prevent timing attacks on password checks
+function timingSafeEqual(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string') return false;
+    var bufA = Buffer.from(a);
+    var bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) {
+        // Compare against self to maintain constant time
+        crypto.timingSafeEqual(bufA, bufA);
+        return false;
+    }
+    return crypto.timingSafeEqual(bufA, bufB);
+}
+
+// SHA-256 hash helper for server-side PIN comparison
+function hashValue(value, salt) {
+    return crypto.createHash('sha256').update(value + '_' + (salt || 'amogha_salt')).digest('hex');
+}
 
 // ===== GEMINI AI HELPER =====
 var _geminiModel = null;
@@ -86,6 +105,29 @@ const FREE_DELIVERY_THRESHOLD = 500;
 const DELIVERY_FEE = 49;
 
 const app = express();
+
+// ===== REQUEST ID & STRUCTURED LOGGING =====
+app.use(function(req, res, next) {
+    req.requestId = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
+    res.setHeader('X-Request-Id', req.requestId);
+    var start = Date.now();
+    res.on('finish', function() {
+        var duration = Date.now() - start;
+        if (duration > 5000 || res.statusCode >= 500) {
+            console.warn(JSON.stringify({
+                severity: res.statusCode >= 500 ? 'ERROR' : 'WARNING',
+                requestId: req.requestId,
+                method: req.method,
+                path: req.path,
+                status: res.statusCode,
+                durationMs: duration,
+                ip: req.ip
+            }));
+        }
+    });
+    next();
+});
+
 app.use(cors({
     origin: ['https://amogha-cafe.web.app', 'https://amogha-cafe.firebaseapp.com', 'https://amoghahotels.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -176,6 +218,61 @@ function requireAdminAuth(req, res, next) {
 
 // Apply admin auth to sensitive endpoints
 app.use(['/notify', '/analytics-query', '/forecast', '/menu-insights'], requireAdminAuth);
+
+// ===== LOGIN BRUTE-FORCE PROTECTION =====
+var _loginAttempts = {};
+var LOGIN_LOCKOUT_WINDOW = 300000; // 5 minutes
+var LOGIN_MAX_ATTEMPTS = 5;
+
+function checkLoginThrottle(identifier) {
+    var now = Date.now();
+    var entry = _loginAttempts[identifier];
+    if (!entry || now - entry.firstAttempt > LOGIN_LOCKOUT_WINDOW) {
+        _loginAttempts[identifier] = { firstAttempt: now, count: 1 };
+        return true; // allowed
+    }
+    entry.count++;
+    if (entry.count > LOGIN_MAX_ATTEMPTS) return false; // locked out
+    return true;
+}
+
+function clearLoginAttempts(identifier) {
+    delete _loginAttempts[identifier];
+}
+
+// Cleanup stale login attempt entries periodically
+setInterval(function() {
+    var now = Date.now();
+    Object.keys(_loginAttempts).forEach(function(k) {
+        if (now - _loginAttempts[k].firstAttempt > LOGIN_LOCKOUT_WINDOW) delete _loginAttempts[k];
+    });
+}, 60000);
+
+// -----------------------------------------------------------------------
+// GET /health — API health check and uptime monitoring
+// -----------------------------------------------------------------------
+app.get('/health', async function(req, res) {
+    try {
+        // Quick Firestore connectivity check
+        var start = Date.now();
+        await db.collection('settings').doc('global').get();
+        var latency = Date.now() - start;
+        res.json({
+            status: 'healthy',
+            version: '2.0.0',
+            uptime: process.uptime(),
+            firestore: { status: 'connected', latencyMs: latency },
+            timestamp: new Date().toISOString()
+        });
+    } catch (e) {
+        res.status(503).json({
+            status: 'degraded',
+            version: '2.0.0',
+            error: 'Firestore connectivity issue',
+            timestamp: new Date().toISOString()
+        });
+    }
+});
 
 // -----------------------------------------------------------------------
 // GET /menu  — full available menu
@@ -442,6 +539,11 @@ app.post('/auth/kiosk-login', async function(req, res) {
             return res.status(400).json({ error: 'Username and password are required' });
         }
 
+        // Brute-force protection
+        if (!checkLoginThrottle('kiosk:' + username)) {
+            return res.status(429).json({ error: 'Too many login attempts. Try again in 5 minutes.' });
+        }
+
         // Check kiosks collection
         var snap = await db.collection('kiosks')
             .where('username', '==', username)
@@ -451,24 +553,27 @@ app.post('/auth/kiosk-login', async function(req, res) {
         var matched = null;
         snap.forEach(function(doc) {
             var d = doc.data();
-            // Support both bcrypt-hashed and plaintext passwords (backward compat)
+            // Support bcrypt-hashed, SHA256-hashed, and plaintext passwords
             var storedPw = d.password || '';
-            var pwMatch = false;
+            var isMatch = false;
             try {
-                if (storedPw.startsWith('$2')) {
-                    pwMatch = bcrypt.compareSync(password, storedPw);
+                if (d.passwordHash) {
+                    isMatch = timingSafeEqual(hashValue(password, 'kiosk'), d.passwordHash);
+                } else if (storedPw.startsWith('$2')) {
+                    isMatch = bcrypt.compareSync(password, storedPw);
                 } else {
-                    pwMatch = (storedPw === password);
+                    isMatch = timingSafeEqual(password, storedPw);
                 }
             } catch (_e) {
-                pwMatch = (storedPw === password);
+                isMatch = timingSafeEqual(password, storedPw);
             }
-            if (pwMatch) {
+            if (isMatch) {
                 matched = { id: doc.id, shopId: d.shopId, name: d.name || '' };
             }
         });
 
         if (matched) {
+            clearLoginAttempts('kiosk:' + username);
             // Fetch shop config
             var shopDoc = await db.collection('shops').doc(matched.shopId).get();
             var shopConfig = shopDoc.exists
@@ -487,13 +592,15 @@ app.post('/auth/kiosk-login', async function(req, res) {
                 var storedPin = d.adminPin || '';
                 var pinMatch = false;
                 try {
-                    if (storedPin.startsWith('$2')) {
+                    if (d.adminPinHash) {
+                        pinMatch = timingSafeEqual(hashValue(password, 'admin'), d.adminPinHash);
+                    } else if (storedPin.startsWith('$2')) {
                         pinMatch = bcrypt.compareSync(password, storedPin);
                     } else {
-                        pinMatch = (storedPin === password);
+                        pinMatch = timingSafeEqual(password, storedPin);
                     }
                 } catch (_e) {
-                    pinMatch = (storedPin === password);
+                    pinMatch = timingSafeEqual(password, storedPin);
                 }
                 if (pinMatch) {
                     legacy = { id: doc.id, name: d.name || doc.id, tagline: d.tagline || '', theme: d.theme || '' };
@@ -502,6 +609,7 @@ app.post('/auth/kiosk-login', async function(req, res) {
         });
 
         if (legacy) {
+            clearLoginAttempts('kiosk:' + username);
             return res.json({ success: true, shopId: legacy.id, shopConfig: legacy });
         }
 
@@ -529,6 +637,11 @@ app.post('/auth/delivery-login', async function(req, res) {
             return res.status(400).json({ error: 'PIN is required' });
         }
 
+        // Brute-force protection
+        if (!checkLoginThrottle('delivery:' + phone)) {
+            return res.status(429).json({ error: 'Too many login attempts. Try again in 5 minutes.' });
+        }
+
         var doc = await db.collection('deliveryPersons').doc(phone).get();
         if (!doc.exists) {
             return res.status(401).json({ error: 'Phone number not registered. Contact admin.' });
@@ -539,22 +652,25 @@ app.post('/auth/delivery-login', async function(req, res) {
             return res.status(403).json({ error: 'Your account is inactive. Contact admin.' });
         }
 
-        // Support both bcrypt-hashed and plaintext PINs (backward compat)
+        // Support bcrypt-hashed, SHA256-hashed, and plaintext PINs
         var storedPin = d.pin || '';
         var pinMatch = false;
         try {
-            if (storedPin.startsWith('$2')) {
+            if (d.pinHash) {
+                pinMatch = timingSafeEqual(hashValue(pin, 'delivery'), d.pinHash);
+            } else if (storedPin.startsWith('$2')) {
                 pinMatch = bcrypt.compareSync(pin, storedPin);
             } else {
-                pinMatch = (storedPin === pin);
+                pinMatch = timingSafeEqual(pin, storedPin);
             }
         } catch (_e) {
-            pinMatch = (storedPin === pin);
+            pinMatch = timingSafeEqual(pin, storedPin);
         }
         if (!pinMatch) {
             return res.status(401).json({ error: 'Incorrect PIN. Try again.' });
         }
 
+        clearLoginAttempts('delivery:' + phone);
         res.json({ success: true, phone: phone, name: d.name || 'Delivery Partner' });
     } catch (e) {
         console.error('POST /auth/delivery-login error:', e);

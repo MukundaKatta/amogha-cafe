@@ -108,6 +108,13 @@ window.submitNewsletter = function () {
     var msg = document.getElementById('newsletter-msg');
     if (!email) return;
 
+    // Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+        msg.textContent = 'Please enter a valid email address.';
+        msg.style.color = '#ef4444';
+        return;
+    }
+
     // Save to Firestore if available
     if (window.db) {
         window.db.collection('newsletter').doc(email).set({
