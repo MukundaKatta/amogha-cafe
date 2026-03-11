@@ -49,9 +49,49 @@ export function openAuthModal() {
     }
     var modal = document.getElementById('auth-modal');
     if (!modal) return;
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
     modal.style.display = 'block';
     lockScroll();
     switchAuthView('signup');
+
+    // Add autocomplete attributes to form fields
+    var signupPhone = document.getElementById('signup-phone');
+    var signupName = document.getElementById('signup-name');
+    var signinPhone = document.getElementById('signin-phone');
+    if (signupPhone) signupPhone.setAttribute('autocomplete', 'tel');
+    if (signupName) signupName.setAttribute('autocomplete', 'name');
+    if (signinPhone) signinPhone.setAttribute('autocomplete', 'tel');
+
+    // Add aria-label to password toggle buttons
+    modal.querySelectorAll('.toggle-password, .password-toggle').forEach(function(btn) {
+        if (!btn.hasAttribute('aria-label')) {
+            btn.setAttribute('aria-label', 'Toggle PIN visibility');
+        }
+    });
+
+    // Focus trap: cycle between first and last focusable elements
+    if (!modal._focusTrapAttached) {
+        modal._focusTrapAttached = true;
+        modal.addEventListener('keydown', function(e) {
+            if (e.key !== 'Tab') return;
+            var focusable = modal.querySelectorAll('input, button, select, textarea, a[href], [tabindex]:not([tabindex="-1"])');
+            if (focusable.length === 0) return;
+            var first = focusable[0];
+            var last = focusable[focusable.length - 1];
+            if (e.shiftKey) {
+                if (document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                }
+            } else {
+                if (document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        });
+    }
 }
 
 export function closeAuthModal() {

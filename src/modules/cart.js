@@ -60,6 +60,10 @@ export function updateCartCount() {
     const count = cart.reduce((total, item) => total + item.quantity, 0);
     var el = document.getElementById('cart-count');
     if (el) {
+        if (!el.hasAttribute('role')) {
+            el.setAttribute('role', 'status');
+            el.setAttribute('aria-live', 'polite');
+        }
         el.textContent = count;
         // Bump animation
         el.classList.remove('bump');
@@ -425,11 +429,11 @@ export function displayCart() {
                     <div class="cart-item-price">₹${(item.price + addonTotal).toFixed(2)}</div>
                 </div>
                 <div class="cart-item-quantity">
-                    <button class="qty-btn" onclick="updateQuantity(${index}, -1)">-</button>
+                    <button class="qty-btn" onclick="updateQuantity(${index}, -1)" aria-label="Decrease quantity of ${item.name}">-</button>
                     <span>${item.quantity}</span>
-                    <button class="qty-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                    <button class="qty-btn" onclick="updateQuantity(${index}, 1)" aria-label="Increase quantity of ${item.name}">+</button>
                 </div>
-                <button class="remove-item" onclick="removeItem(${index})">Remove</button>
+                <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${item.name} from cart">Remove</button>
             </div>
         `;
     });

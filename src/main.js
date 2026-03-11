@@ -134,9 +134,23 @@ setTimeout(function() {
 }, 3500);
 
 // ===== WORLD-CLASS FEATURES (Phase 13) =====
-setTimeout(function() {
+// Only load if user has scrolled (indicates engagement) or after 6s
+var _wc2Loaded = false;
+function loadWorldClass2() {
+    if (_wc2Loaded) return;
+    _wc2Loaded = true;
     safeImport('./modules/worldclass2.js', 'initWorldClass2');
-}, 4000);
+}
+setTimeout(loadWorldClass2, 6000);
+if (typeof IntersectionObserver !== 'undefined') {
+    var menuSection = document.getElementById('menu') || document.getElementById('dynamic-menu-container');
+    if (menuSection) {
+        var wc2Observer = new IntersectionObserver(function(entries) {
+            if (entries[0].isIntersecting) { loadWorldClass2(); wc2Observer.disconnect(); }
+        }, { rootMargin: '200px' });
+        wc2Observer.observe(menuSection);
+    }
+}
 
 // AI For You recommendations (delayed to not block load)
 setTimeout(initAiForYou, 4500);

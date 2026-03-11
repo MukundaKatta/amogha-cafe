@@ -63,10 +63,47 @@ export function initSocialProof() {
     var toast = document.getElementById('social-proof-toast');
     if (!toast) return;
 
+    // Fetch recent real orders for authentic social proof
+    var _recentOrders = [];
+    try {
+        if (window.db) {
+            window.db.collection('orders').orderBy('createdAt', 'desc').limit(10).get().then(function(snap) {
+                snap.forEach(function(doc) {
+                    var d = doc.data();
+                    if (d.customer && d.items && d.items.length) {
+                        _recentOrders.push({
+                            name: d.customer.split(' ')[0],
+                            item: d.items[0].name,
+                            time: d.createdAt
+                        });
+                    }
+                });
+            }).catch(function() {});
+        }
+    } catch(e) {}
+
+    function getTimeAgo(isoStr) {
+        if (!isoStr) return SP_TIMES[Math.floor(Math.random() * SP_TIMES.length)];
+        var mins = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60000);
+        if (mins < 1) return 'just now';
+        if (mins < 60) return mins + ' minutes ago';
+        if (mins < 1440) return Math.floor(mins / 60) + ' hours ago';
+        return 'recently';
+    }
+
     function show() {
-        var name = SP_NAMES[Math.floor(Math.random() * SP_NAMES.length)];
-        var item = SP_ITEMS[Math.floor(Math.random() * SP_ITEMS.length)];
-        var time = SP_TIMES[Math.floor(Math.random() * SP_TIMES.length)];
+        var name, item, time;
+        // Use real order data when available (70% chance)
+        if (_recentOrders.length > 0 && Math.random() > 0.3) {
+            var order = _recentOrders[Math.floor(Math.random() * _recentOrders.length)];
+            name = order.name;
+            item = order.item;
+            time = getTimeAgo(order.time);
+        } else {
+            name = SP_NAMES[Math.floor(Math.random() * SP_NAMES.length)];
+            item = SP_ITEMS[Math.floor(Math.random() * SP_ITEMS.length)];
+            time = SP_TIMES[Math.floor(Math.random() * SP_TIMES.length)];
+        }
         var color = SP_COLORS[Math.floor(Math.random() * SP_COLORS.length)];
         var initial = name.charAt(0);
 
@@ -89,8 +126,8 @@ export function initSocialProof() {
     // First toast after 15s, then every 30-60s
     setTimeout(show, 15000);
     setInterval(function () {
-        // Only show if user hasn't scrolled to checkout
-        if (!document.querySelector('.modal[style*="block"]')) {
+        // Only show if user hasn't scrolled to checkout and page is visible
+        if (!document.querySelector('.modal[style*="block"]') && document.visibilityState !== 'hidden') {
             show();
         }
     }, 30000 + Math.random() * 30000);

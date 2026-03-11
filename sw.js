@@ -1,4 +1,4 @@
-const CACHE_NAME = 'amogha-v73';
+const CACHE_NAME = 'amogha-v74';
 const ASSETS = [
   './',
   './index.html',
@@ -76,13 +76,18 @@ self.addEventListener('fetch', function(e) {
   if (isDocument || isStyle || isScript) {
     e.respondWith(
       caches.match(e.request).then(function(cached) {
-        var fetchPromise = fetch(e.request).then(function(response) {
+        // Network fetch with 5s timeout to prevent indefinite hangs
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function() { controller.abort(); }, 5000);
+        var fetchPromise = fetch(e.request, { signal: controller.signal }).then(function(response) {
+          clearTimeout(timeoutId);
           if (response.ok && response.type !== 'opaque') {
             var clone = response.clone();
             caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
           }
           return response;
         }).catch(function() {
+          clearTimeout(timeoutId);
           return cached || (isDocument ? caches.match('./index.html') : new Response('', { status: 503 }));
         });
         // Return cached immediately if available, revalidate in background

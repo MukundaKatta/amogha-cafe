@@ -156,6 +156,18 @@ export function openCheckout() {
         }
     }
 
+    // Add accessibility attributes to required form fields
+    var coName = document.getElementById('co-name');
+    var coPhone = document.getElementById('co-phone');
+    var coAddress = document.getElementById('co-address');
+    if (coName) coName.setAttribute('aria-required', 'true');
+    if (coPhone) {
+        coPhone.setAttribute('aria-required', 'true');
+        coPhone.setAttribute('inputmode', 'numeric');
+        coPhone.setAttribute('pattern', '[0-9]*');
+    }
+    if (coAddress) coAddress.setAttribute('aria-required', 'true');
+
     goToStep(1);
     var checkoutModal = document.getElementById('checkout-modal');
     if (checkoutModal) checkoutModal.style.display = 'block';
@@ -228,12 +240,16 @@ export function setupPayment() {
 }
 
 export function switchPayTab(tab) {
+    var tabLabels = { razorpay: 'Pay with Razorpay (UPI, Cards, Net Banking)', cod: 'Pay with Cash on Delivery' };
     ['razorpay', 'cod'].forEach(function(t) {
         var tabEl = document.getElementById('tab-' + t);
         var panelEl = document.getElementById('pay-panel-' + t);
         if (tabEl) {
             tabEl.classList.toggle('active', t === tab);
             tabEl.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+            if (!tabEl.hasAttribute('aria-label')) {
+                tabEl.setAttribute('aria-label', tabLabels[t] || t);
+            }
         }
         if (panelEl) panelEl.classList.toggle('active', t === tab);
     });
