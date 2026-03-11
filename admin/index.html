@@ -4476,15 +4476,15 @@
             // Normalize row keys: trim whitespace and lowercase for flexible matching
             function normalizeRow(row) {
                 var out = {};
-                Object.keys(row).forEach(function(k) { out[k.trim().toLowerCase()] = row[k]; });
+                Object.keys(row).forEach(function(k) { out[k.replace(/^\uFEFF/, '').trim().toLowerCase()] = row[k]; });
                 return out;
             }
 
             rows.forEach(function(row, idx) {
                 var r = normalizeRow(row);
-                var name = String(r.name || r['item name'] || r['item'] || r['menu item'] || '').trim();
-                var price = parseInt(r.price || r['rate'] || r['cost'] || 0);
-                var category = String(r.category || r['cat'] || r['section'] || '').trim();
+                var name = String(r.name || r['item name'] || r['item'] || r['menu item'] || r['product'] || r['dish'] || '').trim();
+                var price = parseInt(r.price || r['sale price'] || r['rate'] || r['cost'] || r['mrp'] || r['amount'] || 0);
+                var category = String(r.category || r['item category'] || r['cat'] || r['section'] || r['menu category'] || r['group'] || '').trim();
                 var type = String(r.type || r['veg/non-veg'] || r['food type'] || 'veg').trim().toLowerCase();
                 var badge = String(r.badge || r['tag'] || r['label'] || '').trim();
 
