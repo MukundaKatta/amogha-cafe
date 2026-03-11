@@ -112,19 +112,27 @@ export async function sendChatMessage(presetMsg) {
         botBubble.className = 'ai-msg bot';
         var html = '<p>' + escapeHtml(data.reply || 'Sorry, please try again.') + '</p>';
 
-        // Show suggested items as add-to-cart buttons
+        // Show suggested items as add-to-cart buttons (using data attributes to avoid inline JS XSS)
         if (data.suggestedItems && data.suggestedItems.length > 0) {
             html += '<div class="ai-chat-items">';
             data.suggestedItems.forEach(function(item) {
-                var safeNameAttr = escapeHtml(item.name).replace(/'/g, '&#39;').replace(/\\/g, '&#92;');
-                html += '<button class="ai-item-btn" onclick="addToCart(\'' +
-                    safeNameAttr + '\', ' + item.price +
-                    '); showAuthToast(\'Added ' + safeNameAttr + ' to cart\');">' +
-                    escapeHtml(item.name) + ' — &#8377;' + item.price + ' <span class="ai-add">+</span></button>';
+                var safePrice = parseInt(item.price, 10) || 0;
+                html += '<button class="ai-item-btn" data-item-name="' + escapeHtml(item.name).replace(/"/g, '&quot;') +
+                    '" data-item-price="' + safePrice + '">' +
+                    escapeHtml(item.name) + ' — &#8377;' + safePrice + ' <span class="ai-add">+</span></button>';
             });
             html += '</div>';
         }
         botBubble.innerHTML = html;
+        // Bind click handlers via event delegation (avoids inline JS with API data)
+        botBubble.querySelectorAll('.ai-item-btn[data-item-name]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var name = btn.getAttribute('data-item-name');
+                var price = parseInt(btn.getAttribute('data-item-price'), 10) || 0;
+                if (typeof window.addToCart === 'function') window.addToCart(name, price);
+                if (typeof window.showAuthToast === 'function') window.showAuthToast('Added ' + name + ' to cart');
+            });
+        });
         messagesEl.appendChild(botBubble);
         messagesEl.scrollTop = messagesEl.scrollHeight;
 

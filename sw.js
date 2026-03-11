@@ -1,4 +1,5 @@
-const CACHE_NAME = 'amogha-v74';
+const CACHE_NAME = 'amogha-v75';
+const MAX_CACHE_ITEMS = 200; // Prevent unbounded cache growth
 const ASSETS = [
   './',
   './index.html',
@@ -163,6 +164,25 @@ self.addEventListener('fetch', function(e) {
       });
     })
   );
+});
+
+// ===== CACHE HOUSEKEEPING =====
+// Trim cache to prevent unbounded growth on devices with limited storage
+async function trimCache() {
+  try {
+    var cache = await caches.open(CACHE_NAME);
+    var keys = await cache.keys();
+    if (keys.length > MAX_CACHE_ITEMS) {
+      // Remove oldest entries (first added) until within limit
+      var toDelete = keys.slice(0, keys.length - MAX_CACHE_ITEMS);
+      await Promise.all(toDelete.map(function(req) { return cache.delete(req); }));
+    }
+  } catch(e) { /* storage quota errors are non-fatal */ }
+}
+
+// Periodic cache trim on message from main thread
+self.addEventListener('message', function(e) {
+  if (e.data === 'trimCache') trimCache();
 });
 
 // ===== FIREBASE CLOUD MESSAGING (Background Push) =====

@@ -41,8 +41,21 @@ export function cachedGet(collectionName, cacheKey, ttlSeconds, transform, rende
         // Try stale cache as fallback
         try {
             var stale = localStorage.getItem(cacheKey);
-            if (stale) render(JSON.parse(stale).data);
+            if (stale) {
+                render(JSON.parse(stale).data);
+                return;
+            }
         } catch(e) {}
+        // If no cache at all, show a user-friendly error with retry
+        if (collectionName === 'menu') {
+            var container = document.getElementById('dynamic-menu-container');
+            if (container) {
+                container.innerHTML = '<div class="menu-error" style="text-align:center;padding:2rem;color:#ccc">' +
+                    '<p style="font-size:1.1rem;margin-bottom:1rem">Unable to load menu. Please check your connection.</p>' +
+                    '<button onclick="location.reload()" style="padding:.6rem 1.5rem;background:#D4A017;color:#1e140e;border:none;border-radius:8px;font-weight:600;cursor:pointer">Retry</button>' +
+                '</div>';
+            }
+        }
     });
 }
 

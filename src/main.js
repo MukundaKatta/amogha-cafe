@@ -189,6 +189,23 @@ window.displayCart = displayCart;
 
 window.loadMenuRatings = loadMenuRatings;
 
+// ===== NETWORK STATUS MONITORING =====
+// Show/hide offline banner and notify user of connectivity changes
+function updateNetworkStatus() {
+    var banner = document.getElementById('offline-banner');
+    if (banner) {
+        banner.style.display = navigator.onLine ? 'none' : 'flex';
+    }
+    // Announce to screen readers
+    var liveRegion = document.getElementById('aria-live-region');
+    if (liveRegion) {
+        liveRegion.textContent = navigator.onLine ? '' : 'You are currently offline. Some features may be limited.';
+    }
+}
+window.addEventListener('online', updateNetworkStatus);
+window.addEventListener('offline', updateNetworkStatus);
+updateNetworkStatus();
+
 // ===== GLOBAL ERROR BOUNDARY =====
 // Catch unhandled errors to prevent silent failures
 window.addEventListener('error', function(event) {
