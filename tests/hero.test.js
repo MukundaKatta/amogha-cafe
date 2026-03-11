@@ -460,11 +460,11 @@ describe('initHero — sets up slideshow interval for multiple slides', () => {
         expect(vi.getTimerCount()).toBeGreaterThanOrEqual(1);
     });
 
-    it('advances the active slide after 2000ms', () => {
+    it('advances the active slide after 5000ms', () => {
         initHero();
         const slides = document.querySelectorAll('#hero-slideshow .hero-slide');
 
-        vi.advanceTimersByTime(2000);
+        vi.advanceTimersByTime(5000);
 
         const activeSlides = Array.from(slides).filter((s) =>
             s.classList.contains('active')
@@ -476,7 +476,7 @@ describe('initHero — sets up slideshow interval for multiple slides', () => {
         initHero();
         const slides = document.querySelectorAll('#hero-slideshow .hero-slide');
 
-        vi.advanceTimersByTime(2000);
+        vi.advanceTimersByTime(5000);
 
         // Slide at index 0 should no longer be active (current wraps to index 1)
         expect(slides[0].classList.contains('active')).toBe(false);
@@ -488,7 +488,7 @@ describe('initHero — sets up slideshow interval for multiple slides', () => {
         initHero();
         const slides = document.querySelectorAll('#hero-slideshow .hero-slide');
 
-        vi.advanceTimersByTime(2000);
+        vi.advanceTimersByTime(5000);
 
         const nextSlide = slides[1];
         const hasKbClass = kbClasses.some((cls) => nextSlide.classList.contains(cls));
@@ -761,14 +761,14 @@ describe('initHero — window.updateHeroSlides with image slides', () => {
         expect(vi.getTimerCount()).toBeGreaterThanOrEqual(1);
     });
 
-    it('advances active slide index after 2000ms following updateHeroSlides', () => {
+    it('advances active slide index after 5000ms following updateHeroSlides', () => {
         initHero();
         window.updateHeroSlides([
             { type: 'image', url: 'https://example.com/a.jpg' },
             { type: 'image', url: 'https://example.com/b.jpg' },
         ]);
 
-        vi.advanceTimersByTime(2000);
+        vi.advanceTimersByTime(5000);
 
         const container = document.getElementById('hero-slideshow');
         const slides = container.querySelectorAll('.hero-slide');
@@ -1002,7 +1002,7 @@ describe('initHero — video pause/play in slideshow transitions (lines 242-251)
         videos[1].play = playSpy;
 
         // Advance to trigger the slideshow interval (2000ms)
-        vi.advanceTimersByTime(2000);
+        vi.advanceTimersByTime(5000);
 
         // The outgoing video (index 0) should have been paused
         expect(pauseSpy).toHaveBeenCalled();
@@ -1024,7 +1024,7 @@ describe('initHero — video pause/play in slideshow transitions (lines 242-251)
         video.play = vi.fn();
 
         // Advance to trigger transition from image to video
-        vi.advanceTimersByTime(2000);
+        vi.advanceTimersByTime(5000);
 
         expect(video.currentTime).toBe(0);
         expect(video.play).toHaveBeenCalled();
@@ -1039,7 +1039,7 @@ describe('initHero — video pause/play in slideshow transitions (lines 242-251)
         ]);
 
         // Advance — no videos, so pause/play should not be called and no error
-        expect(() => vi.advanceTimersByTime(2000)).not.toThrow();
+        expect(() => vi.advanceTimersByTime(5000)).not.toThrow();
     });
 });
 
