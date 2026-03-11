@@ -15,7 +15,7 @@ Automated deployment pipeline triggered on every push to `master`.
 | 1. Checkout | Pull latest code |
 | 2. Setup Node | Node.js 20 with npm cache |
 | 3. Install | `npm ci` (clean install) |
-| 4. Test | `npm test -- --run` (Vitest, 71 tests) |
+| 4. Test | `npm test -- --run` (Vitest, 2,059 tests) |
 | 5. Deploy | Firebase Hosting + Firestore rules |
 
 ### Configuration
@@ -97,7 +97,9 @@ Hardened security rules for all 19+ collections. Key principles:
 | Tables | Only `status`, `currentOrder`, `updatedAt` updatable |
 | Notifications | Only `read` field updatable (must be `true`) |
 | Catering inquiries | Create-only (required: name, phone, eventType, guestCount, date) |
-| **All collections** | No client-side delete |
+| Delivery persons | **Read blocked** — auth via Cloud Function `POST /auth/delivery-login` |
+| Kiosks | Field validation on create; updates restricted to allowed fields; auth via `POST /auth/kiosk-login` |
+| **All collections** | No client-side delete (except kiosks for admin management) |
 
 ---
 
@@ -117,7 +119,7 @@ Firebase Storage rules for uploaded images (menu items, gallery, etc.).
 |---------|---------|
 | `npm run dev` | Local development server |
 | `npm run build` | Production build → `script.js` at root |
-| `npm test` | Vitest test runner (71 tests) |
+| `npm test` | Vitest test runner (2,059 tests) |
 
 ### Docker Build (for environments without Node.js)
 

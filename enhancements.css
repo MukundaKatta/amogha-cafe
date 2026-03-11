@@ -78,38 +78,78 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 12px;
+    padding: 5px 14px;
     border-radius: 20px;
-    font-size: .7rem;
-    font-weight: 600;
-    letter-spacing: .08em;
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .1em;
     text-transform: uppercase;
-    background: rgba(34, 197, 94, .1);
-    border: 1px solid rgba(34, 197, 94, .25);
+    background: rgba(34, 197, 94, .08);
+    border: 1px solid rgba(34, 197, 94, .2);
     color: #4ade80;
     white-space: nowrap;
     transition: all .4s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    flex-shrink: 0;
+}
+
+/* Nav layout */
+header > nav { max-width: none; padding-left: 1.5rem; padding-right: 1.5rem; }
+header > nav .logo { padding-left: 0; padding-right: 0.8rem; }
+
+/* Status + Streak group next to logo */
+.nav-status-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: auto;
+    position: relative;
+}
+
+/* Streak toggle button */
+.streak-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    background: rgba(255, 107, 0, .08);
+    border: 1px solid rgba(255, 107, 0, .2);
+    color: #ff8c00;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .3s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.streak-toggle-btn:hover {
+    background: rgba(255, 107, 0, .15);
+    border-color: rgba(255, 107, 0, .35);
 }
 .open-status-badge.is-closed {
-    background: rgba(239, 68, 68, .1);
-    border-color: rgba(239, 68, 68, .25);
+    background: rgba(239, 68, 68, .08);
+    border-color: rgba(239, 68, 68, .2);
     color: #f87171;
 }
 .open-status-badge.closing-soon {
-    background: rgba(251, 191, 36, .1);
-    border-color: rgba(251, 191, 36, .25);
+    background: rgba(251, 191, 36, .08);
+    border-color: rgba(251, 191, 36, .2);
     color: #fbbf24;
 }
 .open-status-badge.closing-soon .status-dot {
     background: #fbbf24 !important;
-    box-shadow: 0 0 8px rgba(251, 191, 36, .6) !important;
+    box-shadow: 0 0 8px rgba(251, 191, 36, .5) !important;
 }
 .status-dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: #22c55e;
-    box-shadow: 0 0 8px rgba(34, 197, 94, .6);
+    box-shadow: 0 0 10px rgba(34, 197, 94, .5);
     animation: statusPulse 2s ease-in-out infinite;
     flex-shrink: 0;
 }
@@ -124,8 +164,8 @@
 /* ── Social Proof Toast ── */
 .social-proof-toast {
     position: fixed;
-    bottom: 100px;
-    left: 20px;
+    bottom: 80px;
+    left: 80px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -457,3 +497,20 @@ body[data-theme="dark"] .newsletter-card {
         padding: 3px 8px;
     }
 }
+
+/* ── FAB Stack — Right Side (56px spacing) ── */
+.whatsapp-float    { position: fixed !important; bottom: 20px !important; right: 20px !important; z-index: 900 !important; }
+.ai-chat-fab       { bottom: 76px !important; right: 20px !important; }
+.voice-order-fab   { display: none !important; }
+.gift-card-fab     { display: none !important; }
+.back-to-top       { bottom: 132px !important; right: 20px !important; z-index: 1000 !important; pointer-events: auto !important; }
+.referral-fab      { bottom: 192px !important; right: 20px !important; z-index: 1000 !important; pointer-events: auto !important; }
+
+/* ── FAB Stack — Left Side (56px spacing) ── */
+.music-mini-player { display: none !important; }
+.a11y-panel        { display: none !important; }
+.voice-order-btn   { position: fixed !important; bottom: 20px !important; left: 20px !important; right: auto !important; z-index: 900 !important; }
+.music-toggle      { position: fixed !important; bottom: 76px !important; left: 20px !important; right: auto !important; z-index: 900 !important; display: flex !important; }
+
+/* Weather widget — don't overlap left FABs */
+#weather-recommendations { padding-left: 70px; }

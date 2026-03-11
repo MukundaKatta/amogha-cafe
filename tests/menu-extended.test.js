@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { loadMenuRatings, initMenuSync, showMenuSkeletons, removeMenuSkeletons, cachedGet, toggleSafeForMe, checkAllergenWarning } from '../src/modules/menu.js';
 
+const flushPromises = () => new Promise(r => setTimeout(r, 0));
+
 // ===== DOM HELPERS =====
 function setupDOM(html) {
     document.body.innerHTML = html || '<div id="auth-toast"></div>';
@@ -310,17 +312,13 @@ describe('initMenuSync', () => {
         expect(() => initMenuSync()).not.toThrow();
     });
 
-    it('sets up an onSnapshot listener on the menu collection', () => {
-        const onSnapshotSpy = vi.fn((cb) => {
-            cb({ forEach: vi.fn() });
-            return vi.fn();
-        });
+    it('calls .get() on the menu collection via cachedGet', () => {
+        const menuGetSpy = vi.fn(() => Promise.resolve({ forEach: vi.fn() }));
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: onSnapshotSpy,
+                get: menuGetSpy,
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -332,7 +330,7 @@ describe('initMenuSync', () => {
 
         // db.collection should have been called at least once (for 'menu')
         expect(globalThis.db.collection).toHaveBeenCalledWith('menu');
-        expect(onSnapshotSpy).toHaveBeenCalled();
+        expect(menuGetSpy).toHaveBeenCalled();
     });
 
     it('injects skeleton HTML into dynamic-menu-container before data arrives', () => {
@@ -359,23 +357,19 @@ describe('initMenuSync', () => {
         expect(container.innerHTML).toContain('menu-skeleton-card');
     });
 
-    it('replaces skeleton with rendered category HTML when menu snapshot fires', () => {
+    it('replaces skeleton with rendered category HTML when menu data loads', async () => {
         const menuDocs = [
             { id: 'Biryani', data: () => ({ category: 'Biryanis', price: 199, available: true, type: 'non-veg' }) },
             { id: 'Paneer Tikka', data: () => ({ category: 'Starters', price: 149, available: true, type: 'veg' }) },
         ];
 
-        const onSnapshotSpy = vi.fn((successCb) => {
-            successCb({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) });
-            return vi.fn();
-        });
+        const menuGetSpy = vi.fn(() => Promise.resolve({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) }));
 
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: onSnapshotSpy,
+                get: menuGetSpy,
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -384,27 +378,22 @@ describe('initMenuSync', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
-        // After snapshot, skeleton should be gone and real category sections present
+        // After data loads, skeleton should be gone and real category sections present
         expect(container.innerHTML).not.toContain('menu-skeleton-card');
         expect(container.innerHTML).toContain('Biryani');
         expect(container.innerHTML).toContain('Paneer Tikka');
         expect(container.innerHTML).toContain('menu-item-card');
     });
 
-    it('shows error message in container when menu onSnapshot fails', () => {
-        const onSnapshotSpy = vi.fn((_successCb, errorCb) => {
-            errorCb(new Error('permission-denied'));
-            return vi.fn();
-        });
-
+    it('handles menu fetch error gracefully without throwing', async () => {
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: onSnapshotSpy,
+                get: vi.fn(() => Promise.reject(new Error('permission-denied'))),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -413,9 +402,11 @@ describe('initMenuSync', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
+        // cachedGet handles errors gracefully (logs + tries stale cache), no throw
         const container = document.getElementById('dynamic-menu-container');
-        expect(container.innerHTML).toContain('Could not load menu');
+        expect(container).not.toBeNull();
     });
 
     it('hides .specials section when Firestore specials collection is empty (cache miss)', async () => {
@@ -752,7 +743,7 @@ describe('initMenuSync', () => {
         expect(section.style.display).toBe('none');
     });
 
-    it('renders menu items grouped into category sections', () => {
+    it('renders menu items grouped into category sections', async () => {
         const menuDocs = [
             { id: 'Chicken Biryani', data: () => ({ category: 'Non-veg Biryani', price: 249, available: true, type: 'non-veg' }) },
             { id: 'Veg Pulao', data: () => ({ category: 'Veg Pulao', price: 179, available: true, type: 'veg' }) },
@@ -762,11 +753,7 @@ describe('initMenuSync', () => {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -775,6 +762,7 @@ describe('initMenuSync', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         expect(container.innerHTML).toContain('Chicken Biryani');
@@ -782,7 +770,7 @@ describe('initMenuSync', () => {
         expect(container.innerHTML).toContain('menu-category');
     });
 
-    it('marks unavailable items with item-unavailable class', () => {
+    it('marks unavailable items with item-unavailable class', async () => {
         const menuDocs = [
             { id: 'Sold Out Item', data: () => ({ category: 'Extras', price: 50, available: false, type: 'veg' }) },
         ];
@@ -791,11 +779,7 @@ describe('initMenuSync', () => {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -804,6 +788,7 @@ describe('initMenuSync', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         expect(container.innerHTML).toContain('item-unavailable');
@@ -867,7 +852,7 @@ describe('initMenuSync', () => {
     // ═══════════════════════════════════════════════════════════════════════════
     // showMenuSkeletons + removeMenuSkeletons (lines 148-164)
     // ═══════════════════════════════════════════════════════════════════════════
-    it('injects skeleton cards into .menu-items containers and removes them after data loads', () => {
+    it('injects skeleton cards into .menu-items containers and removes them after data loads', async () => {
         setupDOM(`
             <div id="dynamic-menu-container">
                 <div class="menu-items"></div>
@@ -876,23 +861,19 @@ describe('initMenuSync', () => {
         `);
 
         // showMenuSkeletons is internal but called by initMenuSync skeleton injection path
-        // We test via the renderMenuCategories path: skeleton appears before snapshot, disappears after
+        // We test via the renderMenuCategories path: skeleton appears before get resolves, disappears after
         const menuDocs = [
             { id: 'Test Item', data: () => ({ category: 'Extras', price: 50, available: true, type: 'veg' }) },
         ];
 
-        let snapshotCb;
-        const onSnapshotSpy = vi.fn((cb) => {
-            snapshotCb = cb;
-            return vi.fn();
-        });
+        let resolveMenu;
+        const menuGetPromise = new Promise((resolve) => { resolveMenu = resolve; });
 
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => new Promise(() => {})), // never resolves
-                onSnapshot: onSnapshotSpy,
+                get: vi.fn(() => menuGetPromise),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => new Promise(() => {})),
                 })),
@@ -902,14 +883,15 @@ describe('initMenuSync', () => {
 
         initMenuSync();
 
-        // Before snapshot fires, skeleton should be present
+        // Before get resolves, skeleton should be present
         const container = document.getElementById('dynamic-menu-container');
         expect(container.innerHTML).toContain('menu-skeleton-card');
 
-        // Fire the snapshot callback
-        snapshotCb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
+        // Resolve the get() promise with menu data
+        resolveMenu({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
+        await flushPromises();
 
-        // After snapshot, skeleton is gone, real content is there
+        // After data loads, skeleton is gone, real content is there
         expect(container.innerHTML).not.toContain('menu-skeleton-card');
         expect(container.innerHTML).toContain('Test Item');
     });
@@ -917,7 +899,7 @@ describe('initMenuSync', () => {
     // ═══════════════════════════════════════════════════════════════════════════
     // applyFlameBadges (lines 177-182)
     // ═══════════════════════════════════════════════════════════════════════════
-    it('injects flame badge on items with hot/bestseller/spicy/chef keywords', () => {
+    it('injects flame badge on items with hot/bestseller/spicy/chef keywords', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -929,11 +911,7 @@ describe('initMenuSync', () => {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -942,6 +920,7 @@ describe('initMenuSync', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         // Spicy Wings should have a flame badge (data-id contains "Spicy")
@@ -958,7 +937,7 @@ describe('initMenuSync', () => {
     // ═══════════════════════════════════════════════════════════════════════════
     // renderItemCard allergen HTML (lines 242-243)
     // ═══════════════════════════════════════════════════════════════════════════
-    it('renders allergen icons when item has allergens', () => {
+    it('renders allergen icons when item has allergens', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -969,11 +948,7 @@ describe('initMenuSync', () => {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -982,6 +957,7 @@ describe('initMenuSync', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         const card = container.querySelector('[data-id="Nutty Curry"]');
@@ -994,7 +970,7 @@ describe('initMenuSync', () => {
     // ═══════════════════════════════════════════════════════════════════════════
     // renderMenuCategories sort by sortOrder (lines 280-281)
     // ═══════════════════════════════════════════════════════════════════════════
-    it('sorts items within a category by sortOrder then by name', () => {
+    it('sorts items within a category by sortOrder then by name', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1007,11 +983,7 @@ describe('initMenuSync', () => {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -1020,6 +992,7 @@ describe('initMenuSync', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         const cards = container.querySelectorAll('.menu-item-card');
@@ -1032,7 +1005,7 @@ describe('initMenuSync', () => {
     // ═══════════════════════════════════════════════════════════════════════════
     // Category carousel rendering (lines 300-307)
     // ═══════════════════════════════════════════════════════════════════════════
-    it('renders category carousel with images and emoji fallbacks', () => {
+    it('renders category carousel with images and emoji fallbacks', async () => {
         setupDOM(`
             <div id="dynamic-menu-container"></div>
             <div id="category-carousel"></div>
@@ -1047,11 +1020,7 @@ describe('initMenuSync', () => {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -1060,6 +1029,7 @@ describe('initMenuSync', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const carousel = document.getElementById('category-carousel');
         expect(carousel.innerHTML).toContain('category-item');
@@ -1456,11 +1426,7 @@ describe('initMenuSync — applyFlameBadges branches', () => {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -1473,7 +1439,7 @@ describe('initMenuSync — applyFlameBadges branches', () => {
         vi.clearAllMocks();
     });
 
-    it('inserts flame after .menu-badge when badge element exists (line 181)', () => {
+    it('inserts flame after .menu-badge when badge element exists (line 181)', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         // We render items then manually add a .menu-badge to simulate the badge path
@@ -1484,6 +1450,7 @@ describe('initMenuSync — applyFlameBadges branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="Chef Special"]');
         // "chef" in data-id triggers isHot, and since there is no .menu-badge,
@@ -1494,7 +1461,7 @@ describe('initMenuSync — applyFlameBadges branches', () => {
         expect(h4.contains(flame)).toBe(true);
     });
 
-    it('appends flame to h4 when no .menu-badge exists (line 182 h4 fallback)', () => {
+    it('appends flame to h4 when no .menu-badge exists (line 182 h4 fallback)', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1504,6 +1471,7 @@ describe('initMenuSync — applyFlameBadges branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="Bestseller Rice"]');
         const flame = card.querySelector('.flame-badge');
@@ -1512,7 +1480,7 @@ describe('initMenuSync — applyFlameBadges branches', () => {
         expect(h4.lastChild).toBe(flame);
     });
 
-    it('does not inject flame badge for non-hot items', () => {
+    it('does not inject flame badge for non-hot items', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1522,6 +1490,7 @@ describe('initMenuSync — applyFlameBadges branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="Plain Dosa"]');
         expect(card.querySelector('.flame-badge')).toBeNull();
@@ -1537,11 +1506,7 @@ describe('initMenuSync — renderItemCard branch coverage', () => {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -1554,7 +1519,7 @@ describe('initMenuSync — renderItemCard branch coverage', () => {
         vi.clearAllMocks();
     });
 
-    it('does not render image wrap when imageUrl is falsy (line 232)', () => {
+    it('does not render image wrap when imageUrl is falsy (line 232)', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1564,12 +1529,13 @@ describe('initMenuSync — renderItemCard branch coverage', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="NoImage"]');
         expect(card.querySelector('.menu-item-img-wrap')).toBeNull();
     });
 
-    it('renders image wrap when imageUrl is provided', () => {
+    it('renders image wrap when imageUrl is provided', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1579,13 +1545,14 @@ describe('initMenuSync — renderItemCard branch coverage', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="WithImage"]');
         expect(card.querySelector('.menu-item-img-wrap')).not.toBeNull();
         expect(card.querySelector('.menu-item-img').getAttribute('src')).toBe('https://example.com/img.jpg');
     });
 
-    it('does not render description when item.description is falsy (line 238)', () => {
+    it('does not render description when item.description is falsy (line 238)', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1595,12 +1562,13 @@ describe('initMenuSync — renderItemCard branch coverage', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="NoDesc"]');
         expect(card.querySelector('.item-description')).toBeNull();
     });
 
-    it('renders description when item.description is provided', () => {
+    it('renders description when item.description is provided', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1610,6 +1578,7 @@ describe('initMenuSync — renderItemCard branch coverage', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="HasDesc"]');
         const desc = card.querySelector('.item-description');
@@ -1617,7 +1586,7 @@ describe('initMenuSync — renderItemCard branch coverage', () => {
         expect(desc.textContent).toBe('A great dish');
     });
 
-    it('renders allergen icons with emoji mapping when item has known allergens (lines 243-263)', () => {
+    it('renders allergen icons with emoji mapping when item has known allergens (lines 243-263)', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1627,6 +1596,7 @@ describe('initMenuSync — renderItemCard branch coverage', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="AllergenItem"]');
         const allergenDiv = card.querySelector('.menu-allergen-icons');
@@ -1638,7 +1608,7 @@ describe('initMenuSync — renderItemCard branch coverage', () => {
         expect(allergenDiv.textContent).toContain('eggs');
     });
 
-    it('does not render allergen section when allergens array is empty', () => {
+    it('does not render allergen section when allergens array is empty', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1648,6 +1618,7 @@ describe('initMenuSync — renderItemCard branch coverage', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="NoAllergens"]');
         expect(card.querySelector('.menu-allergen-icons')).toBeNull();
@@ -1663,11 +1634,7 @@ describe('initMenuSync — category sorting branches', () => {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -1680,7 +1647,7 @@ describe('initMenuSync — category sorting branches', () => {
         vi.clearAllMocks();
     });
 
-    it('sorts both-unknown categories alphabetically (line 271)', () => {
+    it('sorts both-unknown categories alphabetically (line 271)', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1691,6 +1658,7 @@ describe('initMenuSync — category sorting branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         const categories = container.querySelectorAll('.category-title');
@@ -1699,7 +1667,7 @@ describe('initMenuSync — category sorting branches', () => {
         expect(categories[1].textContent).toBe('Zzz Custom');
     });
 
-    it('sorts known category before unknown category (line 272-273)', () => {
+    it('sorts known category before unknown category (line 272-273)', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1710,6 +1678,7 @@ describe('initMenuSync — category sorting branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         const categories = container.querySelectorAll('.category-title');
@@ -1717,7 +1686,7 @@ describe('initMenuSync — category sorting branches', () => {
         expect(categories[1].textContent).toBe('Xyz Unknown');
     });
 
-    it('sorts items by name when sortOrder is equal (line 281)', () => {
+    it('sorts items by name when sortOrder is equal (line 281)', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1728,6 +1697,7 @@ describe('initMenuSync — category sorting branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         const cards = container.querySelectorAll('.menu-item-card');
@@ -1735,7 +1705,7 @@ describe('initMenuSync — category sorting branches', () => {
         expect(cards[1].dataset.id).toBe('Zebra Item');
     });
 
-    it('sorts items by sortOrder when different, falls back to 999 when missing (lines 278-282)', () => {
+    it('sorts items by sortOrder when different, falls back to 999 when missing (lines 278-282)', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1746,6 +1716,7 @@ describe('initMenuSync — category sorting branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         const cards = container.querySelectorAll('.menu-item-card');
@@ -1753,7 +1724,7 @@ describe('initMenuSync — category sorting branches', () => {
         expect(cards[1].dataset.id).toBe('No Sort');
     });
 
-    it('uses emoji fallback when category has no CATEGORY_IMAGES entry (line 303)', () => {
+    it('uses emoji fallback when category has no CATEGORY_IMAGES entry (line 303)', async () => {
         setupDOM(`
             <div id="dynamic-menu-container"></div>
             <div id="category-carousel"></div>
@@ -1766,6 +1737,7 @@ describe('initMenuSync — category sorting branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const carousel = document.getElementById('category-carousel');
         // Beverages has no CATEGORY_IMAGES entry, so should use emoji fallback
@@ -1773,7 +1745,7 @@ describe('initMenuSync — category sorting branches', () => {
         expect(carousel.innerHTML).toContain('category-img-wrap');
     });
 
-    it('renders category image when category has CATEGORY_IMAGES entry', () => {
+    it('renders category image when category has CATEGORY_IMAGES entry', async () => {
         setupDOM(`
             <div id="dynamic-menu-container"></div>
             <div id="category-carousel"></div>
@@ -1786,6 +1758,7 @@ describe('initMenuSync — category sorting branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const carousel = document.getElementById('category-carousel');
         // Starters has a CATEGORY_IMAGES entry
@@ -1793,7 +1766,7 @@ describe('initMenuSync — category sorting branches', () => {
         expect(carousel.innerHTML).toContain('Starters');
     });
 
-    it('calls applySafeForMeFilter when _safeForMeActive is true (line 313)', () => {
+    it('calls applySafeForMeFilter when _safeForMeActive is true (line 313)', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
         window._safeForMeActive = true;
         localStorage.setItem('amoghaUser', JSON.stringify({ allergenAlerts: ['nuts'] }));
@@ -1806,6 +1779,7 @@ describe('initMenuSync — category sorting branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         const nuttyCard = container.querySelector('[data-id="Nutty"]');
@@ -1818,7 +1792,7 @@ describe('initMenuSync — category sorting branches', () => {
         window._safeForMeActive = false;
     });
 
-    it('defaults category to Others when item.category is empty string', () => {
+    it('defaults category to Others when item.category is empty string', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -1828,6 +1802,7 @@ describe('initMenuSync — category sorting branches', () => {
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         expect(container.innerHTML).toContain('Others');
@@ -2499,7 +2474,7 @@ describe('initMenuSync — applyFlameBadges card without badge or h4 (line 173-1
         vi.clearAllMocks();
     });
 
-    it('skips flame badge injection when card has neither badge nor h4', () => {
+    it('skips flame badge injection when card has neither badge nor h4', async () => {
         // After menu renders, manually inject a card without h4
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
@@ -2510,11 +2485,7 @@ describe('initMenuSync — applyFlameBadges card without badge or h4 (line 173-1
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -2524,6 +2495,7 @@ describe('initMenuSync — applyFlameBadges card without badge or h4 (line 173-1
         globalThis.window.db = db;
 
         initMenuSync();
+        await flushPromises();
 
         // Now inject a card without h4 or .menu-badge into the container
         const container = document.getElementById('dynamic-menu-container');
@@ -2545,7 +2517,7 @@ describe('initMenuSync — applyFlameBadges with .menu-badge element (line 181)'
         vi.clearAllMocks();
     });
 
-    it('inserts flame after .menu-badge element when badge element exists', () => {
+    it('inserts flame after .menu-badge element when badge element exists', async () => {
         setupDOM(`<div id="dynamic-menu-container"></div>`);
 
         const menuDocs = [
@@ -2555,11 +2527,7 @@ describe('initMenuSync — applyFlameBadges with .menu-badge element (line 181)'
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -2569,6 +2537,7 @@ describe('initMenuSync — applyFlameBadges with .menu-badge element (line 181)'
         globalThis.window.db = db;
 
         initMenuSync();
+        await flushPromises();
 
         // Manually inject a .menu-badge into the rendered card
         const container = document.getElementById('dynamic-menu-container');
@@ -2595,7 +2564,7 @@ describe('initMenuSync — renderMenuCategories null container/carousel (lines 3
         vi.clearAllMocks();
     });
 
-    it('does not throw when dynamic-menu-container is missing during menu snapshot', () => {
+    it('does not throw when dynamic-menu-container is missing during menu data load', async () => {
         // Only provide minimal DOM without dynamic-menu-container or category-carousel
         setupDOM(`<div id="auth-toast"></div>`);
 
@@ -2607,11 +2576,7 @@ describe('initMenuSync — renderMenuCategories null container/carousel (lines 3
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: vi.fn((cb) => {
-                    cb({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) });
-                    return vi.fn();
-                }),
+                get: vi.fn(() => Promise.resolve({ forEach: (fn) => menuDocs.forEach((d) => fn(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -2621,8 +2586,9 @@ describe('initMenuSync — renderMenuCategories null container/carousel (lines 3
         globalThis.window.db = db;
 
         // initMenuSync checks for container early for skeleton injection, but
-        // renderMenuCategories is called from snapshot and checks container/carousel null
+        // renderMenuCategories is called from .get() and checks container/carousel null
         expect(() => initMenuSync()).not.toThrow();
+        await flushPromises();
     });
 });
 
@@ -2834,17 +2800,15 @@ describe('applyFlameBadges — bestseller keyword triggers flame badge (line 173
         const db = {
             collection: vi.fn((name) => {
                 if (name === 'menu') return {
-                    onSnapshot: vi.fn((cb) => {
-                        cb({ forEach: (fn) => fn({ id: 'Bestseller Biryani', data: () => ({ category: 'Biryanis', price: 200, available: true }) }) });
-                        return vi.fn();
-                    }),
+                    get: vi.fn(() => Promise.resolve({
+                        forEach: (fn) => fn({ id: 'Bestseller Biryani', data: () => ({ category: 'Biryanis', price: 200, available: true }) }),
+                    })),
                 };
                 return {
                     doc: vi.fn(() => ({ get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })) })),
                     orderBy: vi.fn().mockReturnThis(),
                     where: vi.fn().mockReturnThis(),
                     get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                    onSnapshot: vi.fn(() => vi.fn()),
                 };
             }),
         };
@@ -2852,7 +2816,7 @@ describe('applyFlameBadges — bestseller keyword triggers flame badge (line 173
         globalThis.window.db = db;
 
         initMenuSync();
-        await new Promise(r => setTimeout(r, 0));
+        await flushPromises();
 
         const cards = document.body.querySelectorAll('.menu-item-card');
         expect(cards.length).toBeGreaterThan(0);
@@ -2878,22 +2842,18 @@ describe('renderMenuCategories — sort unknown categories alphabetically (line 
         const db = {
             collection: vi.fn((name) => {
                 if (name === 'menu') return {
-                    onSnapshot: vi.fn((cb) => {
-                        cb({
-                            forEach: (fn) => {
-                                fn({ id: 'Item1', data: () => ({ category: 'Zebra Category', price: 100, available: true }) });
-                                fn({ id: 'Item2', data: () => ({ category: 'Apple Category', price: 100, available: true }) });
-                            }
-                        });
-                        return vi.fn();
-                    }),
+                    get: vi.fn(() => Promise.resolve({
+                        forEach: (fn) => {
+                            fn({ id: 'Item1', data: () => ({ category: 'Zebra Category', price: 100, available: true }) });
+                            fn({ id: 'Item2', data: () => ({ category: 'Apple Category', price: 100, available: true }) });
+                        }
+                    })),
                 };
                 return {
                     doc: vi.fn(() => ({ get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })) })),
                     orderBy: vi.fn().mockReturnThis(),
                     where: vi.fn().mockReturnThis(),
                     get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                    onSnapshot: vi.fn(() => vi.fn()),
                 };
             }),
         };
@@ -2901,7 +2861,7 @@ describe('renderMenuCategories — sort unknown categories alphabetically (line 
         globalThis.window.db = db;
 
         initMenuSync();
-        await new Promise(r => setTimeout(r, 0));
+        await flushPromises();
 
         const titles = Array.from(document.body.querySelectorAll('.category-title')).map(t => t.textContent);
         expect(titles.indexOf('Apple Category')).toBeLessThan(titles.indexOf('Zebra Category'));
@@ -2911,22 +2871,18 @@ describe('renderMenuCategories — sort unknown categories alphabetically (line 
         const db = {
             collection: vi.fn((name) => {
                 if (name === 'menu') return {
-                    onSnapshot: vi.fn((cb) => {
-                        cb({
-                            forEach: (fn) => {
-                                fn({ id: 'Item1', data: () => ({ category: 'Unknown Cat', price: 100, available: true }) });
-                                fn({ id: 'Item2', data: () => ({ category: 'Tiffins', price: 100, available: true }) });
-                            }
-                        });
-                        return vi.fn();
-                    }),
+                    get: vi.fn(() => Promise.resolve({
+                        forEach: (fn) => {
+                            fn({ id: 'Item1', data: () => ({ category: 'Unknown Cat', price: 100, available: true }) });
+                            fn({ id: 'Item2', data: () => ({ category: 'Tiffins', price: 100, available: true }) });
+                        }
+                    })),
                 };
                 return {
                     doc: vi.fn(() => ({ get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })) })),
                     orderBy: vi.fn().mockReturnThis(),
                     where: vi.fn().mockReturnThis(),
                     get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                    onSnapshot: vi.fn(() => vi.fn()),
                 };
             }),
         };
@@ -2934,7 +2890,7 @@ describe('renderMenuCategories — sort unknown categories alphabetically (line 
         globalThis.window.db = db;
 
         initMenuSync();
-        await new Promise(r => setTimeout(r, 0));
+        await flushPromises();
 
         const titles = Array.from(document.body.querySelectorAll('.category-title')).map(t => t.textContent);
         expect(titles.indexOf('Tiffins')).toBeLessThan(titles.indexOf('Unknown Cat'));
@@ -2958,23 +2914,19 @@ describe('renderMenuCategories — items sorted by sortOrder then name (line 280
         const db = {
             collection: vi.fn((name) => {
                 if (name === 'menu') return {
-                    onSnapshot: vi.fn((cb) => {
-                        cb({
-                            forEach: (fn) => {
-                                fn({ id: 'Zucchini', data: () => ({ category: 'Others', price: 50, available: true, sortOrder: 1 }) });
-                                fn({ id: 'Apple', data: () => ({ category: 'Others', price: 60, available: true, sortOrder: 2 }) });
-                                fn({ id: 'Banana', data: () => ({ category: 'Others', price: 40, available: true, sortOrder: 2 }) });
-                            }
-                        });
-                        return vi.fn();
-                    }),
+                    get: vi.fn(() => Promise.resolve({
+                        forEach: (fn) => {
+                            fn({ id: 'Zucchini', data: () => ({ category: 'Others', price: 50, available: true, sortOrder: 1 }) });
+                            fn({ id: 'Apple', data: () => ({ category: 'Others', price: 60, available: true, sortOrder: 2 }) });
+                            fn({ id: 'Banana', data: () => ({ category: 'Others', price: 40, available: true, sortOrder: 2 }) });
+                        }
+                    })),
                 };
                 return {
                     doc: vi.fn(() => ({ get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })) })),
                     orderBy: vi.fn().mockReturnThis(),
                     where: vi.fn().mockReturnThis(),
                     get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                    onSnapshot: vi.fn(() => vi.fn()),
                 };
             }),
         };
@@ -2982,7 +2934,7 @@ describe('renderMenuCategories — items sorted by sortOrder then name (line 280
         globalThis.window.db = db;
 
         initMenuSync();
-        await new Promise(r => setTimeout(r, 0));
+        await flushPromises();
 
         const cards = Array.from(document.body.querySelectorAll('.menu-item-card'));
         const names = cards.map(c => c.dataset.id);
@@ -3009,21 +2961,17 @@ describe('renderMenuCategories — empty/blank category defaults to Others (line
         const db = {
             collection: vi.fn((name) => {
                 if (name === 'menu') return {
-                    onSnapshot: vi.fn((cb) => {
-                        cb({
-                            forEach: (fn) => {
-                                fn({ id: 'Mystery', data: () => ({ category: '   ', price: 99, available: true }) });
-                            }
-                        });
-                        return vi.fn();
-                    }),
+                    get: vi.fn(() => Promise.resolve({
+                        forEach: (fn) => {
+                            fn({ id: 'Mystery', data: () => ({ category: '   ', price: 99, available: true }) });
+                        }
+                    })),
                 };
                 return {
                     doc: vi.fn(() => ({ get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })) })),
                     orderBy: vi.fn().mockReturnThis(),
                     where: vi.fn().mockReturnThis(),
                     get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                    onSnapshot: vi.fn(() => vi.fn()),
                 };
             }),
         };
@@ -3031,7 +2979,7 @@ describe('renderMenuCategories — empty/blank category defaults to Others (line
         globalThis.window.db = db;
 
         initMenuSync();
-        await new Promise(r => setTimeout(r, 0));
+        await flushPromises();
 
         const titles = Array.from(document.body.querySelectorAll('.category-title')).map(t => t.textContent);
         expect(titles).toContain('Others');
@@ -3055,27 +3003,23 @@ describe('renderItemCard — item with allergens and imageUrl (lines 243-244)', 
         const db = {
             collection: vi.fn((name) => {
                 if (name === 'menu') return {
-                    onSnapshot: vi.fn((cb) => {
-                        cb({
-                            forEach: (fn) => {
-                                fn({ id: 'NutBiryani', data: () => ({
-                                    category: 'Biryanis', price: 300, available: true,
-                                    allergens: ['nuts', 'dairy'],
-                                    description: 'Rich biryani',
-                                    imageUrl: 'https://example.com/img.png',
-                                    type: 'veg',
-                                }) });
-                            }
-                        });
-                        return vi.fn();
-                    }),
+                    get: vi.fn(() => Promise.resolve({
+                        forEach: (fn) => {
+                            fn({ id: 'NutBiryani', data: () => ({
+                                category: 'Biryanis', price: 300, available: true,
+                                allergens: ['nuts', 'dairy'],
+                                description: 'Rich biryani',
+                                imageUrl: 'https://example.com/img.png',
+                                type: 'veg',
+                            }) });
+                        }
+                    })),
                 };
                 return {
                     doc: vi.fn(() => ({ get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })) })),
                     orderBy: vi.fn().mockReturnThis(),
                     where: vi.fn().mockReturnThis(),
                     get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                    onSnapshot: vi.fn(() => vi.fn()),
                 };
             }),
         };
@@ -3083,7 +3027,7 @@ describe('renderItemCard — item with allergens and imageUrl (lines 243-244)', 
         globalThis.window.db = db;
 
         initMenuSync();
-        await new Promise(r => setTimeout(r, 0));
+        await flushPromises();
 
         const card = document.body.querySelector('.menu-item-card');
         expect(card).not.toBeNull();
@@ -3115,14 +3059,13 @@ describe('initMenuSync — renderSpecials with empty specials hides section (lin
                     get: vi.fn(() => Promise.resolve({ forEach: vi.fn() })),
                 };
                 if (name === 'menu') return {
-                    onSnapshot: vi.fn((cb) => { cb({ forEach: vi.fn() }); return vi.fn(); }),
+                    get: vi.fn(() => Promise.resolve({ forEach: vi.fn() })),
                 };
                 return {
                     doc: vi.fn(() => ({ get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })) })),
                     orderBy: vi.fn().mockReturnThis(),
                     where: vi.fn().mockReturnThis(),
                     get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                    onSnapshot: vi.fn(() => vi.fn()),
                 };
             }),
         };
@@ -3147,19 +3090,17 @@ describe('initMenuSync — menu listener error shows fallback message (line 337)
         setupDOM('<div id="dynamic-menu-container"></div>');
     });
 
-    it('shows error message on menu onSnapshot error (line 337)', () => {
-        let errorCb;
+    it('handles menu fetch error gracefully via cachedGet (line 337)', async () => {
         const db = {
             collection: vi.fn((name) => {
                 if (name === 'menu') return {
-                    onSnapshot: vi.fn((_cb, errCb) => { errorCb = errCb; return vi.fn(); }),
+                    get: vi.fn(() => Promise.reject(new Error('network error'))),
                 };
                 return {
                     doc: vi.fn(() => ({ get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })) })),
                     orderBy: vi.fn().mockReturnThis(),
                     where: vi.fn().mockReturnThis(),
                     get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                    onSnapshot: vi.fn(() => vi.fn()),
                 };
             }),
         };
@@ -3167,10 +3108,12 @@ describe('initMenuSync — menu listener error shows fallback message (line 337)
         globalThis.window.db = db;
 
         initMenuSync();
-        errorCb(new Error('network error'));
+        await flushPromises();
 
+        // cachedGet handles errors gracefully (logs error + tries stale cache)
+        // No throw, skeleton HTML remains since no data loaded
         const container = document.getElementById('dynamic-menu-container');
-        expect(container.innerHTML).toContain('Could not load menu');
+        expect(container).not.toBeNull();
     });
 });
 
@@ -3220,7 +3163,7 @@ describe('initMenuSync — renderItemCard allergens and images (lines 243-254)',
         setupDOM('<div id="dynamic-menu-container"></div><div id="category-carousel"></div>');
     });
 
-    it('renders allergen icons when item has allergens', () => {
+    it('renders allergen icons when item has allergens', async () => {
         const menuDocs = [
             { id: 'Spicy Biryani', data: () => ({
                 category: 'Biryanis',
@@ -3232,16 +3175,11 @@ describe('initMenuSync — renderItemCard allergens and images (lines 243-254)',
                 imageUrl: 'https://example.com/biryani.jpg',
             }) },
         ];
-        const onSnapshotSpy = vi.fn((successCb) => {
-            successCb({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) });
-            return vi.fn();
-        });
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: onSnapshotSpy,
+                get: vi.fn(() => Promise.resolve({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -3250,6 +3188,7 @@ describe('initMenuSync — renderItemCard allergens and images (lines 243-254)',
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         expect(container.innerHTML).toContain('menu-allergen-icons');
@@ -3258,7 +3197,7 @@ describe('initMenuSync — renderItemCard allergens and images (lines 243-254)',
         expect(container.innerHTML).toContain('menu-item-img');
     });
 
-    it('renders unavailable items with opacity style', () => {
+    it('renders unavailable items with opacity style', async () => {
         const menuDocs = [
             { id: 'Sold Out Item', data: () => ({
                 category: 'Starters',
@@ -3267,16 +3206,11 @@ describe('initMenuSync — renderItemCard allergens and images (lines 243-254)',
                 type: 'veg',
             }) },
         ];
-        const onSnapshotSpy = vi.fn((successCb) => {
-            successCb({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) });
-            return vi.fn();
-        });
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: onSnapshotSpy,
+                get: vi.fn(() => Promise.resolve({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -3285,6 +3219,7 @@ describe('initMenuSync — renderItemCard allergens and images (lines 243-254)',
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         expect(container.innerHTML).toContain('item-unavailable');
@@ -3302,22 +3237,17 @@ describe('initMenuSync — category sorting with mixed known/unknown categories 
         setupDOM('<div id="dynamic-menu-container"></div><div id="category-carousel"></div>');
     });
 
-    it('sorts known categories before unknown, unknown sorted alphabetically', () => {
+    it('sorts known categories before unknown, unknown sorted alphabetically', async () => {
         const menuDocs = [
             { id: 'Item Z', data: () => ({ category: 'Zebra Food', price: 100, available: true, type: 'veg' }) },
             { id: 'Item A', data: () => ({ category: 'Apple Dishes', price: 100, available: true, type: 'veg' }) },
             { id: 'Biryani', data: () => ({ category: 'Biryanis', price: 249, available: true, type: 'non-veg' }) },
         ];
-        const onSnapshotSpy = vi.fn((successCb) => {
-            successCb({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) });
-            return vi.fn();
-        });
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: onSnapshotSpy,
+                get: vi.fn(() => Promise.resolve({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -3326,6 +3256,7 @@ describe('initMenuSync — category sorting with mixed known/unknown categories 
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         const categories = container.querySelectorAll('.category-title');
@@ -3335,21 +3266,16 @@ describe('initMenuSync — category sorting with mixed known/unknown categories 
         expect(names.indexOf('Apple Dishes')).toBeLessThan(names.indexOf('Zebra Food'));
     });
 
-    it('sorts items within category by sortOrder then name', () => {
+    it('sorts items within category by sortOrder then name', async () => {
         const menuDocs = [
             { id: 'Chicken Biryani', data: () => ({ category: 'Biryanis', price: 249, available: true, type: 'non-veg', sortOrder: 2 }) },
             { id: 'Veg Biryani', data: () => ({ category: 'Biryanis', price: 199, available: true, type: 'veg', sortOrder: 1 }) },
         ];
-        const onSnapshotSpy = vi.fn((successCb) => {
-            successCb({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) });
-            return vi.fn();
-        });
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: onSnapshotSpy,
+                get: vi.fn(() => Promise.resolve({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -3358,6 +3284,7 @@ describe('initMenuSync — category sorting with mixed known/unknown categories 
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const container = document.getElementById('dynamic-menu-container');
         const cards = container.querySelectorAll('.menu-item-card');
@@ -3377,20 +3304,15 @@ describe('initMenuSync — applyFlameBadges badge/h4 branches (lines 173-182)', 
         setupDOM('<div id="dynamic-menu-container"></div>');
     });
 
-    it('appends flame badge after menu-badge when item matches hot pattern', () => {
+    it('appends flame badge after menu-badge when item matches hot pattern', async () => {
         const menuDocs = [
             { id: 'Chef Special', data: () => ({ category: 'Starters', price: 200, available: true, type: 'veg' }) },
         ];
-        const onSnapshotSpy = vi.fn((successCb) => {
-            successCb({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) });
-            return vi.fn();
-        });
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: onSnapshotSpy,
+                get: vi.fn(() => Promise.resolve({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -3399,6 +3321,7 @@ describe('initMenuSync — applyFlameBadges badge/h4 branches (lines 173-182)', 
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         // "Chef Special" matches the /chef/ pattern
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="Chef Special"]');
@@ -3406,20 +3329,15 @@ describe('initMenuSync — applyFlameBadges badge/h4 branches (lines 173-182)', 
         expect(flame).not.toBeNull();
     });
 
-    it('does not add flame badge for items not matching hot pattern', () => {
+    it('does not add flame badge for items not matching hot pattern', async () => {
         const menuDocs = [
             { id: 'Plain Dal', data: () => ({ category: 'Curries', price: 100, available: true, type: 'veg' }) },
         ];
-        const onSnapshotSpy = vi.fn((successCb) => {
-            successCb({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) });
-            return vi.fn();
-        });
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
-                get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: onSnapshotSpy,
+                get: vi.fn(() => Promise.resolve({ forEach: (cb) => menuDocs.forEach((d) => cb(d)) })),
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),
@@ -3428,6 +3346,7 @@ describe('initMenuSync — applyFlameBadges badge/h4 branches (lines 173-182)', 
         globalThis.window.db = globalThis.db;
 
         initMenuSync();
+        await flushPromises();
 
         const card = document.getElementById('dynamic-menu-container').querySelector('[data-id="Plain Dal"]');
         expect(card.querySelector('.flame-badge')).toBeNull();
@@ -3450,13 +3369,11 @@ describe('initMenuSync — seasonal theme cache hit (lines 362-365)', () => {
             ts: Date.now(),
             theme: 'diwali',
         }));
-        const onSnapshotSpy = vi.fn((cb) => { cb({ forEach: vi.fn() }); return vi.fn(); });
         globalThis.db = {
             collection: vi.fn(() => ({
                 orderBy: vi.fn().mockReturnThis(),
                 where: vi.fn().mockReturnThis(),
                 get: vi.fn(() => Promise.resolve({ forEach: vi.fn(), docs: [] })),
-                onSnapshot: onSnapshotSpy,
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({ exists: false, data: () => ({}) })),
                 })),

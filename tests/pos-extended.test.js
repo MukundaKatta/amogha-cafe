@@ -43,6 +43,9 @@ function setupDOM() {
         <div id="recent-filter-btns"></div>
         <div id="sales-counter">0</div>
         <div id="pos-toast"></div>
+        <input id="pos-search" value="">
+        <div id="pos-sales-counter"></div>
+        <div id="pos-sales-total"></div>
     `;
     document.getElementById = (id) => document.body.querySelector('#' + id);
     document.querySelectorAll = (sel) => document.body.querySelectorAll(sel);

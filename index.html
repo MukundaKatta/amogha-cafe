@@ -66,6 +66,7 @@
         <link rel="stylesheet" href="worldclass2.css?v=2">
     </noscript>
     <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
+    <script>if('scrollRestoration' in history) history.scrollRestoration='manual'; window.scrollTo(0,0);</script>
 
     <!-- Restaurant Schema Markup for SEO -->
     <script type="application/ld+json">
@@ -183,9 +184,6 @@
     <!-- Floating Food Particles -->
     <div class="food-particles" id="food-particles"></div>
 
-    <!-- Menu Item Image Preview -->
-    <img class="menu-preview-img" id="menu-preview-img" alt="Menu item preview">
-
     <!-- Grain Texture Overlay -->
     <div class="grain-overlay"></div>
 
@@ -232,6 +230,9 @@
     <header>
         <nav aria-label="Main navigation">
             <div class="logo"><img src="amogha-logo.png" alt="Amogha Cafe & Restaurant" class="logo-img"></div>
+            <div class="nav-status-group">
+                <span id="open-status" class="open-status-badge"><span class="status-dot"></span><span class="status-text">Open Now</span></span>
+            </div>
             <div class="header-slideshow" id="header-slideshow">
                 <div class="slide active">
                     <span class="slide-accent"></span>
@@ -342,7 +343,6 @@
                     </div>
                 </div>
             </div>
-            <span id="open-status" class="open-status-badge"><span class="status-dot"></span><span class="status-text">Open Now</span></span>
             <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open navigation menu">☰</button>
             <ul class="nav-links" id="nav-links">
                 <li><a href="#home" data-i18n="home">Home</a></li>
@@ -400,6 +400,9 @@
             <div class="scroll-line"></div>
         </div>
     </section>
+
+    <!-- Time-based Greeting Banner -->
+    <div id="time-greeting" class="time-greeting" aria-live="polite"></div>
 
     <!-- SVG Ornament -->
     <div class="section-ornament-wrap" aria-hidden="true">
@@ -1596,17 +1599,6 @@
 
     <!-- Limited Time Offer Countdown -->
     <div id="lto-countdown" class="lto-countdown"></div>
-
-    <!-- Cookie Consent Banner -->
-    <div id="cookie-consent" class="cookie-consent" style="display:none">
-        <div class="cookie-inner">
-            <p class="cookie-text">We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.</p>
-            <div class="cookie-actions">
-                <button class="cookie-accept" id="cookie-accept-btn">Accept All</button>
-                <button class="cookie-decline" id="cookie-decline-btn">Essential Only</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>

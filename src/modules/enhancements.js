@@ -98,29 +98,8 @@ export function initSocialProof() {
 
 
 // ── Cookie Consent ──
-export function initCookieConsent() {
-    var banner = document.getElementById('cookie-consent');
-    if (!banner) return;
-    if (localStorage.getItem('amogha_cookie_consent')) return;
-
-    setTimeout(function () {
-        banner.style.display = 'block';
-        requestAnimationFrame(function () { banner.classList.add('cc-visible'); });
-    }, 3000);
-
-    var acceptBtn = document.getElementById('cookie-accept-btn') || document.getElementById('cookie-accept');
-    var declineBtn = document.getElementById('cookie-decline-btn') || document.getElementById('cookie-decline');
-    if (acceptBtn) acceptBtn.onclick = function () {
-        localStorage.setItem('amogha_cookie_consent', 'all');
-        banner.classList.remove('cc-visible');
-        setTimeout(function () { banner.style.display = 'none'; }, 400);
-    };
-    if (declineBtn) declineBtn.onclick = function () {
-        localStorage.setItem('amogha_cookie_consent', 'essential');
-        banner.classList.remove('cc-visible');
-        setTimeout(function () { banner.style.display = 'none'; }, 400);
-    };
-}
+// Handled by ui.js — this is a no-op to avoid duplicate logic
+export function initCookieConsent() {}
 
 
 // ── Newsletter ──

@@ -28,23 +28,20 @@ function saveStreakData(data) {
     localStorage.setItem('amogha_streak', JSON.stringify(data));
 }
 
+function todayStr() {
+    return new Date().toISOString().split('T')[0];
+}
+
 function isToday(dateStr) {
     if (!dateStr) return false;
-    var d = new Date(dateStr);
-    var now = new Date();
-    return d.getFullYear() === now.getFullYear() &&
-           d.getMonth() === now.getMonth() &&
-           d.getDate() === now.getDate();
+    return dateStr === todayStr();
 }
 
 function isYesterday(dateStr) {
     if (!dateStr) return false;
-    var d = new Date(dateStr);
     var yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    return d.getFullYear() === yesterday.getFullYear() &&
-           d.getMonth() === yesterday.getMonth() &&
-           d.getDate() === yesterday.getDate();
+    return dateStr === yesterday.toISOString().split('T')[0];
 }
 
 function getCurrentStreak() {
@@ -168,20 +165,41 @@ function renderStreakWidget() {
     var best = getBestStreak();
     var data = getStreakData();
 
+    var group = document.querySelector('.nav-status-group');
+    if (!group) return;
+
+    // Create streak toggle button if not exists
+    var streakBtn = document.getElementById('streakToggleBtn');
+    if (!streakBtn) {
+        streakBtn = document.createElement('button');
+        streakBtn.id = 'streakToggleBtn';
+        streakBtn.className = 'streak-toggle-btn';
+        group.appendChild(streakBtn);
+        group.style.position = 'relative';
+    }
+
+    var isActive = streak > 0 && (isToday(data.lastOrderDate) || isYesterday(data.lastOrderDate));
+    streakBtn.innerHTML = (isActive ? '🔥' : '❄️') + ' ' + streak + 'd';
+    streakBtn.title = isActive ? 'Streak: ' + streak + ' days' : 'Start a streak!';
+
     var widget = document.getElementById('streakWidget');
     if (!widget) {
         widget = document.createElement('div');
         widget.id = 'streakWidget';
-        widget.className = 'streak-widget';
+        widget.className = 'streak-dropdown';
+        group.appendChild(widget);
 
-        // Try to insert near loyalty widget
-        var loyaltySection = document.querySelector('.loyalty-widget') || document.querySelector('#loyaltySection');
-        if (loyaltySection) {
-            loyaltySection.parentNode.insertBefore(widget, loyaltySection.nextSibling);
-        } else {
-            var main = document.querySelector('main') || document.body;
-            main.appendChild(widget);
-        }
+        // Toggle on click
+        streakBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            widget.classList.toggle('streak-dropdown--open');
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', function() {
+            widget.classList.remove('streak-dropdown--open');
+        });
+        widget.addEventListener('click', function(e) { e.stopPropagation(); });
     }
 
     // Next milestone
@@ -193,7 +211,6 @@ function renderStreakWidget() {
         }
     }
 
-    var isActive = streak > 0 && (isToday(data.lastOrderDate) || isYesterday(data.lastOrderDate));
     var streakClass = isActive ? 'active' : 'inactive';
 
     widget.innerHTML =

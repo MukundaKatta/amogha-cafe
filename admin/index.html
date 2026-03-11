@@ -2564,6 +2564,7 @@
         <div id="analytics-panel" class="admin-panel" style="display:none;">
             <div class="panel-header">
                 <h2 class="panel-title">Analytics Dashboard</h2>
+                <button class="exp-download-btn" onclick="exportRevenueReportCSV()" title="Download revenue report as CSV">Revenue Report CSV</button>
                 <select id="analytics-range" onchange="renderAnalytics()">
                     <option value="7">Last 7 Days</option>
                     <option value="30" selected>Last 30 Days</option>
@@ -2750,6 +2751,7 @@
                         <button class="active" onclick="toggleExpView('card')">Cards</button>
                         <button onclick="toggleExpView('table')">Table</button>
                     </div>
+                    <button class="exp-download-btn" onclick="exportExpensesCSV()">Download CSV</button>
                     <button class="exp-download-btn" onclick="downloadExpensesExcel()">Download Excel</button>
                     <button class="btn-primary" onclick="openExpenseModal()">+ Add Expense</button>
                 </div>
@@ -3227,6 +3229,23 @@
             appId: "1:1000994409697:web:983214bafab529d6a2fba0"
         });
         var db = firebase.firestore();
+
+        // ─── SHARED CSV DOWNLOAD UTILITY ───
+        function downloadCSV(filename, headers, rows) {
+            var all = [headers].concat(rows);
+            var csv = all.map(function(r) {
+                return r.map(function(c) { return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(',');
+            }).join('\n');
+            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
 
         // XSS escape helper
         function escHtml(str) {
@@ -4904,6 +4923,17 @@
             XLSX.writeFile(wb, filename);
         }
 
+        function exportExpensesCSV() {
+            var filtered = getFilteredExpenses();
+            if (filtered.length === 0) { alert('No expenses to export.'); return; }
+            var headers = ['Date','Category','Amount','Description'];
+            var rows = filtered.map(function(e) {
+                return [expDateStr(e), e.category || 'Other', parseFloat(e.amount) || 0, e.description || ''];
+            });
+            var label = expMonthFilter || (expDateFrom || expDateTo ? (expDateFrom || '') + '_to_' + (expDateTo || '') : 'All');
+            downloadCSV('Amogha_Expenses_' + label + '.csv', headers, rows);
+        }
+
         function renderExpensesSummary() {
             var el = document.getElementById('expenses-summary');
             if (!el) return;
@@ -5265,21 +5295,12 @@
                 : currentFilter === 'pos' ? allOrders.filter(function(o) { return o.orderType === 'pos'; })
                 : allOrders.filter(function(o) { return o.status === currentFilter; });
             if (filtered.length === 0) { alert('No orders to export'); return; }
-            var rows = [['Order ID','Date','Customer','Phone','Address','Items','Subtotal','Delivery Fee','Total','Payment','Status']];
-            filtered.forEach(function(o) {
+            var headers = ['Order ID','Date','Customer','Phone','Items','Total','Payment','Status'];
+            var rows = filtered.map(function(o) {
                 var items = (o.items || []).map(function(i) { return i.name + ' x' + i.qty; }).join('; ');
-                rows.push([
-                    o.id, o.createdAt || '', o.customer || '', o.phone || '', (o.address || '').replace(/,/g, ' '),
-                    items, o.subtotal || '', o.deliveryFee || '', o.total || '', o.payment || '', o.status || ''
-                ]);
+                return [o.id, o.createdAt || '', o.customer || '', o.phone || '', items, o.total || '', o.payment || '', o.status || ''];
             });
-            var csv = rows.map(function(r) { return r.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
-            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url; a.download = 'amogha-orders-' + new Date().toISOString().split('T')[0] + '.csv';
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            downloadCSV('amogha-orders-' + new Date().toISOString().split('T')[0] + '.csv', headers, rows);
         }
 
         // ─── ANALYTICS NATURAL LANGUAGE QUERY ───
@@ -5558,6 +5579,39 @@
             analyticsLoaded = true;
             renderAnalytics();
             renderAnalyticsCharts();
+        }
+
+        function exportRevenueReportCSV() {
+            var range = parseInt(document.getElementById('analytics-range').value);
+            var now = new Date();
+            var filtered = allOrders;
+            if (range > 0) {
+                var cutoff = new Date(now.getTime() - range * 24 * 60 * 60 * 1000).toISOString();
+                filtered = allOrders.filter(function(o) { return o.createdAt && o.createdAt >= cutoff; });
+            }
+            var active = filtered.filter(function(o) { return o.status !== 'cancelled' && o.status !== 'voided'; });
+            if (active.length === 0) { alert('No orders in selected range for revenue report.'); return; }
+            // Group by date
+            var byDate = {};
+            active.forEach(function(o) {
+                var d = (o.createdAt || '').slice(0, 10);
+                if (!d) return;
+                if (!byDate[d]) byDate[d] = { count: 0, revenue: 0 };
+                byDate[d].count++;
+                byDate[d].revenue += (o.total || 0);
+            });
+            var GST_RATE = 0.05; // 5% CGST + 5% SGST for restaurant
+            var dates = Object.keys(byDate).sort();
+            var headers = ['Date','Order Count','Revenue','CGST (5%)','SGST (5%)','Total with GST','Net Revenue'];
+            var rows = dates.map(function(d) {
+                var info = byDate[d];
+                var cgst = Math.round(info.revenue * GST_RATE * 100) / 100;
+                var sgst = Math.round(info.revenue * GST_RATE * 100) / 100;
+                var totalWithGst = Math.round((info.revenue + cgst + sgst) * 100) / 100;
+                var netRevenue = Math.round((info.revenue - cgst - sgst) * 100) / 100;
+                return [d, info.count, info.revenue, cgst, sgst, totalWithGst, netRevenue];
+            });
+            downloadCSV('Amogha_Revenue_Report_' + new Date().toISOString().split('T')[0] + '.csv', headers, rows);
         }
 
         function renderAnalytics() {

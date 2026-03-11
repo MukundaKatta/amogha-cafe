@@ -10,7 +10,9 @@ A mobile-first app for delivery drivers to accept orders, navigate to customers,
 ## Authentication
 
 - Login with phone number (10 digits) + PIN (up to 6 digits)
-- Validated against Firestore `deliveryPersons` collection
+- Validated server-side via Cloud Function `POST /api/auth/delivery-login`
+- The Cloud Function checks the `deliveryPersons` collection using the Admin SDK — credentials are never exposed to client-side Firestore reads
+- Firestore rules block all client reads of `deliveryPersons` (`read: false`)
 - Checks: phone registered, account active, PIN matches
 - Session persisted via `sessionStorage` — auto-restores on page reload
 - Logout clears session and unsubscribes from all Firestore listeners
@@ -142,7 +144,8 @@ The customer's tracking page ([04-order-tracking.md](04-order-tracking.md)) show
 
 | Service | Usage |
 |---------|-------|
-| Firebase Firestore | `deliveryPersons` (auth), `orders` (read/write) |
+| Cloud Functions API | `POST /api/auth/delivery-login` (authentication) |
+| Firebase Firestore | `orders` (read/write via realtime listeners) |
 | Google Maps | `maps.google.com/?q={address}` for navigation |
 | Phone | `tel:{number}` for customer calls |
 
@@ -162,6 +165,8 @@ The customer's tracking page ([04-order-tracking.md](04-order-tracking.md)) show
 
 ## Security
 
+- **Server-side authentication** — credentials validated via Cloud Function, not client-side Firestore reads
+- **Firestore read blocked** — `deliveryPersons` collection has `allow read: if false` in security rules
 - XSS protection via `escHtml()` function on all displayed user data
 - Session stored in `sessionStorage` (cleared on tab close)
 - Firestore rules restrict order updates to allowed fields only

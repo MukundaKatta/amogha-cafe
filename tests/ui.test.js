@@ -930,7 +930,7 @@ describe('initUI — parallax hero slideshow on scroll', () => {
         Object.defineProperty(window, 'pageYOffset', { value: 200, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         const heroSlideshow = document.querySelector('.hero-slideshow');
-        expect(heroSlideshow.style.transform).toContain('translate3d(');
+        expect(heroSlideshow.style.transform).toContain('translate3d(0,');
         expect(heroSlideshow.style.transform).toContain('30px'); // 200 * 0.15
     });
 
@@ -1504,7 +1504,7 @@ describe('initUI — chef slideshow', () => {
     it('does not start slideshow when only one slide exists', () => {
         setupDOM('<div id="chef-slideshow"><div class="chef-slide active"></div></div>');
         initUI();
-        vi.advanceTimersByTime(4000);
+        vi.advanceTimersByTime(5000);
         expect(document.querySelectorAll('.chef-slide.active').length).toBe(1);
     });
 
@@ -1730,7 +1730,7 @@ describe('initUI — header hide/show on scroll direction (desktop only)', () =>
         Object.defineProperty(window, 'pageYOffset', { value: 0, configurable: true });
     });
 
-    it('hides header with translateY(-100%) when scrolling down past 100px', () => {
+    it('hides header with translate3d(0,-100%,0) when scrolling down past 100px', () => {
         setupDOM('<header></header>');
         initUI();
         // lastScroll starts at 0, scroll to 200: 200>0 && 200>100 → hide
@@ -1740,7 +1740,7 @@ describe('initUI — header hide/show on scroll direction (desktop only)', () =>
     });
 
     it('shows header with translate3d(0,0,0) when scrolling up', () => {
-        setupDOM('<header style="transform:translateY(-100%)"></header>');
+        setupDOM('<header style="transform:translate3d(0,-100%,0)"></header>');
         initUI();
         // lastScroll starts at 0, scroll to 50: 50>0 but 50<=100 → show
         Object.defineProperty(window, 'pageYOffset', { value: 50, configurable: true });
@@ -2188,7 +2188,7 @@ describe('initUI — parallax for about/chef/stats (desktop scroll)', () => {
         Object.defineProperty(window, 'pageYOffset', { value: 300, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         const chefContent = document.querySelector('.chef-content');
-        expect(chefContent.style.transform).toContain('translate3d');
+        expect(chefContent.style.transform).toContain('translate3d(0,');
     });
 
     it('sets transform on .stats-grid element during scroll', () => {
@@ -2203,7 +2203,7 @@ describe('initUI — parallax for about/chef/stats (desktop scroll)', () => {
         Object.defineProperty(window, 'pageYOffset', { value: 400, configurable: true });
         window.dispatchEvent(new Event('scroll'));
         const statsGrid = document.querySelector('.stats-grid');
-        expect(statsGrid.style.transform).toContain('translate3d');
+        expect(statsGrid.style.transform).toContain('translate3d(0,');
     });
 });
 
@@ -4707,7 +4707,7 @@ describe('initUI — scroll handler branches (lines 283-362)', () => {
         window.dispatchEvent(new Event('scroll'));
         // rAF was called, hero slideshow should have transform
         const hero = document.body.querySelector('.hero-slideshow');
-        expect(hero.style.transform).toContain('translate3d');
+        expect(hero.style.transform).toContain('translate3d(0,');
     });
 
     it('shows sticky order bar when scroll exceeds hero height (line 362)', () => {

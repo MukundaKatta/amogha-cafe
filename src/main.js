@@ -30,6 +30,7 @@ import { initReservations } from './modules/reservations.js';
 import { initLoyalty } from './modules/loyalty.js';
 import { initFeatures, showRecommendations, loadDailySpecial, initComboBuilder, showReorderToast, initLiveOrderTicker, initOrderAgainSection, initAiForYou } from './modules/features.js';
 import { updateFloatingCartBar } from './modules/cart.js';
+import { initPersonalize } from './modules/personalize.js';
 
 // Note: script is loaded as a module (deferred by default), DOM is already parsed
 
@@ -57,6 +58,7 @@ deferInit(function() {
     initNotifications(); // Push notification banner
     initReservations();  // Reservation modal button override
     initFeatures();      // Reviews carousel, gallery, combos, happy hour, voice, i18n, etc.
+    initPersonalize();   // Time greeting, reorder bar, meal-time menu highlights
 
     // Profile — dynamically imported (separate chunk)
     import('./modules/profile.js').then(function(m) { m.initProfile(); });
@@ -141,6 +143,10 @@ setTimeout(initAiForYou, 4500);
 
 // Init floating cart bar state
 updateFloatingCartBar();
+
+// Safety: clear stuck overflow from modals that didn't clean up
+document.body.style.overflow = '';
+document.body.classList.remove('modal-open');
 
 // Expose displayCart at window level (features.js hooks into this to add showRecommendations)
 window.displayCart = displayCart;

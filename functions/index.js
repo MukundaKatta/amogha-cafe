@@ -4,6 +4,7 @@ const functions = require('firebase-functions');
 const admin     = require('firebase-admin');
 const express   = require('express');
 const cors      = require('cors');
+const bcrypt    = require('bcryptjs');
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -54,7 +55,8 @@ async function getMenuData() {
             allergens: d.allergens || [], available: d.available !== false, badge: d.badge || ''
         });
     });
-    _menuCache = { items: items, ts: Date.now() };
+    _menuCache.items = items;
+    _menuCache.ts = Date.now();
     return items;
 }
 
@@ -143,36 +145,52 @@ app.use(function(req, res, next) {
     next();
 });
 
-// ===== RATE LIMITING (in-memory, per Cloud Function instance) =====
-var _rateLimits = {};
+// ===== RATE LIMITING (Firestore-backed, survives cold starts) =====
 var RATE_LIMIT_WINDOW = 60000; // 1 minute
 var RATE_LIMIT_MAX = 30; // max requests per window per IP
 var _rateLimitCleanupTs = Date.now();
 
-function rateLimiter(req, res, next) {
+async function rateLimiter(req, res, next) {
     var ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    // Sanitize IP for use as Firestore document ID (replace dots/colons with underscores)
+    var docId = ip.replace(/[.:/]/g, '_');
     var now = Date.now();
 
-    // Periodic cleanup of expired entries to prevent memory leak
-    if (now - _rateLimitCleanupTs > RATE_LIMIT_WINDOW * 2) {
-        _rateLimitCleanupTs = now;
-        var keys = Object.keys(_rateLimits);
-        for (var k = 0; k < keys.length; k++) {
-            if (now - _rateLimits[keys[k]].start > RATE_LIMIT_WINDOW) {
-                delete _rateLimits[keys[k]];
+    try {
+        // Periodic cleanup of expired entries (every 2 minutes)
+        if (now - _rateLimitCleanupTs > RATE_LIMIT_WINDOW * 2) {
+            _rateLimitCleanupTs = now;
+            var expiredCutoff = now - RATE_LIMIT_WINDOW * 2;
+            var expiredSnap = await db.collection('_rateLimits')
+                .where('windowStart', '<', expiredCutoff)
+                .get();
+            if (!expiredSnap.empty) {
+                var batch = db.batch();
+                expiredSnap.forEach(function(doc) { batch.delete(doc.ref); });
+                await batch.commit();
             }
         }
-    }
 
-    if (!_rateLimits[ip] || now - _rateLimits[ip].start > RATE_LIMIT_WINDOW) {
-        _rateLimits[ip] = { start: now, count: 1 };
-    } else {
-        _rateLimits[ip].count++;
+        var rlRef = db.collection('_rateLimits').doc(docId);
+        var rlDoc = await rlRef.get();
+
+        if (!rlDoc.exists || now - rlDoc.data().windowStart > RATE_LIMIT_WINDOW) {
+            // New window — create or reset
+            await rlRef.set({ count: 1, windowStart: now });
+        } else {
+            var data = rlDoc.data();
+            if (data.count >= RATE_LIMIT_MAX) {
+                return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+            }
+            await rlRef.update({ count: admin.firestore.FieldValue.increment(1) });
+        }
+
+        next();
+    } catch (e) {
+        // If rate-limit check fails, let the request through rather than blocking
+        console.error('Rate limiter error:', e);
+        next();
     }
-    if (_rateLimits[ip].count > RATE_LIMIT_MAX) {
-        return res.status(429).json({ error: 'Too many requests. Please try again later.' });
-    }
-    next();
 }
 
 // Apply rate limiting to AI-powered endpoints (expensive Gemini calls)
@@ -535,10 +553,20 @@ app.post('/auth/kiosk-login', async function(req, res) {
         var matched = null;
         snap.forEach(function(doc) {
             var d = doc.data();
-            // Support both hashed and plaintext passwords (migration path)
-            var isMatch = d.passwordHash
-                ? timingSafeEqual(hashValue(password, 'kiosk'), d.passwordHash)
-                : timingSafeEqual(password, d.password || '');
+            // Support bcrypt-hashed, SHA256-hashed, and plaintext passwords
+            var storedPw = d.password || '';
+            var isMatch = false;
+            try {
+                if (d.passwordHash) {
+                    isMatch = timingSafeEqual(hashValue(password, 'kiosk'), d.passwordHash);
+                } else if (storedPw.startsWith('$2')) {
+                    isMatch = bcrypt.compareSync(password, storedPw);
+                } else {
+                    isMatch = timingSafeEqual(password, storedPw);
+                }
+            } catch (_e) {
+                isMatch = timingSafeEqual(password, storedPw);
+            }
             if (isMatch) {
                 matched = { id: doc.id, shopId: d.shopId, name: d.name || '' };
             }
@@ -560,11 +588,23 @@ app.post('/auth/kiosk-login', async function(req, res) {
         var legacy = null;
         shopsSnap.forEach(function(doc) {
             var d = doc.data();
-            var pinMatch = d.adminPinHash
-                ? timingSafeEqual(hashValue(password, 'admin'), d.adminPinHash)
-                : timingSafeEqual(password, d.adminPin || '');
-            if (doc.id === username && pinMatch) {
-                legacy = { id: doc.id, name: d.name || doc.id, tagline: d.tagline || '', theme: d.theme || '' };
+            if (doc.id === username) {
+                var storedPin = d.adminPin || '';
+                var pinMatch = false;
+                try {
+                    if (d.adminPinHash) {
+                        pinMatch = timingSafeEqual(hashValue(password, 'admin'), d.adminPinHash);
+                    } else if (storedPin.startsWith('$2')) {
+                        pinMatch = bcrypt.compareSync(password, storedPin);
+                    } else {
+                        pinMatch = timingSafeEqual(password, storedPin);
+                    }
+                } catch (_e) {
+                    pinMatch = timingSafeEqual(password, storedPin);
+                }
+                if (pinMatch) {
+                    legacy = { id: doc.id, name: d.name || doc.id, tagline: d.tagline || '', theme: d.theme || '' };
+                }
             }
         });
 
@@ -612,10 +652,20 @@ app.post('/auth/delivery-login', async function(req, res) {
             return res.status(403).json({ error: 'Your account is inactive. Contact admin.' });
         }
 
-        // Support both hashed and plaintext PINs (migration path)
-        var pinMatch = d.pinHash
-            ? timingSafeEqual(hashValue(pin, 'delivery'), d.pinHash)
-            : timingSafeEqual(pin, d.pin || '');
+        // Support bcrypt-hashed, SHA256-hashed, and plaintext PINs
+        var storedPin = d.pin || '';
+        var pinMatch = false;
+        try {
+            if (d.pinHash) {
+                pinMatch = timingSafeEqual(hashValue(pin, 'delivery'), d.pinHash);
+            } else if (storedPin.startsWith('$2')) {
+                pinMatch = bcrypt.compareSync(pin, storedPin);
+            } else {
+                pinMatch = timingSafeEqual(pin, storedPin);
+            }
+        } catch (_e) {
+            pinMatch = timingSafeEqual(pin, storedPin);
+        }
         if (!pinMatch) {
             return res.status(401).json({ error: 'Incorrect PIN. Try again.' });
         }
@@ -628,9 +678,67 @@ app.post('/auth/delivery-login', async function(req, res) {
     }
 });
 
+// -----------------------------------------------------------------------
+// POST /auth/hash-migrate — one-time migration: hash plaintext passwords/PINs
+// Reads all kiosk + deliveryPerson docs and bcrypt-hashes any plaintext values
+// -----------------------------------------------------------------------
+app.post('/auth/hash-migrate', async function(req, res) {
+    try {
+        var migrated = { kiosks: 0, deliveryPersons: 0, shops: 0 };
+
+        // Migrate kiosk passwords
+        var kioskSnap = await db.collection('kiosks').get();
+        if (!kioskSnap.empty) {
+            var batch = db.batch();
+            kioskSnap.forEach(function(doc) {
+                var d = doc.data();
+                if (d.password && !d.password.startsWith('$2')) {
+                    batch.update(doc.ref, { password: bcrypt.hashSync(d.password, 10) });
+                    migrated.kiosks++;
+                }
+            });
+            if (migrated.kiosks > 0) await batch.commit();
+        }
+
+        // Migrate delivery partner PINs
+        var deliverySnap = await db.collection('deliveryPersons').get();
+        if (!deliverySnap.empty) {
+            var batch2 = db.batch();
+            deliverySnap.forEach(function(doc) {
+                var d = doc.data();
+                if (d.pin && !d.pin.startsWith('$2')) {
+                    batch2.update(doc.ref, { pin: bcrypt.hashSync(d.pin, 10) });
+                    migrated.deliveryPersons++;
+                }
+            });
+            if (migrated.deliveryPersons > 0) await batch2.commit();
+        }
+
+        // Migrate shop adminPins (legacy login)
+        var shopsSnap = await db.collection('shops').get();
+        if (!shopsSnap.empty) {
+            var batch3 = db.batch();
+            shopsSnap.forEach(function(doc) {
+                var d = doc.data();
+                if (d.adminPin && !d.adminPin.startsWith('$2')) {
+                    batch3.update(doc.ref, { adminPin: bcrypt.hashSync(d.adminPin, 10) });
+                    migrated.shops++;
+                }
+            });
+            if (migrated.shops > 0) await batch3.commit();
+        }
+
+        res.json({ success: true, migrated: migrated });
+    } catch (e) {
+        console.error('POST /auth/hash-migrate error:', e);
+        res.status(500).json({ error: 'Migration failed: ' + e.message });
+    }
+});
+
 exports.api = functions.https.onRequest(app);
-// Export bare Express app for unit testing
+// Export bare Express app and cache handle for unit testing
 exports._app = app;
+exports._menuCache = _menuCache;
 
 // -----------------------------------------------------------------------
 // SCHEDULED: Birthday Auto-Rewards — runs daily at 8 AM IST

@@ -89,6 +89,11 @@ Places a Cash on Delivery order.
 }
 ```
 
+**Server-side price validation:**
+- Item prices are **looked up from the menu database**, not taken from the request body
+- If an item name doesn't match any menu item, the request is rejected with `400`
+- This prevents price tampering — clients cannot supply arbitrary prices
+
 **Pricing:**
 - Delivery fee: ₹49 (waived if subtotal ≥ ₹500)
 - Payment: Cash on Delivery only
@@ -187,6 +192,63 @@ Sends a push notification to a customer via Firebase Cloud Messaging.
 1. Looks up the user's Firestore document by phone number
 2. Reads the `fcmToken` field (saved by the client during FCM registration)
 3. Sends the notification via `admin.messaging().send()`
+
+---
+
+### POST /auth/kiosk-login
+
+Authenticates a POS terminal (kiosk) staff member. Credentials are validated server-side using the Admin SDK — the client never reads kiosk passwords from Firestore.
+
+**Request body:**
+```json
+{
+  "username": "cashier1",
+  "password": "mypin123"
+}
+```
+
+**Response (success):**
+```json
+{
+  "success": true,
+  "shopId": "amogha",
+  "kioskId": "abc123",
+  "shopConfig": { "name": "Amogha Cafe", "categories": [...], ... }
+}
+```
+
+**Logic:**
+1. Queries `kiosks` collection for matching `username` + `password` + `active: true`
+2. If no match, falls back to `shops` collection `adminPin` field (legacy support)
+3. Loads full shop config from `shops/{shopId}` and returns it to the client
+
+---
+
+### POST /auth/delivery-login
+
+Authenticates a delivery partner. The `deliveryPersons` collection is **fully read-blocked** in Firestore rules — only this Cloud Function can access it.
+
+**Request body:**
+```json
+{
+  "phone": "9876543210",
+  "pin": "1234"
+}
+```
+
+**Response (success):**
+```json
+{
+  "success": true,
+  "phone": "9876543210",
+  "name": "Ravi Kumar"
+}
+```
+
+**Checks:**
+1. Phone must be registered in `deliveryPersons` collection
+2. Account must be `active: true`
+3. PIN must match stored value
 
 ---
 

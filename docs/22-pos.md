@@ -12,9 +12,10 @@ A staff-facing Point-of-Sale terminal for fast counter-side order entry. Staff l
 ## Access
 
 - Open `/pos/` (or `/pos/?shop=teashop` to pre-select a shop)
-- Enter the 6-digit admin PIN for the shop
-- PIN is validated against all shops' `adminPin` field in Firestore `shops` collection
-- Matching shop is auto-selected — no manual shop selection needed
+- Enter username and password for the kiosk terminal
+- Credentials are validated **server-side** via Cloud Function `POST /api/auth/kiosk-login` — the client never reads passwords from Firestore
+- The Cloud Function checks the `kiosks` collection using the Admin SDK, with a legacy fallback to `shops.adminPin`
+- On success, the shop config (name, categories, theme, logo) is returned and applied
 
 ---
 
@@ -233,7 +234,7 @@ For voided orders, additionally:
 
 | Collection | Usage |
 |------------|-------|
-| shops | Load shop config and validate admin PIN on login |
+| Cloud Functions API | `POST /api/auth/kiosk-login` (authentication — credentials validated server-side) |
 | menu | Load menu items filtered by `shopId` and `available: true` |
 | orders | Write placed orders; update status on void |
 | users | CRM lookup; create/update on order placement; adjust loyalty points |
