@@ -4,6 +4,61 @@ import { showBirthdayBanner } from './loyalty.js';
 
 // ===== AUTH SYSTEM (Sign In / Sign Up) =====
 
+// Session expiration: 7 days in milliseconds
+var SESSION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Rate limiting: max 5 login attempts per 5 minutes per phone number
+var MAX_LOGIN_ATTEMPTS = 5;
+var LOGIN_WINDOW_MS = 5 * 60 * 1000;
+
+function getLoginAttempts(phone) {
+    try {
+        var data = JSON.parse(safeGetItem('amoghaLoginAttempts') || '{}');
+        var entry = data[phone];
+        if (!entry) return { count: 0, timestamps: [] };
+        // Filter out timestamps older than the window
+        var now = Date.now();
+        var recent = (entry.timestamps || []).filter(function(t) { return now - t < LOGIN_WINDOW_MS; });
+        return { count: recent.length, timestamps: recent };
+    } catch(e) { return { count: 0, timestamps: [] }; }
+}
+
+function recordLoginAttempt(phone) {
+    try {
+        var data = JSON.parse(safeGetItem('amoghaLoginAttempts') || '{}');
+        if (!data[phone]) data[phone] = { timestamps: [] };
+        var now = Date.now();
+        // Keep only recent timestamps
+        data[phone].timestamps = (data[phone].timestamps || []).filter(function(t) { return now - t < LOGIN_WINDOW_MS; });
+        data[phone].timestamps.push(now);
+        safeSetItem('amoghaLoginAttempts', JSON.stringify(data));
+    } catch(e) {}
+}
+
+function clearLoginAttempts(phone) {
+    try {
+        var data = JSON.parse(safeGetItem('amoghaLoginAttempts') || '{}');
+        delete data[phone];
+        safeSetItem('amoghaLoginAttempts', JSON.stringify(data));
+    } catch(e) {}
+}
+
+function isLoginRateLimited(phone) {
+    var attempts = getLoginAttempts(phone);
+    return attempts.count >= MAX_LOGIN_ATTEMPTS;
+}
+
+function getRateLimitRemainingSeconds(phone) {
+    try {
+        var data = JSON.parse(safeGetItem('amoghaLoginAttempts') || '{}');
+        var entry = data[phone];
+        if (!entry || !entry.timestamps || entry.timestamps.length === 0) return 0;
+        var oldest = Math.min.apply(null, entry.timestamps.filter(function(t) { return Date.now() - t < LOGIN_WINDOW_MS; }));
+        var unlocksAt = oldest + LOGIN_WINDOW_MS;
+        return Math.max(0, Math.ceil((unlocksAt - Date.now()) / 1000));
+    } catch(e) { return 0; }
+}
+
 // Simple PIN hashing using SHA-256 (Web Crypto API)
 async function hashPin(pin) {
     var encoder = new TextEncoder();
@@ -16,11 +71,23 @@ async function hashPin(pin) {
 export function getCurrentUser() {
     try {
         const data = safeGetItem('amoghaUser');
-        return data ? JSON.parse(data) : null;
+        if (!data) return null;
+        var parsed = JSON.parse(data);
+        // Check session expiration (7 days)
+        if (parsed._sessionTimestamp && (Date.now() - parsed._sessionTimestamp > SESSION_EXPIRY_MS)) {
+            // Session expired — clear it
+            try { localStorage.removeItem('amoghaUser'); } catch(e) {}
+            return null;
+        }
+        return parsed;
     } catch(e) { return null; }
 }
 
 export function setCurrentUser(user) {
+    // Stamp the session time so we can enforce expiration
+    if (user && !user._sessionTimestamp) {
+        user._sessionTimestamp = Date.now();
+    }
     safeSetItem('amoghaUser', JSON.stringify(user));
     // Start listening for order status notifications
     var db = getDb();
@@ -213,6 +280,14 @@ export function handleSignIn() {
         return;
     }
 
+    // Rate limiting check
+    if (isLoginRateLimited(phone)) {
+        var remaining = getRateLimitRemainingSeconds(phone);
+        msg.textContent = 'Too many login attempts. Please try again in ' + Math.ceil(remaining / 60) + ' minute(s).';
+        msg.className = 'auth-msg error';
+        return;
+    }
+
     msg.textContent = 'Signing in...';
     msg.className = 'auth-msg';
 
@@ -225,6 +300,7 @@ export function handleSignIn() {
 
     db.collection('users').doc(phone).get().then(async function(doc) {
         if (!doc.exists) {
+            recordLoginAttempt(phone);
             msg.textContent = 'No account found with this number. Please sign up.';
             msg.className = 'auth-msg error';
             return;
@@ -232,17 +308,14 @@ export function handleSignIn() {
         var user = doc.data();
         var storedPin = user.pin || user.password || '';
         var hashedInput = await hashPin(password);
-        // Only accept hashed PINs (plain-text fallback removed for security)
         if (storedPin !== hashedInput) {
-            // One-time migration: if legacy plain-text PIN matches, migrate and allow login
-            if (storedPin === password && storedPin.length === 4 && /^\d{4}$/.test(storedPin)) {
-                db.collection('users').doc(phone).update({ pin: hashedInput, password: null }).catch(function(e) { console.error('PIN migration error:', e); });
-            } else {
-                msg.textContent = 'Incorrect PIN. Please try again.';
-                msg.className = 'auth-msg error';
-                return;
-            }
+            recordLoginAttempt(phone);
+            msg.textContent = 'Incorrect PIN. Please try again.';
+            msg.className = 'auth-msg error';
+            return;
         }
+        // Successful login — clear rate limit counter
+        clearLoginAttempts(phone);
         try {
             setCurrentUser(user);
             updateSignInUI(user);
@@ -306,10 +379,15 @@ export function handleForgotPassword() {
             return;
         }
         forgotPhoneVerified = phone;
-        msg.textContent = '';
-        msg.className = 'auth-msg';
+        msg.textContent = 'Identity verified! Please create a new 4-digit PIN below.';
+        msg.className = 'auth-msg success';
         document.getElementById('forgot-step-1').style.display = 'none';
         document.getElementById('forgot-step-2').style.display = 'block';
+        // Attach PIN dots to the reset fields and focus
+        attachPinDotsIndicator('forgot-new-password');
+        attachPinDotsIndicator('forgot-confirm-password');
+        var newPinField = document.getElementById('forgot-new-password');
+        if (newPinField) newPinField.focus();
     }).catch(function(err) {
         console.error('Forgot password error:', err);
         msg.textContent = err.code === 'permission-denied' ? 'Access denied. Please contact support.' : 'Network error. Please check your connection and try again.';
@@ -429,12 +507,37 @@ export function updateCarouselGreeting() {
     }
 }
 
+// PIN strength indicator: show filled dots for entered digits
+function attachPinDotsIndicator(inputId) {
+    var input = document.getElementById(inputId);
+    if (!input || input.dataset.pinDotsAttached) return;
+    input.dataset.pinDotsAttached = 'true';
+
+    // Create dots container
+    var dotsWrap = document.createElement('div');
+    dotsWrap.className = 'pin-dots-indicator';
+    dotsWrap.setAttribute('aria-hidden', 'true');
+    for (var i = 0; i < 4; i++) {
+        var dot = document.createElement('span');
+        dot.className = 'pin-dot';
+        dotsWrap.appendChild(dot);
+    }
+    input.parentNode.insertBefore(dotsWrap, input.nextSibling);
+
+    input.addEventListener('input', function() {
+        var len = input.value.replace(/\D/g, '').length;
+        var dots = dotsWrap.querySelectorAll('.pin-dot');
+        for (var j = 0; j < dots.length; j++) {
+            dots[j].classList.toggle('filled', j < len);
+        }
+    });
+}
+
 export function initAuth() {
-    // Restore auth state on load
+    // Restore auth state on load (getCurrentUser checks session expiry)
     try {
-        const savedUser = safeGetItem('amoghaUser');
-        if (savedUser) {
-            var parsedUser = JSON.parse(savedUser);
+        var parsedUser = getCurrentUser();
+        if (parsedUser) {
             updateSignInUI(parsedUser);
             // Check for birthday rewards on page load
             setTimeout(function() { showBirthdayBanner(parsedUser); }, 1000);
@@ -454,6 +557,33 @@ export function initAuth() {
         var dd = document.getElementById('user-dropdown');
         if (dd && dd.classList.contains('show') && !e.target.closest('.signin-nav-btn')) {
             dd.classList.remove('show');
+        }
+    });
+
+    // Attach PIN dots indicators to all PIN inputs
+    setTimeout(function() {
+        ['signup-password', 'signin-password', 'forgot-new-password', 'forgot-confirm-password'].forEach(attachPinDotsIndicator);
+    }, 500);
+
+    // Enter key support for all auth forms
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter') return;
+        var authModal = document.getElementById('auth-modal');
+        if (!authModal || authModal.style.display === 'none') return;
+
+        var activeView = authModal.querySelector('.auth-view.active');
+        if (!activeView) return;
+        var viewId = activeView.id;
+
+        if (e.target.tagName === 'INPUT') {
+            e.preventDefault();
+            if (viewId === 'auth-signup') handleSignUp();
+            else if (viewId === 'auth-signin') handleSignIn();
+            else if (viewId === 'auth-forgot') {
+                var step2 = document.getElementById('forgot-step-2');
+                if (step2 && step2.style.display !== 'none') handleResetPassword();
+                else handleForgotPassword();
+            }
         }
     });
 

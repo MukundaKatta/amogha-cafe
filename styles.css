@@ -2898,3 +2898,194 @@ body.dark-mode .milestone-progress-bar { background: #333; }
         font-size: 0.85rem;
     }
 }
+
+/* ===== UX IMPROVEMENTS ===== */
+
+/* --- Empty Cart CTA Button --- */
+.empty-cart-cta {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.65rem 1.8rem;
+    background: var(--gold, #D4A017);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.2s, transform 0.15s;
+    cursor: pointer;
+}
+.empty-cart-cta:hover, .empty-cart-cta:focus {
+    background: #c4920e;
+    transform: translateY(-1px);
+    outline: 2px solid var(--gold, #D4A017);
+    outline-offset: 2px;
+}
+.empty-cart-icon {
+    margin-bottom: 0.8rem;
+    opacity: 0.7;
+    animation: emptyCartFloat 3s ease-in-out infinite;
+}
+@keyframes emptyCartFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+/* --- Order Type Selector --- */
+.order-type-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 4px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 10px;
+}
+.order-type-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted, #888);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.order-type-btn.active {
+    background: var(--gold, #D4A017);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(212,160,23,0.3);
+}
+.order-type-btn:focus-visible {
+    outline: 2px solid var(--gold, #D4A017);
+    outline-offset: 2px;
+}
+.order-type-btn svg {
+    flex-shrink: 0;
+}
+body.dark-mode .order-type-selector {
+    background: rgba(255,255,255,0.06);
+}
+body.dark-mode .order-type-btn {
+    color: #aaa;
+}
+body.dark-mode .order-type-btn.active {
+    color: #fff;
+}
+
+/* --- Delivery Time Estimate --- */
+.delivery-time-estimate {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 0.8rem;
+    padding: 0.6rem 0.9rem;
+    background: rgba(212,160,23,0.08);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--gold, #D4A017);
+    font-weight: 500;
+}
+.delivery-time-estimate svg {
+    flex-shrink: 0;
+    color: var(--gold, #D4A017);
+}
+.co-delivery-eta {
+    font-size: 0.82rem;
+    color: var(--gold, #D4A017);
+    margin-top: 0.3rem;
+    font-weight: 500;
+}
+
+/* --- PIN Dots Indicator --- */
+.pin-dots-indicator {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 6px;
+}
+.pin-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.12);
+    transition: background 0.2s, transform 0.2s;
+}
+.pin-dot.filled {
+    background: var(--gold, #D4A017);
+    transform: scale(1.15);
+}
+body.dark-mode .pin-dot {
+    background: rgba(255,255,255,0.15);
+}
+body.dark-mode .pin-dot.filled {
+    background: var(--gold, #D4A017);
+}
+.auth-msg.success {
+    color: #22c55e;
+}
+
+/* --- Quantity Counter Animation --- */
+@keyframes qtyBump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+.qty-count.qty-bump {
+    animation: qtyBump 0.3s ease;
+}
+
+/* --- Menu Card Hover Accessibility --- */
+.menu-item-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.menu-item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.menu-item-card:focus-within {
+    outline: 2px solid var(--gold, #D4A017);
+    outline-offset: 2px;
+}
+
+/* --- Loyalty Widget Progress & Animation --- */
+.loyalty-progress-hint {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted, #888);
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+.loyalty-redeem-hint {
+    display: block;
+    font-size: 0.7rem;
+    color: #22c55e;
+    font-weight: 600;
+    margin-top: 1px;
+}
+@keyframes loyaltyPointsFloat {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-30px); }
+}
+.loyalty-points-floater {
+    position: absolute;
+    top: -8px;
+    right: -4px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gold, #D4A017);
+    pointer-events: none;
+    animation: loyaltyPointsFloat 1.4s ease-out forwards;
+}
+#loyalty-widget {
+    position: relative;
+    flex-wrap: wrap;
+}

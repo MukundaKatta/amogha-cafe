@@ -53,6 +53,15 @@ export function awardLoyaltyPoints(orderTotal) {
     // Show points earned toast
     var streakMsg = points > Math.floor(orderTotal / 10) ? ' (2x Streak Bonus!)' : '';
     showAuthToast('+' + points + ' loyalty points earned!' + streakMsg);
+    // Animate points on the loyalty widget
+    var widget = document.getElementById('loyalty-widget');
+    if (widget) {
+        var floater = document.createElement('span');
+        floater.className = 'loyalty-points-floater';
+        floater.textContent = '+' + points;
+        widget.appendChild(floater);
+        setTimeout(function() { floater.remove(); }, 1500);
+    }
     // Tier up celebration
     if (newTier.name !== oldTier.name) {
         setTimeout(function() {
@@ -73,9 +82,26 @@ export function updateLoyaltyWidget() {
     }
     var points = user.loyaltyPoints || 0;
     var tier = getLoyaltyTier(points);
+    var nextTierWidget = null;
+    for (var t = 0; t < LOYALTY_TIERS.length; t++) {
+        if (LOYALTY_TIERS[t].min > points) { nextTierWidget = LOYALTY_TIERS[t]; break; }
+    }
+    // Calculate progress to next reward (100 pts = Rs.10 off)
+    var ptsToNextReward = 100 - (points % 100);
+    if (ptsToNextReward === 100 && points === 0) ptsToNextReward = 100;
+    var amountToNextReward = ptsToNextReward * 10; // 1 pt per Rs.10 spent
+    var progressHint = '';
+    if (points < 100) {
+        progressHint = '<span class="loyalty-progress-hint">Order \u20B9' + amountToNextReward + ' more for your first reward!</span>';
+    } else if (nextTierWidget) {
+        var remaining = nextTierWidget.min - points;
+        progressHint = '<span class="loyalty-progress-hint">' + remaining + ' pts to ' + nextTierWidget.icon + ' ' + nextTierWidget.name + '</span>';
+    }
+    var redeemHint = points >= 100 ? '<span class="loyalty-redeem-hint">\u20B9' + (Math.floor(points / 100) * 10) + ' redeemable</span>' : '';
     widget.style.display = 'flex';
     widget.innerHTML = '<span class="loyalty-icon">' + tier.icon + '</span>' +
-        '<span class="loyalty-pts">' + points + ' pts</span>';
+        '<span class="loyalty-pts">' + points + ' pts</span>' +
+        (redeemHint || progressHint);
     widget.title = tier.name + ' Tier | ' + points + ' Points | Redeem 100pts = Rs.10 off';
     widget.style.cursor = 'pointer';
     widget.onclick = function() { openLoyaltyModal(); };

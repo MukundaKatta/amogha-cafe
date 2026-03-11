@@ -248,10 +248,10 @@ function renderItemCard(item) {
         '<div class="item-header">' + badge + '<h4>' + escH(item.name) + '</h4><span class="price">&#8377;' + (item.price || 0) + '</span></div>' +
         descHtml + allergenHtml +
         '<div class="spice-selector"><span class="label">Spice:</span>' +
-        '<span class="spice-level active" onclick="selectSpice(this)">Mild</span>' +
-        '<span class="spice-level" onclick="selectSpice(this)">Medium</span>' +
+        '<span class="spice-level" onclick="selectSpice(this)">Mild</span>' +
+        '<span class="spice-level active" onclick="selectSpice(this)">Medium</span>' +
         '<span class="spice-level" onclick="selectSpice(this)">Spicy</span></div>' +
-        '<button class="add-to-cart" data-item="' + escH(item.name) + '" data-price="' + (item.price || 0) + '" aria-label="Add ' + escH(item.name) + ' to order">Add to Order</button>' +
+        '<button class="add-to-cart" data-item="' + escH(item.name) + '" data-price="' + (item.price || 0) + '" aria-label="Add ' + escH(item.name) + ' to order. Use the spice selector above to choose your preferred spice level.">Add to Order</button>' +
         '</div>';
 }
 
