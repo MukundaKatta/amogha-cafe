@@ -523,14 +523,26 @@ export function showRecommendations() {
     }
     var html = '<p class="rec-title">You might also like:</p><div class="rec-items">';
     recs.forEach(function(r) {
-        html += '<button class="rec-item" onclick="addToCart(\'' + r.name.replace(/'/g, "\\'") + '\', ' + r.price + '); displayCart(); showRecommendations();">' +
-            '<span class="rec-name">' + r.name + '</span>' +
-            '<span class="rec-price">\u20B9' + r.price + '</span>' +
+        var safeName = (r.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        var safePrice = parseInt(r.price, 10) || 0;
+        html += '<button class="rec-item" data-rec-name="' + safeName + '" data-rec-price="' + safePrice + '">' +
+            '<span class="rec-name">' + safeName + '</span>' +
+            '<span class="rec-price">\u20B9' + safePrice + '</span>' +
             '<span class="rec-add">+</span>' +
         '</button>';
     });
     html += '</div>';
     container.innerHTML = html;
+    // Bind via event delegation instead of inline onclick
+    container.querySelectorAll('.rec-item[data-rec-name]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var name = btn.getAttribute('data-rec-name');
+            var price = parseInt(btn.getAttribute('data-rec-price'), 10) || 0;
+            if (typeof window.addToCart === 'function') window.addToCart(name, price);
+            if (typeof window.displayCart === 'function') window.displayCart();
+            showRecommendations();
+        });
+    });
     container.style.display = 'block';
 }
 
@@ -1520,14 +1532,25 @@ export async function initAiForYou() {
 function renderAiForYou(section, container, recs) {
     var html = '';
     recs.forEach(function(rec) {
+        var safeName = (rec.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        var safeReason = (rec.reason || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        var safePrice = parseInt(rec.price, 10) || 0;
         html += '<div class="ai-rec-card">' +
-            '<div class="ai-rec-name">' + rec.name + '</div>' +
-            '<div class="ai-rec-reason">' + (rec.reason || '') + '</div>' +
-            '<div class="ai-rec-price">&#8377;' + rec.price + '</div>' +
-            '<button class="add-to-cart" onclick="addToCart(\'' + rec.name.replace(/'/g, "\\'") + '\', ' + rec.price + ', this)">Add to Order</button>' +
+            '<div class="ai-rec-name">' + safeName + '</div>' +
+            '<div class="ai-rec-reason">' + safeReason + '</div>' +
+            '<div class="ai-rec-price">&#8377;' + safePrice + '</div>' +
+            '<button class="add-to-cart" data-rec-name="' + safeName + '" data-rec-price="' + safePrice + '">Add to Order</button>' +
         '</div>';
     });
     container.innerHTML = html;
+    // Bind via event delegation instead of inline onclick
+    container.querySelectorAll('.add-to-cart[data-rec-name]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var name = btn.getAttribute('data-rec-name');
+            var price = parseInt(btn.getAttribute('data-rec-price'), 10) || 0;
+            if (typeof window.addToCart === 'function') window.addToCart(name, price, btn);
+        });
+    });
     section.style.display = 'block';
 }
 

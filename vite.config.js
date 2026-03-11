@@ -53,7 +53,8 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: false, // Keep console.error for debugging, but could strip console.log in prod
+        drop_console: false,
+        pure_funcs: ['console.log', 'console.info'], // Strip verbose logs in prod, keep error/warn
         passes: 2,
       },
     },

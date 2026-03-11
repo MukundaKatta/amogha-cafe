@@ -136,6 +136,16 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '4mb' }));
 
+// ===== SECURITY HEADERS =====
+app.use(function(req, res, next) {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '0'); // Disabled per OWASP recommendation (use CSP instead)
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader('Cache-Control', 'no-store'); // API responses should not be cached by default
+    next();
+});
+
 // Normalize path: strip /api prefix so both
 // https://amogha-cafe.web.app/api/menu  (via hosting rewrite)
 // https://us-central1-amogha-cafe.cloudfunctions.net/api/menu  (direct)
@@ -343,7 +353,16 @@ app.post('/order', async function(req, res) {
         }
         if (!customer) return res.status(400).json({ error: 'customer name is required' });
         if (!phone)    return res.status(400).json({ error: 'phone number is required' });
+        // Validate phone number format (Indian 10-digit)
+        var phoneDigits = phone.replace(/[^0-9]/g, '');
+        if (phoneDigits.length < 10 || phoneDigits.length > 12) {
+            return res.status(400).json({ error: 'Please provide a valid phone number' });
+        }
         if (!address)  return res.status(400).json({ error: 'delivery address is required' });
+        // Limit items array size to prevent abuse
+        if (items.length > 100) {
+            return res.status(400).json({ error: 'Order cannot contain more than 100 items' });
+        }
 
         // Validate each item has required fields
         for (var i = 0; i < items.length; i++) {
@@ -972,6 +991,12 @@ app.post('/recommend', async function(req, res) {
 app.post('/summarize-reviews', async function(req, res) {
     try {
         var itemName = (req.body || {}).itemName || null;
+        // Sanitize itemName to prevent Firestore injection via crafted queries
+        if (itemName && typeof itemName === 'string') {
+            itemName = itemName.replace(/<[^>]*>/g, '').trim().slice(0, 100);
+        } else {
+            itemName = null;
+        }
         var query = db.collection('reviews');
         if (itemName) query = query.where('itemName', '==', itemName);
         var snap = await query.orderBy('createdAt', 'desc').limit(100).get();
@@ -993,7 +1018,17 @@ app.post('/summarize-reviews', async function(req, res) {
             '"avgRating": number, "suggestions": ["actionable suggestion"] }';
 
         var parsed = await callGemini(systemPrompt, 'Analyze reviews');
-        res.json(parsed);
+        // Validate and sanitize Gemini response before sending to client
+        var validSentiments = ['positive', 'negative', 'mixed', 'neutral'];
+        res.json({
+            summary: typeof parsed.summary === 'string' ? parsed.summary.slice(0, 1000) : '',
+            sentiment: validSentiments.includes(parsed.sentiment) ? parsed.sentiment : 'neutral',
+            themes: Array.isArray(parsed.themes) ? parsed.themes.slice(0, 20).map(function(t) {
+                return { theme: String(t.theme || '').slice(0, 100), sentiment: validSentiments.includes(t.sentiment) ? t.sentiment : 'neutral', count: parseInt(t.count, 10) || 0 };
+            }) : [],
+            avgRating: typeof parsed.avgRating === 'number' ? Math.min(5, Math.max(0, parsed.avgRating)) : 0,
+            suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 10).map(function(s) { return String(s).slice(0, 500); }) : []
+        });
     } catch (e) {
         console.error('POST /summarize-reviews error:', e);
         res.status(500).json({ error: 'Review analysis failed' });

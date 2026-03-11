@@ -68,12 +68,18 @@ export function throttle(fn, limit) {
 
 // ===== SIMPLE EVENT BUS (decoupled module communication) =====
 var _eventHandlers = {};
+var MAX_HANDLERS_PER_EVENT = 50; // Prevent memory leaks from unbounded listener registration
 export function emitEvent(name, data) {
     var handlers = _eventHandlers[name];
     if (handlers) handlers.forEach(function(fn) { try { fn(data); } catch(e) { console.error('[EventBus]', name, e); } });
 }
 export function onEvent(name, fn) {
     if (!_eventHandlers[name]) _eventHandlers[name] = [];
+    // Guard against memory leaks from repeated registrations
+    if (_eventHandlers[name].length >= MAX_HANDLERS_PER_EVENT) {
+        console.warn('[EventBus] Too many handlers for "' + name + '", removing oldest');
+        _eventHandlers[name].shift();
+    }
     _eventHandlers[name].push(fn);
     return function() {
         _eventHandlers[name] = _eventHandlers[name].filter(function(h) { return h !== fn; });
