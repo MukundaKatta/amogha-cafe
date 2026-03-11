@@ -1022,6 +1022,7 @@
         .bulk-btn:disabled{opacity:.35;cursor:default}
         .bulk-btn.enable{background:#27ae60;color:#fff}
         .bulk-btn.disable{background:#e74c3c;color:#fff}
+        .bulk-btn.delete{background:#8e44ad;color:#fff}
         .bulk-cancel-btn{background:none;border:1px solid rgba(255,255,255,.15);color:var(--muted);
             padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.82rem}
         .mac{position:relative}
@@ -2487,6 +2488,7 @@
                 <div class="bulk-actions">
                     <button class="bulk-btn enable" id="bulk-enable-btn" onclick="bulkEnable()" disabled>Enable</button>
                     <button class="bulk-btn disable" id="bulk-disable-btn" onclick="bulkDisable()" disabled>Disable</button>
+                    <button class="bulk-btn delete" id="bulk-delete-btn" onclick="bulkDelete()" disabled>Delete</button>
                 </div>
                 <button class="bulk-cancel-btn" onclick="toggleBulkMode(false)">Cancel</button>
             </div>
@@ -3932,10 +3934,37 @@
             document.getElementById('bulk-count').textContent = n + ' selected';
             document.getElementById('bulk-enable-btn').disabled = n === 0;
             document.getElementById('bulk-disable-btn').disabled = n === 0;
+            document.getElementById('bulk-delete-btn').disabled = n === 0;
         }
 
         function bulkEnable() { bulkSetAvailable(true); }
         function bulkDisable() { bulkSetAvailable(false); }
+
+        function bulkDelete() {
+            if (!selectedIds.size) return;
+            var count = selectedIds.size;
+            if (!confirm('Permanently delete ' + count + ' menu item' + (count > 1 ? 's' : '') + '? This cannot be undone.')) return;
+            var ids = Array.from(selectedIds);
+            var btn = document.getElementById('bulk-delete-btn');
+            btn.disabled = true;
+            btn.textContent = 'Deleting...';
+            var chunks = [];
+            for (var i = 0; i < ids.length; i += 400) chunks.push(ids.slice(i, i + 400));
+            var promises = chunks.map(function(chunk) {
+                var batch = db.batch();
+                chunk.forEach(function(id) { batch.delete(db.collection('menu').doc(id)); });
+                return batch.commit();
+            });
+            Promise.all(promises).then(function() {
+                selectedIds.clear();
+                btn.textContent = 'Delete';
+                updateBulkBar();
+            }).catch(function(err) {
+                alert('Bulk delete failed: ' + err.message);
+                btn.textContent = 'Delete';
+                btn.disabled = false;
+            });
+        }
 
         function bulkSetAvailable(available) {
             if (!selectedIds.size) return;
