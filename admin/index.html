@@ -27,6 +27,9 @@
             --text-muted: #8a7a6a;
             --text-dim: #6a5a4a;
             --text-faint: #4a3a2a;
+            --card-bg: #1a0f08;
+            --text: #e8dcc8;
+            --muted: #8a7a6a;
             --radius: 14px;
             --transition: 0.3s cubic-bezier(0.22, 1, 0.36, 1);
         }
@@ -478,7 +481,6 @@
 
         .order-customer .phone {
             color: var(--text-muted);
-            font-size: 0.8rem;
             margin-left: 0.5rem;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.75rem;
@@ -3594,15 +3596,15 @@
                 var statusLabel = k.active ? 'Active' : 'Disabled';
                 return '<div style="background:#1a1d27;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1rem 1.2rem">' +
                     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">' +
-                    '<div><div style="font-weight:700;color:#e8e8f0;margin-bottom:2px">' + escH(k.name || k.username) + '</div>' +
-                    '<div style="font-size:.78rem;color:#9a9ab0">@' + escH(k.username) + ' · ' + escH(k.shopId) + '</div></div>' +
+                    '<div><div style="font-weight:700;color:#e8e8f0;margin-bottom:2px">' + escHtml(k.name || k.username) + '</div>' +
+                    '<div style="font-size:.78rem;color:#9a9ab0">@' + escHtml(k.username) + ' · ' + escHtml(k.shopId) + '</div></div>' +
                     '<span style="font-size:.72rem;font-weight:700;color:' + statusColor + ';background:' + statusColor + '22;padding:3px 8px;border-radius:20px">' + statusLabel + '</span>' +
                     '</div>' +
                     '<div style="display:flex;gap:.4rem;margin-top:.8rem;flex-wrap:wrap">' +
                     '<button onclick="toggleKioskActive(\'' + k.id + '\',' + !k.active + ')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#9a9ab0;cursor:pointer;font-size:.78rem">' +
                     (k.active ? 'Disable' : 'Enable') + '</button>' +
                     '<button onclick="promptKioskPassword(\'' + k.id + '\')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(212,160,23,.3);background:rgba(212,160,23,.06);color:#D4A017;cursor:pointer;font-size:.78rem">Reset Password</button>' +
-                    '<button onclick="deleteKiosk(\'' + k.id + '\',\'' + escH(k.name || k.username) + '\')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(231,76,60,.3);background:rgba(231,76,60,.06);color:#e74c3c;cursor:pointer;font-size:.78rem">Delete</button>' +
+                    '<button onclick="deleteKiosk(\'' + k.id + '\',\'' + escHtml(k.name || k.username) + '\')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(231,76,60,.3);background:rgba(231,76,60,.06);color:#e74c3c;cursor:pointer;font-size:.78rem">Delete</button>' +
                     '</div></div>';
             }).join('');
         }
@@ -3873,6 +3875,7 @@
             document.getElementById('marketing-panel').style.display = tab === 'marketing' ? 'block' : 'none';
             document.getElementById('pricing-panel').style.display = tab === 'pricing' ? 'block' : 'none';
             document.getElementById('shops-panel').style.display = tab === 'shops' ? 'block' : 'none';
+            var kiosksPnl = document.getElementById('kiosks-panel'); if (kiosksPnl) kiosksPnl.style.display = tab === 'kiosks' ? 'block' : 'none';
 
             // Load data if needed
             if (tab === 'menu' && allMenuItems.length === 0) { loadMenuItems(); loadAddons(); }
@@ -4227,7 +4230,7 @@
             });
             // Load menu items if not yet loaded
             if (allMenuItems.length === 0) {
-                db.collection('menu').orderBy('sortOrder').get().then(function(snapshot) {
+                db.collection('menu').where('shopId', '==', currentShopId).orderBy('sortOrder').get().then(function(snapshot) {
                     allMenuItems = [];
                     snapshot.forEach(function(doc) {
                         allMenuItems.push({ id: doc.id, ...doc.data() });
@@ -4332,8 +4335,12 @@
             if (exists) { alert('An item with this name already exists.'); return; }
 
             var maxSort = allMenuItems.reduce(function(max, item) { return Math.max(max, item.sortOrder || 0); }, 0);
+            var pendingMenuImage = null;
+            var imgInputPre = document.getElementById('menu-item-image');
+            if (imgInputPre && imgInputPre.files[0]) { pendingMenuImage = imgInputPre.files[0]; }
+            var docId = currentShopId === 'amogha' ? name : currentShopId + '__' + name;
 
-            db.collection('menu').doc(currentShopId === 'amogha' ? name : currentShopId + '__' + name).set({
+            db.collection('menu').doc(docId).set({
                 name: name,
                 price: price,
                 category: category,
@@ -4346,8 +4353,8 @@
                 updatedAt: new Date().toISOString()
             }).then(function() {
                 var imgInput = document.getElementById('menu-item-image');
-                if (imgInput && imgInput.files[0]) {
-                    var file = imgInput.files[0];
+                if (pendingMenuImage) {
+                    var file = pendingMenuImage;
                     var fd = new FormData();
                     fd.append('file', file);
                     fd.append('upload_preset', CLOUDINARY_PRESET);
@@ -4356,7 +4363,7 @@
                         .then(function(r) { return r.json(); })
                         .then(function(res) {
                             if (res.secure_url) {
-                                return db.collection('menu').doc(name).update({ imageUrl: res.secure_url });
+                                return db.collection('menu').doc(docId).update({ imageUrl: res.secure_url });
                             }
                         });
                 }
@@ -5600,16 +5607,15 @@
                 byDate[d].count++;
                 byDate[d].revenue += (o.total || 0);
             });
-            var GST_RATE = 0.05; // 5% CGST + 5% SGST for restaurant
+            var GST_RATE = 0.025; // 2.5% CGST + 2.5% SGST = 5% total for restaurant
             var dates = Object.keys(byDate).sort();
-            var headers = ['Date','Order Count','Revenue','CGST (5%)','SGST (5%)','Total with GST','Net Revenue'];
+            var headers = ['Date','Order Count','Revenue (incl GST)','CGST (2.5%)','SGST (2.5%)','Net Revenue (excl GST)'];
             var rows = dates.map(function(d) {
                 var info = byDate[d];
-                var cgst = Math.round(info.revenue * GST_RATE * 100) / 100;
-                var sgst = Math.round(info.revenue * GST_RATE * 100) / 100;
-                var totalWithGst = Math.round((info.revenue + cgst + sgst) * 100) / 100;
+                var cgst = Math.round(info.revenue * GST_RATE / (1 + 2 * GST_RATE) * 100) / 100;
+                var sgst = cgst;
                 var netRevenue = Math.round((info.revenue - cgst - sgst) * 100) / 100;
-                return [d, info.count, info.revenue, cgst, sgst, totalWithGst, netRevenue];
+                return [d, info.count, info.revenue, cgst, sgst, netRevenue];
             });
             downloadCSV('Amogha_Revenue_Report_' + new Date().toISOString().split('T')[0] + '.csv', headers, rows);
         }
@@ -6416,11 +6422,11 @@
                     preparingAt: new Date().toISOString(),
                     etaMinutes: etaMins
                 }).then(function() {
-                    showToast('Order marked as Preparing (ETA: ' + etaMins + ' min)');
+                    alert('Order marked as Preparing (ETA: ' + etaMins + ' min)');
                     loadOrders();
-                }).catch(function(e) { showToast('Error: ' + e.message); });
+                }).catch(function(e) { alert('Error: ' + e.message); });
             } else {
-                if (typeof setOrderStatus === 'function') setOrderStatus(orderId, status);
+                db.collection('orders').doc(orderId).update({ status: status, updatedAt: new Date().toISOString() }).then(function() { loadOrders(); }).catch(function(e) { alert('Error: ' + e.message); });
             }
         };
 

@@ -242,7 +242,7 @@ body.light-mode .pos-total-row{border-color:rgba(0,0,0,.07)}
 body.light-mode .pos-cart-bar{background:linear-gradient(to top,rgba(244,239,230,.98),rgba(244,239,230,.9));
     border-color:rgba(212,160,23,.25)}
 body.light-mode .pos-header-time{color:var(--txt2)}
-body.light-mode html,body.light-mode body{background:var(--bg)}
+body.light-mode{background:var(--bg)}
 
 /* ── Recent Orders Panel ───────────────────────────────────── */
 .pos-recent-btn{padding:6px 12px;background:rgba(212,160,23,.1);border:1.5px solid rgba(212,160,23,.25);
@@ -642,6 +642,7 @@ function posLogout() {
 
 // ── Start POS ────────────────────────────────────────────────
 function startPOS() {
+    FREQ_CACHE_KEY = 'posFreq_' + (shopId || 'default');
     document.getElementById('pos-login').style.display = 'none';
     document.getElementById('pos-main').classList.add('show');
     // Apply shop branding
@@ -848,7 +849,7 @@ function renderCart() {
     var totalDisplay = discount > 0 ? '₹' + total + ' <span style="font-size:.75rem;color:#4caf50">(-₹' + discount + ')</span>' : '₹' + total;
     document.getElementById('pos-total').innerHTML = totalDisplay;
     var count = cart.reduce(function(s,c){ return s+c.qty; }, 0);
-    document.getElementById('pos-item-count').textContent = count ? '(' + count + ' items)' : '';
+    document.getElementById('pos-item-count').textContent = count ? '(' + count + ' item' + (count > 1 ? 's' : '') + ')' : '';
     document.getElementById('pos-place-btn').disabled = cart.length === 0;
     var footer = document.getElementById('pos-order-footer');
     var placeFooter = document.getElementById('pos-place-footer');
@@ -1043,8 +1044,8 @@ function placeOrder() {
     var subtotal = cart.reduce(function(s,c){ return s + c.price*c.qty; }, 0);
     var discount = (pointsRedeemed && subtotal >= REDEEM_MIN_ORDER) ? REDEEM_DISCOUNT : 0;
     var taxableAmount = Math.max(0, subtotal - discount);
-    var cgst = Math.round(taxableAmount * CGST_RATE) / 100;
-    var sgst = Math.round(taxableAmount * SGST_RATE) / 100;
+    var cgst = Math.round(taxableAmount * CGST_RATE / 100 * 100) / 100;
+    var sgst = Math.round(taxableAmount * SGST_RATE / 100 * 100) / 100;
     var total = Math.round((taxableAmount + cgst + sgst) * 100) / 100;
     var token = nextToken();
     var invoiceNumber = getNextInvoiceNumber();
@@ -1565,6 +1566,7 @@ function sendWhatsAppBill() {
         ph = prompt('Enter customer phone number (10 digits):');
         if (!ph) return;
         ph = ph.replace(/\D/g,'');
+        if (ph.length !== 10) { document.getElementById('pos-toast').textContent = 'Please enter a valid 10-digit number'; document.getElementById('pos-toast').classList.add('show'); setTimeout(function(){document.getElementById('pos-toast').classList.remove('show')},2500); return; }
         phoneWasNew = true;
     }
     if (ph.length === 10) {
@@ -1640,7 +1642,7 @@ function sendWhatsAppBill() {
 }
 
 function escH(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function toJsDate(val) {
@@ -1909,7 +1911,7 @@ function voidOrder(orderId) {
         var phone = o.phone;
         var earned = o.pointsEarned || 0;
         var redeemed = o.pointsRedeemed || 0;
-        if (phone && (earned > 0 || redeemed > 0)) {
+        if (phone && phone !== 'pos' && phone.length >= 10 && (earned > 0 || redeemed > 0)) {
             db.collection('users').doc(phone).get().then(function(doc) {
                 if (!doc.exists) return;
                 var curPts = doc.data().loyaltyPoints || 0;

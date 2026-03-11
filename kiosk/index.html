@@ -860,7 +860,7 @@
 <!-- Search -->
 <div class="search-wrap">
     <div class="search-bar">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <input type="text" id="search-input" data-i18n-placeholder="searchMenu" placeholder="Search menu..." autocomplete="off">
@@ -894,7 +894,7 @@
     <main class="menu-area">
         <div id="menu-container"></div>
         <div class="no-results hidden" id="no-results">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 <line x1="8" y1="11" x2="14" y2="11"/>
             </svg>
@@ -1095,7 +1095,7 @@
 
 <!-- Staff Call Button -->
 <div class="staff-call-btn" id="staff-call-btn" onclick="callStaff()">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
     <span data-i18n="needHelp">Need Help?</span>
 </div>
 
@@ -1398,11 +1398,8 @@ var autoResetTimer = null;
 // ── Helpers ────────────────────────────────────────────────────
 function haptic() { if (navigator.vibrate) navigator.vibrate(10); }
 function debounce(fn, ms) { var t; return function() { var a=arguments,c=this; clearTimeout(t); t=setTimeout(function(){fn.apply(c,a)},ms); }; }
-function showToast(msg) {
-    var el = document.getElementById('toast');
-    el.textContent = msg; el.classList.add('show');
-    setTimeout(function() { el.classList.remove('show'); }, 2500);
-}
+var _toastTimer=null;
+function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');if(_toastTimer)clearTimeout(_toastTimer);_toastTimer=setTimeout(function(){el.classList.remove('show');_toastTimer=null;},2500);}
 
 // ── Touch Ripple ───────────────────────────────────────────────
 function createRipple(e, el) {
@@ -1642,7 +1639,7 @@ function loadAddons() {
         cachedAddons = cached.data; addonCacheTime = cached.ts; return;
     }
     if (typeof db === 'undefined') return;
-    db.collection('addons').get().then(function(snap) {
+    db.collection('addons').where('shopId','==',shopId).get().then(function(snap) {
         cachedAddons = [];
         snap.forEach(function(doc) { var d = doc.data(); if (d.name && d.price) cachedAddons.push({ name: d.name, price: d.price, category: d.category || '' }); });
         addonCacheTime = Date.now();
@@ -2024,7 +2021,8 @@ function submitKioskFeedback() {
         comment: comment || '',
         source: 'kiosk',
         createdAt: new Date().toISOString(),
-        orderId: lastKioskOrderId || null
+        orderId: lastKioskOrderId || null,
+        shopId: shopId
     };
 
     if (typeof db !== 'undefined' && db) {
@@ -2155,7 +2153,7 @@ function loadRatings() {
         itemRatings = cached.data; return;
     }
     if (typeof db === 'undefined') return;
-    db.collection('reviews').get().then(function(snap) {
+    db.collection('reviews').where('shopId','==',shopId).get().then(function(snap) {
         var agg = {};
         snap.forEach(function(doc) {
             var d = doc.data();
@@ -2372,7 +2370,7 @@ function showWhatsAppBtn(orderId, phone, items, total, payMethod) {
     var msg = '*Amogha Cafe - Order Receipt*\n';
     msg += 'Order: #' + orderId.slice(-6).toUpperCase() + '\n\n';
     items.forEach(function(i) {
-        msg += '\u2022 ' + i.name + ' x' + i.qty + ' - \u20B9' + (i.price * i.qty) + '\n';
+        msg += '\u2022 ' + i.name + ' x' + i.qty + ' - \u20B9' + ((i.price + (i.addonTotal || 0)) * i.qty) + '\n';
     });
     msg += '\n*Total: \u20B9' + total + '*\n';
     msg += 'Payment: ' + payMethod + '\n\n';
@@ -2511,7 +2509,7 @@ function loadPopularItems() {
     // Also try to load recent order frequency
     if (typeof db === 'undefined') return;
     var twoHoursAgo = new Date(Date.now() - 2 * 3600000).toISOString();
-    db.collection('orders').where('createdAt', '>=', twoHoursAgo).limit(50).get().then(function(snap) {
+    db.collection('orders').where('shopId','==',shopId).where('createdAt', '>=', twoHoursAgo).limit(50).get().then(function(snap) {
         var freq = {};
         snap.forEach(function(doc) {
             (doc.data().items || []).forEach(function(i) { freq[i.name] = (freq[i.name] || 0) + i.qty; });

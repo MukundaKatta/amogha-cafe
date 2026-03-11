@@ -1289,7 +1289,7 @@
         updatePrepCountdown(data);
 
         // Confetti on delivered
-        if ((status === 'delivered' || status === 'out_for_delivery') && !confettiShown) {
+        if (status === 'delivered' && !confettiShown) {
             setTimeout(launchConfetti, 600);
         }
 
