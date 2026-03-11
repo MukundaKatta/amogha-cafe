@@ -3,6 +3,7 @@
 // Inspired by: Instagram Stories, Swiggy Stories, Zomato Stories
 
 import { getDb } from '../core/firebase.js';
+import { sanitizeHtml } from '../core/utils.js';
 
 var DEMO_STORIES = [
     {
@@ -92,11 +93,11 @@ function renderStoriesCarousel() {
         '<div class="stories-scroll">' +
             allStories.map(function(story, idx) {
                 var viewed = localStorage.getItem('amogha_story_viewed_' + story.id);
-                return '<button class="story-bubble ' + (viewed ? 'viewed' : '') + '" data-story="' + idx + '" aria-label="View ' + story.author + ' story">' +
+                return '<button class="story-bubble ' + (viewed ? 'viewed' : '') + '" data-story="' + idx + '" aria-label="View ' + sanitizeHtml(story.author) + ' story">' +
                     '<div class="story-avatar-ring">' +
-                        '<div class="story-avatar">' + story.avatar + '</div>' +
+                        '<div class="story-avatar">' + sanitizeHtml(story.avatar) + '</div>' +
                     '</div>' +
-                    '<span class="story-author">' + story.author + '</span>' +
+                    '<span class="story-author">' + sanitizeHtml(story.author) + '</span>' +
                 '</button>';
             }).join('') +
         '</div>';
@@ -207,13 +208,13 @@ function showStoryItem() {
     if (item.type === 'image') {
         content.innerHTML =
             '<div class="story-image-container">' +
-                '<img src="' + item.src + '" alt="' + (item.caption || 'Story image') + '" class="story-image" loading="eager">' +
-                (item.caption ? '<div class="story-caption">' + item.caption + '</div>' : '') +
+                '<img src="' + sanitizeHtml(item.src) + '" alt="' + sanitizeHtml(item.caption || 'Story image') + '" class="story-image" loading="eager">' +
+                (item.caption ? '<div class="story-caption">' + sanitizeHtml(item.caption) + '</div>' : '') +
             '</div>';
     } else if (item.type === 'text') {
         content.innerHTML =
-            '<div class="story-text-container" style="background:' + (item.bg || '#2c1810') + '">' +
-                '<p class="story-text-content">' + item.content + '</p>' +
+            '<div class="story-text-container" style="background:' + sanitizeHtml(item.bg || '#2c1810') + '">' +
+                '<p class="story-text-content">' + sanitizeHtml(item.content) + '</p>' +
             '</div>';
     }
 

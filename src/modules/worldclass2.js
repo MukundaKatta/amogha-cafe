@@ -6,7 +6,7 @@
 import { getCurrentUser, showAuthToast } from './auth.js';
 import { cart, saveCart, updateCartCount, updateFloatingCart } from './cart.js';
 import { getDb } from '../core/firebase.js';
-import { safeGetItem, safeSetItem, lockScroll, unlockScroll } from '../core/utils.js';
+import { safeGetItem, safeSetItem, lockScroll, unlockScroll, sanitizeHtml } from '../core/utils.js';
 
 // ── 1. CUSTOMER PHOTO REVIEWS ──
 function initPhotoReviews() {
@@ -159,12 +159,12 @@ function addReviewToDOM(review, photos) {
             photos.map(function(p) { return '<img src="'+p+'" alt="Food photo" class="review-photo-thumb" loading="lazy">'; }).join('') +
             '</div>';
     }
-    var dishTag = review.dish ? '<span class="review-dish-tag">🍽️ ' + review.dish + '</span>' : '';
+    var dishTag = review.dish ? '<span class="review-dish-tag">🍽️ ' + sanitizeHtml(review.dish) + '</span>' : '';
     var card = document.createElement('div');
     card.className = 'review-card review-card-new';
-    card.innerHTML = '<p class="review-text">"' + (review.text || 'Great experience!') + '"</p>' +
+    card.innerHTML = '<p class="review-text">"' + sanitizeHtml(review.text || 'Great experience!') + '"</p>' +
         photoHTML + dishTag +
-        '<div class="reviewer-info"><span class="reviewer-avatar '+colorClass+'">'+initials+'</span><div><p class="reviewer">'+review.name+'</p><p class="review-stars">'+stars+'</p></div></div>';
+        '<div class="reviewer-info"><span class="reviewer-avatar '+colorClass+'">'+initials+'</span><div><p class="reviewer">'+sanitizeHtml(review.name)+'</p><p class="review-stars">'+stars+'</p></div></div>';
     carousel.prepend(card);
 }
 

@@ -1,4 +1,4 @@
-import { safeGetItem, safeSetItem, lockScroll, unlockScroll } from '../core/utils.js';
+import { safeGetItem, safeSetItem, lockScroll, unlockScroll, sanitizeHtml } from '../core/utils.js';
 import { getDb } from '../core/firebase.js';
 import { showBirthdayBanner } from './loyalty.js';
 
@@ -458,7 +458,7 @@ export function updateSignInUI(user) {
     var userName = user.name || 'Guest';
     var initials = userName.split(' ').filter(function(w) { return w.length > 0; }).map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2) || 'G';
     btn.className = 'signin-nav-btn signed-in';
-    btn.innerHTML = '<span class="user-avatar">' + initials + '</span><span id="signin-text">' + userName.split(' ')[0] + '</span>' +
+    btn.innerHTML = '<span class="user-avatar">' + sanitizeHtml(initials) + '</span><span id="signin-text">' + sanitizeHtml(userName.split(' ')[0]) + '</span>' +
         '<div class="user-dropdown" id="user-dropdown">' +
             '<a href="#" onclick="event.preventDefault();event.stopPropagation();openProfileModal()">My Profile</a>' +
             '<a href="#" onclick="event.preventDefault();event.stopPropagation();signOut()">Sign Out</a>' +

@@ -30,6 +30,7 @@ vi.mock('../src/core/utils.js', () => ({
     safeSetItem: vi.fn((key, val) => localStorage.setItem(key, val)),
     lockScroll: vi.fn(),
     unlockScroll: vi.fn(),
+    sanitizeHtml: vi.fn((str) => typeof str !== 'string' ? '' : str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')),
 }));
 
 import { sendChatMessage, initChatbot, toggleChat } from '../src/modules/chatbot.js';
