@@ -404,6 +404,39 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
+    // NEWSLETTER — write-only by clients (email subscriptions)
+    // -------------------------------------------------------------------------
+    match /newsletter/{email} {
+      allow read: if false;
+      allow create: if request.resource.data.keys().hasAll(['email', 'subscribedAt'])
+                    && isString(request.resource.data.email)
+                    && request.resource.data.email.size() <= 254;
+      allow update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // POLLS — user votes
+    // -------------------------------------------------------------------------
+    match /polls/{pollId} {
+      allow read: if true;
+      allow create: if false;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['votes', 'totalVotes']);
+      allow delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // FEEDBACK — post-order feedback (write-only)
+    // -------------------------------------------------------------------------
+    match /feedback/{fbId} {
+      allow read: if false;
+      allow create: if hasFields(['orderId', 'createdAt'])
+                    && isString(request.resource.data.orderId)
+                    && request.resource.data.keys().size() <= 15;
+      allow update, delete: if false;
+    }
+
+    // -------------------------------------------------------------------------
     // DEFAULT DENY — all other paths
     // -------------------------------------------------------------------------
     match /{document=**} {

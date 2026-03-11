@@ -279,6 +279,11 @@ app.get('/health', async function(req, res) {
 // -----------------------------------------------------------------------
 app.get('/menu', async function(req, res) {
     try {
+        var limit = parseInt(req.query.limit) || 0;
+        var offset = parseInt(req.query.offset) || 0;
+        if (limit < 0) limit = 0;
+        if (offset < 0) offset = 0;
+
         const snap = await db.collection('menu').get();
         const items = [];
         snap.forEach(function(doc) {
@@ -294,7 +299,9 @@ app.get('/menu', async function(req, res) {
             }
         });
         items.sort(function(a, b) { return a.category.localeCompare(b.category); });
-        res.json({ items: items, count: items.length });
+        var totalCount = items.length;
+        var paginatedItems = (limit > 0) ? items.slice(offset, offset + limit) : items.slice(offset);
+        res.json({ items: paginatedItems, count: paginatedItems.length, total: totalCount });
     } catch (e) {
         console.error('GET /menu error:', e);
         res.status(500).json({ error: 'Could not fetch menu' });
@@ -325,10 +332,10 @@ app.post('/order', async function(req, res) {
     try {
         var body     = req.body || {};
         var items    = body.items;
-        var customer = (body.customer || '').trim();
-        var phone    = (body.phone    || '').trim();
-        var address  = (body.address  || '').trim();
-        var notes    = (body.notes    || '').trim();
+        var customer = (body.customer || '').replace(/<[^>]*>/g, '').trim().slice(0, 100);
+        var phone    = (body.phone    || '').replace(/<[^>]*>/g, '').trim().slice(0, 15);
+        var address  = (body.address  || '').replace(/<[^>]*>/g, '').trim().slice(0, 500);
+        var notes    = (body.notes    || '').replace(/<[^>]*>/g, '').trim().slice(0, 500);
 
         // Validate required fields
         if (!Array.isArray(items) || items.length === 0) {
@@ -682,7 +689,7 @@ app.post('/auth/delivery-login', async function(req, res) {
 // POST /auth/hash-migrate — one-time migration: hash plaintext passwords/PINs
 // Reads all kiosk + deliveryPerson docs and bcrypt-hashes any plaintext values
 // -----------------------------------------------------------------------
-app.post('/auth/hash-migrate', async function(req, res) {
+app.post('/auth/hash-migrate', requireAdminAuth, async function(req, res) {
     try {
         var migrated = { kiosks: 0, deliveryPersons: 0, shops: 0 };
 
@@ -731,7 +738,7 @@ app.post('/auth/hash-migrate', async function(req, res) {
         res.json({ success: true, migrated: migrated });
     } catch (e) {
         console.error('POST /auth/hash-migrate error:', e);
-        res.status(500).json({ error: 'Migration failed: ' + e.message });
+        res.status(500).json({ error: 'Migration failed. Please try again or check server logs.' });
     }
 });
 
@@ -819,12 +826,15 @@ exports.birthdayRewards = functions.pubsub
 app.post('/notify', async function(req, res) {
     try {
         var body = req.body || {};
-        var phone = body.phone;
-        var title = body.title || 'Amogha Cafe';
-        var message = body.message || '';
+        var phone = (body.phone || '').trim();
+        var title = (body.title || 'Amogha Cafe').slice(0, 100);
+        var message = (body.message || '').slice(0, 500);
 
         if (!phone || !message) {
             return res.status(400).json({ error: 'phone and message are required' });
+        }
+        if (!/^\d{10}$/.test(phone)) {
+            return res.status(400).json({ error: 'phone must be a valid 10-digit number' });
         }
 
         var userDoc = await db.collection('users').doc(phone).get();
@@ -860,6 +870,10 @@ app.post('/chat', async function(req, res) {
         var history = body.history || [];
 
         if (!message) return res.status(400).json({ error: 'message is required' });
+        if (message.length > 500) return res.status(400).json({ error: 'message must be 500 characters or less' });
+        if (Array.isArray(history) && history.length > 20) {
+            history = history.slice(-20);
+        }
         message = sanitizeForPrompt(message);
 
         var menuItems = await getMenuData();
@@ -900,7 +914,7 @@ app.post('/chat', async function(req, res) {
 // -----------------------------------------------------------------------
 app.post('/smart-search', async function(req, res) {
     try {
-        var query = sanitizeForPrompt(((req.body || {}).query || '').trim());
+        var query = sanitizeForPrompt(((req.body || {}).query || '').trim().slice(0, 200));
         if (!query) return res.status(400).json({ error: 'query is required' });
 
         var available = (await getMenuData()).filter(function(i) { return i.available; });
@@ -928,8 +942,8 @@ app.post('/smart-search', async function(req, res) {
 app.post('/recommend', async function(req, res) {
     try {
         var body = req.body || {};
-        var orderHistory = body.orderHistory || [];
-        var currentCart = body.currentCart || [];
+        var orderHistory = (body.orderHistory || []).slice(0, 20);
+        var currentCart = (body.currentCart || []).slice(0, 50);
         var timeOfDay = body.timeOfDay || new Date().getHours();
         var isVegOnly = body.isVegOnly || false;
 

@@ -228,9 +228,9 @@ function catSlug(cat) { return cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').rep
 
 function renderItemCard(item) {
     var isVeg = item.type === 'veg' || item.isVeg === true;
-    var badge = isVeg ? '<span class="veg-badge">🟢</span>' : '<span class="nonveg-badge">🔴</span>';
+    var badge = isVeg ? '<span class="veg-badge" aria-label="Vegetarian">🟢</span>' : '<span class="nonveg-badge" aria-label="Non-Vegetarian">🔴</span>';
     var imgHtml = item.imageUrl
-        ? '<div class="menu-item-img-wrap has-image"><img class="menu-item-img loaded" src="' + escH(item.imageUrl) + '" alt="" loading="lazy"></div>'
+        ? '<div class="menu-item-img-wrap has-image"><img class="menu-item-img loaded" src="' + escH(item.imageUrl) + '" alt="' + escH(item.name) + '" loading="lazy" decoding="async"></div>'
         : '';
     var allergens = (item.allergens || []).join(',');
     var unavailCls = item.available === false ? ' item-unavailable' : '';
@@ -251,7 +251,7 @@ function renderItemCard(item) {
         '<span class="spice-level active" onclick="selectSpice(this)">Mild</span>' +
         '<span class="spice-level" onclick="selectSpice(this)">Medium</span>' +
         '<span class="spice-level" onclick="selectSpice(this)">Spicy</span></div>' +
-        '<button class="add-to-cart" data-item="' + escH(item.name) + '" data-price="' + (item.price || 0) + '">Add to Order</button>' +
+        '<button class="add-to-cart" data-item="' + escH(item.name) + '" data-price="' + (item.price || 0) + '" aria-label="Add ' + escH(item.name) + ' to order">Add to Order</button>' +
         '</div>';
 }
 

@@ -55,7 +55,10 @@ export function closeMobileMenu(skipScrollRestore) {
     var mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     if (navLinks) navLinks.classList.remove('active');
     if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('active');
-    if (mobileMenuToggle) mobileMenuToggle.textContent = '\u2630';
+    if (mobileMenuToggle) {
+        mobileMenuToggle.textContent = '\u2630';
+        mobileMenuToggle.setAttribute('aria-expanded', 'false');
+    }
     if (skipScrollRestore) {
         document.body.classList.remove('modal-open');
         document.body.style.top = '';
@@ -87,6 +90,7 @@ export function initUI() {
     (function() {
         const toggle = document.getElementById('theme-toggle');
         if (!toggle) return;
+        toggle.setAttribute('aria-label', 'Toggle dark mode');
         const saved = safeGetItem('amogha-dark-mode');
         if (saved === 'true') {
             document.body.classList.add('dark-mode');
@@ -232,6 +236,7 @@ export function initUI() {
                     navLinks.classList.remove('active');
                     if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('active');
                     mobileMenuToggle.textContent = '\u2630';
+                    mobileMenuToggle.setAttribute('aria-expanded', 'false');
                     return;
                 }
                 if (href && href.startsWith('#')) {
