@@ -1375,3 +1375,4 @@ app.post('/smart-combo', async function(req, res) {
         res.status(500).json({ error: 'Combo generation failed' });
     }
 });
+
