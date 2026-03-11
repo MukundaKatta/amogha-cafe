@@ -1,5 +1,27 @@
 /* ===== ENHANCEMENTS CSS ===== */
 
+/* ── Hero text visibility fix ──
+   styles.css sets opacity:0 on hero elements with fadeInUp animation,
+   but premium.css overwrites animation with shimmer/stagger, losing the opacity fix.
+   Force hero text visible and let premium animations handle entrance. */
+.hero-tagline,
+.hero-title,
+.hero-subtitle,
+.hero-ornament,
+.hero-buttons {
+    opacity: 1 !important;
+}
+
+/* ── Scroll to top on page load ── */
+html { scroll-behavior: auto; }
+
+/* ── Chef slideshow fix ──
+   All chef images are position:absolute and stacked in DOM order.
+   The last image (Bhavana) always covers the others visually.
+   Fix: active slide gets z-index to appear on top. */
+.chef-slide { z-index: 0; }
+.chef-slide.active { z-index: 1; }
+
 /* ── Critical Mobile Fixes ── */
 /* Ensure hamburger menu button is always tappable on mobile */
 @media (max-width: 768px) {
@@ -97,6 +119,8 @@
 /* Nav layout */
 header > nav { max-width: none; padding-left: 1.5rem; padding-right: 1.5rem; }
 header > nav .logo { padding-left: 0; padding-right: 0.8rem; }
+/* Allow streak dropdown to overflow out of sticky header */
+header { overflow: visible !important; }
 
 /* Status + Streak group next to logo */
 .nav-status-group {

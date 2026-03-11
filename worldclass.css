@@ -4,7 +4,7 @@
 /* ── Gift Cards ── */
 .gift-card-fab {
     position: fixed;
-    bottom: 180px;
+    bottom: 190px;
     right: 20px;
     z-index: 900;
 }
