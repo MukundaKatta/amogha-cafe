@@ -10,6 +10,10 @@ export default defineConfig({
   build: {
     outDir: '.',
     emptyOutDir: false, // CRITICAL: do not delete index.html, styles.css, pics/, etc.
+    // Target modern browsers for smaller output (async/await, optional chaining kept as-is)
+    target: 'es2020',
+    // CSS code splitting — keep CSS per chunk for better caching
+    cssCodeSplit: true,
     rollupOptions: {
       input: 'src/main.js',
       output: {
@@ -18,6 +22,10 @@ export default defineConfig({
         assetFileNames: (a) => a.name && a.name.endsWith('.css') ? 'styles.css' : 'assets/[name]-[hash][extname]',
         // Optimize chunk splitting for better caching
         manualChunks(id) {
+          // Core shared utilities — cached long-term, rarely changes
+          if (id.includes('/core/utils') || id.includes('/core/constants')) {
+            return 'core';
+          }
           // Group world-class feature modules into a single chunk
           if (id.includes('/modules/stories') || id.includes('/modules/moodorder') ||
               id.includes('/modules/livequeue') || id.includes('/modules/streaks') ||
@@ -33,6 +41,10 @@ export default defineConfig({
               id.includes('/modules/milestones') || id.includes('/modules/ordertracker')) {
             return 'engagement';
           }
+          // Seasonal & contextual features — loaded together, change infrequently
+          if (id.includes('/modules/seasonal') || id.includes('/modules/weather')) {
+            return 'seasonal';
+          }
         },
       },
     },
@@ -45,5 +57,10 @@ export default defineConfig({
         passes: 2,
       },
     },
+    // Build reporting — log chunk sizes and warnings for large bundles
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 150, // Warn if any chunk exceeds 150 KB
+    // Compression hints — ensure assets are optimally sized for gzip/brotli
+    assetsInlineLimit: 4096, // Inline assets smaller than 4KB as base64
   },
 });

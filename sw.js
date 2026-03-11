@@ -2,8 +2,8 @@ const CACHE_NAME = 'amogha-v74';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=68',
-  './script.js?v=20260310',
+  './styles.css',
+  './script.js',
   './manifest.json',
   './amogha-logo.png',
   // Hero slideshow images
@@ -36,6 +36,13 @@ const ASSETS = [
   './pics/stall-close.jpeg',
   './pics/curries-menu.jpeg'
 ];
+
+// Placeholder SVG for offline image fallback
+var OFFLINE_IMAGE_PLACEHOLDER = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">'
+  + '<rect width="400" height="300" fill="#2c1810"/>'
+  + '<text x="200" y="140" text-anchor="middle" fill="#D4A017" font-size="18" font-family="sans-serif">Image unavailable offline</text>'
+  + '<text x="200" y="170" text-anchor="middle" fill="#8a6d3b" font-size="14" font-family="sans-serif">Amogha Cafe</text>'
+  + '</svg>';
 
 // Install — cache all assets, skip waiting immediately
 self.addEventListener('install', function(e) {
@@ -97,7 +104,53 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  // Images and other assets — cache first, network fallback
+  // Images — stale-while-revalidate with 3s network timeout + offline placeholder
+  var isImage = e.request.destination === 'image';
+  if (isImage) {
+    e.respondWith(
+      caches.match(e.request).then(function(cached) {
+        // Network fetch with 3s timeout to keep images fresh
+        var imgController = new AbortController();
+        var imgTimeout = setTimeout(function() { imgController.abort(); }, 3000);
+        var fetchPromise = fetch(e.request, { signal: imgController.signal }).then(function(response) {
+          clearTimeout(imgTimeout);
+          if (response.ok) {
+            var clone = response.clone();
+            caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
+          }
+          return response;
+        }).catch(function() {
+          clearTimeout(imgTimeout);
+          // Return cached version if available, otherwise a branded placeholder SVG
+          return cached || new Response(OFFLINE_IMAGE_PLACEHOLDER, {
+            headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' }
+          });
+        });
+        // Return cached immediately if available, revalidate in background
+        return cached || fetchPromise;
+      })
+    );
+    return;
+  }
+
+  // Hashed chunk files (assets/*-[hash].js) — cache first (immutable by content hash)
+  if (url.pathname.startsWith('/assets/') && url.pathname.endsWith('.js')) {
+    e.respondWith(
+      caches.match(e.request).then(function(cached) {
+        if (cached) return cached;
+        return fetch(e.request).then(function(response) {
+          if (response.ok) {
+            var clone = response.clone();
+            caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // Other assets — cache first, network fallback
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) return cached;

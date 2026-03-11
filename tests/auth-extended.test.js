@@ -24,6 +24,13 @@ function setupDOM(html) {
     document.querySelector = (sel) => document.body.querySelector(sel);
 }
 
+// SHA-256 hash of '1234_amogha_salt' — the hashed form of PIN '1234'
+// Used in mock DB data for sign-in tests (the code hashes user input and compares against stored hash)
+const HASHED_PIN_1234 = '1ee11abbef6227c0749cf78ec9b8a937eef04c3efecc90aa2ba5431d62f1947f';
+const HASHED_PIN_5678 = '93670f51f1be81a347f0884a48bac7ba84b94bd27e7f16067d25a3ea6510bd4f';
+const HASHED_PIN_4321 = '087b951269f9e34d2cee6910bf732ace91861700fb8c5cf1d03c6104ed8aaf49';
+const HASHED_PIN_1111 = '2e60cc94d12d364d638a3f8f89b96ec68b381a4b83099e1356142fc63def61f4';
+
 // Flush async chains (db.get → hashPin/crypto.subtle → db.set).
 // In CI, crypto.subtle.digest() may take longer than 50ms,
 // so we loop multiple short waits to reliably flush all microtasks.
@@ -561,7 +568,7 @@ describe('handleSignUp — success path with referral code (lines 119-127)', () 
     }, 10000);
 
     it('shows welcome bonus message when usedWelcomeBonus is false on signIn', async () => {
-        const user = { name: 'Bonus User', phone: '9000000013', pin: '1234', usedWelcomeBonus: false };
+        const user = { name: 'Bonus User', phone: '9000000013', pin: HASHED_PIN_1234, usedWelcomeBonus: false };
         setupDOM(FULL_SIGNUP_HTML);
         document.getElementById = (id) => document.body.querySelector('#' + id);
         window._notifListenerActive = false;
@@ -585,7 +592,7 @@ describe('handleSignUp — success path with referral code (lines 119-127)', () 
     });
 
     it('shows no bonus message when usedWelcomeBonus is true on signIn', async () => {
-        const user = { name: 'Old User', phone: '9000000014', pin: '1234', usedWelcomeBonus: true };
+        const user = { name: 'Old User', phone: '9000000014', pin: HASHED_PIN_1234, usedWelcomeBonus: true };
         setupDOM(FULL_SIGNUP_HTML);
         document.getElementById = (id) => document.body.querySelector('#' + id);
         window._notifListenerActive = false;
@@ -680,7 +687,7 @@ describe('handleSignIn — UI error catch path (line 195)', () => {
     });
 
     it('shows fallback toast when UI operations throw after successful sign-in', async () => {
-        const user = { name: 'UI Fail User', phone: '9000000016', pin: '1234' };
+        const user = { name: 'UI Fail User', phone: '9000000016', pin: HASHED_PIN_1234 };
         const realGetEl = (id) => document.body.querySelector('#' + id);
         let getResolved = false;
 
@@ -1382,7 +1389,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
     });
 
     it('calls setCurrentUser, updateSignInUI, updateCarouselGreeting on pin match', async () => {
-        const user = { name: 'Sign In User', phone: '9000000020', pin: '5678', usedWelcomeBonus: true };
+        const user = { name: 'Sign In User', phone: '9000000020', pin: HASHED_PIN_5678, usedWelcomeBonus: true };
         window.db = {
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
@@ -1412,7 +1419,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
     });
 
     it('matches user.password field when pin is not set', async () => {
-        const user = { name: 'Password User', phone: '9000000021', password: '4321', usedWelcomeBonus: true };
+        const user = { name: 'Password User', phone: '9000000021', password: HASHED_PIN_4321, usedWelcomeBonus: true };
         window.db = {
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
@@ -1432,7 +1439,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
     });
 
     it('shows incorrect PIN message when password does not match', async () => {
-        const user = { name: 'Wrong PIN', phone: '9000000022', pin: '1111' };
+        const user = { name: 'Wrong PIN', phone: '9000000022', pin: HASHED_PIN_1111 };
         window.db = {
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
@@ -1453,7 +1460,7 @@ describe('handleSignIn — full success path with password match (lines 177-187)
     });
 
     it('updates carousel greeting on successful sign in', async () => {
-        const user = { name: 'Greeting Test', phone: '9000000023', pin: '1234', usedWelcomeBonus: true };
+        const user = { name: 'Greeting Test', phone: '9000000023', pin: HASHED_PIN_1234, usedWelcomeBonus: true };
         window.db = {
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
@@ -1708,7 +1715,7 @@ describe('handleSignIn — welcome bonus ternary (line 187-188)', () => {
     });
 
     it('shows welcome bonus message when usedWelcomeBonus is false', async () => {
-        const userData = { name: 'Ravi', phone: '9876543210', pin: '1234', usedWelcomeBonus: false };
+        const userData = { name: 'Ravi', phone: '9876543210', pin: HASHED_PIN_1234, usedWelcomeBonus: false };
         const getMock = vi.fn(() => Promise.resolve({ exists: true, data: () => userData }));
         const docMock = vi.fn(() => ({ get: getMock, update: () => Promise.resolve() }));
         const collectionMock = vi.fn(() => ({ doc: docMock }));
@@ -1723,7 +1730,7 @@ describe('handleSignIn — welcome bonus ternary (line 187-188)', () => {
     });
 
     it('does not show welcome bonus message when usedWelcomeBonus is true', async () => {
-        const userData = { name: 'Ravi', phone: '9876543210', pin: '1234', usedWelcomeBonus: true };
+        const userData = { name: 'Ravi', phone: '9876543210', pin: HASHED_PIN_1234, usedWelcomeBonus: true };
         const getMock = vi.fn(() => Promise.resolve({ exists: true, data: () => userData }));
         const docMock = vi.fn(() => ({ get: getMock, update: () => Promise.resolve() }));
         const collectionMock = vi.fn(() => ({ doc: docMock }));
@@ -1937,7 +1944,7 @@ describe('handleSignIn — welcome bonus message branch (line 187-188)', () => {
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({
                         exists: true,
-                        data: () => ({ name: 'Test', phone: '9876543210', pin: '1234', usedWelcomeBonus: false })
+                        data: () => ({ name: 'Test', phone: '9876543210', pin: HASHED_PIN_1234, usedWelcomeBonus: false })
                     })),
                     update: vi.fn(() => Promise.resolve()),
                     onSnapshot: vi.fn(() => vi.fn()),
@@ -1958,7 +1965,7 @@ describe('handleSignIn — welcome bonus message branch (line 187-188)', () => {
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({
                         exists: true,
-                        data: () => ({ name: 'Test', phone: '9876543210', pin: '1234', usedWelcomeBonus: true })
+                        data: () => ({ name: 'Test', phone: '9876543210', pin: HASHED_PIN_1234, usedWelcomeBonus: true })
                     })),
                     update: vi.fn(() => Promise.resolve()),
                     onSnapshot: vi.fn(() => vi.fn()),
@@ -2173,7 +2180,7 @@ describe('handleSignIn — incorrect PIN (line 187)', () => {
                 doc: vi.fn(() => ({
                     get: vi.fn(() => Promise.resolve({
                         exists: true,
-                        data: () => ({ name: 'Test', phone: '1234567890', pin: '1234' }),
+                        data: () => ({ name: 'Test', phone: '1234567890', pin: HASHED_PIN_1234 }),
                     })),
                 })),
             })),

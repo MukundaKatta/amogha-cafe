@@ -13,6 +13,11 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// Strip HTML tags from input to prevent stored XSS (mirrors auth.js pattern)
+function stripHtmlTags(text) {
+    return (text || '').replace(/<[^>]*>/g, '').trim();
+}
+
 export let selectedPayment = 'razorpay';
 export var appliedCoupon = null;
 export var appliedGiftCard = null;
@@ -120,14 +125,16 @@ export function openCheckout() {
                 '<div class="upsell-items">';
             upsellItems.forEach(function(item) {
                 var safeName = escapeHtml(item.name);
-                var safeNameAttr = safeName.replace(/'/g, '&#39;').replace(/\\/g, '&#92;');
+                // Use data attributes instead of inline JS string concatenation to prevent XSS
+                var safeDataName = escapeHtml(item.name).replace(/"/g, '&quot;');
+                var safePrice = parseInt(item.price, 10) || 0;
                 upsellHtml += '<div class="upsell-card">' +
                     '<div class="upsell-info">' +
                         '<div class="upsell-name">' + safeName + '</div>' +
                         '<div class="upsell-reason">' + escapeHtml(item.reason || '') + '</div>' +
                     '</div>' +
-                    '<span class="upsell-price">\u20B9' + item.price + '</span>' +
-                    '<button class="upsell-add-btn" onclick="addUpsellItem(\'' + safeNameAttr + '\',' + item.price + ')">+ Add</button>' +
+                    '<span class="upsell-price">\u20B9' + safePrice + '</span>' +
+                    '<button class="upsell-add-btn" data-upsell-name="' + safeDataName + '" data-upsell-price="' + safePrice + '">+ Add</button>' +
                 '</div>';
             });
             upsellHtml += '</div></div>';
@@ -135,7 +142,17 @@ export function openCheckout() {
     }
 
     var checkoutItemsEl = document.getElementById('checkout-items');
-    if (checkoutItemsEl) checkoutItemsEl.innerHTML = itemsHtml + upsellHtml;
+    if (checkoutItemsEl) {
+        checkoutItemsEl.innerHTML = itemsHtml + upsellHtml;
+        // Bind upsell button clicks via event delegation (avoids inline JS with user data)
+        checkoutItemsEl.querySelectorAll('.upsell-add-btn[data-upsell-name]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var itemName = btn.getAttribute('data-upsell-name');
+                var itemPrice = parseInt(btn.getAttribute('data-upsell-price'), 10) || 0;
+                addUpsellItem(itemName, itemPrice);
+            });
+        });
+    }
     var coSubEl = document.getElementById('co-subtotal');
     if (coSubEl) coSubEl.textContent = '\u20B9' + subtotal;
     var coDelEl = document.getElementById('co-delivery');
@@ -172,8 +189,42 @@ export function openCheckout() {
     var checkoutModal = document.getElementById('checkout-modal');
     if (checkoutModal) checkoutModal.style.display = 'block';
 
-    // Auto-apply welcome bonus
+    // Auto-fill customer details from signed-in user
     var currentUser = getCurrentUser();
+    if (currentUser) {
+        if (coName && !coName.value) coName.value = currentUser.name || '';
+        if (coPhone && !coPhone.value) coPhone.value = currentUser.phone || '';
+        // Auto-fill saved address if available
+        if (coAddress && !coAddress.value && currentUser.address) coAddress.value = currentUser.address;
+    }
+
+    // Inject order type selector (Delivery vs Pickup) if not already present
+    var step2 = document.getElementById('checkout-step-2');
+    if (step2 && !document.getElementById('order-type-selector')) {
+        var orderTypeHtml = '<div class="order-type-selector" id="order-type-selector" role="radiogroup" aria-label="Order type">' +
+            '<button type="button" class="order-type-btn active" data-type="delivery" role="radio" aria-checked="true" onclick="selectOrderType(this,\'delivery\')">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 18H3a2 2 0 01-2-2V8a2 2 0 012-2h3.93a2 2 0 011.66.9l.82 1.2a2 2 0 001.66.9H21a2 2 0 012 2v2"/><circle cx="7" cy="18" r="2"/><path d="M15 18h2"/><circle cx="20" cy="18" r="2"/></svg>' +
+            ' Delivery</button>' +
+            '<button type="button" class="order-type-btn" data-type="pickup" role="radio" aria-checked="false" onclick="selectOrderType(this,\'pickup\')">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>' +
+            ' Pickup</button>' +
+            '</div>';
+        step2.insertAdjacentHTML('afterbegin', orderTypeHtml);
+    }
+
+    // Inject delivery time estimate if not already present
+    var coNotesEl = document.getElementById('co-notes');
+    if (coNotesEl && !document.getElementById('delivery-time-estimate')) {
+        var estimateEl = document.createElement('div');
+        estimateEl.className = 'delivery-time-estimate';
+        estimateEl.id = 'delivery-time-estimate';
+        estimateEl.setAttribute('aria-live', 'polite');
+        estimateEl.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>' +
+            '<span>Estimated delivery: 30 - 45 mins</span>';
+        coNotesEl.parentNode.insertBefore(estimateEl, coNotesEl.nextSibling);
+    }
+
+    // Auto-apply welcome bonus
     var couponInput = document.getElementById('coupon-code');
     var couponMsg = document.getElementById('coupon-msg');
     if (currentUser && !currentUser.usedWelcomeBonus) {
@@ -396,10 +447,10 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         return;
     }
     if (window._showPaymentProcessing) window._showPaymentProcessing();
-    var name = document.getElementById('co-name').value.trim();
+    var name = stripHtmlTags(document.getElementById('co-name').value.trim());
     var phone = document.getElementById('co-phone').value.trim();
-    var address = document.getElementById('co-address').value.trim();
-    var notes = document.getElementById('co-notes').value.trim();
+    var address = stripHtmlTags(document.getElementById('co-address').value.trim());
+    var notes = stripHtmlTags(document.getElementById('co-notes').value.trim());
     var totals = getCheckoutTotals();
 
     // Scheduled order
@@ -912,6 +963,36 @@ export function addUpsellItem(name, price) {
     openCheckout();
 }
 
+// Order type selection (Delivery vs Pickup)
+export function selectOrderType(btn, type) {
+    var selector = document.getElementById('order-type-selector');
+    if (!selector) return;
+    selector.querySelectorAll('.order-type-btn').forEach(function(b) {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-checked', 'true');
+
+    // Toggle address field and delivery estimate visibility based on order type
+    var addressField = document.getElementById('co-address');
+    var addressLabel = addressField ? addressField.closest('.form-group') || addressField.parentElement : null;
+    var estimateEl = document.getElementById('delivery-time-estimate');
+    if (type === 'pickup') {
+        if (addressLabel) addressLabel.style.display = 'none';
+        if (addressField) addressField.removeAttribute('aria-required');
+        if (estimateEl) estimateEl.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>' +
+            '<span>Ready for pickup in: 20 - 30 mins</span>';
+    } else {
+        if (addressLabel) addressLabel.style.display = '';
+        if (addressField) addressField.setAttribute('aria-required', 'true');
+        if (estimateEl) estimateEl.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>' +
+            '<span>Estimated delivery: 30 - 45 mins</span>';
+    }
+
+    window._selectedOrderType = type;
+}
+
 Object.assign(window, {
     checkout,
     openCheckout,
@@ -933,5 +1014,6 @@ Object.assign(window, {
     selectGcAmount,
     redeemLoyaltyAtCheckout,
     shareOrder,
-    addUpsellItem
+    addUpsellItem,
+    selectOrderType
 });

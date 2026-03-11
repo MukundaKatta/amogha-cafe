@@ -37,6 +37,67 @@ export function unlockScroll() {
     window.scrollTo(0, _scrollLockPos);
 }
 
+// ===== HTML SANITIZER (prevent XSS in dynamic content) =====
+export function sanitizeHtml(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ===== DEBOUNCE (prevent excessive calls) =====
+export function debounce(fn, delay) {
+    var timer = null;
+    return function() {
+        var context = this, args = arguments;
+        clearTimeout(timer);
+        timer = setTimeout(function() { fn.apply(context, args); }, delay);
+    };
+}
+
+// ===== THROTTLE (rate-limit calls) =====
+export function throttle(fn, limit) {
+    var lastCall = 0;
+    return function() {
+        var now = Date.now();
+        if (now - lastCall >= limit) {
+            lastCall = now;
+            fn.apply(this, arguments);
+        }
+    };
+}
+
+// ===== SIMPLE EVENT BUS (decoupled module communication) =====
+var _eventHandlers = {};
+export function emitEvent(name, data) {
+    var handlers = _eventHandlers[name];
+    if (handlers) handlers.forEach(function(fn) { try { fn(data); } catch(e) { console.error('[EventBus]', name, e); } });
+}
+export function onEvent(name, fn) {
+    if (!_eventHandlers[name]) _eventHandlers[name] = [];
+    _eventHandlers[name].push(fn);
+    return function() {
+        _eventHandlers[name] = _eventHandlers[name].filter(function(h) { return h !== fn; });
+    };
+}
+
+// ===== FORMAT CURRENCY (consistent ₹ formatting) =====
+export function formatCurrency(amount) {
+    return '\u20B9' + (typeof amount === 'number' ? amount.toLocaleString('en-IN') : amount);
+}
+
+// ===== SESSION EXPIRATION CHECK =====
+var SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+export function isSessionExpired() {
+    try {
+        var ts = localStorage.getItem('amoghaSessionTs');
+        if (!ts) return false;
+        return (Date.now() - parseInt(ts, 10)) > SESSION_MAX_AGE_MS;
+    } catch(e) { return false; }
+}
+export function refreshSessionTimestamp() {
+    try { localStorage.setItem('amoghaSessionTs', String(Date.now())); } catch(e) {}
+}
+
 // safeCopy and fallbackCopy are used inside innerHTML template strings like onclick="safeCopy(...)"
 // unlockScroll is used in onclick attributes
-Object.assign(window, { safeGetItem, safeCopy, fallbackCopy, unlockScroll });
+Object.assign(window, { safeGetItem, safeCopy, fallbackCopy, unlockScroll, sanitizeHtml, formatCurrency });

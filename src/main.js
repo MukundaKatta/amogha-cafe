@@ -76,8 +76,41 @@ function safeImport(path, initFn) {
     });
 }
 
-// Lower-priority features deferred further + dynamically imported non-critical modules
-setTimeout(function() {
+// ===== SMART MODULE LOADING =====
+// Use IntersectionObserver to load modules when relevant sections approach viewport,
+// with setTimeout fallbacks to guarantee loading even without scrolling.
+
+// Helper: observe a section and load modules when it nears viewport (or after fallback timeout)
+function loadOnVisible(sectionIds, loadFn, fallbackMs) {
+    var loaded = false;
+    function doLoad() {
+        if (loaded) return;
+        loaded = true;
+        loadFn();
+    }
+    // Fallback timeout in case user never scrolls to section
+    var fallbackTimer = setTimeout(doLoad, fallbackMs);
+
+    if (typeof IntersectionObserver !== 'undefined') {
+        for (var i = 0; i < sectionIds.length; i++) {
+            var el = document.getElementById(sectionIds[i]);
+            if (el) {
+                var obs = new IntersectionObserver(function(entries) {
+                    if (entries[0].isIntersecting) {
+                        clearTimeout(fallbackTimer);
+                        doLoad();
+                        obs.disconnect();
+                    }
+                }, { rootMargin: '400px' });
+                obs.observe(el);
+                break; // observe first matching section
+            }
+        }
+    }
+}
+
+// --- Tier 1: Secondary features (loaded when menu section nears viewport or after 1.5s) ---
+loadOnVisible(['menu', 'dynamic-menu-container'], function() {
     loadDailySpecial();
     initComboBuilder();
     initLiveOrderTicker();
@@ -94,8 +127,19 @@ setTimeout(function() {
 
     // Premium interactions — scroll reveals, ripple effects, accessibility
     safeImport('./modules/premium.js', 'initPremium');
+}, 1500);
 
-    // ===== WORLD-CLASS FEATURES =====
+// Show reorder toast once auth is likely ready — use idle callback instead of fixed delay
+var deferReorder = window.requestIdleCallback || function(cb) { setTimeout(cb, 2000); };
+deferReorder(function() {
+    var user = null;
+    try { user = JSON.parse(localStorage.getItem('amoghaUser')); } catch(e) {}
+    if (user) showReorderToast();
+});
+
+// --- Tier 2: Engagement features (loaded when gallery/reviews section nears viewport or after 2.5s) ---
+loadOnVisible(['reviews', 'gallery', 'menu'], function() {
+    // Engagement world-class features
     safeImport('./modules/challenges.js', 'initChallenges');
     safeImport('./modules/spinwheel.js', 'initSpinWheel');
     safeImport('./modules/secretmenu.js', 'initSecretMenu');
@@ -104,23 +148,14 @@ setTimeout(function() {
     safeImport('./modules/polls.js', 'initPolls');
     safeImport('./modules/milestones.js');
     safeImport('./modules/ordertracker.js', 'initOrderTracker');
-}, 1500);
 
-// Show reorder toast after short delay (needs DOM + auth to be ready)
-setTimeout(function() {
-    var user = null;
-    try { user = JSON.parse(localStorage.getItem('amoghaUser')); } catch(e) {}
-    if (user) showReorderToast();
-}, 2500);
-
-// Seasonal theme + weather (delayed to not block main rendering)
-setTimeout(function() {
+    // Seasonal theme + weather
     safeImport('./modules/seasonal.js', 'initSeasonal');
     safeImport('./modules/weather.js', 'initWeather');
-}, 3000);
+}, 2500);
 
-// ===== WORLD-CLASS FEATURES (Phase 12) =====
-setTimeout(function() {
+// --- Tier 3: World-class features Phase 12 (loaded on scroll engagement or after 3.5s) ---
+loadOnVisible(['gallery', 'footer', 'contact'], function() {
     safeImport('./modules/stories.js', 'initStories');
     safeImport('./modules/moodorder.js', 'initMoodOrder');
     safeImport('./modules/livequeue.js', 'initLiveQueue');
@@ -133,27 +168,14 @@ setTimeout(function() {
     safeImport('./modules/geofence.js', 'initGeofence');
 }, 3500);
 
-// ===== WORLD-CLASS FEATURES (Phase 13) =====
-// Only load if user has scrolled (indicates engagement) or after 6s
-var _wc2Loaded = false;
-function loadWorldClass2() {
-    if (_wc2Loaded) return;
-    _wc2Loaded = true;
+// --- Tier 4: World-class Phase 13 (loaded deep in page or after 5s) ---
+loadOnVisible(['footer', 'contact', 'gallery'], function() {
     safeImport('./modules/worldclass2.js', 'initWorldClass2');
-}
-setTimeout(loadWorldClass2, 6000);
-if (typeof IntersectionObserver !== 'undefined') {
-    var menuSection = document.getElementById('menu') || document.getElementById('dynamic-menu-container');
-    if (menuSection) {
-        var wc2Observer = new IntersectionObserver(function(entries) {
-            if (entries[0].isIntersecting) { loadWorldClass2(); wc2Observer.disconnect(); }
-        }, { rootMargin: '200px' });
-        wc2Observer.observe(menuSection);
-    }
-}
+}, 5000);
 
-// AI For You recommendations (delayed to not block load)
-setTimeout(initAiForYou, 4500);
+// AI For You recommendations — use requestIdleCallback since it's truly non-critical
+var deferAi = window.requestIdleCallback || function(cb) { setTimeout(cb, 3000); };
+deferAi(initAiForYou);
 
 // Init floating cart bar state
 updateFloatingCartBar();

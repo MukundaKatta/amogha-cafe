@@ -8,6 +8,9 @@ import {
     handleResetPassword,
 } from '../src/modules/auth.js';
 
+// SHA-256 hash of '1234_amogha_salt' — the hashed form of PIN '1234'
+const HASHED_PIN_1234 = '1ee11abbef6227c0749cf78ec9b8a937eef04c3efecc90aa2ba5431d62f1947f';
+
 // ── DOM factory ─────────────────────────────────────────────────────────────
 // We restore a real getElementById backed by document.body for this suite.
 // The global setup.js mocks it to return null — we override locally.
@@ -191,7 +194,7 @@ describe('handleSignIn — Firestore paths', () => {
     });
 
     it('calls setCurrentUser on successful sign-in', async () => {
-        const user = { name: 'Ravi', phone: '9876543210', pin: '1234' };
+        const user = { name: 'Ravi', phone: '9876543210', pin: HASHED_PIN_1234 };
         window.db = {
             collection: () => ({
                 doc: () => ({
