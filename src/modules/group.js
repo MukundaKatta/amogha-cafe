@@ -1,7 +1,7 @@
 import { getDb } from '../core/firebase.js';
 import { getCurrentUser } from './auth.js';
 import { cart } from './cart.js';
-import { lockScroll, unlockScroll } from '../core/utils.js';
+import { lockScroll, unlockScroll, sanitizeHtml } from '../core/utils.js';
 
 // ===== GROUP ORDERING =====
 // Allows customers to create a shared cart via a link.
@@ -163,7 +163,7 @@ function updateGroupStatusUI(data) {
     data.participants.forEach(function(p) {
         var itemCount = (p.items || []).length;
         html += '<div style="display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.05)">' +
-            '<span>' + (p.name || p.phone) + (p.phone === data.hostPhone ? ' (Host)' : '') + '</span>' +
+            '<span>' + sanitizeHtml(p.name || p.phone) + (p.phone === data.hostPhone ? ' (Host)' : '') + '</span>' +
             '<span style="color:#D4A017">' + itemCount + ' item' + (itemCount !== 1 ? 's' : '') + '</span>' +
         '</div>';
     });

@@ -1,6 +1,6 @@
 import { getCurrentUser, showAuthToast } from './auth.js';
 import { getDb } from '../core/firebase.js';
-import { safeGetItem, safeSetItem } from '../core/utils.js';
+import { safeGetItem, safeSetItem, sanitizeHtml } from '../core/utils.js';
 
 // ===== REAL-TIME ORDER TRACKING (Domino's-style) =====
 
@@ -41,8 +41,16 @@ export function showOrderTracker(orderId) {
         }).join('<div class="tracker-connector"></div>') +
         '</div>' +
         '<div class="tracker-actions">' +
-            '<button class="tracker-btn" onclick="shareOrderStatus(\'' + orderId + '\')">Share Status</button>' +
+            '<button class="tracker-btn" data-share-order="' + sanitizeHtml(orderId) + '">Share Status</button>' +
         '</div>';
+
+    // Bind share button via event delegation
+    var shareBtn = content.querySelector('.tracker-btn[data-share-order]');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+            shareOrderStatus(shareBtn.getAttribute('data-share-order'));
+        });
+    }
 
     // Start listening for real-time updates
     listenToOrder(orderId);
@@ -162,8 +170,14 @@ function showTrackerNotification(orderId) {
     notif.className = 'tracker-notification';
     notif.innerHTML = '<span class="tracker-notif-pulse"></span>' +
         '<span>Your order is being prepared! </span>' +
-        '<button onclick="showOrderTracker(\'' + orderId + '\')" class="tracker-notif-btn">Track Order</button>' +
-        '<button onclick="this.parentElement.remove()" class="tracker-notif-close">&times;</button>';
+        '<button class="tracker-notif-btn" data-track-order="' + sanitizeHtml(orderId) + '">Track Order</button>' +
+        '<button class="tracker-notif-close">&times;</button>';
+    notif.querySelector('.tracker-notif-btn').addEventListener('click', function() {
+        showOrderTracker(this.getAttribute('data-track-order'));
+    });
+    notif.querySelector('.tracker-notif-close').addEventListener('click', function() {
+        notif.remove();
+    });
     document.body.appendChild(notif);
     setTimeout(function() { notif.classList.add('show'); }, 100);
 }

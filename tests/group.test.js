@@ -15,6 +15,7 @@ vi.mock('../src/core/utils.js', () => ({
     unlockScroll: vi.fn(),
     safeGetItem: vi.fn((key) => globalThis.localStorage.getItem(key)),
     safeSetItem: vi.fn((key, val) => globalThis.localStorage.setItem(key, val)),
+    sanitizeHtml: vi.fn((str) => typeof str !== 'string' ? '' : str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')),
 }));
 
 // ---------------------------------------------------------------------------
