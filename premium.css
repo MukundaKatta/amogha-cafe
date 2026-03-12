@@ -1930,6 +1930,7 @@ img:not([loading="lazy"]) {
 
 /* Hero tagline shimmer sweep */
 .hero-tagline {
+    color: #f5d680; /* fallback if background-clip: text fails */
     background: linear-gradient(
         90deg,
         rgba(255, 255, 255, .85) 0%,
