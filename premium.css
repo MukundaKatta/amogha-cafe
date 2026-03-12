@@ -1922,30 +1922,75 @@ img:not([loading="lazy"]) {
    V5 — WORLD-CLASS PREMIUM HERO
    ══════════════════════════════════════════════════════ */
 
-/* Hero title — premium gold text glow */
+/* Hero title — grand elite premium golden look */
 .hero-title {
-    text-shadow: 0 0 40px rgba(212, 160, 23, .15), 0 2px 8px rgba(0, 0, 0, .4);
-    letter-spacing: .02em;
+    text-shadow:
+        0 0 60px rgba(212, 160, 23, .3),
+        0 0 120px rgba(212, 160, 23, .15),
+        0 4px 20px rgba(0, 0, 0, .6);
+    letter-spacing: .08em;
 }
 
-/* Hero tagline shimmer sweep — on inner span so background-clip: text works with dynamic content */
-.hero-tagline .hero-text-inner {
+.hero-title-shimmer {
+    font-weight: 700 !important;
     background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, .85) 0%,
-        rgba(212, 160, 23, .9) 40%,
-        rgba(255, 255, 255, .85) 80%
-    );
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: heroTaglineShimmer 4s ease-in-out infinite;
+        110deg,
+        #b8860b 0%,
+        #d4a017 15%,
+        #f5e6a3 30%,
+        #fff8dc 42%,
+        #ffffff 50%,
+        #fff8dc 58%,
+        #f5e6a3 70%,
+        #d4a017 85%,
+        #b8860b 100%
+    ) !important;
+    background-size: 250% auto !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    animation: eliteGoldShimmer 5s ease-in-out infinite !important;
+    filter: drop-shadow(0 2px 8px rgba(212, 160, 23, .4)) drop-shadow(0 0 30px rgba(212, 160, 23, .2));
 }
 
-@keyframes heroTaglineShimmer {
-    0%, 100% { background-position: 200% center; }
-    50% { background-position: -200% center; }
+@keyframes eliteGoldShimmer {
+    0% { background-position: 250% center; }
+    100% { background-position: -250% center; }
+}
+
+/* Disable the duplicate ::after shimmer overlay from styles.css */
+.hero-title-shimmer::after {
+    display: none !important;
+}
+
+/* Gold decorative lines beside title — more prominent */
+.hero-title .gold-line {
+    height: 2px !important;
+    background: linear-gradient(90deg, transparent, #d4a017 30%, #fff8dc 50%, #d4a017 70%, transparent) !important;
+    box-shadow: 0 0 12px rgba(212, 160, 23, .4), 0 0 30px rgba(212, 160, 23, .15);
+}
+
+/* Hero tagline — elegant gold glow, no background-clip (prevents invisible text) */
+.hero-tagline .hero-text-inner {
+    color: #f5d680;
+    text-shadow:
+        0 0 20px rgba(212, 160, 23, .4),
+        0 0 40px rgba(212, 160, 23, .15),
+        0 1px 3px rgba(0, 0, 0, .5);
+    animation: heroTaglineGlow 4s ease-in-out infinite;
+}
+
+/* Hero subtitle — matching elegant style */
+.hero-subtitle .hero-text-inner {
+    color: #d4a017;
+    text-shadow:
+        0 0 15px rgba(212, 160, 23, .3),
+        0 1px 3px rgba(0, 0, 0, .5);
+}
+
+@keyframes heroTaglineGlow {
+    0%, 100% { text-shadow: 0 0 20px rgba(212, 160, 23, .4), 0 0 40px rgba(212, 160, 23, .15), 0 1px 3px rgba(0, 0, 0, .5); }
+    50% { text-shadow: 0 0 30px rgba(212, 160, 23, .6), 0 0 60px rgba(212, 160, 23, .3), 0 0 80px rgba(212, 160, 23, .1), 0 1px 3px rgba(0, 0, 0, .5); }
 }
 
 /* Hero scroll indicator — premium pulse */
@@ -3142,8 +3187,6 @@ footer::before {
 @media (prefers-reduced-motion: reduce) {
     .hero-tagline .hero-text-inner {
         animation: none;
-        -webkit-text-fill-color: unset;
-        background: none;
     }
 
     .hero-scroll-indicator {
@@ -3993,8 +4036,6 @@ html {
 @media (prefers-reduced-motion: reduce) {
     .hero-tagline .hero-text-inner {
         animation: none;
-        -webkit-text-fill-color: unset;
-        background: none;
     }
 
     .hero-scroll-indicator,
