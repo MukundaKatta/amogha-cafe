@@ -609,8 +609,10 @@ function posLogin() {
     btn.textContent = 'Signing in…';
     document.getElementById('pos-login-err').textContent = '';
 
-    // Authenticate via Cloud Function (credentials never exposed to client)
-    fetch('/api/auth/kiosk-login', {
+    // Authenticate via Cloud Function (absolute URL for native app compatibility)
+    var apiBase = (window.location.hostname === 'localhost' || window.location.protocol === 'capacitor:' || window.location.protocol === 'ionic:')
+        ? 'https://amogha-cafe.web.app' : '';
+    fetch(apiBase + '/api/auth/kiosk-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username, password: password })
