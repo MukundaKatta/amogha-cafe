@@ -113,11 +113,14 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
-    // HERO SLIDES — read-only from client
+    // HERO SLIDES — admin writable for slideshow management
     // -------------------------------------------------------------------------
     match /heroSlides/{slideId} {
       allow read: if true;
-      allow write: if false;
+      allow create: if request.resource.data.keys().hasAll(['url', 'type', 'sortOrder', 'active'])
+                    && request.resource.data.url is string
+                    && request.resource.data.type is string;
+      allow update, delete: if true;
     }
 
     // -------------------------------------------------------------------------
