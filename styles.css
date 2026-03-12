@@ -9,6 +9,11 @@
     opacity: 1 !important;
 }
 
+/* ─── Hero slide images — center properly so nothing gets cut off ─── */
+.hero-slide {
+    background-position: center center !important;
+}
+
 
 /* ─── USER DROPDOWN ─── */
 .signin-nav-btn.signed-in{position:relative;cursor:pointer}
