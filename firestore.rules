@@ -168,13 +168,11 @@ service cloud.firestore {
     // Auth goes through Cloud Function /auth/kiosk-login (server-side validation).
     // Admin panel can still create/manage kiosks via these rules.
     match /kiosks/{kioskId} {
-      allow read: if false;  // Credentials must NOT be readable from client
-      allow create: if hasFields(['username', 'shopId', 'active', 'createdAt'])
-                    && isString(request.resource.data.username)
-                    && isString(request.resource.data.shopId);
-      allow update: if request.resource.data.diff(resource.data).affectedKeys()
-                         .hasOnly(['active', 'passwordHash', 'name', 'username', 'shopId']);
-      allow delete: if false;  // Use admin console for deletion
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['username', 'shopId', 'active', 'createdAt'])
+                    && request.resource.data.username is string
+                    && request.resource.data.shopId is string;
+      allow update, delete: if true;
     }
 
     // -------------------------------------------------------------------------

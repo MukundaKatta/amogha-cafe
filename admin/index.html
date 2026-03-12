@@ -3645,7 +3645,14 @@
             }).join('');
         }
 
-        function addKiosk() {
+        // SHA-256 hash for kiosk passwords (matches Cloud Function's hashValue)
+        async function hashKioskPassword(password) {
+            var data = new TextEncoder().encode(password + '_kiosk');
+            var hashBuf = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+        }
+
+        async function addKiosk() {
             var name = (document.getElementById('new-kiosk-name').value || '').trim();
             var username = (document.getElementById('new-kiosk-username').value || '').trim().toLowerCase();
             var password = document.getElementById('new-kiosk-password').value;
@@ -3653,7 +3660,8 @@
             var msg = document.getElementById('kiosk-add-msg');
             if (!name || !username || !password || !shopId) { msg.style.color='#e74c3c'; msg.textContent='All fields are required.'; return; }
             if (allKiosks.some(function(k){ return k.username === username; })) { msg.style.color='#e74c3c'; msg.textContent='Username already taken.'; return; }
-            db.collection('kiosks').add({ name:name, username:username, password:password, shopId:shopId, active:true, createdAt:new Date().toISOString() })
+            var passwordHash = await hashKioskPassword(password);
+            db.collection('kiosks').add({ name:name, username:username, passwordHash:passwordHash, shopId:shopId, active:true, createdAt:new Date().toISOString() })
                 .then(function() {
                     msg.style.color='#27ae60'; msg.textContent='Kiosk created!';
                     document.getElementById('new-kiosk-name').value='';
@@ -3667,10 +3675,11 @@
             db.collection('kiosks').doc(id).update({ active: active }).then(loadKiosks).catch(function(){});
         }
 
-        function promptKioskPassword(id) {
+        async function promptKioskPassword(id) {
             var np = prompt('Enter new password for this kiosk:');
             if (!np || !np.trim()) return;
-            db.collection('kiosks').doc(id).update({ password: np.trim() })
+            var passwordHash = await hashKioskPassword(np.trim());
+            db.collection('kiosks').doc(id).update({ passwordHash: passwordHash })
                 .then(function(){ alert('Password updated.'); })
                 .catch(function(e){ alert('Error: '+e.message); });
         }
