@@ -394,7 +394,7 @@
             </h1>
             <p class="hero-subtitle"><span class="hero-text-inner">Tradition, Perfection & Soul in Every Dish</span></p>
             <div class="hero-buttons">
-                <button class="cta-button primary" data-i18n="orderNow" onclick="window.scrollTo({top: document.getElementById('menu').offsetTop, behavior: 'smooth'})">Order Online</button>
+                <a href="/menu/" class="cta-button primary" data-i18n="orderNow" style="text-decoration:none">Order Online</a>
                 <button class="cta-button secondary" data-i18n="reserveTable" onclick="openReservationModal()">Reserve Table</button>
             </div>
         </div>
@@ -660,36 +660,7 @@
         </div>
     </section>
 
-    <section id="menu" class="menu section-wipe" aria-label="Our Menu">
-        <div class="container">
-            <h2>Our Menu</h2>
-            <p class="section-subtitle">Explore our carefully curated collection of authentic flavors</p>
-
-            <!-- Category Carousel (populated by initMenuSync) -->
-            <div class="category-carousel-section">
-                <h3 class="carousel-heading"><span id="carousel-greeting"></span>What are you craving?</h3>
-                <div class="category-carousel-wrapper">
-                    <button class="carousel-arrow carousel-arrow-left" id="cat-arrow-left" aria-label="Scroll left">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                    </button>
-                    <div class="category-carousel" id="category-carousel"></div>
-                    <button class="carousel-arrow carousel-arrow-right" id="cat-arrow-right" aria-label="Scroll right">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Featured items preview (populated dynamically) -->
-            <div id="dynamic-menu-container"></div>
-
-            <div style="text-align:center;margin-top:1.5rem">
-                <a href="/menu/" class="cta-button primary" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 2rem;font-size:1rem;border-radius:12px;text-decoration:none">
-                    Browse Full Menu &amp; Order
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
-            </div>
-        </div>
-    </section>
+    <!-- Menu is on /menu/ page -->
 
     <section id="gallery" class="gallery" aria-label="Photo Gallery">
         <div class="container">

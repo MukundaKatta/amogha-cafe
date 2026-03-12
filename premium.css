@@ -1928,9 +1928,8 @@ img:not([loading="lazy"]) {
     letter-spacing: .02em;
 }
 
-/* Hero tagline shimmer sweep */
-.hero-tagline {
-    color: #f5d680; /* fallback if background-clip: text fails */
+/* Hero tagline shimmer sweep — on inner span so background-clip: text works with dynamic content */
+.hero-tagline .hero-text-inner {
     background: linear-gradient(
         90deg,
         rgba(255, 255, 255, .85) 0%,
@@ -3141,7 +3140,7 @@ footer::before {
    REDUCED MOTION
    ══════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
-    .hero-tagline {
+    .hero-tagline .hero-text-inner {
         animation: none;
         -webkit-text-fill-color: unset;
         background: none;
@@ -3992,7 +3991,7 @@ html {
    REDUCED MOTION
    ══════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
-    .hero-tagline {
+    .hero-tagline .hero-text-inner {
         animation: none;
         -webkit-text-fill-color: unset;
         background: none;

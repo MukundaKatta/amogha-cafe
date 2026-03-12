@@ -231,6 +231,10 @@ export function initHero() {
             container.appendChild(div);
         });
 
+        // Play video on the first active slide (autoplay attribute alone isn't reliable)
+        var firstVid = container.querySelector('.hero-slide.active video');
+        if (firstVid) { firstVid.play().catch(function() {}); }
+
         // Restart slideshow with new slides
         slides = container.querySelectorAll('.hero-slide');
         current = 0;
