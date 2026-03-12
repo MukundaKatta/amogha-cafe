@@ -4612,7 +4612,7 @@
         var allHeroSlides = [];
         var SLIDE_VIDEO_TYPES = ['video/mp4', 'video/webm'];
         var SLIDE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-        var MAX_VIDEO_SIZE = 10 * 1024 * 1024;
+        var MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
         function loadHeroSlides() {
             db.collection('heroSlides').orderBy('sortOrder').onSnapshot(function(snapshot) {
@@ -4702,20 +4702,30 @@
             };
 
             xhr.onerror = function() {
-                statusEl.textContent = 'Upload failed. Try again.';
-                setTimeout(function() { statusEl.textContent = ''; }, 3000);
+                statusEl.textContent = 'Network error — check your connection and try again.';
+                setTimeout(function() { statusEl.textContent = ''; }, 5000);
             };
+
+            xhr.ontimeout = function() {
+                statusEl.textContent = 'Upload timed out — file may be too large for your connection.';
+                setTimeout(function() { statusEl.textContent = ''; }, 5000);
+            };
+
+            xhr.timeout = 120000; // 2 minute timeout
 
             xhr.onload = function() {
                 if (xhr.status !== 200) {
-                    console.error('Cloudinary error:', xhr.responseText);
-                    statusEl.textContent = 'Upload failed. Try again.';
-                    setTimeout(function() { statusEl.textContent = ''; }, 3000);
+                    var errMsg = 'Upload failed';
+                    try { errMsg = JSON.parse(xhr.responseText).error.message; } catch(e) {}
+                    console.error('Cloudinary error:', xhr.status, xhr.responseText);
+                    statusEl.textContent = 'Upload failed: ' + errMsg;
+                    setTimeout(function() { statusEl.textContent = ''; }, 5000);
                     return;
                 }
                 var res = JSON.parse(xhr.responseText);
                 var maxSort = allHeroSlides.reduce(function(max, s) { return Math.max(max, s.sortOrder || 0); }, 0);
 
+                statusEl.textContent = 'Saving to slideshow...';
                 db.collection('heroSlides').add({
                     url: res.secure_url,
                     type: isVideo ? 'video' : 'image',
@@ -4727,7 +4737,8 @@
                     setTimeout(function() { statusEl.textContent = ''; }, 2000);
                 }).catch(function(err) {
                     console.error('Firestore add error:', err);
-                    statusEl.textContent = 'Uploaded but save failed.';
+                    statusEl.textContent = 'Uploaded but save failed: ' + err.message;
+                    setTimeout(function() { statusEl.textContent = ''; }, 5000);
                 });
             };
 
