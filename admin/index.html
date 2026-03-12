@@ -3295,7 +3295,7 @@
         var CLOUDINARY_CLOUD = 'dix3mcvjr';
         var CLOUDINARY_PRESET = 'phlsyh0s';
         var CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload';
-        var MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+        var MAX_IMAGE_SIZE = 7 * 1024 * 1024;
         var ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
         function sanitizeFileName(itemId) {
@@ -3314,7 +3314,7 @@
                 return;
             }
             if (file.size > MAX_IMAGE_SIZE) {
-                alert('Image must be under 2MB. Please compress or resize it.');
+                alert('Image must be under 7MB. Please compress or resize it.');
                 fileInput.value = '';
                 return;
             }
@@ -4600,7 +4600,7 @@
                         };
                         reader.readAsDataURL(file);
                     } else if (file) {
-                        alert(file.size > MAX_IMAGE_SIZE ? 'Image must be under 2MB.' : 'Please select JPG, PNG, or WebP.');
+                        alert(file.size > MAX_IMAGE_SIZE ? 'Image must be under 7MB.' : 'Please select JPG, PNG, or WebP.');
                         imgInput.value = '';
                         if (preview) preview.style.display = 'none';
                     }
@@ -4669,7 +4669,7 @@
                 return;
             }
             if (isImage && file.size > MAX_IMAGE_SIZE) {
-                alert('Image must be under 2MB.');
+                alert('Image must be under 7MB.');
                 this.value = '';
                 return;
             }
@@ -4896,7 +4896,7 @@
         document.getElementById('social-file-input').addEventListener('change', function() {
             var file = this.files[0];
             if (!file) return;
-            if (file.size > MAX_IMAGE_SIZE) { alert('Image must be under 2MB.'); this.value = ''; return; }
+            if (file.size > MAX_IMAGE_SIZE) { alert('Image must be under 7MB.'); this.value = ''; return; }
 
             var statusEl = document.getElementById('social-upload-status');
             statusEl.textContent = 'Uploading...';
