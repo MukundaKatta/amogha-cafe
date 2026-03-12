@@ -68,7 +68,7 @@
         <link rel="stylesheet" href="worldclass2.css?v=2">
     </noscript>
     <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
-    <script>if('scrollRestoration' in history) history.scrollRestoration='manual'; window.scrollTo(0,0);</script>
+    <script>if('scrollRestoration' in history) history.scrollRestoration='manual'; document.documentElement.style.scrollBehavior='auto'; window.scrollTo(0,0); setTimeout(function(){document.documentElement.style.scrollBehavior='';},100);</script>
 
     <!-- Restaurant Schema Markup for SEO -->
     <script type="application/ld+json">

@@ -30,24 +30,17 @@ export function initDynamicHeroText() {
         subtitleEl.classList.add('fade-out');
 
         setTimeout(() => {
+            // Set final text directly (no scramble — it was causing garbled display)
             taglineEl.textContent = taglines[index];
             subtitleEl.textContent = subtitles[index];
-
-            // Scramble only the upper tagline
-            if (window._scrambleReveal) {
-                window._scrambleReveal(taglines[index], taglineEl);
-            } else {
-                taglineEl.classList.remove('fade-out');
-            }
-
-            // Subtitle just fades back in normally
+            taglineEl.classList.remove('fade-out');
             subtitleEl.classList.remove('fade-out');
         }, 700);
     }
 
-    // 6s interval gives ~2.5s scramble + 3s visible before next fade-out
+    // 8s interval: 0.7s fade-out + 0.6s fade-in + ~6.7s visible
     setTimeout(() => {
-        setInterval(rotateText, 6000);
+        setInterval(rotateText, 8000);
     }, 5000);
 }
 
@@ -256,63 +249,6 @@ export function initHero() {
             }, 5000);
         }
     };
-
-    // ===== PREMIUM DECRYPT REVEAL — cinematic character-by-character unscramble =====
-    var taglineEl = document.querySelector('.hero-tagline .hero-text-inner');
-    if (taglineEl) {
-        var scrambleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-
-        window._scrambleReveal = function(text, element) {
-            element.classList.remove('fade-out');
-            element.style.opacity = '1';
-            element.style.transform = 'translateY(0)';
-
-            // Skip scramble on reduced-motion preference
-            if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                element.textContent = text;
-                return;
-            }
-
-            var chars = text.split('');
-            var resolved = new Array(chars.length).fill(false);
-            var frame = 0;
-            var maxFrames = 25;
-            var interval = 35;
-
-            function tick() {
-                var display = '';
-                for (var i = 0; i < chars.length; i++) {
-                    if (resolved[i] || chars[i] === ' ') {
-                        display += chars[i];
-                    } else {
-                        display += scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
-                    }
-                }
-                element.textContent = display;
-
-                // Resolve characters left-to-right with slight randomness
-                var resolveUpTo = Math.floor((frame / maxFrames) * chars.length * 1.2);
-                for (var j = 0; j < resolveUpTo && j < chars.length; j++) {
-                    if (!resolved[j] && (Math.random() > 0.3 || frame > maxFrames * 0.8)) {
-                        resolved[j] = true;
-                    }
-                }
-
-                frame++;
-                if (frame <= maxFrames) {
-                    setTimeout(tick, interval);
-                } else {
-                    element.textContent = text;
-                }
-            }
-            tick();
-        };
-
-        // Run decrypt reveal on first load
-        setTimeout(function() {
-            window._scrambleReveal(taglineEl.textContent, taglineEl);
-        }, 2800);
-    }
 
     // ===== PREMIUM: MOUSE-FOLLOW SPOTLIGHT ON HERO =====
     if (window.innerWidth > 768) {
