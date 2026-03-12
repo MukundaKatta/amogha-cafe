@@ -78,14 +78,15 @@ service cloud.firestore {
                     && request.resource.data.items.size() > 0
                     && request.resource.data.items.size() <= 50
                     && request.resource.data.customer.size() <= 100
-                    && request.resource.data.phone.size() == 10
+                    && (request.resource.data.phone.size() == 10
+                        || request.resource.data.orderType == 'pos')
                     && request.resource.data.status in ['pending', 'preparing', 'ready', 'delivered', 'cancelled', 'scheduled']
                     && (!request.resource.data.keys().hasAny(['notes']) || (request.resource.data.notes is string && request.resource.data.notes.size() <= 500));
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['status','kitchenStartedAt','preparingAt','etaMinutes','readyAt',
                                    'deliveredAt','scheduledFor','deliveryPerson','outForDeliveryAt',
-                                   'driverLocation','splitBill'])
-                    && request.resource.data.status in ['pending', 'preparing', 'ready', 'delivered', 'cancelled', 'scheduled'];
+                                   'driverLocation','splitBill','voidedAt','phone'])
+                    && request.resource.data.status in ['pending', 'preparing', 'ready', 'delivered', 'cancelled', 'scheduled', 'voided'];
       allow delete: if false;
     }
 
