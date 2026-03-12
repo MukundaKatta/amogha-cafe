@@ -26,6 +26,7 @@ const items = [
   'Gemini_Generated_Image_x9jtrox9jtrox9jt.png',
   'pics',
   'assets',
+  'menu',
 ];
 
 for (const item of items) {

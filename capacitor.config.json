@@ -1,0 +1,39 @@
+{
+  "appId": "com.amoghahotels.cafe",
+  "appName": "Amogha Cafe",
+  "webDir": "ios-dist",
+  "server": {
+    "allowNavigation": [
+      "www.gstatic.com",
+      "checkout.razorpay.com",
+      "api.razorpay.com",
+      "lux.razorpay.com",
+      "fonts.googleapis.com",
+      "fonts.gstatic.com",
+      "firebasestorage.googleapis.com",
+      "amogha-cafe.web.app"
+    ],
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "scheme": "Amogha Cafe"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 1500,
+      "backgroundColor": "#080604",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#080604"
+    }
+  }
+}

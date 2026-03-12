@@ -163,7 +163,7 @@
 </head>
 <body>
     <!-- Skip to Content (Accessibility) -->
-    <a href="#menu" class="skip-to-content">Skip to Menu</a>
+    <a href="/menu/" class="skip-to-content">Skip to Menu</a>
 
     <!-- ARIA Live Region for Screen Reader Announcements -->
     <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
@@ -349,7 +349,7 @@
             <ul class="nav-links" id="nav-links">
                 <li><a href="#home" data-i18n="home">Home</a></li>
                 <li><a href="#about" data-i18n="about">About</a></li>
-                <li><a href="#menu" data-i18n="menu">Menu</a></li>
+                <li><a href="/menu/" data-i18n="menu">Menu</a></li>
                 <li><a href="#specials" data-i18n="specials">Specials</a></li>
                 <li><a href="#gallery" data-i18n="gallery">Gallery</a></li>
                 <li><a href="#reviews" data-i18n="reviews">Reviews</a></li>
@@ -665,68 +665,29 @@
             <h2>Our Menu</h2>
             <p class="section-subtitle">Explore our carefully curated collection of authentic flavors</p>
 
-            <div class="allergen-filter-bar">
-                <button class="safe-for-me-toggle" id="safe-for-me-btn" onclick="toggleSafeForMe()">🛡️ Safe for Me</button>
-                <button onclick="createGroupCart()" class="allergen-pill allergen-pill--gold">👥 Group Order</button>
-                <button onclick="openSubscriptionModal()" class="allergen-pill allergen-pill--purple">📋 Meal Plans</button>
-                <button onclick="openMealPlannerModal()" class="allergen-pill allergen-pill--green">🤖 AI Meal Planner</button>
-            </div>
-
-            <!-- Swiggy-style Category Carousel -->
+            <!-- Category Carousel (populated by initMenuSync) -->
             <div class="category-carousel-section">
                 <h3 class="carousel-heading"><span id="carousel-greeting"></span>What are you craving?</h3>
                 <div class="category-carousel-wrapper">
                     <button class="carousel-arrow carousel-arrow-left" id="cat-arrow-left" aria-label="Scroll left">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                     </button>
-                    <div class="category-carousel" id="category-carousel">
-                        <!-- populated dynamically by initMenuSync() -->
-                    </div>
+                    <div class="category-carousel" id="category-carousel"></div>
                     <button class="carousel-arrow carousel-arrow-right" id="cat-arrow-right" aria-label="Scroll right">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </button>
                 </div>
             </div>
-            <hr class="carousel-divider">
 
-            <div class="allergen-filter-bar" id="allergenFilterBar">
-                <span class="filter-label">Filter:</span>
-                <button class="allergen-filter-btn" data-filter="veg" onclick="toggleAllergenFilter('veg')">🥬 Veg Only</button>
-                <button class="allergen-filter-btn" data-filter="nut-free" onclick="toggleAllergenFilter('nut-free')">🥜 Nut Free</button>
-                <button class="allergen-filter-btn" data-filter="dairy-free" onclick="toggleAllergenFilter('dairy-free')">🥛 Dairy Free</button>
-                <button class="allergen-filter-btn" data-filter="gluten-free" onclick="toggleAllergenFilter('gluten-free')">🌾 Gluten Free</button>
-                <button class="allergen-filter-btn" data-filter="jain" onclick="toggleAllergenFilter('jain')">🙏 Jain</button>
-                <button class="allergen-filter-btn clear-filters" onclick="clearAllergenFilters()" style="display:none" id="clearFiltersBtn">✕ Clear</button>
-            </div>
-
-            <!-- Delivery Banner -->
-            <div class="delivery-banner">
-                <span><svg class="inline-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Estimated Delivery: 30-45 mins</span>
-                <span>|</span>
-                <span><svg class="inline-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free delivery on orders above ₹500</span>
-            </div>
-
-            <!-- Combo Meal Banner -->
-            <div class="combo-banner" onclick="openComboModal()">
-                <span class="combo-banner-icon">&#127857;</span>
-                <div class="combo-banner-text">
-                    <strong>Build a Combo &amp; Save 15%</strong>
-                    <span>Biryani + Starter + Drink</span>
-                </div>
-                <span class="combo-banner-arrow">&rarr;</span>
-            </div>
-
-            <!-- Menu Filter/Search -->
-            <div class="menu-filters">
-                <input type="text" id="menu-search" placeholder="Try: 'something spicy for dinner'..." class="menu-search-input">
-                <div class="filter-btns">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="veg">🟢 Veg</button>
-                    <button class="filter-btn" data-filter="non-veg">🔴 Non-Veg</button>
-                </div>
-            </div>
-
+            <!-- Featured items preview (populated dynamically) -->
             <div id="dynamic-menu-container"></div>
+
+            <div style="text-align:center;margin-top:1.5rem">
+                <a href="/menu/" class="cta-button primary" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 2rem;font-size:1rem;border-radius:12px;text-decoration:none">
+                    Browse Full Menu &amp; Order
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            </div>
         </div>
     </section>
 
@@ -949,7 +910,7 @@
             <div class="footer-section">
                 <h4>Quick Links</h4>
                 <ul>
-                    <li><a href="#menu">Menu</a></li>
+                    <li><a href="/menu/">Menu</a></li>
                     <li><a href="#specials">Specials</a></li>
                     <li><a href="#gallery">Gallery</a></li>
                     <li><a href="#contact">Contact</a></li>
@@ -958,7 +919,7 @@
             <div class="footer-section">
                 <h4>Services</h4>
                 <ul>
-                    <li><a href="#menu">Online Ordering</a></li>
+                    <li><a href="/menu/">Online Ordering</a></li>
                     <li><a href="javascript:void(0)" onclick="openCateringModal()">Catering Enquiry</a></li>
                     <li><a href="#contact">Private Events</a></li>
                     <li><a href="javascript:void(0)" onclick="openGiftCardModal()">Gift Cards</a></li>
@@ -1100,7 +1061,7 @@
             </div>
             <div id="cart-recommendations" class="cart-recommendations" style="display:none"></div>
             <div class="cart-actions">
-                <button class="back-to-menu-btn" onclick="document.getElementById('cart-modal').style.display='none'; unlockScroll(); setTimeout(function(){ document.getElementById('menu').scrollIntoView({behavior:'smooth',block:'start'}); },100);">
+                <button class="back-to-menu-btn" onclick="document.getElementById('cart-modal').style.display='none'; unlockScroll(); window.location.href='/menu/'">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                     Back to Menu
                 </button>
