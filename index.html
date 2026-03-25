@@ -1,1581 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Amogha Cafe & Restaurant | Authentic Indian Cuisine</title>
-    <meta name="description" content="Amogha Cafe & Restaurant — Hyderabad's finest authentic Indian cuisine. Order Hyderabadi biryani, Andhra curries & tandoori specialties online. Free delivery on orders above ₹500. FSSAI licensed, 4.8★ rated.">
-    <meta property="og:title" content="Amogha Cafe & Restaurant | Hyderabad's Finest Indian Cuisine">
-    <meta property="og:description" content="Authentic Hyderabadi biryani, Andhra curries & tandoori specialties. Order online for delivery in 30-45 mins. Free delivery above ₹500. 4.8★ rated by 10,000+ customers.">
-    <meta property="og:image" content="https://amogha-cafe.web.app/amogha-logo.png">
-    <meta property="og:image:width" content="512">
-    <meta property="og:image:height" content="512">
-    <meta property="og:image:alt" content="Amogha Cafe & Restaurant logo">
-    <meta property="og:type" content="restaurant">
-    <meta property="og:url" content="https://amoghahotels.com/">
-    <meta property="og:site_name" content="Amogha Cafe & Restaurant">
-    <meta property="og:locale" content="en_IN">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Amogha Cafe & Restaurant | Authentic Indian Cuisine">
-    <meta name="twitter:description" content="Hyderabad's finest biryani & Indian cuisine. Order online, free delivery above ₹500.">
-    <meta name="twitter:image" content="https://amogha-cafe.web.app/amogha-logo.png">
-    <meta name="keywords" content="Amogha Cafe, Indian restaurant, Hyderabad, biryani, Hyderabadi biryani, online ordering, authentic cuisine, delivery, Kukatpally, Andhra cuisine, South Indian food, tandoori, best biryani Hyderabad">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
-    <link rel="canonical" href="https://amoghahotels.com/">
-    <link rel="icon" type="image/png" href="amogha-logo.png">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2c1810">
-    <meta name="color-scheme" content="light dark">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Amogha">
-    <link rel="apple-touch-icon" href="amogha-logo.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://checkout.razorpay.com" crossorigin>
-    <link rel="dns-prefetch" href="https://checkout.razorpay.com">
-    <!-- Preload hero image for faster LCP -->
-    <link rel="preload" as="image" href="bg.jpeg" fetchpriority="high">
-    <!-- Load fonts non-blocking: preload triggers fetch, onload swaps to stylesheet -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+Telugu:wght@400;700&family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap" onload="this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+Telugu:wght@400;700&family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap"></noscript>
-    <!-- Critical CSS inlined for instant preloader render -->
-    <style>
-    :root{--gold:#D4A017;--gold-dark:#b8860b;--dark:#1e140e;--dark-deep:#110b06}
-    #preloader{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,#3d2217 0%,var(--dark) 40%,var(--dark-deep) 100%);z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 1s cubic-bezier(.4,0,.2,1),visibility 1s}
-    #preloader.hidden{opacity:0;visibility:hidden}
-    .preloader-inner{text-align:center}.preloader-logo{width:140px;height:140px;border-radius:28px;margin-bottom:2rem;border:2px solid rgba(239,179,26,.2)}
-    .preloader-bar{width:260px;height:1px;background:rgba(255,255,255,.08);border-radius:3px;margin:0 auto;overflow:hidden}
-    .preloader-progress{width:0;height:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold),#fff5cc,var(--gold),var(--gold-dark));border-radius:3px;animation:preloader-fill 1.8s ease-out forwards}
-    @keyframes preloader-fill{to{width:100%}}
-    /* Ensure dynamically-loaded sections are visible (reveal animation can miss them) */
-    .section-reveal{opacity:1!important;transform:none!important}
-    </style>
-    <link rel="stylesheet" href="styles.css?v=70" media="all" fetchpriority="high">
-    <link rel="modulepreload" href="/script.js">
-    <!-- Non-critical CSS loaded async to improve LCP -->
-    <link rel="stylesheet" href="enhancements.css?v=2" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="premium.css?v=4" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="worldclass.css?v=2" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="worldclass2.css?v=2" media="print" onload="this.media='all'">
-    <noscript>
-        <link rel="stylesheet" href="enhancements.css?v=2">
-        <link rel="stylesheet" href="premium.css?v=2">
-        <link rel="stylesheet" href="worldclass.css?v=2">
-        <link rel="stylesheet" href="worldclass2.css?v=2">
-    </noscript>
-    <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
-    <script>if('scrollRestoration' in history) history.scrollRestoration='manual'; document.documentElement.style.scrollBehavior='auto'; window.scrollTo(0,0); setTimeout(function(){document.documentElement.style.scrollBehavior='';},100);</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amogha Cafe</title>
+<meta name="description" content="Amogha Cafe & Restaurant — Premium full-stack Firebase web app with ordering, admin dashboard, kitchen display, QR dine-in, live tracking & more. Live at https://amogha-cafe.web.app">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#0a0a1a;--r:100;--g:180;--b:255;--primary:rgb(var(--r),var(--g),var(--b));--glow:rgba(var(--r),var(--g),var(--b),0.15)}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:#e0e0e0;font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;min-height:100vh}
 
-    <!-- Restaurant Schema Markup for SEO -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Restaurant",
-        "name": "Amogha Cafe & Restaurant",
-        "alternateName": "Amogha Hotels",
-        "description": "Hyderabad's finest authentic Indian cuisine — Hyderabadi biryani, Andhra curries, tandoori specialties. Order online for delivery in 30-45 mins.",
-        "image": ["https://amogha-cafe.web.app/amogha-logo.png"],
-        "logo": "https://amogha-cafe.web.app/amogha-logo.png",
-        "url": "https://amoghahotels.com",
-        "servesCuisine": ["Indian", "South Indian", "Hyderabadi", "Andhra"],
-        "priceRange": "₹₹",
-        "acceptsReservations": "True",
-        "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "Ground Floor, 2-23-310/83C, Pragathi Nagar Rd, Addagutta Society, Jal Vayu Vihar, Kukatpally",
-            "addressLocality": "Hyderabad",
-            "addressRegion": "Telangana",
-            "postalCode": "500085",
-            "addressCountry": "IN"
-        },
-        "geo": {
-            "@type": "GeoCoordinates",
-            "latitude": "17.4935",
-            "longitude": "78.3911"
-        },
-        "telephone": "+919121004999",
-        "openingHoursSpecification": [
-            { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday"], "opens": "11:00", "closes": "21:30" },
-            { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Friday","Saturday"], "opens": "11:00", "closes": "22:30" },
-            { "@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "12:00", "closes": "21:00" }
-        ],
-        "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "bestRating": "5", "worstRating": "1", "reviewCount": "1250" },
-        "hasMenu": "https://amoghahotels.com/#menu",
-        "paymentAccepted": "Cash, UPI, Credit Card, Debit Card, Net Banking, Wallets",
-        "currenciesAccepted": "INR",
-        "amenityFeature": [
-            { "@type": "LocationFeatureSpecification", "name": "Free Parking", "value": true },
-            { "@type": "LocationFeatureSpecification", "name": "Wheelchair Accessible", "value": true },
-            { "@type": "LocationFeatureSpecification", "name": "Online Ordering", "value": true },
-            { "@type": "LocationFeatureSpecification", "name": "Delivery", "value": true },
-            { "@type": "LocationFeatureSpecification", "name": "Catering", "value": true }
-        ]
-    }
-    </script>
-    <!-- FAQ Schema for rich snippets -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-            {
-                "@type": "Question",
-                "name": "Do you offer delivery?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Yes! We offer free delivery for orders over ₹500 within a 5 km radius. Delivery typically takes 30-45 minutes." }
-            },
-            {
-                "@type": "Question",
-                "name": "Do you have vegetarian options?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Absolutely! We have an extensive vegetarian menu with over 30 dishes including vegan options." }
-            },
-            {
-                "@type": "Question",
-                "name": "Do you offer catering services?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Yes! We cater for events of all sizes. Contact us for custom menus." }
-            },
-            {
-                "@type": "Question",
-                "name": "Do you take reservations?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Yes! You can book online through our website or call us directly at +91 91210 04999." }
-            }
-        ]
-    }
-    </script>
-    <!-- BreadcrumbList Schema for SEO -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://amoghahotels.com/" },
-            { "@type": "ListItem", "position": 2, "name": "Menu", "item": "https://amoghahotels.com/#menu" },
-            { "@type": "ListItem", "position": 3, "name": "Specials", "item": "https://amoghahotels.com/#specials" },
-            { "@type": "ListItem", "position": 4, "name": "Gallery", "item": "https://amoghahotels.com/#gallery" },
-            { "@type": "ListItem", "position": 5, "name": "Reviews", "item": "https://amoghahotels.com/#reviews" },
-            { "@type": "ListItem", "position": 6, "name": "Contact", "item": "https://amoghahotels.com/#contact" }
-        ]
-    }
-    </script>
+  /* NOISE OVERLAY */
+  body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0.025;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  /* ANIMATED GRADIENT BG */
+  .bg-gradient{position:fixed;inset:0;z-index:0;overflow:hidden}
+  .bg-gradient .orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:0.12;animation:float 20s ease-in-out infinite}
+  .bg-gradient .orb:nth-child(1){width:600px;height:600px;background:rgb(var(--r),var(--g),var(--b));top:-10%;left:-10%;animation-delay:0s}
+  .bg-gradient .orb:nth-child(2){width:500px;height:500px;background:#4A90D9;bottom:-10%;right:-10%;animation-delay:-7s}
+  .bg-gradient .orb:nth-child(3){width:400px;height:400px;background:#2C5F99;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-14s}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(30px,-40px) scale(1.05)}50%{transform:translate(-20px,30px) scale(0.95)}75%{transform:translate(40px,20px) scale(1.03)}}
+
+  /* GRID PATTERN */
+  .grid-pattern{position:fixed;inset:0;z-index:1;
+    background-image:linear-gradient(rgba(var(--r),var(--g),var(--b),0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--r),var(--g),var(--b),0.03) 1px,transparent 1px);
+    background-size:60px 60px;mask-image:radial-gradient(ellipse 60% 50% at 50% 40%,black 30%,transparent 70%)}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 40px;display:flex;justify-content:space-between;align-items:center;
+    background:linear-gradient(180deg,var(--bg) 0%,transparent 100%);backdrop-filter:blur(10px)}
+  .nav-brand{font-weight:800;font-size:18px;letter-spacing:-0.5px;color:#fff}
+  .nav-brand span{color:var(--primary)}
+  .nav-links{display:flex;gap:24px;align-items:center}
+  .nav-links a{color:rgba(255,255,255,0.5);text-decoration:none;font-size:13px;font-weight:500;letter-spacing:0.5px;transition:color 0.3s}
+  .nav-links a:hover{color:#fff}
+  .nav-cta{padding:8px 20px;background:rgba(var(--r),var(--g),var(--b),0.15);border:1px solid rgba(var(--r),var(--g),var(--b),0.3);border-radius:8px;color:var(--primary);font-weight:600;font-size:13px;text-decoration:none;transition:all 0.3s}
+  .nav-cta:hover{background:rgba(var(--r),var(--g),var(--b),0.25);border-color:rgba(var(--r),var(--g),var(--b),0.5);color:#fff;box-shadow:0 0 30px rgba(var(--r),var(--g),var(--b),0.2)}
+
+  /* HERO */
+  .hero{position:relative;z-index:10;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:120px 24px 80px}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:100px;
+    background:rgba(var(--r),var(--g),var(--b),0.08);border:1px solid rgba(var(--r),var(--g),var(--b),0.2);
+    font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--primary);margin-bottom:32px}
+  .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--primary);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+  .hero-icon{font-size:64px;margin-bottom:24px;filter:drop-shadow(0 0 40px rgba(var(--r),var(--g),var(--b),0.4))}
+  h1{font-size:clamp(48px,8vw,96px);font-weight:900;letter-spacing:-2px;line-height:0.95;
+    background:linear-gradient(180deg,#fff 0%,rgba(var(--r),var(--g),var(--b),0.8) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:24px}
+  .hero-desc{font-size:clamp(16px,2vw,20px);line-height:1.7;max-width:640px;color:rgba(255,255,255,0.55);font-weight:400;margin-bottom:48px}
+  .hero-actions{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+  .btn-primary{padding:14px 36px;background:linear-gradient(135deg,rgba(var(--r),var(--g),var(--b),0.9),rgba(var(--r),var(--g),var(--b),0.6));
+    color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;
+    transition:all 0.4s;box-shadow:0 4px 20px rgba(var(--r),var(--g),var(--b),0.3)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 40px rgba(var(--r),var(--g),var(--b),0.5)}
+  .btn-secondary{padding:14px 36px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+    color:#fff;border-radius:12px;font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;transition:all 0.4s}
+  .btn-secondary:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2)}
+
+  /* STATS */
+  .stats{display:flex;gap:48px;margin-top:64px;padding-top:48px;border-top:1px solid rgba(255,255,255,0.06)}
+  .stat{text-align:center}
+  .stat-value{font-size:28px;font-weight:800;color:#fff;font-family:'JetBrains Mono',monospace}
+  .stat-label{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px}
+
+  /* FEATURES */
+  .features{position:relative;z-index:10;padding:80px 24px;max-width:1100px;margin:0 auto}
+  .section-label{font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--primary);margin-bottom:12px}
+  .section-title{font-size:clamp(28px,4vw,42px);font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:48px}
+  .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+  .feature-card{padding:32px;border-radius:16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);
+    transition:all 0.4s;position:relative;overflow:hidden}
+  .feature-card:hover{border-color:rgba(var(--r),var(--g),var(--b),0.2);background:rgba(var(--r),var(--g),var(--b),0.03);transform:translateY(-4px)}
+  .feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(var(--r),var(--g),var(--b),0.3),transparent);opacity:0;transition:opacity 0.4s}
+  .feature-card:hover::before{opacity:1}
+  .feature-icon{font-size:24px;margin-bottom:16px}
+  .feature-card h3{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px}
+  .feature-card p{font-size:14px;line-height:1.6;color:rgba(255,255,255,0.45)}
+
+  /* CODE BLOCK */
+  .code-section{position:relative;z-index:10;padding:60px 24px;max-width:700px;margin:0 auto}
+  .code-block{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:16px;overflow:hidden}
+  .code-header{padding:14px 20px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.05)}
+  .code-dot{width:10px;height:10px;border-radius:50%}
+  .code-dot:nth-child(1){background:#ff5f57}
+  .code-dot:nth-child(2){background:#febc2e}
+  .code-dot:nth-child(3){background:#28c840}
+  .code-title{margin-left:12px;font-size:12px;color:rgba(255,255,255,0.3);font-family:'JetBrains Mono',monospace}
+  .code-body{padding:24px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;color:rgba(255,255,255,0.6)}
+  .code-body .kw{color:var(--primary)}
+  .code-body .str{color:#4A90D9}
+  .code-body .cmt{color:rgba(255,255,255,0.25)}
+
+  /* FOOTER */
+  footer{position:relative;z-index:10;text-align:center;padding:80px 24px 40px;border-top:1px solid rgba(255,255,255,0.04)}
+  footer p{font-size:13px;color:rgba(255,255,255,0.25)}
+  footer a{color:var(--primary);text-decoration:none}
+
+  /* RESPONSIVE */
+  @media(max-width:768px){
+    nav{padding:16px 20px}
+    .nav-links{display:none}
+    .stats{flex-direction:column;gap:24px}
+    .feature-grid{grid-template-columns:1fr}
+  }
+
+  /* ENTRANCE ANIMATIONS */
+  .fade-up{opacity:0;transform:translateY(30px);animation:fadeUp 0.8s ease forwards}
+  @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+  .fade-up:nth-child(2){animation-delay:0.15s}
+  .fade-up:nth-child(3){animation-delay:0.3s}
+  .fade-up:nth-child(4){animation-delay:0.45s}
+  .fade-up:nth-child(5){animation-delay:0.6s}
+</style>
 </head>
 <body>
-    <!-- Skip to Content (Accessibility) -->
-    <a href="/menu/" class="skip-to-content">Skip to Menu</a>
 
-    <!-- ARIA Live Region for Screen Reader Announcements -->
-    <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<div class="bg-gradient">
+  <div class="orb"></div>
+  <div class="orb"></div>
+  <div class="orb"></div>
+</div>
+<div class="grid-pattern"></div>
 
-    <!-- Offline Detection Banner -->
-    <div id="offline-banner" class="offline-banner" style="display:none" role="alert">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0119 12.55"/><path d="M5 12.55a10.94 10.94 0 015.17-2.39"/><path d="M10.71 5.05A16 16 0 0122.56 9"/><path d="M1.42 9a15.91 15.91 0 014.7-2.88"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-        <span>You're offline. Some features may be limited.</span>
+<nav>
+  <div class="nav-brand"><span>🍳</span> Amogha Cafe</div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#quickstart">Quick Start</a>
+    <a href="https://github.com/MukundaKatta/amogha-cafe" class="nav-cta" target="_blank" rel="noopener">GitHub →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge fade-up"><span class="dot"></span>Food & Lifestyle</div>
+  <div class="hero-icon fade-up">🍳</div>
+  <h1 class="fade-up">Amogha Cafe</h1>
+  <p class="hero-desc fade-up">Amogha Cafe & Restaurant — Premium full-stack Firebase web app with ordering, admin dashboard, kitchen display, QR dine-in, live tracking & more. Live at https://amogha-cafe.web.app</p>
+  <div class="hero-actions fade-up">
+    <a href="https://github.com/MukundaKatta/amogha-cafe" class="btn-primary" target="_blank" rel="noopener">View on GitHub</a>
+    <a href="https://github.com/MukundaKatta/amogha-cafe#readme" class="btn-secondary" target="_blank" rel="noopener">Documentation</a>
+  </div>
+  <div class="stats fade-up">
+    <div class="stat"><div class="stat-value">MIT</div><div class="stat-label">License</div></div>
+    <div class="stat"><div class="stat-value">Food</div><div class="stat-label">Domain</div></div>
+    <div class="stat"><div class="stat-value">v1.0</div><div class="stat-label">Version</div></div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="section-label">Capabilities</div>
+  <div class="section-title">What it does</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>High Performance</h3>
+      <p>Built for speed and reliability with modern architecture patterns and optimized workflows.</p>
     </div>
-
-    <!-- Scroll Progress Bar -->
-    <div class="scroll-progress" id="scroll-progress"></div>
-
-    <!-- Page Transition Overlay -->
-    <div class="page-transition" id="page-transition"></div>
-
-    <!-- Cursor Glow Trail -->
-    <div class="cursor-glow" id="cursor-glow"></div>
-
-    <!-- Floating Food Particles -->
-    <div class="food-particles" id="food-particles"></div>
-
-    <!-- Grain Texture Overlay -->
-    <div class="grain-overlay"></div>
-
-    <!-- Floating Gold Ambient Particles -->
-    <div class="ambient-particles" aria-hidden="true">
-        <span class="ap ap1"></span><span class="ap ap2"></span><span class="ap ap3"></span>
-        <span class="ap ap4"></span><span class="ap ap5"></span><span class="ap ap6"></span>
-        <span class="ap ap7"></span><span class="ap ap8"></span>
+    <div class="feature-card">
+      <div class="feature-icon">🔧</div>
+      <h3>Easy Integration</h3>
+      <p>Simple APIs and clear documentation make it effortless to integrate into your existing stack.</p>
     </div>
-
-    <!-- Cookie Consent Banner -->
-    <div id="cookie-consent" class="cookie-consent" style="display:none" role="dialog" aria-label="Cookie consent">
-        <div class="cookie-consent-inner">
-            <p>We use cookies to enhance your experience, remember your preferences, and serve you the best flavors online. By continuing, you agree to our <a href="#" class="cookie-privacy-link">Privacy Policy</a>.</p>
-            <div class="cookie-consent-actions">
-                <button class="cookie-btn cookie-btn-accept" id="cookie-accept">Accept All</button>
-                <button class="cookie-btn cookie-btn-decline" id="cookie-decline">Essential Only</button>
-            </div>
-        </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚀</div>
+      <h3>Production Ready</h3>
+      <p>Battle-tested components designed for real-world deployment at any scale.</p>
     </div>
+  </div>
+</section>
 
-    <!-- Preloader -->
-    <div id="preloader">
-        <div class="preloader-inner">
-            <img src="amogha-logo.png" alt="Loading Amogha Cafe" class="preloader-logo" fetchpriority="high">
-            <div class="preloader-bar"><div class="preloader-progress"></div></div>
-        </div>
+<section class="code-section" id="quickstart">
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div>
+      <span class="code-title">terminal</span>
     </div>
-
-
-    <!-- PWA Install Prompt -->
-    <div id="pwa-prompt" class="pwa-prompt" style="display:none">
-        <button class="pwa-dismiss" id="pwa-dismiss-btn" aria-label="Dismiss">&times;</button>
-        <div class="pwa-icon">
-            <img src="amogha-logo.png" alt="Amogha" width="52" height="52">
-        </div>
-        <div class="pwa-info">
-            <strong class="pwa-title">Amogha Cafe & Restaurant</strong>
-            <span class="pwa-desc">Install our app for faster ordering & offline access</span>
-        </div>
-        <button id="pwa-install-btn" class="pwa-install-btn">Install App</button>
+    <div class="code-body">
+      <span class="cmt"># Clone the repository</span><br>
+      <span class="kw">git clone</span> <span class="str">https://github.com/MukundaKatta/amogha-cafe.git</span><br>
+      <span class="kw">cd</span> amogha-cafe<br><br>
+      <span class="cmt"># Get started</span><br>
+      <span class="kw">cat</span> README.md
     </div>
+  </div>
+</section>
 
-    <header>
-        <nav aria-label="Main navigation">
-            <div class="logo"><img src="amogha-logo.png" alt="Amogha Cafe & Restaurant" class="logo-img"></div>
-            <div class="nav-status-group">
-                <span id="open-status" class="open-status-badge"><span class="status-dot"></span><span class="status-text">Open Now</span></span>
-            </div>
-            <div class="header-slideshow" id="header-slideshow">
-                <div class="slide active">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-label">Today's Special</span>
-                        <span class="slide-dish">Baghara Rice and Chicken Fry</span>
-                        <span class="slide-price">₹249</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"ఆరోగ్యమే మహాభాగ్యం"</span>
-                        <span class="slide-price telugu-sub">"మనం తినే ఆహారమే మన ఆరోగ్యానికి పునాది"</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-label">Bestseller</span>
-                        <span class="slide-dish">Chicken 65 Biryani</span>
-                        <span class="slide-price">₹249</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"అన్నం పరబ్రహ్మ స్వరూపం"</span>
-                        <span class="slide-price telugu-sub">"దానిని వృధా చేయకండి"</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"అమోఘమైన రుచి - అమితమైన తృప్తి!"</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-label">Must Try</span>
-                        <span class="slide-dish">Gongura Chicken and Naan</span>
-                        <span class="slide-price">₹264</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-label">Now Serving</span>
-                        <span class="slide-dish">Tea | Coffee | Hot Chocolate</span>
-                        <span class="slide-price">From ₹30</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-label">Free Delivery</span>
-                        <span class="slide-dish">On orders above ₹500</span>
-                        <span class="slide-price">Order Now!</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"అమోఘం... మీ అభిరుచికి తగ్గట్టుగా!"</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"అమోఘమైన రుచి - అమితమైన తృప్తి!"</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"రుచిలో అమోఘం... వడ్డనలో స్నేహం!"</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"Amogha: Where Excellence Meets Every Plate."</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"Simply Amogha. Simply Incredible."</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"Pure Taste. Pure Satisfaction."</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"Good food is the foundation of genuine happiness."</span>
-                    </div>
-                </div>
-                <div class="slide">
-                    <span class="slide-accent"></span>
-                    <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"Life is short - make every meal an Amogha experience."</span>
-                    </div>
-                </div>
-            </div>
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open navigation menu">☰</button>
-            <ul class="nav-links" id="nav-links">
-                <li><a href="#home" data-i18n="home">Home</a></li>
-                <li><a href="#about" data-i18n="about">About</a></li>
-                <li><a href="/menu/" data-i18n="menu">Menu</a></li>
-                <li><a href="#specials" data-i18n="specials">Specials</a></li>
-                <li><a href="#gallery" data-i18n="gallery">Gallery</a></li>
-                <li><a href="#reviews" data-i18n="reviews">Reviews</a></li>
-                <li><a href="#contact" data-i18n="contact">Contact</a></li>
-                <li>
-                    <a href="#" id="signin-btn" class="signin-nav-btn" onclick="event.preventDefault(); openAuthModal();">
-                        <svg class="signin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <span id="signin-text" data-i18n="signIn">Sign In</span>
-                    </a>
-                </li>
-                <li><span id="loyalty-widget" class="loyalty-widget" style="display:none"></span></li>
-                <li><button onclick="openBadgeGallery()" class="theme-toggle badge-gallery-btn" aria-label="View Badges" title="My Badges">🏅</button></li>
-                <li><a href="#" id="cart-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><span id="cart-count">0</span></a></li>
-                <li><button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button></li>
-            </ul>
-        </nav>
-    </header>
+<footer>
+  <p>Built by <a href="https://github.com/MukundaKatta" target="_blank" rel="noopener">MukundaKatta</a> · <a href="https://github.com/MukundaKatta/amogha-cafe" target="_blank" rel="noopener">Amogha Cafe</a></p>
+</footer>
 
-    <section id="home" class="hero" role="banner" aria-label="Welcome to Amogha Cafe">
-        <div class="hero-slideshow" id="hero-slideshow">
-            <div class="hero-slide active" style="background-image: url('bg.jpeg');"></div>
-            <div class="hero-slide food" style="background-image: url('pics/Gemini_Generated_Image_gax5k7gax5k7gax5.png');"></div>
-            <div class="hero-slide food" style="background-image: url('Gemini_Generated_Image_x9jtrox9jtrox9jt.png');"></div>
-            <div class="hero-slide" style="background-image: url('chefchallu.jpg');"></div>
-            <div class="hero-slide food" style="background-image: url('BreakfastAtSimplySouthNew.png');"></div>
-            <div class="hero-slide" style="background-image: url('chefchallu2.jpg');"></div>
-            <div class="hero-slide" style="background-image: url('SimplySouthAtKnowledgeCityNew.png');"></div>
-            <div class="hero-slide food" style="background-image: url('pics/Gemini_Generated_Image_umcuogumcuogumcu.png');"></div>
-            <div class="hero-slide food" style="background-image: url('pics/gourmet-meal-with-grilled-meat-rice-generated-by-ai.jpg');"></div>
-        </div>
-        <div class="hero-overlay"></div>
-        <div class="hero-mouse-spotlight"></div>
-        <!-- Synced gold sparkle system -->
-        <div class="hero-sparkles" id="hero-sparkles" aria-hidden="true"></div>
-        <div class="hero-content">
-            <p class="hero-tagline"><span class="hero-text-inner">Authentic Indian Cuisine</span></p>
-            <div class="hero-ornament" aria-hidden="true"><span class="ornament-line"></span><span class="ornament-diamond"></span><span class="ornament-line"></span></div>
-            <h1 class="hero-title">
-                <span class="gold-line gold-line-top"></span>
-                <span class="hero-title-shimmer">AMOGHA HOTELS</span>
-                <span class="gold-line gold-line-bottom"></span>
-            </h1>
-            <p class="hero-subtitle"><span class="hero-text-inner">Tradition, Perfection & Soul in Every Dish</span></p>
-            <div class="hero-buttons">
-                <a href="/menu/" class="cta-button primary" data-i18n="orderNow" style="text-decoration:none">Order Online</a>
-                <button class="cta-button secondary" data-i18n="reserveTable" onclick="openReservationModal()">Reserve Table</button>
-            </div>
-        </div>
-        <div class="hero-scroll-indicator">
-            <div class="scroll-line"></div>
-        </div>
-    </section>
-
-    <!-- Time-based Greeting Banner -->
-    <div id="time-greeting" class="time-greeting" aria-live="polite"></div>
-
-    <!-- SVG Ornament -->
-    <div class="section-ornament-wrap" aria-hidden="true">
-        <svg class="svg-ornament" width="200" height="30" viewBox="0 0 200 30" xmlns="http://www.w3.org/2000/svg">
-            <line x1="10" y1="15" x2="85" y2="15" stroke="#d4a017" stroke-width="1" fill="none" stroke-linecap="round"/>
-            <path d="M90 15 L100 5 L110 15 L100 25 Z" stroke="#d4a017" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="115" y1="15" x2="190" y2="15" stroke="#d4a017" stroke-width="1" fill="none" stroke-linecap="round"/>
-        </svg>
-    </div>
-
-    <section id="about" class="about section-wipe" aria-labelledby="about-heading">
-        <div class="container">
-            <h2 id="about-heading" data-i18n="ourStory">Our Story</h2>
-            <p class="section-subtitle">A legacy of flavors, crafted with love since generations</p>
-            <div class="about-content">
-                <div class="about-text reveal reveal-delay-1">
-                    <h3>What is <span class="amogha-brand"><img class="amogha-a" src="pics/image.png" alt="అ" loading="lazy">mogha</span>?</h3>
-                    <p><span class="amogha-brand"><img class="amogha-a" src="pics/image.png" alt="అ" loading="lazy">mogha</span> means "flawless" or "perfect" in Sanskrit, and that's our promise to you. We bring the authentic tastes of India to your table with recipes passed down through generations.</p>
-                    <p>From aromatic biryanis to tandoori specialties, every dish is crafted with traditional techniques and the finest ingredients. Our chefs have over 20 years of experience in authentic Indian cuisine.</p>
-                </div>
-                <div class="about-text reveal reveal-delay-2">
-                    <h3>Our Mission</h3>
-                    <p>To create an unforgettable dining experience that celebrates India's rich culinary heritage while bringing people together through exceptional food and warm hospitality.</p>
-                    <p>We use traditional cooking methods including clay oven (tandoor) roasting and slow-cooked curries to ensure authentic flavors in every bite.</p>
-                </div>
-                <div class="about-text reveal reveal-delay-3">
-                    <h3>Why Choose Us?</h3>
-                    <ul class="features-list">
-                        <li>✓ Fresh ingredients daily</li>
-                        <li>✓ Authentic Indian recipes</li>
-                        <li>✓ Vegetarian & vegan options</li>
-                        <li>✓ Family-friendly atmosphere</li>
-                        <li>✓ Catering services available</li>
-                        <li>✓ Online ordering & delivery</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats Counter -->
-    <section class="stats-section" aria-label="Statistics">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-value"><span class="stat-number" data-target="10000">0</span><span class="stat-suffix">+</span></div>
-                    <p class="stat-label">Happy Customers</p>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value"><span class="stat-number" data-target="50">0</span><span class="stat-suffix">+</span></div>
-                    <p class="stat-label">Dishes on Menu</p>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value"><span class="stat-number" data-target="20">0</span><span class="stat-suffix">+</span></div>
-                    <p class="stat-label">Years Experience</p>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value"><span class="stat-number" data-target="4.8">0</span><span class="stat-suffix">★</span></div>
-                    <p class="stat-label">Customer Rating</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Chef Section -->
-    <section class="chef-section" aria-label="Our chefs">
-        <div class="container">
-            <h2>Meet Our Chefs</h2>
-            <div class="chef-content">
-                <div class="chef-image">
-                    <div class="chef-slideshow" id="chef-slideshow">
-                        <img class="chef-slide active" src="pics/WhatsApp Image 2026-02-22 at 11.48.37 AM.jpeg" alt="Master Chef Polina" loading="lazy">
-                        <img class="chef-slide" src="pics/WhatsApp Image 2026-02-22 at 11.56.52 AM.jpeg" alt="Chef Usha" loading="lazy">
-                        <img class="chef-slide" src="pics/WhatsApp Image 2026-02-24 at 4.46.56 AM.jpeg" alt="Chef Bhavana" loading="lazy">
-                    </div>
-                </div>
-                <div class="chef-info" id="chef-info">
-                    <div class="chef-info-slide active" data-chef="0">
-                        <h3>Master Chef Polina</h3>
-                        <p class="chef-title">Head Chef & Founder</p>
-                        <p>With over 20 years of culinary expertise in authentic Indian cuisine, Chef Polina brings the rich flavors of Hyderabad and Andhra Pradesh to every dish. Trained in traditional cooking methods passed down through generations, he believes in using only the freshest ingredients and time-honored techniques.</p>
-                        <p>"Every dish I create is a tribute to the incredible culinary heritage of India. At Amogha, we don't just serve food — we serve memories."</p>
-                        <div class="chef-specialties">
-                            <span>Biryani Expert</span>
-                            <span>Tandoor Master</span>
-                            <span>Andhra Cuisine</span>
-                        </div>
-                    </div>
-                    <div class="chef-info-slide" data-chef="1">
-                        <h3>Chef Usha</h3>
-                        <p class="chef-title">Senior Chef & Culinary Artist</p>
-                        <p>Chef Usha brings a unique blend of traditional South Indian flavors and modern culinary artistry to Amogha. With her deep knowledge of spices and passion for authentic home-style cooking, she crafts dishes that taste just like a warm meal from an Indian kitchen.</p>
-                        <p>"Cooking is love made visible. Every spice I use tells a story of our rich Indian heritage."</p>
-                        <div class="chef-specialties">
-                            <span>South Indian Specialist</span>
-                            <span>Spice Expert</span>
-                            <span>Home-Style Cuisine</span>
-                        </div>
-                    </div>
-                    <div class="chef-info-slide" data-chef="2">
-                        <h3>Chef Bhavana</h3>
-                        <p class="chef-title">Assistant Chef to Polina</p>
-                        <p>Chef Bhavana works alongside Master Chef Polina, bringing dedication and a keen eye for detail to every dish. With her passion for authentic flavors and commitment to perfection, she ensures that each plate leaving the kitchen meets the highest standards of taste and presentation.</p>
-                        <p>"Great food is made with patience, love, and the right balance of spices."</p>
-                        <div class="chef-specialties">
-                            <span>Authentic Flavors</span>
-                            <span>Attention to Detail</span>
-                            <span>Traditional Techniques</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SVG Ornament -->
-    <div class="section-ornament-wrap" aria-hidden="true">
-        <svg class="svg-ornament" width="200" height="30" viewBox="0 0 200 30" xmlns="http://www.w3.org/2000/svg">
-            <line x1="10" y1="15" x2="85" y2="15" stroke="#d4a017" stroke-width="1" fill="none" stroke-linecap="round"/>
-            <path d="M90 15 L100 5 L110 15 L100 25 Z" stroke="#d4a017" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="115" y1="15" x2="190" y2="15" stroke="#d4a017" stroke-width="1" fill="none" stroke-linecap="round"/>
-        </svg>
-    </div>
-
-    <section id="specials" class="specials section-wipe">
-        <div class="container">
-            <h2>Today's Specials</h2>
-            <p class="section-subtitle">Handpicked dishes by our chef, available for a limited time</p>
-            <div class="specials-grid">
-                <div class="special-card reveal reveal-delay-1" data-id="Baghara Rice + Chicken Fry">
-                    <div class="special-badge">Amogha Special</div>
-                    <h3>Baghara Rice + Chicken Fry</h3>
-                    <p>Aromatic baghara rice served with crispy chicken fry</p>
-                    <div class="special-price">
-                        <span class="new-price">&#8377;249</span>
-                    </div>
-                    <button class="add-to-cart" data-item="Baghara Rice + Chicken Fry" data-price="249">Order Now</button>
-                </div>
-                <div class="special-card reveal reveal-delay-2" data-id="Chicken 65 Biryani">
-                    <div class="special-badge">Bestseller</div>
-                    <h3>Chicken 65 Biryani</h3>
-                    <p>Dum biryani topped with spicy chicken 65</p>
-                    <div class="special-price">
-                        <span class="new-price">&#8377;249</span>
-                    </div>
-                    <button class="add-to-cart" data-item="Chicken 65 Biryani" data-price="249">Order Now</button>
-                </div>
-                <div class="special-card reveal reveal-delay-3" data-id="Gongura Chicken + Naan">
-                    <div class="special-badge">Must Try</div>
-                    <h3>Gongura Chicken + Naan</h3>
-                    <p>Andhra-style gongura chicken curry with butter naan</p>
-                    <div class="special-price">
-                        <span class="new-price">&#8377;264</span>
-                    </div>
-                    <button class="add-to-cart" data-item="Gongura Chicken + Naan" data-price="264">Order Now</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SVG Ornament -->
-    <div class="section-ornament-wrap" aria-hidden="true">
-        <svg class="svg-ornament" width="200" height="30" viewBox="0 0 200 30" xmlns="http://www.w3.org/2000/svg">
-            <line x1="10" y1="15" x2="85" y2="15" stroke="#d4a017" stroke-width="1" fill="none" stroke-linecap="round"/>
-            <path d="M90 15 L100 5 L110 15 L100 25 Z" stroke="#d4a017" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="115" y1="15" x2="190" y2="15" stroke="#d4a017" stroke-width="1" fill="none" stroke-linecap="round"/>
-        </svg>
-    </div>
-
-    <!-- Daily Special Section -->
-    <section id="daily-special-section" class="daily-special-section reveal" style="display:none">
-        <div class="container">
-            <div class="daily-special-inner">
-                <div class="daily-special-img-placeholder">🍛</div>
-                <img class="daily-special-img" alt="Daily Special" style="display:none">
-                <div class="daily-special-body">
-                    <div class="daily-special-badge">⭐ Today Only</div>
-                    <div class="daily-special-title">Chef's Special</div>
-                    <p class="daily-special-desc"></p>
-                    <div class="daily-special-price"></div>
-                    <div class="daily-special-countdown">
-                        <span class="countdown-label">Expires in</span>
-                        <div class="countdown-unit"><span class="countdown-num cd-h">00</span><span class="countdown-sub">hrs</span></div>
-                        <div class="countdown-unit"><span class="countdown-num cd-m">00</span><span class="countdown-sub">min</span></div>
-                        <div class="countdown-unit"><span class="countdown-num cd-s">00</span><span class="countdown-sub">sec</span></div>
-                    </div>
-                    <button class="add-to-cart daily-special-add-btn" data-item="" data-price="0">Order This Special</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Combo Builder Section -->
-    <section id="combo-builder-section" class="combo-builder-section">
-        <div class="container">
-            <h2 class="combo-section-title">Build Your Combo</h2>
-            <p class="section-subtitle combo-section-sub">Mix &amp; match your favourites — save 15% on every combination</p>
-            <div class="combo-builder-card">
-                <div class="combo-selects">
-                    <div class="combo-select-wrap">
-                        <span class="combo-label">🥗 Starter</span>
-                        <select id="combo-starter"><option value="">— Choose —</option></select>
-                    </div>
-                    <div class="combo-select-wrap">
-                        <span class="combo-label">🍛 Main Course</span>
-                        <select id="combo-main"><option value="">— Choose —</option></select>
-                    </div>
-                    <div class="combo-select-wrap">
-                        <span class="combo-label">🫓 Bread</span>
-                        <select id="combo-bread"><option value="">— Choose —</option></select>
-                    </div>
-                    <div class="combo-select-wrap">
-                        <span class="combo-label">🥤 Drink</span>
-                        <select id="combo-drink"><option value="">— Choose —</option></select>
-                    </div>
-                </div>
-                <div class="combo-pricing">
-                    <span class="combo-original"></span>
-                    <span class="combo-discounted">₹0</span>
-                    <span class="combo-savings"></span>
-                </div>
-                <button class="combo-add-btn" disabled>Add Combo to Cart</button>
-            </div>
-        </div>
-    </section>
-
-    <section id="reorder-section" class="reorder-section" style="display:none">
-        <div class="container">
-            <h2 class="section-title reorder-title">Order Again</h2>
-            <div class="reorder-cards" id="reorder-cards"></div>
-        </div>
-    </section>
-
-    <!-- AI Picks For You -->
-    <section id="ai-for-you" class="ai-for-you-section" style="display:none">
-        <div class="container">
-            <h2 class="section-title"><span class="ai-badge">AI</span> Picks For You</h2>
-            <div class="ai-for-you-cards" id="ai-for-you-cards"></div>
-        </div>
-    </section>
-
-    <!-- Quick Features Hub -->
-    <section class="features-hub" aria-label="Quick features">
-        <div class="container">
-            <div class="hub-scroll">
-                <button class="hub-chip" onclick="openChallengesModal()" aria-label="Weekly Challenges"><span class="hub-icon">🎯</span> Challenges</button>
-                <button class="hub-chip" onclick="openSpinWheel()" aria-label="Spin the Wheel"><span class="hub-icon">🎰</span> Spin & Win</button>
-                <button class="hub-chip" onclick="openSecretMenu()" aria-label="Secret Menu"><span class="hub-icon">🤫</span> Secret Menu</button>
-                <button class="hub-chip" onclick="openPollsModal()" aria-label="Community Polls"><span class="hub-icon">📊</span> Vote</button>
-                <button class="hub-chip" onclick="openMilestonesModal()" aria-label="Milestones"><span class="hub-icon">🏆</span> Milestones</button>
-                <button class="hub-chip" onclick="openBadgeGallery()" aria-label="Badge Gallery"><span class="hub-icon">🏅</span> Badges</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Menu is on /menu/ page -->
-
-    <section id="gallery" class="gallery" aria-label="Photo Gallery">
-        <div class="container">
-            <h2>Gallery</h2>
-            <p class="section-subtitle">A glimpse into the Amogha experience</p>
-            <div class="gallery-grid">
-                <div class="gallery-item">
-                    <img src="pics/logo-sign.jpeg" alt="Amogha Logo Signboard" loading="lazy">
-                    <div class="gallery-placeholder">Our Signboard</div>
-                </div>
-                <div class="gallery-item">
-                    <img src="pics/chai-stall.jpeg" alt="Amogha Chai Stall" loading="lazy">
-                    <div class="gallery-placeholder">Tea | Coffee | Hot Chocolate</div>
-                </div>
-                <div class="gallery-item">
-                    <img src="pics/stall-wide.jpeg" alt="Amogha Cafe Setup" loading="lazy">
-                    <div class="gallery-placeholder">Our Cafe</div>
-                </div>
-            </div>
-            <div class="gallery-slideshow-wrapper">
-                <button class="gallery-slide-btn gallery-prev" onclick="moveGallerySlide(-1)" aria-label="Previous gallery image">&#10094;</button>
-                <div class="gallery-slideshow" id="gallery-slideshow">
-                    <div class="gallery-slide active">
-                        <div class="gallery-slide-item">
-                            <img src="pics/street-view.jpeg" alt="Amogha Street View at Night" loading="lazy">
-                            <div class="gallery-placeholder">Night View</div>
-                        </div>
-                        <div class="gallery-slide-item">
-                            <img src="pics/stall-close.jpeg" alt="Amogha Cafe Close View" loading="lazy">
-                            <div class="gallery-placeholder">Our Setup</div>
-                        </div>
-                        <div class="gallery-slide-item">
-                            <img src="pics/curries-menu.jpeg" alt="Curries & Roti Menu" loading="lazy">
-                            <div class="gallery-placeholder">Curries & Roti's</div>
-                        </div>
-                    </div>
-                </div>
-                <button class="gallery-slide-btn gallery-next" onclick="moveGallerySlide(1)" aria-label="Next gallery image">&#10095;</button>
-                <div class="gallery-dots" id="gallery-dots"></div>
-            </div>
-        </div>
-    </section>
-
-    <section id="reviews" class="reviews" aria-label="Customer Reviews">
-        <div class="container">
-            <h2>What Our Guests Say</h2>
-            <p class="section-subtitle">Real stories from our cherished guests</p>
-            <div class="reviews-carousel-wrapper">
-                <button class="carousel-btn carousel-prev" onclick="moveCarousel(-1)" aria-label="Previous review">&#10094;</button>
-                <div class="reviews-carousel" id="reviews-carousel">
-                    <div class="review-card">
-                        <p class="review-text">"Amazing food and wonderful service! The flavors are authentic and portions are generous. Will definitely come back!"</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar avatar-rose">PS</span><div><p class="reviewer">Priya S.</p><p class="review-stars">★★★★★</p></div></div>
-                    </div>
-                    <div class="review-card">
-                        <p class="review-text">"Best Indian restaurant in the area. The biryani is outstanding and the ambiance is perfect for family dining."</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar avatar-blue">RM</span><div><p class="reviewer">Rahul M.</p><p class="review-stars">★★★★★</p></div></div>
-                    </div>
-                    <div class="review-card">
-                        <p class="review-text">"Fresh ingredients and traditional cooking methods. The gongura chicken is a must-try. Highly recommend!"</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar avatar-green">AK</span><div><p class="reviewer">Ananya K.</p><p class="review-stars">★★★★★</p></div></div>
-                    </div>
-                    <div class="review-card">
-                        <p class="review-text">"The paneer butter masala is to die for! Perfect spice levels and the naan is always fresh. A hidden gem!"</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar avatar-amber">SR</span><div><p class="reviewer">Sneha R.</p><p class="review-stars">★★★★★</p></div></div>
-                    </div>
-                    <div class="review-card">
-                        <p class="review-text">"Ordered online and was amazed by the packaging and taste. The chicken 65 biryani is now our family favorite!"</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar avatar-purple">VP</span><div><p class="reviewer">Vikram P.</p><p class="review-stars">★★★★★</p></div></div>
-                    </div>
-                    <div class="review-card">
-                        <p class="review-text">"Exceptional catering service for our event. Every guest loved the food. Thank you Amogha team!"</p>
-                        <div class="reviewer-info"><span class="reviewer-avatar avatar-red">LD</span><div><p class="reviewer">Lakshmi D.</p><p class="review-stars">★★★★★</p></div></div>
-                    </div>
-                </div>
-                <button class="carousel-btn carousel-next" onclick="moveCarousel(1)" aria-label="Next review">&#10095;</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Video Section -->
-    <section class="testimonials section-wipe" aria-label="Customer testimonials">
-        <div class="container">
-            <h2>Customer Stories</h2>
-            <p class="section-subtitle">Real experiences from our food lovers</p>
-            <div class="testimonials-grid" id="testimonials-grid"></div>
-        </div>
-    </section>
-
-    <!-- Video Lightbox -->
-    <div id="video-lightbox" class="video-lightbox" style="display:none" onclick="closeVideoLightbox()" role="dialog" aria-modal="true" aria-label="Video player">
-        <button class="lightbox-close" onclick="closeVideoLightbox()" aria-label="Close video">&times;</button>
-        <video id="lightbox-video" controls onclick="event.stopPropagation()"></video>
-    </div>
-
-    <section id="contact" class="contact" aria-label="Contact Us">
-        <div class="container">
-            <h2>Visit Us</h2>
-            <div class="contact-grid">
-                <div class="contact-info-section">
-                    <div class="info-block">
-                        <h3>📍 Our Location</h3>
-                        <p class="contact-address">Ground Floor, Addagutta Society,<br>
-                        2-23-310/83C, Pragathi Nagar Rd,<br>
-                        Jal Vayu Vihar, Kukatpally,<br>
-                        Hyderabad, Telangana 500085, India</p>
-                    </div>
-                    <div class="info-block">
-                        <h3>⏰ Hours</h3>
-                        <p>Monday - Thursday: 11:00 AM - 9:30 PM<br>
-                        Friday - Saturday: 11:00 AM - 10:30 PM<br>
-                        Sunday: 12:00 PM - 9:00 PM</p>
-                    </div>
-                    <div class="info-block">
-                        <h3>📞 Reach Us</h3>
-                        <p>Phone: <a href="tel:+919121004999" class="contact-link">+91 91210 04999</a><br>
-                        WhatsApp: <a href="https://wa.me/919121004999" target="_blank" rel="noopener" class="contact-link">+91 91210 04999</a></p>
-                    </div>
-                    <div class="info-block">
-                        <h3>🚗 Getting Here</h3>
-                        <p>Near Pragathi Nagar Road, Kukatpally<br>Free parking available<br>Wheelchair accessible</p>
-                    </div>
-                </div>
-                <div class="contact-form-section">
-                    <h3>Send Us a Message</h3>
-                    <form id="contact-form">
-                        <label for="contact-name" class="sr-only">Your Name</label>
-                        <input type="text" id="contact-name" name="name" placeholder="Your Name" required autocomplete="name" aria-required="true">
-                        <label for="contact-email" class="sr-only">Your Email</label>
-                        <input type="email" id="contact-email" name="email" placeholder="Your Email" required autocomplete="email" aria-required="true">
-                        <label for="contact-phone" class="sr-only">Phone Number</label>
-                        <input type="tel" id="contact-phone" name="phone" placeholder="Phone Number" autocomplete="tel">
-                        <label for="contact-message" class="sr-only">Your Message</label>
-                        <textarea id="contact-message" name="message" placeholder="Your Message" rows="5" required aria-required="true"></textarea>
-                        <button type="submit" class="cta-button">Send Message</button>
-                    </form>
-                </div>
-            </div>
-            <div class="map-container">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3805.123!2d78.39044!3d17.49478!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb91b801e41baf%3A0x4b37e4534396498f!2sAmogha%20Hotels!5e0!3m2!1sen!2sin!4v1710000000000" width="100%" height="300" style="border:0;border-radius:12px;" allowfullscreen="" loading="lazy" title="Google Maps - Amogha Hotels Location" referrerpolicy="no-referrer-when-downgrade"></iframe>
-            </div>
-        </div>
-    </section>
-
-    <section class="faq" aria-label="Frequently asked questions">
-        <div class="container">
-            <h2>Frequently Asked Questions</h2>
-            <div class="faq-grid" role="list">
-                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Do you offer delivery? <span class="faq-toggle" aria-hidden="true">+</span></h4>
-                    <div class="faq-answer" role="region"><p>Yes! We offer free delivery for orders over &#8377;500 within a 5 km radius. Delivery typically takes 30-45 minutes.</p></div>
-                </div>
-                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Do you have vegetarian options? <span class="faq-toggle" aria-hidden="true">+</span></h4>
-                    <div class="faq-answer" role="region"><p>Absolutely! We have an extensive vegetarian menu with over 30 dishes including vegan options.</p></div>
-                </div>
-                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Can you accommodate dietary restrictions? <span class="faq-toggle" aria-hidden="true">+</span></h4>
-                    <div class="faq-answer" role="region"><p>Yes, we can adjust spice levels and accommodate most dietary needs. Please inform us when ordering.</p></div>
-                </div>
-                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Do you offer catering services? <span class="faq-toggle" aria-hidden="true">+</span></h4>
-                    <div class="faq-answer" role="region"><p>Yes! We cater for events of all sizes. Contact us at catering@amogha.com for custom menus.</p></div>
-                </div>
-                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Is parking available? <span class="faq-toggle" aria-hidden="true">+</span></h4>
-                    <div class="faq-answer" role="region"><p>Yes, we have free parking available for all guests. The restaurant is also wheelchair accessible.</p></div>
-                </div>
-                <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Do you take reservations? <span class="faq-toggle" aria-hidden="true">+</span></h4>
-                    <div class="faq-answer" role="region"><p>Yes! You can book online through our website or call us directly at +91 91210 04999.</p></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Social Feed Section -->
-    <section class="social-feed" aria-label="Social media feed">
-        <div class="container">
-            <h2>Follow Our Journey</h2>
-            <p class="section-subtitle">Fresh from our kitchen to your feed</p>
-            <div class="social-feed-strip" id="social-feed-strip"></div>
-        </div>
-    </section>
-
-    <!-- Newsletter Signup -->
-    <section class="newsletter-section" aria-label="Newsletter signup">
-        <div class="container">
-            <div class="newsletter-card">
-                <div class="newsletter-content">
-                    <h2 class="newsletter-title">Stay in the Loop</h2>
-                    <p class="newsletter-desc">Get exclusive deals, new menu alerts & festival specials delivered to your inbox</p>
-                </div>
-                <form class="newsletter-form" id="newsletter-form" onsubmit="event.preventDefault(); submitNewsletter();">
-                    <div class="newsletter-input-group">
-                        <input type="email" id="newsletter-email" placeholder="Your email address" required class="newsletter-input">
-                        <button type="submit" class="newsletter-btn">Subscribe</button>
-                    </div>
-                    <p class="newsletter-msg" id="newsletter-msg"></p>
-                    <p class="newsletter-privacy">No spam, ever. Unsubscribe anytime.</p>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <footer role="contentinfo">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3><span class="amogha-brand"><img class="amogha-a" src="pics/image.png" alt="అ" loading="lazy">mogha</span></h3>
-                <p>Cafe & Restaurant</p>
-                <div class="social-links">
-                    <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
-                    <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
-                    <a href="#" aria-label="X"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-                    <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
-                </div>
-            </div>
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <ul>
-                    <li><a href="/menu/">Menu</a></li>
-                    <li><a href="#specials">Specials</a></li>
-                    <li><a href="#gallery">Gallery</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Services</h4>
-                <ul>
-                    <li><a href="/menu/">Online Ordering</a></li>
-                    <li><a href="javascript:void(0)" onclick="openCateringModal()">Catering Enquiry</a></li>
-                    <li><a href="#contact">Private Events</a></li>
-                    <li><a href="javascript:void(0)" onclick="openGiftCardModal()">Gift Cards</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Contact</h4>
-                <p>📞 <a href="tel:+919121004999" class="footer-contact-link">+91 91210 04999</a><br>
-                📍 Addagutta Society, Pragathi Nagar Rd,<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;Kukatpally, Hyderabad 500085</p>
-            </div>
-            <div class="footer-section footer-newsletter">
-                <h4>Stay Updated</h4>
-                <p class="newsletter-desc">Get exclusive offers, new dishes & seasonal specials delivered to your inbox.</p>
-                <form class="newsletter-form" id="footer-newsletter-form" onsubmit="event.preventDefault(); submitNewsletter('footer-newsletter-email', 'footer-newsletter-msg');">
-                    <input type="email" id="footer-newsletter-email" placeholder="Your email address" required class="newsletter-input" aria-label="Email for newsletter">
-                    <button type="submit" class="newsletter-btn" aria-label="Subscribe">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                    </button>
-                </form>
-                <p id="footer-newsletter-msg" class="newsletter-msg"></p>
-            </div>
-        </div>
-        <div class="trust-badges">
-            <div class="trust-badge">
-                <span class="badge-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EFB31A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
-                <span class="badge-text">FSSAI Licensed</span>
-            </div>
-            <div class="trust-badge">
-                <span class="badge-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EFB31A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg></span>
-                <span class="badge-text">Secure Payments</span>
-            </div>
-            <div class="trust-badge">
-                <span class="badge-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EFB31A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
-                <span class="badge-text">100% Hygienic</span>
-            </div>
-            <div class="trust-badge">
-                <span class="badge-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EFB31A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
-                <span class="badge-text">Fast Delivery</span>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 <span class="amogha-brand"><img class="amogha-a" src="pics/image.png" alt="అ" loading="lazy">mogha</span> Cafe & Restaurant. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
-        </div>
-    </footer>
-
-    <!-- Catering Enquiry Modal -->
-    <div id="catering-modal" class="catering-modal-overlay" onclick="if(event.target===this)closeCateringModal()">
-        <div class="catering-modal-card">
-            <button class="catering-modal-close" onclick="closeCateringModal()" aria-label="Close">&times;</button>
-            <div class="catering-modal-header">
-                <span class="catering-modal-icon">🍽️</span>
-                <h2>Catering Enquiry</h2>
-                <p>Tell us about your event and we'll craft a perfect menu for you</p>
-            </div>
-            <form class="catering-form" onsubmit="event.preventDefault(); submitCateringEnquiry();">
-                <div class="catering-form-row">
-                    <div class="catering-field">
-                        <label for="catering-name">Your Name *</label>
-                        <input type="text" id="catering-name" placeholder="e.g. Arjun Sharma" required>
-                    </div>
-                    <div class="catering-field">
-                        <label for="catering-phone">Phone Number *</label>
-                        <input type="tel" id="catering-phone" placeholder="+91 98765 43210" required>
-                    </div>
-                </div>
-                <div class="catering-form-row">
-                    <div class="catering-field">
-                        <label for="catering-event">Event Type *</label>
-                        <select id="catering-event" required>
-                            <option value="">Select event type</option>
-                            <option value="Wedding">Wedding</option>
-                            <option value="Corporate">Corporate Event</option>
-                            <option value="Birthday">Birthday Party</option>
-                            <option value="Private Party">Private Party</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="catering-field">
-                        <label for="catering-guests">Number of Guests *</label>
-                        <input type="number" id="catering-guests" min="10" max="5000" placeholder="e.g. 150" required>
-                    </div>
-                </div>
-                <div class="catering-field">
-                    <label for="catering-date">Preferred Date *</label>
-                    <input type="date" id="catering-date" required>
-                </div>
-                <div class="catering-field">
-                    <label for="catering-message">Additional Details</label>
-                    <textarea id="catering-message" rows="3" placeholder="Dietary requirements, theme, venue, special requests…"></textarea>
-                </div>
-                <button type="submit" id="catering-submit-btn" class="catering-submit-btn">Submit Enquiry</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Reservation Modal -->
-    <div id="reservation-modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="document.getElementById('reservation-modal').style.display='none'">&times;</span>
-            <h2>Reserve Your Table</h2>
-            <form id="reservation-form">
-                <input type="text" name="name" placeholder="Your Name" required>
-                <input type="email" name="email" placeholder="Email Address" required>
-                <input type="tel" name="phone" placeholder="Phone Number" required>
-                <input type="date" name="date" required>
-                <input type="time" name="time" required>
-                <select name="guests" required>
-                    <option value="">Number of Guests</option>
-                    <option value="1">1 Guest</option>
-                    <option value="2">2 Guests</option>
-                    <option value="3">3 Guests</option>
-                    <option value="4">4 Guests</option>
-                    <option value="5">5 Guests</option>
-                    <option value="6">6+ Guests</option>
-                </select>
-                <textarea name="requests" placeholder="Special Requests (Optional)" rows="3"></textarea>
-                <button type="submit" class="cta-button">Confirm Reservation</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Cart Modal -->
-    <!-- Payment Processing Overlay -->
-    <div id="payment-processing" class="payment-processing" role="alert" aria-live="assertive">
-        <div class="payment-spinner"></div>
-        <p>Processing your payment...</p>
-    </div>
-
-    <div id="cart-modal" class="modal" role="dialog" aria-modal="true" aria-label="Shopping cart">
-        <div class="modal-content">
-            <span class="close" aria-label="Close cart" onclick="document.getElementById('cart-modal').style.display='none'">&times;</span>
-            <h2>Your Order</h2>
-            <div id="cart-items"></div>
-            <div class="cart-total">
-                <h3>Subtotal: &#8377;<span id="subtotal-amount">0.00</span></h3>
-                <p class="delivery-note">Delivery fee: &#8377;49 (Free over &#8377;500)</p>
-                <h3>Total: &#8377;<span id="total-amount">0.00</span></h3>
-            </div>
-            <div id="cart-recommendations" class="cart-recommendations" style="display:none"></div>
-            <div class="cart-actions">
-                <button class="back-to-menu-btn" onclick="document.getElementById('cart-modal').style.display='none'; unlockScroll(); window.location.href='/menu/'">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                    Back to Menu
-                </button>
-                <button id="clear-cart" class="btn-secondary" data-i18n="clearCart">Clear Cart</button>
-                <button id="checkout" class="btn-primary" data-i18n="checkout">Proceed to Checkout</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Checkout Modal -->
-    <div id="checkout-modal" class="modal" role="dialog" aria-modal="true" aria-label="Checkout">
-        <div class="modal-content checkout-content">
-            <span class="close" onclick="closeCheckout()">&times;</span>
-
-            <!-- Step 1: Order Summary -->
-            <div id="checkout-step-1" class="checkout-step active" role="tabpanel" aria-labelledby="checkout-step-1-title">
-                <h2 id="checkout-step-1-title">Order Summary</h2>
-                <div id="checkout-items"></div>
-                <div class="checkout-totals">
-                    <div class="checkout-row"><span>Subtotal</span><span id="co-subtotal"></span></div>
-                    <div class="checkout-row"><span>Delivery Fee</span><span id="co-delivery"></span></div>
-                    <div class="checkout-row total"><span>Total</span><span id="co-total"></span></div>
-                </div>
-                <div class="coupon-section">
-                    <div class="coupon-input-row">
-                        <input type="text" id="coupon-code" placeholder="Enter promo code" class="coupon-input">
-                        <button type="button" class="coupon-apply-btn" onclick="applyCoupon()">Apply</button>
-                    </div>
-                    <p id="coupon-msg" class="coupon-msg"></p>
-                    <button type="button" class="loyalty-redeem-btn" id="loyalty-redeem-btn" onclick="redeemLoyaltyAtCheckout()" style="display:none">Redeem Loyalty Points</button>
-                </div>
-                <div class="giftcard-section">
-                    <div class="coupon-input-row">
-                        <input type="text" id="giftcard-code" placeholder="Gift card code" class="coupon-input gc-code-input">
-                        <button type="button" class="coupon-apply-btn" onclick="applyGiftCard()">Redeem</button>
-                    </div>
-                    <p id="giftcard-msg" class="coupon-msg"></p>
-                </div>
-                <button class="cta-button" onclick="goToStep(2)">Continue</button>
-            </div>
-
-            <!-- Step 2: Customer Details -->
-            <div id="checkout-step-2" class="checkout-step" role="tabpanel" aria-labelledby="checkout-step-2-title">
-                <h2 id="checkout-step-2-title">Your Details</h2>
-                <form id="checkout-form" onsubmit="return false;" novalidate>
-                    <label for="co-name" class="sr-only">Full Name</label>
-                    <input type="text" id="co-name" placeholder="Full Name" required autocomplete="name" aria-required="true">
-                    <label for="co-phone" class="sr-only">Phone Number</label>
-                    <input type="tel" id="co-phone" placeholder="Phone Number" required autocomplete="tel" pattern="[0-9]{10}" aria-required="true">
-                    <label for="co-address" class="sr-only">Delivery Address</label>
-                    <textarea id="co-address" placeholder="Delivery Address" rows="3" required autocomplete="street-address" aria-required="true"></textarea>
-                    <label for="co-notes" class="sr-only">Special Instructions</label>
-                    <textarea id="co-notes" placeholder="Special Instructions (Optional)" rows="2"></textarea>
-                </form>
-                <!-- Scheduled Orders -->
-                <label class="schedule-toggle-row" for="schedule-order-check">
-                    <input type="checkbox" id="schedule-order-check" onchange="document.getElementById('schedule-picker').classList.toggle('active',this.checked)">
-                    <span class="schedule-toggle-label">🕐 Schedule for later</span>
-                </label>
-                <div id="schedule-picker" class="schedule-picker">
-                    <div>
-                        <label for="schedule-date">Date</label>
-                        <input type="date" id="schedule-date">
-                    </div>
-                    <div>
-                        <label for="schedule-time">Time</label>
-                        <input type="time" id="schedule-time" min="10:00" max="23:00">
-                    </div>
-                </div>
-                <div class="checkout-nav">
-                    <button class="btn-secondary" onclick="goToStep(1)">Back</button>
-                    <button class="cta-button" onclick="validateAndPay()">Proceed to Pay</button>
-                </div>
-            </div>
-
-            <!-- Step 3: Premium Payment -->
-            <div id="checkout-step-3" class="checkout-step" role="tabpanel" aria-labelledby="pay-hero-label">
-                <!-- Payment Amount Hero -->
-                <div class="pay-hero">
-                    <p class="pay-hero-label" id="pay-hero-label">Total Amount</p>
-                    <h2 class="pay-hero-amount" id="pay-total"></h2>
-                    <div class="pay-hero-secure"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Secure Payment</div>
-                </div>
-
-                <!-- Payment Method Tabs -->
-                <div class="pay-tabs">
-                    <button class="pay-tab active" onclick="switchPayTab('razorpay')" id="tab-razorpay">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                        Pay Online
-                    </button>
-                    <button class="pay-tab" onclick="switchPayTab('cod')" id="tab-cod">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
-                        Cash on Delivery
-                    </button>
-                </div>
-
-                <!-- Tab 1: Razorpay (UPI + Cards + NetBanking + Wallets) -->
-                <div id="pay-panel-razorpay" class="pay-panel active">
-                    <div class="razorpay-info">
-                        <p class="rz-desc">Pay securely using UPI, Cards, Net Banking, or Wallets</p>
-                        <div class="rz-methods">
-                            <span class="rz-badge rz-upi">UPI</span>
-                            <span class="rz-badge rz-card">Cards</span>
-                            <span class="rz-badge rz-nb">NetBanking</span>
-                            <span class="rz-badge rz-wallet">Wallets</span>
-                        </div>
-                        <button class="pay-now-btn" id="razorpay-pay-btn" onclick="openRazorpay()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                            Pay Now
-                        </button>
-                        <div class="rz-trust">
-                            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> 256-bit SSL</span>
-                            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> PCI Compliant</span>
-                            <span>Powered by Razorpay</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 2: Cash on Delivery -->
-                <div id="pay-panel-cod" class="pay-panel">
-                    <div class="cod-premium">
-                        <div class="cod-icon-big">&#128181;</div>
-                        <h3>Cash on Delivery</h3>
-                        <p>Pay <strong id="cod-total"></strong> when your order arrives</p>
-                        <button class="pay-confirm-btn" onclick="placeCodOrder()">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                            Place Order (COD)
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Back button -->
-                <div class="pay-bottom-options">
-                    <button class="btn-secondary" onclick="goToStep(2)">Back</button>
-                </div>
-            </div>
-
-            <!-- Step 4: Confirmation -->
-            <div id="checkout-step-4" class="checkout-step" role="tabpanel" aria-label="Order confirmation">
-                <div class="order-confirmed">
-                    <div class="confirm-icon">&#10003;</div>
-                    <h2>Order Placed!</h2>
-                    <p class="confirm-msg">Thank you! Your order has been received.</p>
-                    <p class="confirm-sub" id="confirm-detail"></p>
-                    <a id="whatsapp-link" class="whatsapp-btn" href="#" target="_blank">Send Order via WhatsApp</a>
-                    <div id="order-tracking-link"></div>
-                    <button class="share-order-btn" onclick="shareOrder()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
-                        Share &amp; Earn 10 pts
-                    </button>
-                    <button class="split-bill-btn" onclick="openSplitBill(window._lastOrderId || '', window._lastOrderTotal || 0)">Split Bill</button>
-                    <button class="cta-button" onclick="closeCheckout()">Done</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Auth Modal (Sign In / Sign Up) -->
-    <div id="auth-modal" class="modal">
-        <div class="modal-content auth-modal-content">
-            <span class="close" onclick="closeAuthModal()">&times;</span>
-
-            <!-- Sign Up View -->
-            <div id="auth-signup" class="auth-view active">
-                <div class="auth-bonus-banner">
-                    <span class="bonus-icon">🎉</span>
-                    <span>Sign up & get <strong>25% OFF</strong> your first order!</span>
-                </div>
-                <h2>Create Account</h2>
-                <p class="auth-subtitle">Join Amogha for exclusive offers</p>
-                <form id="signup-form" onsubmit="return false;">
-                    <input type="text" id="signup-name" placeholder="Your Name" required>
-                    <input type="tel" id="signup-phone" placeholder="Phone Number (10 digits)" required maxlength="10">
-                    <div class="password-field">
-                        <input type="password" id="signup-password" placeholder="Create 4-Digit PIN" required maxlength="4" minlength="4" inputmode="numeric" pattern="\d{4}">
-                        <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)" aria-label="Show PIN">
-                            <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                        </button>
-                    </div>
-                    <button type="submit" class="cta-button auth-submit-btn" onclick="handleSignUp()">Create Account</button>
-                </form>
-                <p id="signup-msg" class="auth-msg"></p>
-                <p class="auth-switch">Already have an account? <a href="#" onclick="event.preventDefault(); switchAuthView('signin')">Sign In</a></p>
-            </div>
-
-            <!-- Sign In View -->
-            <div id="auth-signin" class="auth-view">
-                <h2>Welcome Back</h2>
-                <p class="auth-subtitle">Sign in to your Amogha account</p>
-                <form id="signin-form" onsubmit="return false;">
-                    <input type="tel" id="signin-phone" placeholder="Phone Number" required maxlength="10">
-                    <div class="password-field">
-                        <input type="password" id="signin-password" placeholder="4-Digit PIN" required maxlength="4" inputmode="numeric" pattern="\d{4}">
-                        <button type="button" class="password-toggle" onclick="togglePassword('signin-password', this)" aria-label="Show PIN">
-                            <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                        </button>
-                    </div>
-                    <button type="submit" class="cta-button auth-submit-btn" onclick="handleSignIn()">Sign In</button>
-                </form>
-                <p id="signin-msg" class="auth-msg"></p>
-                <p class="forgot-password-link"><a href="#" onclick="event.preventDefault(); switchAuthView('forgot')">Forgot PIN?</a></p>
-                <p class="auth-switch">New here? <a href="#" onclick="event.preventDefault(); switchAuthView('signup')">Create Account</a></p>
-            </div>
-
-            <!-- Forgot Password View -->
-            <div id="auth-forgot" class="auth-view">
-                <h2>Reset PIN</h2>
-                <p class="auth-subtitle">Verify your identity to reset your PIN</p>
-
-                <!-- Step 1: Verify Identity -->
-                <div id="forgot-step-1" class="forgot-step">
-                    <form id="forgot-verify-form" onsubmit="return false;">
-                        <input type="tel" id="forgot-phone" placeholder="Registered Phone Number" required maxlength="10">
-                        <input type="text" id="forgot-name" placeholder="Registered Name" required>
-                        <button type="submit" class="cta-button auth-submit-btn" onclick="handleForgotPassword()">Verify Identity</button>
-                    </form>
-                </div>
-
-                <!-- Step 2: Set New PIN -->
-                <div id="forgot-step-2" class="forgot-step" style="display:none;">
-                    <form id="forgot-reset-form" onsubmit="return false;">
-                        <div class="password-field">
-                            <input type="password" id="forgot-new-password" placeholder="New 4-Digit PIN" required maxlength="4" minlength="4" inputmode="numeric" pattern="\d{4}">
-                            <button type="button" class="password-toggle" onclick="togglePassword('forgot-new-password', this)" aria-label="Show PIN">
-                                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                            </button>
-                        </div>
-                        <div class="password-field">
-                            <input type="password" id="forgot-confirm-password" placeholder="Confirm PIN" required maxlength="4" minlength="4" inputmode="numeric" pattern="\d{4}">
-                            <button type="button" class="password-toggle" onclick="togglePassword('forgot-confirm-password', this)" aria-label="Show PIN">
-                                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                            </button>
-                        </div>
-                        <button type="submit" class="cta-button auth-submit-btn" onclick="handleResetPassword()">Reset PIN</button>
-                    </form>
-                </div>
-
-                <p id="forgot-msg" class="auth-msg"></p>
-                <p class="auth-switch"><a href="#" onclick="event.preventDefault(); switchAuthView('signin')">Back to Sign In</a></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Combo Meal Builder Modal -->
-    <div id="combo-modal" class="modal">
-        <div class="modal-content combo-modal-content">
-            <span class="close" onclick="closeComboModal()">&times;</span>
-            <h2>Build Your Combo</h2>
-            <p class="combo-subtitle">Pick a biryani + starter + drink and save 15%!</p>
-            <div class="combo-builder">
-                <div class="combo-step">
-                    <h3 class="combo-step-title">1. Choose a Biryani</h3>
-                    <div class="combo-options" id="combo-biryanis"></div>
-                </div>
-                <div class="combo-step">
-                    <h3 class="combo-step-title">2. Pick a Starter</h3>
-                    <div class="combo-options" id="combo-starters"></div>
-                </div>
-                <div class="combo-step">
-                    <h3 class="combo-step-title">3. Add a Drink</h3>
-                    <div class="combo-options" id="combo-drinks"></div>
-                </div>
-            </div>
-            <div class="combo-summary">
-                <div class="combo-selected" id="combo-selected">Select items above</div>
-                <div class="combo-pricing">
-                    <span class="combo-original" id="combo-original"></span>
-                    <span class="combo-discount">15% OFF</span>
-                    <span class="combo-total" id="combo-total"></span>
-                </div>
-                <button class="cta-button combo-add-btn" id="combo-add-btn" disabled onclick="addComboToCart()">Add Combo to Cart</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Gift Card Modal -->
-    <div id="giftcard-modal" class="modal">
-        <div class="modal-content gc-modal-content">
-            <span class="close" onclick="closeGiftCardModal()">&times;</span>
-            <h2 class="gc-modal-title">🎁 Gift a Meal</h2>
-            <p class="gc-modal-subtitle">Send the joy of Amogha to someone special</p>
-            <input type="tel" id="gc-recipient-phone" placeholder="Recipient's phone number" maxlength="10" class="gc-phone-input">
-            <div class="gc-amounts">
-                <button class="gc-amount-btn" onclick="selectGcAmount(250, this)">&#8377;250</button>
-                <button class="gc-amount-btn active" onclick="selectGcAmount(500, this)">&#8377;500</button>
-                <button class="gc-amount-btn" onclick="selectGcAmount(1000, this)">&#8377;1000</button>
-                <button class="gc-amount-btn" onclick="selectGcAmount(2000, this)">&#8377;2000</button>
-            </div>
-            <p id="gc-msg" class="coupon-msg"></p>
-            <button class="cta-button primary gc-buy-btn" onclick="buyGiftCard()">Buy Gift Card</button>
-        </div>
-    </div>
-
-    <!-- Add-on Picker Bottom Sheet -->
-    <div id="addon-picker-overlay" class="addon-overlay" style="display:none" onclick="closeAddonPicker()">
-        <div class="addon-sheet" onclick="event.stopPropagation()">
-            <div class="addon-sheet-header">
-                <h3>Customize Your Item</h3>
-                <button class="addon-sheet-close" onclick="closeAddonPicker()">&times;</button>
-            </div>
-            <div class="addon-sheet-item" id="addon-item-name"></div>
-            <div class="addon-sheet-list" id="addon-sheet-list"></div>
-            <div class="addon-sheet-footer">
-                <div class="addon-total" id="addon-total">Total: &#8377;0</div>
-                <button class="cta-button primary addon-confirm-btn" onclick="confirmAddonSelection()">Add to Cart</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- WhatsApp Float Button -->
-    <a href="https://wa.me/919121004999?text=Hi%20Amogha!%20I'd%20like%20to%20place%20an%20order." class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
-        <svg viewBox="0 0 32 32" width="28" height="28" fill="white"><path d="M16.004 0C7.165 0 .003 7.16.003 15.997c0 2.82.736 5.573 2.137 7.998L.015 32l8.2-2.148A15.95 15.95 0 0016.004 32C24.84 32 32 24.838 32 15.997 32 7.16 24.84 0 16.004 0zm0 29.39a13.36 13.36 0 01-6.81-1.862l-.488-.29-5.065 1.328 1.35-4.935-.318-.506a13.3 13.3 0 01-2.043-7.128C2.63 8.594 8.6 2.626 16.004 2.626c3.58 0 6.95 1.396 9.48 3.928a13.32 13.32 0 013.924 9.478c0 7.403-5.97 13.357-13.404 13.357zm7.34-10.003c-.402-.2-2.38-1.174-2.75-1.308-.37-.134-.64-.2-.91.202-.27.4-1.044 1.308-1.28 1.578-.236.268-.47.302-.874.1-.402-.2-1.7-.626-3.238-1.997-1.197-1.067-2.004-2.384-2.24-2.786-.235-.402-.025-.62.177-.82.182-.18.402-.47.604-.704.2-.234.268-.402.402-.67.134-.268.067-.502-.034-.704-.1-.2-.91-2.192-1.247-3.002-.328-.788-.66-.682-.91-.694-.235-.012-.502-.014-.77-.014s-.704.1-1.072.502c-.37.402-1.41 1.376-1.41 3.358 0 1.982 1.443 3.896 1.645 4.164.2.268 2.84 4.334 6.882 6.076.96.416 1.712.664 2.298.85.965.306 1.843.264 2.538.16.774-.116 2.38-.974 2.716-1.914.335-.94.335-1.746.235-1.914-.1-.168-.37-.268-.77-.47z"/></svg>
-    </a>
-
-    <!-- Gallery Lightbox -->
-    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
-        <span class="lightbox-close">&times;</span>
-        <img id="lightbox-img" alt="Gallery Image" loading="lazy">
-        <button class="lightbox-nav lightbox-prev" onclick="event.stopPropagation(); navigateLightbox(-1)">&#10094;</button>
-        <button class="lightbox-nav lightbox-next" onclick="event.stopPropagation(); navigateLightbox(1)">&#10095;</button>
-    </div>
-
-    <!-- Sticky Order Bar -->
-    <div class="sticky-order-bar" id="sticky-order-bar">
-        <div class="bar-ticker">
-            <div class="bar-ticker-track">
-                <div class="bar-ticker-item">
-                    <svg class="bar-icon bar-icon-chef" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>
-                    <span>Chef preparing your favorites</span>
-                </div>
-                <span class="bar-dot"></span>
-                <div class="bar-ticker-item">
-                    <svg class="bar-icon bar-icon-fire" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1 0 12 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z"/></svg>
-                    <span>Freshly cooked with love</span>
-                </div>
-                <span class="bar-dot"></span>
-                <div class="bar-ticker-item">
-                    <svg class="bar-icon bar-icon-bike" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="18" r="3"/><circle cx="19" cy="18" r="3"/><path d="M12 18h3.5a2 2 0 0 0 1.7-1L22 9h-7l-2.5 4.5"/><path d="M5 18l2-7h4l-1.2 3"/><path d="M8 6h4l1.5 3"/></svg>
-                    <span>Fast delivery in 30-45 mins</span>
-                </div>
-                <span class="bar-dot"></span>
-                <div class="bar-ticker-item">
-                    <svg class="bar-icon bar-icon-plate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18"/><path d="M5 17c0-5.5 3.5-10 7-10s7 4.5 7 10"/><line x1="12" y1="4" x2="12" y2="7"/><path d="M10 5c0 0 .5-1 2-1s2 1 2 1"/></svg>
-                    <span>Authentic Hyderabadi flavors</span>
-                </div>
-                <span class="bar-dot"></span>
-                <div class="bar-ticker-item">
-                    <svg class="bar-icon bar-icon-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    <span>4.8 &#9733; rated by 10,000+ customers</span>
-                </div>
-                <span class="bar-dot"></span>
-                <div class="bar-ticker-item">
-                    <svg class="bar-icon bar-icon-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M3 12h18v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7z"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9 3 12 8 12 8s3-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
-                    <span>Free delivery on orders above &#8377;500</span>
-                </div>
-                <span class="bar-dot"></span>
-                <!-- Duplicate for seamless loop -->
-                <div class="bar-ticker-item">
-                    <svg class="bar-icon bar-icon-chef" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>
-                    <span>Chef preparing your favorites</span>
-                </div>
-                <span class="bar-dot"></span>
-                <div class="bar-ticker-item">
-                    <svg class="bar-icon bar-icon-fire" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1 0 12 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z"/></svg>
-                    <span>Freshly cooked with love</span>
-                </div>
-                <span class="bar-dot"></span>
-                <div class="bar-ticker-item">
-                    <svg class="bar-icon bar-icon-bike" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="18" r="3"/><circle cx="19" cy="18" r="3"/><path d="M12 18h3.5a2 2 0 0 0 1.7-1L22 9h-7l-2.5 4.5"/><path d="M5 18l2-7h4l-1.2 3"/><path d="M8 6h4l1.5 3"/></svg>
-                    <span>Fast delivery in 30-45 mins</span>
-                </div>
-            </div>
-        </div>
-        <button class="bar-cta" onclick="window.scrollTo({top: document.getElementById('menu').offsetTop - 80, behavior: 'smooth'})">
-            <svg class="inline-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Order Now
-        </button>
-    </div>
-
-    <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
-
-    <!-- Confetti Canvas -->
-    <canvas id="confetti-canvas"></canvas>
-
-
-    <!-- Background Music Toggle -->
-    <button id="music-toggle" class="music-toggle" aria-label="Toggle background music" title="Play / Pause Music">
-        <span class="music-icon music-off">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        </span>
-        <span class="music-icon music-on" style="display:none;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-            <span class="music-bars"><i></i><i></i><i></i></span>
-        </span>
-    </button>
-    <script>
-    (function(){
-        var b=document.getElementById('music-toggle'),m=null,on=false;
-        if(!b)return;
-        b.onclick=function(){
-            try{
-                if(!m){m=new Audio('music/bg-music.mp3');m.loop=true;m.volume=0.35;}
-                if(on){m.pause();on=false;b.classList.remove('playing');b.querySelector('.music-off').style.display='';b.querySelector('.music-on').style.display='none';}
-                else{m.play().then(function(){on=true;b.classList.add('playing');b.querySelector('.music-off').style.display='none';b.querySelector('.music-on').style.display='';}).catch(function(e){alert('Music error: '+e.message);});}
-            }catch(ex){alert('Music exception: '+ex.message);}
-        };
-    })();
-    </script>
-
-    <!-- Back to Top Button -->
-    <button id="back-to-top" class="back-to-top" aria-label="Back to top">
-        <svg class="btt-ring" viewBox="0 0 36 36"><defs><linearGradient id="btt-gold-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F5D76E"/><stop offset="100%" stop-color="#D4A017"/></linearGradient></defs><circle class="btt-ring-bg" cx="18" cy="18" r="16"/><circle class="btt-ring-fill" id="btt-ring-fill" cx="18" cy="18" r="16" stroke="url(#btt-gold-gradient)"/></svg>
-        <span class="btt-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
-    </button>
-
-    <!-- Floating Cart Bar (mobile) -->
-    <div id="floating-cart-bar" class="floating-cart-bar">
-        <div class="floating-cart-info">
-            <span class="floating-cart-count">0</span>
-            <span class="floating-cart-label">items</span>
-        </div>
-        <span class="floating-cart-total">₹0</span>
-        <button class="floating-cart-btn" onclick="document.getElementById('cart-icon').click()">View Cart</button>
-    </div>
-
-    <!-- Social Proof Toast -->
-    <div id="social-proof-toast" class="social-proof-toast" style="display:none">
-        <span class="sp-avatar"></span>
-        <div class="sp-content">
-            <span class="sp-text"></span>
-            <span class="sp-time"></span>
-        </div>
-    </div>
-
-    <!-- ===== NEW WORLD-CLASS FEATURES ===== -->
-
-    <!-- Order Tracker Overlay -->
-    <div id="order-tracker-overlay" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Order tracker">
-        <div class="order-tracker-content overlay-card"></div>
-    </div>
-
-    <!-- Challenges Modal -->
-    <div id="challenges-modal" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Weekly challenges">
-        <div class="overlay-card challenges-card">
-            <button class="overlay-close" onclick="closeChallengesModal()" aria-label="Close">&times;</button>
-            <h3 class="overlay-title">Weekly Challenges</h3>
-            <p class="overlay-subtitle">Complete challenges to earn bonus points!</p>
-            <div id="challenges-list"></div>
-        </div>
-    </div>
-
-    <!-- Spin the Wheel Overlay -->
-    <div id="spin-wheel-overlay" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Rewards wheel">
-        <div class="overlay-card spin-card">
-            <button class="overlay-close" onclick="closeSpinWheel()" aria-label="Close">&times;</button>
-            <h3 class="overlay-title">Rewards Wheel</h3>
-            <p id="spins-available" class="overlay-subtitle">0 spins available</p>
-            <div class="spin-wheel-container">
-                <div class="spin-pointer">&#9660;</div>
-                <canvas id="spin-canvas" width="300" height="300"></canvas>
-            </div>
-            <button class="spin-btn" onclick="spinTheWheel()">SPIN!</button>
-            <div id="spin-result" class="spin-result" style="display:none"></div>
-        </div>
-    </div>
-
-    <!-- Secret Menu Modal -->
-    <div id="secret-menu-modal" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Secret menu">
-        <div class="overlay-card secret-menu-content"></div>
-    </div>
-
-    <!-- Feedback Overlay -->
-    <div id="feedback-overlay" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Order feedback">
-        <div class="overlay-card feedback-content"></div>
-    </div>
-
-    <!-- Share Modal -->
-    <div id="share-modal" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Share">
-        <div class="overlay-card share-modal-content"></div>
-    </div>
-
-    <!-- Polls Modal -->
-    <div id="polls-modal" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Community polls">
-        <div class="overlay-card polls-card">
-            <button class="overlay-close" onclick="closePollsModal()" aria-label="Close">&times;</button>
-            <h3 class="overlay-title">Community Polls</h3>
-            <p class="overlay-subtitle">Vote on what comes next!</p>
-            <div id="polls-container"></div>
-        </div>
-    </div>
-
-    <!-- Milestones Modal -->
-    <div id="milestones-modal" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Achievement milestones">
-        <div class="overlay-card milestones-card">
-            <button class="overlay-close" onclick="closeMilestonesModal()" aria-label="Close">&times;</button>
-            <h3 class="overlay-title">Milestones</h3>
-            <p class="overlay-subtitle">Track your Amogha journey!</p>
-            <div id="milestones-list"></div>
-        </div>
-    </div>
-
-    <!-- Weather Recommendations Widget -->
-    <div id="weather-recommendations" style="display:none"></div>
-
-    <!-- Limited Time Offer Countdown -->
-    <div id="lto-countdown" class="lto-countdown"></div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
-    <script>
-        firebase.initializeApp({
-            apiKey: "AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",
-            authDomain: "amogha-cafe.firebaseapp.com",
-            projectId: "amogha-cafe",
-            storageBucket: "amogha-cafe.firebasestorage.app",
-            messagingSenderId: "1000994409697",
-            appId: "1:1000994409697:web:983214bafab529d6a2fba0",
-            measurementId: "G-PLACEHOLDER"
-        });
-        var db = firebase.firestore();
-        var analytics = firebase.analytics();
-    </script>
-    <script type="module" src="/script.js?v=20260305c"></script>
-    <script nomodule src="/script-legacy.js?v=20260305c"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').then(function(reg) {
-                reg.update();
-            });
-            var _swRefreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', function() {
-                if (_swRefreshing) return;
-                _swRefreshing = true;
-                window.location.reload();
-            });
-        }
-    </script>
-    <script>window.scrollTo(0,0);</script>
 </body>
 </html>
