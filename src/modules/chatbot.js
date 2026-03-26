@@ -138,8 +138,11 @@ export async function sendChatMessage(presetMsg) {
 
         chatHistory.push({ role: 'assistant', text: data.reply });
 
-        if (data.action === 'checkout' && typeof window.checkout === 'function') window.checkout();
-        else if (data.action === 'showMenu') document.getElementById('menu').scrollIntoView({ behavior: 'smooth' });
+        var ALLOWED_ACTIONS = ['checkout', 'showMenu'];
+        if (data.action && ALLOWED_ACTIONS.indexOf(data.action) !== -1) {
+            if (data.action === 'checkout' && typeof window.checkout === 'function') window.checkout();
+            else if (data.action === 'showMenu') { var menuEl = document.getElementById('menu'); if (menuEl) menuEl.scrollIntoView({ behavior: 'smooth' }); }
+        }
     } catch (e) {
         typing.remove();
         var errBubble = document.createElement('div');

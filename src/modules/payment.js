@@ -98,6 +98,13 @@ export function calcDiscount(couponData, subtotal) {
 }
 
 export function checkout() {
+    // Re-verify session hasn't expired before checkout
+    var freshUser = getCurrentUser();
+    if (!freshUser) {
+        showAuthToast('Your session has expired. Please sign in again.');
+        if (typeof window.openAuthModal === 'function') window.openAuthModal();
+        return;
+    }
     if (cart.length === 0) {
         showAuthToast('Your cart is empty!');
         return;

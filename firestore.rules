@@ -11,7 +11,7 @@ rules_version = '2';
 //
 // These rules provide the best protection achievable without Firebase Auth:
 //   - Field validation on creates (required fields, correct types)
-//   - DELETE blocked on all collections
+//   - DELETE blocked on all collections (enforced)
 //   - Admin-only collections (menu, specials, heroSlides, addons, testimonials,
 //     socialPosts, settings) are read-only from client. Admin operations must
 //     go through Firebase Console or a future Cloud Function with Admin SDK.
@@ -102,7 +102,7 @@ service cloud.firestore {
       // Admin panel writes from client — validate price is positive to prevent tampering
       allow update: if !request.resource.data.keys().hasAny(['price'])
                     || (isNumber(request.resource.data.price) && request.resource.data.price > 0);
-      allow delete: if true;
+      allow delete: if false;
     }
 
     // -------------------------------------------------------------------------
@@ -121,7 +121,8 @@ service cloud.firestore {
       allow create: if request.resource.data.keys().hasAll(['url', 'type', 'sortOrder', 'active'])
                     && request.resource.data.url is string
                     && request.resource.data.type is string;
-      allow update, delete: if true;
+      allow update: if true;
+      allow delete: if false;
     }
 
     // -------------------------------------------------------------------------
@@ -169,11 +170,12 @@ service cloud.firestore {
     // Auth goes through Cloud Function /auth/kiosk-login (server-side validation).
     // Admin panel can still create/manage kiosks via these rules.
     match /kiosks/{kioskId} {
-      allow read: if true;
+      allow read: if false;
       allow create: if request.resource.data.keys().hasAll(['username', 'shopId', 'active', 'createdAt'])
                     && request.resource.data.username is string
                     && request.resource.data.shopId is string;
-      allow update, delete: if true;
+      allow update: if true;
+      allow delete: if false;
     }
 
     // -------------------------------------------------------------------------

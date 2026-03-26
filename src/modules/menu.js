@@ -431,8 +431,9 @@ export function initMenuSync() {
                 return;
             }
             strip.innerHTML = posts.map(function(p) {
-                var linkOpen = p.link ? '<a href="' + escH(p.link) + '" target="_blank" rel="noopener">' : '<div>';
-                var linkClose = p.link ? '</a>' : '</div>';
+                var safeLink = p.link && /^https?:\/\//i.test(p.link) ? p.link : '';
+                var linkOpen = safeLink ? '<a href="' + escH(safeLink) + '" target="_blank" rel="noopener">' : '<div>';
+                var linkClose = safeLink ? '</a>' : '</div>';
                 return linkOpen + '<div class="social-card"><img src="' + escH(p.imageUrl) + '" alt="" loading="lazy">' +
                     (p.caption ? '<span class="social-caption">' + escH(p.caption) + '</span>' : '') +
                 '</div>' + linkClose;

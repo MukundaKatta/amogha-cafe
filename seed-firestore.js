@@ -3,12 +3,12 @@ const { initializeApp } = require('firebase/app');
 const { getFirestore, collection, doc, setDoc, addDoc } = require('firebase/firestore');
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",
-    authDomain: "amogha-cafe.firebaseapp.com",
-    projectId: "amogha-cafe",
-    storageBucket: "amogha-cafe.firebasestorage.app",
-    messagingSenderId: "1000994409697",
-    appId: "1:1000994409697:web:983214bafab529d6a2fba0"
+    apiKey: process.env.FIREBASE_API_KEY || "AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN || "amogha-cafe.firebaseapp.com",
+    projectId: process.env.FIREBASE_PROJECT_ID || "amogha-cafe",
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "amogha-cafe.firebasestorage.app",
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "1000994409697",
+    appId: process.env.FIREBASE_APP_ID || "1:1000994409697:web:983214bafab529d6a2fba0"
 };
 
 const app = initializeApp(firebaseConfig);

@@ -48,6 +48,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     50% { transform: translateY(-8px); }
 }
 
+@keyframes preloader-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
 .preloader-bar {
     position: relative;
 }

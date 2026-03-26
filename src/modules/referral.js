@@ -210,3 +210,7 @@ function openReferralModal() {
         nativeBtn.style.display = 'none';
     }
 }
+
+export { openReferralModal };
+
+Object.assign(window, { openReferralModal, initReferral });

@@ -66,12 +66,19 @@ self.addEventListener('activate', function(e) {
   );
 });
 
+// Auto-trim counter — run trimCache() every 50 fetches to prevent unbounded growth
+var fetchCount = 0;
+
 // Fetch — tiered caching strategy
 self.addEventListener('fetch', function(e) {
   var url = new URL(e.request.url);
 
   // Skip non-GET requests and external URLs
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
+
+  // Auto-trim cache every 50 fetches
+  fetchCount++;
+  if (fetchCount % 50 === 0) trimCache();
 
   // Skip API requests from caching (they have their own caching in-app)
   if (url.pathname.startsWith('/api')) return;

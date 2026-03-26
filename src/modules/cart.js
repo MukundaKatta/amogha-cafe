@@ -160,6 +160,8 @@ export function finalizeAddToCart(itemName, price, spiceLevel, addons, btnEl) {
     updateButtonState(itemName);
     updateFloatingCart();
     updateFloatingCartBar();
+    // Dispatch event for live queue estimates
+    window.dispatchEvent(new CustomEvent('amogha-cart-updated', { detail: { items: cart } }));
 
     // Announce to screen readers
     if (window._ariaAnnounce) {
@@ -576,7 +578,7 @@ export function initCart() {
         if (e.target.classList.contains('qty-plus')) {
             const itemName = e.target.dataset.item;
             const btn = e.target.closest('.add-to-cart');
-            addToCart(itemName, btn.dataset.price);
+            addToCart(itemName, btn.dataset.price, btn);
             return;
         }
         // Clicking the - button

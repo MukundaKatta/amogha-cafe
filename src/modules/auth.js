@@ -91,7 +91,11 @@ export function setCurrentUser(user) {
     safeSetItem('amoghaUser', JSON.stringify(user));
     // Start listening for order status notifications
     var db = getDb();
-    if (user && user.phone && typeof db !== 'undefined' && db && !window._notifListenerActive) {
+    if (user && user.phone && typeof db !== 'undefined' && db) {
+        // Unsubscribe existing listener to prevent duplicates
+        if (typeof window._notifListenerUnsub === 'function') {
+            window._notifListenerUnsub();
+        }
         window._notifListenerActive = true;
         window._notifListenerUnsub = db.collection('notifications').where('userPhone', '==', user.phone).where('read', '==', false)
             .onSnapshot(function(snap) {

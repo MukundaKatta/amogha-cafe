@@ -546,7 +546,7 @@ body[data-theme="dark"] .newsletter-card {
 .voice-order-fab   { display: none !important; }
 .gift-card-fab     { display: none !important; }
 .back-to-top       { bottom: 132px !important; right: 20px !important; z-index: 1000 !important; pointer-events: auto !important; }
-.referral-fab      { bottom: 192px !important; right: 20px !important; z-index: 1000 !important; pointer-events: auto !important; }
+.referral-fab      { bottom: 192px !important; right: 20px !important; z-index: 950 !important; pointer-events: auto !important; }
 
 /* ── FAB Stack — Left Side (56px spacing) ── */
 .music-mini-player { display: none !important; }
