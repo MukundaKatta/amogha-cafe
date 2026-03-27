@@ -95,6 +95,37 @@ html { scroll-behavior: auto; }
     }
 }
 
+/* ── Reveal Animation Fix ──
+   The .reveal CSS transitions get stuck as Web Animations at progress:0,
+   making all .reveal elements permanently invisible (opacity:0, translateY(40px)).
+   Force revealed/visible/in-view elements to be visible. */
+.reveal.visible,
+.reveal.in-view,
+.reveal.revealed {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+/* ── Gallery Image Visibility Fix ──
+   Gallery images have loading="lazy" which starts at opacity:0.
+   The .loaded class should bring them to opacity:1, but Web Animations
+   override both CSS and inline styles. Force loaded images visible. */
+#gallery .gallery-item img,
+img[loading="lazy"].loaded,
+img.magnetic-image.loaded {
+    opacity: 1 !important;
+}
+
+/* ── Duplicate Review Form Fix ──
+   worldclass2.js injects duplicate "Share Your Experience" review modals
+   and "Write a Review" buttons. Hide the second instance of each. */
+.photo-review-modal ~ .photo-review-modal {
+    display: none !important;
+}
+.write-review-btn ~ .write-review-btn {
+    display: none !important;
+}
+
 /* ── Open/Closed Status Badge ── */
 .open-status-badge {
     display: inline-flex;

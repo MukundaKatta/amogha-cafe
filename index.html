@@ -57,13 +57,13 @@
     <link rel="stylesheet" href="styles.css?v=70" media="all" fetchpriority="high">
     <link rel="modulepreload" href="/script.js">
     <!-- Non-critical CSS loaded async to improve LCP -->
-    <link rel="stylesheet" href="enhancements.css?v=2" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="enhancements.css?v=3" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="premium.css?v=4" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="worldclass.css?v=2" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="worldclass2.css?v=2" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="worldclass2.css?v=3">
     <link rel="stylesheet" href="mobile-responsive.css?v=1" media="print" onload="this.media='all'">
     <noscript>
-        <link rel="stylesheet" href="enhancements.css?v=2">
+        <link rel="stylesheet" href="enhancements.css?v=3">
         <link rel="stylesheet" href="premium.css?v=2">
         <link rel="stylesheet" href="worldclass.css?v=2">
         <link rel="stylesheet" href="worldclass2.css?v=2">
@@ -1579,5 +1579,54 @@
         }
     </script>
     <script>window.scrollTo(0,0);</script>
+    <script>
+    /* Fix stuck Web Animations on .reveal elements and lazy-loaded images.
+       The bundled JS uses element.animate() which gets stuck at progress:0,
+       making elements permanently invisible. Cancel stuck animations. */
+    (function(){
+        function fixStuck(el) {
+            var anims = el.getAnimations ? el.getAnimations() : [];
+            var hadStuck = false;
+            anims.forEach(function(a) {
+                try {
+                    var t = a.effect && a.effect.getComputedTiming ? a.effect.getComputedTiming() : null;
+                    if (t && t.progress === 0 && a.playState === 'running') { a.cancel(); hadStuck = true; }
+                } catch(e) {}
+            });
+            if (hadStuck && (el.classList.contains('visible') || el.classList.contains('in-view') || el.classList.contains('revealed') || el.classList.contains('loaded'))) {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }
+        }
+        function fixAll() {
+            document.querySelectorAll('.reveal, .review-card, .gallery-item, .gallery-item img, .magnetic-image').forEach(function(el) {
+                fixStuck(el);
+                el.querySelectorAll('img').forEach(fixStuck);
+            });
+        }
+        // Fix on intersection (primary)
+        var obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (e.isIntersecting) {
+                    setTimeout(function() { fixStuck(e.target); e.target.querySelectorAll('img, .review-card').forEach(fixStuck); }, 500);
+                    setTimeout(function() { fixStuck(e.target); e.target.querySelectorAll('img, .review-card').forEach(fixStuck); }, 1200);
+                }
+            });
+        }, { threshold: 0.05 });
+        document.querySelectorAll('.reveal, .gallery-item, .gallery-item img, section, .reviews-carousel').forEach(function(el) { obs.observe(el); });
+        // Fallback: fix everything periodically
+        function fixReviewCards() {
+            document.querySelectorAll('.review-card').forEach(function(c) {
+                fixStuck(c);
+                c.style.opacity = '1';
+                c.style.transform = 'translateY(0)';
+            });
+        }
+        setTimeout(fixAll, 2000);
+        setTimeout(fixReviewCards, 2500);
+        setTimeout(fixAll, 5000);
+        setTimeout(fixReviewCards, 5500);
+    })();
+    </script>
 </body>
 </html>
