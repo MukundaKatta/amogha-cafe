@@ -101,9 +101,25 @@ html { scroll-behavior: auto; }
    Force revealed/visible/in-view elements to be visible. */
 .reveal.visible,
 .reveal.in-view,
-.reveal.revealed {
+.reveal.revealed,
+.reveal-left.visible,
+.reveal-left.in-view,
+.reveal-right.visible,
+.reveal-right.in-view,
+.reveal-scale.visible,
+.reveal-scale.in-view {
     opacity: 1 !important;
-    transform: translateY(0) !important;
+    transform: none !important;
+}
+
+/* Chef content uses parallax transform that gets stuck */
+.chef-content {
+    opacity: 1 !important;
+}
+
+/* Combo builder section hidden by default opacity */
+.combo-builder-section {
+    opacity: 1 !important;
 }
 
 /* ── Gallery Image Visibility Fix ──

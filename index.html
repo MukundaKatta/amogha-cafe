@@ -1599,7 +1599,7 @@
             }
         }
         function fixAll() {
-            document.querySelectorAll('.reveal, .review-card, .gallery-item, .gallery-item img, .magnetic-image').forEach(function(el) {
+            document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .review-card, .gallery-item, .gallery-item img, .magnetic-image, .chef-content, .chef-info, .combo-builder-section').forEach(function(el) {
                 fixStuck(el);
                 el.querySelectorAll('img').forEach(fixStuck);
             });
@@ -1614,18 +1614,22 @@
             });
         }, { threshold: 0.05 });
         document.querySelectorAll('.reveal, .gallery-item, .gallery-item img, section, .reviews-carousel').forEach(function(el) { obs.observe(el); });
-        // Fallback: fix everything periodically
-        function fixReviewCards() {
-            document.querySelectorAll('.review-card').forEach(function(c) {
+        // Fallback: fix everything periodically (aggressive timing)
+        function fixCards() {
+            document.querySelectorAll('.review-card, .faq-item, .newsletter-section .reveal').forEach(function(c) {
                 fixStuck(c);
-                c.style.opacity = '1';
-                c.style.transform = 'translateY(0)';
+                if (window.getComputedStyle(c).opacity === '0') {
+                    c.style.opacity = '1';
+                    c.style.transform = 'none';
+                }
             });
         }
-        setTimeout(fixAll, 2000);
-        setTimeout(fixReviewCards, 2500);
-        setTimeout(fixAll, 5000);
-        setTimeout(fixReviewCards, 5500);
+        setTimeout(fixAll, 1500);
+        setTimeout(fixCards, 2000);
+        setTimeout(fixAll, 3000);
+        setTimeout(fixCards, 3500);
+        setTimeout(fixAll, 6000);
+        setTimeout(fixCards, 6500);
     })();
     </script>
 </body>
