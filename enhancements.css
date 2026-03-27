@@ -122,6 +122,23 @@ html { scroll-behavior: auto; }
     opacity: 1 !important;
 }
 
+/* Fallback: after page has been scrolled, ensure ALL reveal elements
+   and known-stuck sections become visible.
+   The .page-scrolled class is added by JS after first scroll. */
+.page-scrolled .reveal,
+.page-scrolled .reveal-left,
+.page-scrolled .reveal-right,
+.page-scrolled .reveal-scale,
+.page-scrolled .chef-section,
+.page-scrolled .chef-info,
+.page-scrolled .special-card,
+.page-scrolled .stat-item,
+.page-scrolled .tilt-card {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+}
+
 /* ── Gallery Image Visibility Fix ──
    Gallery images have loading="lazy" which starts at opacity:0.
    The .loaded class should bring them to opacity:1, but Web Animations

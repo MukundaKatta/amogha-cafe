@@ -57,13 +57,13 @@
     <link rel="stylesheet" href="styles.css?v=70" media="all" fetchpriority="high">
     <link rel="modulepreload" href="/script.js">
     <!-- Non-critical CSS loaded async to improve LCP -->
-    <link rel="stylesheet" href="enhancements.css?v=3" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="enhancements.css?v=5" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="premium.css?v=4" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="worldclass.css?v=2" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="worldclass2.css?v=3">
     <link rel="stylesheet" href="mobile-responsive.css?v=1" media="print" onload="this.media='all'">
     <noscript>
-        <link rel="stylesheet" href="enhancements.css?v=3">
+        <link rel="stylesheet" href="enhancements.css?v=5">
         <link rel="stylesheet" href="premium.css?v=2">
         <link rel="stylesheet" href="worldclass.css?v=2">
         <link rel="stylesheet" href="worldclass2.css?v=2">
@@ -1624,12 +1624,41 @@
                 }
             });
         }
+        // Add .page-scrolled to body after user scrolls or after timeout
+        // This triggers the CSS fallback that makes ALL .reveal elements visible
+        var scrolled = false;
+        function markScrolled() {
+            if (scrolled) return;
+            scrolled = true;
+            document.body.classList.add('page-scrolled');
+            // Cancel ALL stuck Web Animations on reveal elements + known-stuck sections
+            document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .stat-item, .chef-section, .chef-info, .special-card, .tilt-card').forEach(function(el) {
+                el.getAnimations().forEach(function(a) { try { a.cancel(); } catch(e) {} });
+                el.style.opacity = '1';
+                el.style.transform = 'none';
+            });
+            // Cancel stuck animations on back-to-top (don't force opacity — let .visible class handle it)
+            var btt = document.getElementById('back-to-top');
+            if (btt) btt.getAnimations().forEach(function(a) { try { a.cancel(); } catch(e) {} });
+        }
+        window.addEventListener('scroll', function() { setTimeout(markScrolled, 1500); }, { once: true });
+        setTimeout(markScrolled, 4000); // Fallback if user hasn't scrolled
+        // Fix back-to-top button visibility (script.js handler broken + stuck animations)
+        var btt = document.getElementById('back-to-top');
+        var bttFixed = false;
+        if (btt) {
+            window.addEventListener('scroll', function() {
+                if (!bttFixed && btt.getAnimations().length > 0) {
+                    btt.getAnimations().forEach(function(a) { try { a.cancel(); } catch(e) {} });
+                    bttFixed = true;
+                }
+                if (window.scrollY > 500) btt.classList.add('visible');
+                else btt.classList.remove('visible');
+            }, { passive: true });
+        }
         setTimeout(fixAll, 1500);
         setTimeout(fixCards, 2000);
-        setTimeout(fixAll, 3000);
-        setTimeout(fixCards, 3500);
-        setTimeout(fixAll, 6000);
-        setTimeout(fixCards, 6500);
+        setTimeout(fixAll, 3500);
     })();
     </script>
 </body>
