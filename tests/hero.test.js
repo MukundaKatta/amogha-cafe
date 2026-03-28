@@ -116,8 +116,8 @@ describe('initDynamicHeroText — rotates text after timeout + interval fires', 
 
         // Advance past the outer 5s delay to activate the interval
         vi.advanceTimersByTime(5000);
-        // Advance one full interval tick (6000ms)
-        vi.advanceTimersByTime(6000);
+        // Advance one full interval tick (8000ms)
+        vi.advanceTimersByTime(8000);
         // Advance through the inner 700ms fade-out timeout
         vi.advanceTimersByTime(700);
 
@@ -132,7 +132,7 @@ describe('initDynamicHeroText — rotates text after timeout + interval fires', 
         initDynamicHeroText();
 
         vi.advanceTimersByTime(5000);
-        vi.advanceTimersByTime(6000);
+        vi.advanceTimersByTime(8000);
         vi.advanceTimersByTime(700);
 
         expect(subtitleEl.textContent).not.toBe(originalText);
@@ -145,7 +145,7 @@ describe('initDynamicHeroText — rotates text after timeout + interval fires', 
 
         // Advance to just after the interval fires but before the inner 700ms timeout
         vi.advanceTimersByTime(5000);
-        vi.advanceTimersByTime(6000);
+        vi.advanceTimersByTime(8000);
 
         expect(taglineEl.classList.contains('fade-out')).toBe(true);
     });
@@ -156,7 +156,7 @@ describe('initDynamicHeroText — rotates text after timeout + interval fires', 
         initDynamicHeroText();
 
         vi.advanceTimersByTime(5000);
-        vi.advanceTimersByTime(6000);
+        vi.advanceTimersByTime(8000);
 
         expect(subtitleEl.classList.contains('fade-out')).toBe(true);
     });
@@ -167,24 +167,23 @@ describe('initDynamicHeroText — rotates text after timeout + interval fires', 
         initDynamicHeroText();
 
         vi.advanceTimersByTime(5000);
-        vi.advanceTimersByTime(6000);
+        vi.advanceTimersByTime(8000);
         vi.advanceTimersByTime(700);
 
         expect(subtitleEl.classList.contains('fade-out')).toBe(false);
     });
 
-    it('calls window._scrambleReveal with the new tagline text when defined', () => {
-        const scrambleSpy = vi.fn();
-        window._scrambleReveal = scrambleSpy;
+    it('sets tagline textContent directly after fade-out timeout', () => {
+        const taglineEl = document.querySelector('.hero-tagline .hero-text-inner');
+        const originalText = taglineEl.textContent;
 
         initDynamicHeroText();
 
         vi.advanceTimersByTime(5000);
-        vi.advanceTimersByTime(6000);
+        vi.advanceTimersByTime(8000);
         vi.advanceTimersByTime(700);
 
-        expect(scrambleSpy).toHaveBeenCalled();
-        // First arg should be one of the tagline strings
+        // Code sets textContent directly (no scramble animation)
         const taglines = [
             'Authentic Indian Cuisine',
             'Crafted with Passion',
@@ -192,9 +191,8 @@ describe('initDynamicHeroText — rotates text after timeout + interval fires', 
             'Where Taste Meets Art',
             'Born from Tradition',
         ];
-        expect(taglines).toContain(scrambleSpy.mock.calls[0][0]);
-
-        delete window._scrambleReveal;
+        expect(taglines).toContain(taglineEl.textContent);
+        expect(taglineEl.textContent).not.toBe(originalText);
     });
 
     it('removes fade-out from taglineEl when _scrambleReveal is NOT defined', () => {
@@ -204,7 +202,7 @@ describe('initDynamicHeroText — rotates text after timeout + interval fires', 
         initDynamicHeroText();
 
         vi.advanceTimersByTime(5000);
-        vi.advanceTimersByTime(6000);
+        vi.advanceTimersByTime(8000);
         vi.advanceTimersByTime(700);
 
         expect(taglineEl.classList.contains('fade-out')).toBe(false);
@@ -220,7 +218,7 @@ describe('initDynamicHeroText — rotates text after timeout + interval fires', 
 
         // Fire several full rotation cycles
         for (let tick = 0; tick < 5; tick++) {
-            vi.advanceTimersByTime(tick === 0 ? 5000 + 6000 : 6000);
+            vi.advanceTimersByTime(tick === 0 ? 5000 + 8000 : 8000);
             vi.advanceTimersByTime(700);
             seenTexts.add(taglineEl.textContent);
         }
@@ -515,7 +513,7 @@ describe('initHero — sets up slideshow interval for multiple slides', () => {
     });
 });
 
-describe('initHero — sets up _scrambleReveal on window when taglineEl exists', () => {
+describe('initHero — _scrambleReveal removed (feature was causing garbled display)', () => {
     beforeEach(() => {
         setupDOM(HERO_HTML);
         vi.useFakeTimers();
@@ -526,58 +524,9 @@ describe('initHero — sets up _scrambleReveal on window when taglineEl exists',
         vi.useRealTimers();
     });
 
-    it('assigns window._scrambleReveal as a function', () => {
+    it('does NOT define window._scrambleReveal (feature removed)', () => {
         initHero();
-        expect(typeof window._scrambleReveal).toBe('function');
-    });
-
-    it('_scrambleReveal sets textContent of the supplied element (after animation completes)', () => {
-        initHero();
-        const el = document.querySelector('.hero-tagline .hero-text-inner');
-        window._scrambleReveal('New Text', el);
-        // Advance all scramble timeouts (25 frames * 35ms = 875ms max)
-        vi.advanceTimersByTime(1000);
-        expect(el.textContent).toBe('New Text');
-    });
-
-    it('_scrambleReveal removes fade-out class from element', () => {
-        initHero();
-        const el = document.querySelector('.hero-tagline .hero-text-inner');
-        el.classList.add('fade-out');
-        window._scrambleReveal('Hello', el);
-        expect(el.classList.contains('fade-out')).toBe(false);
-    });
-
-    it('_scrambleReveal sets opacity to 1 on the element', () => {
-        initHero();
-        const el = document.querySelector('.hero-tagline .hero-text-inner');
-        window._scrambleReveal('Test', el);
-        expect(el.style.opacity).toBe('1');
-    });
-
-    it('_scrambleReveal progressively reveals text with decrypt animation', () => {
-        initHero();
-        const el = document.querySelector('.hero-tagline .hero-text-inner');
-        window._scrambleReveal('Animate', el);
-        // Text should be set (possibly scrambled) immediately on first tick
-        expect(el.textContent.length).toBe('Animate'.length);
-        // After all frames complete, text should match exactly
-        vi.advanceTimersByTime(1000);
-        expect(el.textContent).toBe('Animate');
-    });
-
-    it('_scrambleReveal is called automatically after a 2800ms delay on load', () => {
-        const el = document.querySelector('.hero-tagline .hero-text-inner');
-        initHero();
-
-        // Confirm _scrambleReveal is defined
-        const spy = vi.fn(window._scrambleReveal);
-        window._scrambleReveal = spy;
-
-        vi.advanceTimersByTime(2800);
-
-        // The spy should have been called with the tagline text
-        expect(spy).toHaveBeenCalled();
+        expect(window._scrambleReveal).toBeUndefined();
     });
 
     it('does NOT define window._scrambleReveal when taglineEl is absent', () => {

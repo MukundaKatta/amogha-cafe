@@ -212,12 +212,9 @@ describe('checkout', () => {
     });
 
     it('shows toast and returns early when cart is empty', () => {
-        const toasts = [];
+        // Set a valid user so checkout reaches the empty-cart guard
+        localStorage.setItem('amoghaUser', JSON.stringify({ name: 'Test', phone: '1234567890', _sessionTimestamp: Date.now() }));
         window.openAuthModal = vi.fn();
-        // Observe the toast element after showAuthToast sets its textContent
-        const origShowAuthToast = window.showAuthToast;
-        let toastMsg = '';
-        // showAuthToast is a module-level import — intercept via DOM toast element
         checkout();
         const toastEl = document.getElementById('auth-toast');
         expect(toastEl).not.toBeNull();

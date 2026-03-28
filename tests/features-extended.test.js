@@ -103,7 +103,7 @@ describe('openVideoLightbox', () => {
         setupDOM('<div id="video-lightbox"><video id="lightbox-video"></video></div>');
         const lb = document.getElementById('video-lightbox');
         const vid = document.getElementById('lightbox-video');
-        vid.play = vi.fn();
+        vid.play = vi.fn(() => Promise.resolve());
         openVideoLightbox('https://example.com/video.mp4');
         expect(vid.src).toContain('video.mp4');
         expect(lb.style.display).toBe('flex');

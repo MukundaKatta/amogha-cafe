@@ -214,8 +214,8 @@ describe('subscribeToPlan — next weekday logic', () => {
 
         expect(mockAdd).toHaveBeenCalled();
         const nextDate = new Date(savedSubscription.nextDeliveryDate);
-        // Sunday = 0
-        expect(nextDate.getDay()).not.toBe(0);
+        // Sunday = 0; use getUTCDay since nextDeliveryDate is an ISO date string
+        expect(nextDate.getUTCDay()).not.toBe(0);
     });
 });
 

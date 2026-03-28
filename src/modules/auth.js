@@ -91,22 +91,26 @@ export function setCurrentUser(user) {
     safeSetItem('amoghaUser', JSON.stringify(user));
     // Start listening for order status notifications
     var db = getDb();
-    if (user && user.phone && typeof db !== 'undefined' && db) {
+    if (user && user.phone && typeof db !== 'undefined' && db && !window._notifListenerActive) {
         // Unsubscribe existing listener to prevent duplicates
         if (typeof window._notifListenerUnsub === 'function') {
             window._notifListenerUnsub();
         }
-        window._notifListenerActive = true;
-        window._notifListenerUnsub = db.collection('notifications').where('userPhone', '==', user.phone).where('read', '==', false)
-            .onSnapshot(function(snap) {
-                snap.docChanges().forEach(function(change) {
-                    if (change.type === 'added') {
-                        var n = change.doc.data();
-                        if (typeof window.sendPushNotification === 'function') window.sendPushNotification(n.title, n.body);
-                        change.doc.ref.update({ read: true });
-                    }
-                });
-            }, function(err) { console.error('Notification listener error:', err); });
+        try {
+            window._notifListenerUnsub = db.collection('notifications').where('userPhone', '==', user.phone).where('read', '==', false)
+                .onSnapshot(function(snap) {
+                    snap.docChanges().forEach(function(change) {
+                        if (change.type === 'added') {
+                            var n = change.doc.data();
+                            if (typeof window.sendPushNotification === 'function') window.sendPushNotification(n.title, n.body);
+                            change.doc.ref.update({ read: true });
+                        }
+                    });
+                }, function(err) { console.error('Notification listener error:', err); });
+            window._notifListenerActive = true;
+        } catch (e) {
+            console.error('Notification listener setup error:', e);
+        }
     }
 }
 
