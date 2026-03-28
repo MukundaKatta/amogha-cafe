@@ -11,15 +11,26 @@
     <meta property="og:type" content="restaurant.menu">
     <meta property="og:url" content="https://amoghahotels.com/menu/">
     <link rel="canonical" href="https://amoghahotels.com/menu/">
-    <link rel="icon" type="image/png" href="/amogha-logo.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2c1810">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Amogha">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+    <meta name="mobile-web-app-capable" content="yes">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
     <style>
+/* Standalone PWA mode fixes */
+@media all and (display-mode: standalone) {
+  body { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
+  body p, body span, body h1, body h2, body h3, body h4, body li, body td { -webkit-user-select: text; user-select: text; }
+  .top-bar { padding-top: env(safe-area-inset-top, 0); }
+  .floating-cart-bar, .cart-modal { padding-bottom: env(safe-area-inset-bottom, 0); }
+}
 /* ===== CSS VARIABLES ===== */
 :root {
     --primary: #8B1A1A;
@@ -616,7 +627,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     .container { padding: 0 1rem; }
 }
     </style>
-    <link rel="stylesheet" href="/mobile-responsive.css?v=2">
+    <link rel="stylesheet" href="/mobile-responsive.css?v=3">
 </head>
 <body>
 
@@ -1004,6 +1015,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
         var deliveryFee=subtotal>=FREE_DELIVERY_THRESHOLD?0:DELIVERY_FEE;
         var se=document.getElementById('subtotal-amount'),te=document.getElementById('total-amount');
         if(se)se.textContent=subtotal.toFixed(2);if(te)te.textContent=(subtotal+deliveryFee).toFixed(2);
+        var dn=document.querySelector('.delivery-note');if(dn)dn.textContent=deliveryFee===0?'Delivery fee: FREE \u2713':'Delivery fee: \u20B9'+DELIVERY_FEE+' (Free over \u20B9'+FREE_DELIVERY_THRESHOLD+')';
     }
 
     function updateQuantity(index,change) {

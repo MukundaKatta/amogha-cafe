@@ -462,6 +462,14 @@ export function displayCart() {
     var totalEl = document.getElementById('total-amount');
     if (subtotalEl) subtotalEl.textContent = subtotal.toFixed(2);
     if (totalEl) totalEl.textContent = total.toFixed(2);
+
+    // Update delivery fee display
+    var deliveryNote = document.querySelector('.delivery-note');
+    if (deliveryNote) {
+        deliveryNote.textContent = deliveryFee === 0
+            ? 'Delivery fee: FREE \u2713'
+            : 'Delivery fee: \u20B9' + DELIVERY_FEE + ' (Free over \u20B9' + FREE_DELIVERY_THRESHOLD + ')';
+    }
 }
 
 // Update quantity

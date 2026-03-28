@@ -212,6 +212,7 @@ window.addEventListener('error', function(event) {
     console.error('[Amogha] Unhandled error:', event.message, 'at', event.filename, ':', event.lineno);
 });
 window.addEventListener('unhandledrejection', function(event) {
+    if (event.reason && event.reason.name === 'AbortError') { event.preventDefault(); return; }
     console.error('[Amogha] Unhandled promise rejection:', event.reason);
 });
 

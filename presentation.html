@@ -640,6 +640,35 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.4 });
 
 slides.forEach(s => observer.observe(s));
+
+// Keyboard navigation
+let currentIdx = 0;
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+    e.preventDefault();
+    currentIdx = Math.min(currentIdx + 1, slides.length - 1);
+    slides[currentIdx].scrollIntoView({ behavior: 'smooth' });
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp') {
+    e.preventDefault();
+    currentIdx = Math.max(currentIdx - 1, 0);
+    slides[currentIdx].scrollIntoView({ behavior: 'smooth' });
+  } else if (e.key === 'Home') {
+    e.preventDefault();
+    currentIdx = 0;
+    slides[0].scrollIntoView({ behavior: 'smooth' });
+  } else if (e.key === 'End') {
+    e.preventDefault();
+    currentIdx = slides.length - 1;
+    slides[currentIdx].scrollIntoView({ behavior: 'smooth' });
+  }
+});
+// Sync currentIdx from scroll/dot navigation
+const idxObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) currentIdx = Array.from(slides).indexOf(e.target);
+  });
+}, { threshold: 0.5 });
+slides.forEach(s => idxObserver.observe(s));
 </script>
 </body>
 </html>

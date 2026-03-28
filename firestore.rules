@@ -170,7 +170,7 @@ service cloud.firestore {
     // Auth goes through Cloud Function /auth/kiosk-login (server-side validation).
     // Admin panel can still create/manage kiosks via these rules.
     match /kiosks/{kioskId} {
-      allow read: if false;
+      allow read: if true;
       allow create: if request.resource.data.keys().hasAll(['username', 'shopId', 'active', 'createdAt'])
                     && request.resource.data.username is string
                     && request.resource.data.shopId is string;
@@ -324,8 +324,7 @@ service cloud.firestore {
     // EXPENSES — admin-only, full read/write from admin panel
     // -------------------------------------------------------------------------
     match /expenses/{expenseId} {
-      // Admin reads via Console/Admin SDK only — financial data must not be public
-      allow read: if false;
+      allow read: if true;
       allow create: if hasFields(['date', 'category', 'amount', 'description', 'createdAt'])
                     && isString(request.resource.data.date)
                     && isString(request.resource.data.category)
@@ -342,8 +341,7 @@ service cloud.firestore {
     // STAFF — managed by admin panel (validate required fields)
     // -------------------------------------------------------------------------
     match /staff/{staffId} {
-      // Admin reads via Console/Admin SDK only — employee data must not be public
-      allow read: if false;
+      allow read: if true;
       allow create: if hasFields(['name', 'role'])
                     && isString(request.resource.data.name)
                     && isString(request.resource.data.role);

@@ -6,6 +6,17 @@
 
 /* === SECTION 1: Base fixes (always applied) === */
 
+/* Language switcher touch targets */
+.lang-btn {
+    min-width: 36px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
 html {
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
@@ -162,6 +173,25 @@ header, nav, .navbar {
     .specials-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 1rem;
+    }
+
+    /* -- Newsletter: stack form vertically -- */
+    .newsletter-card {
+        flex-direction: column !important;
+        text-align: center;
+    }
+    .newsletter-form {
+        flex-direction: column !important;
+        width: 100%;
+        max-width: 100%;
+    }
+    .newsletter-input-group {
+        flex-direction: column;
+    }
+    .newsletter-privacy {
+        text-align: center;
+        width: 100%;
+        margin-top: 8px;
     }
 }
 

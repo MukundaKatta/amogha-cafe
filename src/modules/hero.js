@@ -226,7 +226,7 @@ export function initHero() {
 
         // Play video on the first active slide (autoplay attribute alone isn't reliable)
         var firstVid = container.querySelector('.hero-slide.active video');
-        if (firstVid) { firstVid.play().catch(function() {}); }
+        if (firstVid) { firstVid._playP = firstVid.play(); if (firstVid._playP) firstVid._playP.catch(function() {}); }
 
         // Restart slideshow with new slides
         slides = container.querySelectorAll('.hero-slide');
@@ -234,9 +234,13 @@ export function initHero() {
         if (slides.length > 1) {
             slideshowInterval = setInterval(function() {
                 slides[current].classList.remove('active');
-                // Pause video on outgoing slide
+                // Pause video on outgoing slide (wait for pending play promise)
                 var oldVid = slides[current].querySelector('video');
-                if (oldVid) oldVid.pause();
+                if (oldVid) {
+                    var doPause = function(v) { return function() { v.pause(); }; }(oldVid);
+                    if (oldVid._playP) { oldVid._playP.then(doPause).catch(function() {}); oldVid._playP = null; }
+                    else { doPause(); }
+                }
 
                 current = (current + 1) % slides.length;
                 for (var k = 0; k < kbClasses.length; k++) slides[current].classList.remove(kbClasses[k]);
@@ -245,7 +249,7 @@ export function initHero() {
 
                 // Play video on incoming slide
                 var newVid = slides[current].querySelector('video');
-                if (newVid) { newVid.currentTime = 0; newVid.play(); }
+                if (newVid) { newVid.currentTime = 0; newVid._playP = newVid.play(); if (newVid._playP) newVid._playP.catch(function() {}); }
             }, 5000);
         }
     };

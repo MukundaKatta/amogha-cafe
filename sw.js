@@ -1,4 +1,4 @@
-const CACHE_NAME = 'amogha-v78';
+const CACHE_NAME = 'amogha-v87';
 const MAX_CACHE_ITEMS = 200; // Prevent unbounded cache growth
 const ASSETS = [
   './',
@@ -7,6 +7,9 @@ const ASSETS = [
   './script.js',
   './manifest.json',
   './amogha-logo.png',
+  './icon-192x192.png',
+  './icon-512x512.png',
+  './apple-touch-icon-180.png',
   // Hero slideshow images
   './bg.jpeg',
   './pics/Gemini_Generated_Image_gax5k7gax5k7gax5.png',

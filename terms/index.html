@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service — Amogha Cafe &amp; Restaurant</title>
+    <meta name="description" content="Terms of Service for the Amogha Cafe & Restaurant app and website.">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #D4AF37;
+            --gold-light: #E8C84A;
+            --gold-dark: #B8962E;
+            --bg-primary: #0F0F0F;
+            --bg-secondary: #1A1A1A;
+            --bg-card: #1E1E1E;
+            --text-primary: #F5F5F5;
+            --text-secondary: #B0B0B0;
+            --text-muted: #808080;
+            --border: #2A2A2A;
+            --max-width: 800px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, #1F1A10 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+
+        header a {
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+
+        header a:hover {
+            color: var(--gold-light);
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        main {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        section {
+            margin-bottom: 2.5rem;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 1.25rem 0 0.5rem;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        ul, ol {
+            color: var(--text-secondary);
+            margin: 0.5rem 0 1rem 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        li {
+            margin-bottom: 0.4rem;
+        }
+
+        li strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .card p:last-child {
+            margin-bottom: 0;
+        }
+
+        .toc {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .toc h2 {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .toc ol {
+            margin: 0 0 0 1.25rem;
+        }
+
+        .toc li {
+            margin-bottom: 0.3rem;
+        }
+
+        .toc a {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+        .contact-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, #1F1A10 100%);
+            border: 1px solid var(--gold-dark);
+        }
+
+        .effective-date {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--gold);
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            main {
+                padding: 1.5rem 1rem 3rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/">&#8592; Amogha Cafe &amp; Restaurant</a>
+        <h1>Terms of Service</h1>
+        <p>Last updated: March 28, 2026</p>
+    </header>
+
+    <main>
+        <p>Welcome to Amogha Cafe &amp; Restaurant ("Amogha," "we," "us," or "our"), operated by Amogha Hotels. These Terms of Service ("Terms") govern your access to and use of the Amogha Cafe &amp; Restaurant mobile application, website, and related services (collectively, the "Service").</p>
+
+        <p>By accessing or using the Service, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use the Service.</p>
+
+        <nav class="toc">
+            <h2>Contents</h2>
+            <ol>
+                <li><a href="#acceptance">Acceptance of Terms</a></li>
+                <li><a href="#use-of-service">Use of Service</a></li>
+                <li><a href="#user-accounts">User Accounts</a></li>
+                <li><a href="#orders-payments">Orders &amp; Payments</a></li>
+                <li><a href="#delivery">Delivery Policy</a></li>
+                <li><a href="#cancellation-refunds">Cancellation &amp; Refund Policy</a></li>
+                <li><a href="#catering">Catering Services</a></li>
+                <li><a href="#gift-cards">Gift Cards</a></li>
+                <li><a href="#loyalty-program">Loyalty Program</a></li>
+                <li><a href="#intellectual-property">Intellectual Property</a></li>
+                <li><a href="#limitation-liability">Limitation of Liability</a></li>
+                <li><a href="#changes">Changes to Terms</a></li>
+                <li><a href="#governing-law">Governing Law</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+            </ol>
+        </nav>
+
+        <section id="acceptance">
+            <h2>1. Acceptance of Terms</h2>
+            <p>By creating an account, placing an order, making a reservation, or otherwise using the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms, as well as our <a href="/privacy/">Privacy Policy</a>.</p>
+            <p>You must be at least 18 years of age, or the age of legal majority in your jurisdiction, to use the Service. If you are under 18, you may only use the Service under the supervision of a parent or legal guardian who agrees to be bound by these Terms.</p>
+        </section>
+
+        <section id="use-of-service">
+            <h2>2. Use of Service</h2>
+            <p>The Service allows you to:</p>
+            <ul>
+                <li><strong>Browse our Menu:</strong> View our full menu, including descriptions, pricing, and images of available items.</li>
+                <li><strong>Place Orders:</strong> Order food for delivery or pickup through the app or website.</li>
+                <li><strong>Make Reservations:</strong> Reserve tables at our restaurant for dine-in experiences.</li>
+                <li><strong>Book Catering:</strong> Enquire about and book catering services for events.</li>
+                <li><strong>Earn Rewards:</strong> Participate in our loyalty program and redeem rewards.</li>
+            </ul>
+            <p>You agree to use the Service only for lawful purposes and in accordance with these Terms. You shall not:</p>
+            <ul>
+                <li>Use the Service for any fraudulent or unlawful purpose.</li>
+                <li>Interfere with or disrupt the Service or its servers and networks.</li>
+                <li>Attempt to gain unauthorized access to any part of the Service.</li>
+                <li>Use automated systems (bots, scrapers) to access the Service without our written permission.</li>
+                <li>Submit false or misleading information, including fake orders or reservations.</li>
+            </ul>
+        </section>
+
+        <section id="user-accounts">
+            <h2>3. User Accounts</h2>
+            <p>To place orders and access certain features, you must create an account using your phone number. Our authentication process works as follows:</p>
+            <ul>
+                <li><strong>Phone Number Verification:</strong> You register and log in using your mobile phone number.</li>
+                <li><strong>PIN-Based Authentication:</strong> You create a secure PIN to access your account. This PIN is personal and should not be shared with anyone.</li>
+                <li><strong>Account Security:</strong> You are responsible for maintaining the confidentiality of your PIN and for all activities that occur under your account.</li>
+            </ul>
+            <p>You agree to provide accurate and complete information when creating your account and to update your information promptly if it changes. If you suspect unauthorized use of your account, please contact us immediately.</p>
+            <p>We reserve the right to suspend or terminate your account at our discretion if we believe you have violated these Terms.</p>
+        </section>
+
+        <section id="orders-payments">
+            <h2>4. Orders &amp; Payments</h2>
+
+            <h3>Placing Orders</h3>
+            <p>When you place an order through the Service, you are making an offer to purchase the selected items. We reserve the right to accept or decline any order for any reason, including item unavailability, pricing errors, or suspected fraudulent activity.</p>
+            <p>All prices displayed on the Service are in Indian Rupees (INR) and are inclusive of applicable taxes unless stated otherwise. Prices are subject to change without prior notice.</p>
+
+            <h3>Payment Methods</h3>
+            <p>We accept the following payment methods:</p>
+            <ul>
+                <li><strong>Online Payment via Razorpay:</strong> Credit cards, debit cards, UPI, net banking, and wallets processed securely through Razorpay. We do not store your payment card details.</li>
+                <li><strong>Cash on Delivery (COD):</strong> Pay in cash at the time of delivery. COD availability may be subject to order value limits and location restrictions.</li>
+            </ul>
+            <p>By making a payment, you represent that you are authorized to use the chosen payment method. All online transactions are subject to Razorpay's terms and conditions.</p>
+        </section>
+
+        <section id="delivery">
+            <h2>5. Delivery Policy</h2>
+            <ul>
+                <li><strong>Delivery Area:</strong> We deliver within a 5 km radius of our restaurant in Kukatpally, Hyderabad.</li>
+                <li><strong>Free Delivery:</strong> Orders above &#8377;500 qualify for free delivery within our delivery area.</li>
+                <li><strong>Delivery Charges:</strong> Orders below &#8377;500 may be subject to a delivery fee, which will be displayed at checkout before you confirm your order.</li>
+                <li><strong>Delivery Times:</strong> Estimated delivery times are provided at the time of ordering. While we strive to deliver within the estimated time, actual delivery times may vary due to order volume, weather, traffic, or other factors beyond our control.</li>
+                <li><strong>Delivery Verification:</strong> Our delivery personnel may verify your identity or order details upon delivery.</li>
+            </ul>
+            <p>We are not responsible for delays caused by incorrect or incomplete delivery addresses provided by you.</p>
+        </section>
+
+        <section id="cancellation-refunds">
+            <h2>6. Cancellation &amp; Refund Policy</h2>
+
+            <h3>Order Cancellation</h3>
+            <ul>
+                <li>You may cancel an order within a short window after placing it, provided the restaurant has not yet begun preparing your food.</li>
+                <li>Once food preparation has started, cancellations may not be accepted.</li>
+                <li>To request a cancellation, please contact us immediately at <a href="tel:+919121004999">+91 91210 04999</a>.</li>
+            </ul>
+
+            <h3>Refunds</h3>
+            <ul>
+                <li><strong>Cancelled Orders:</strong> If your order is successfully cancelled before preparation begins, a full refund will be issued to your original payment method within 5-7 business days.</li>
+                <li><strong>Quality Issues:</strong> If you receive an order that is incorrect, damaged, or does not meet reasonable quality standards, please contact us within 30 minutes of delivery. We will offer a replacement or a refund at our discretion.</li>
+                <li><strong>Non-Delivery:</strong> In the rare event that your order is not delivered, you will receive a full refund.</li>
+                <li><strong>COD Orders:</strong> Refunds for cash-on-delivery orders, where applicable, will be processed via bank transfer or credit to your account wallet.</li>
+            </ul>
+            <p>Refund decisions are made at the sole discretion of Amogha Cafe &amp; Restaurant. We reserve the right to refuse refund requests that we determine to be fraudulent or abusive.</p>
+        </section>
+
+        <section id="catering">
+            <h2>7. Catering Services</h2>
+            <p>We offer catering services for events, parties, and corporate functions. The following terms apply to catering orders:</p>
+            <ul>
+                <li><strong>Booking:</strong> Catering orders must be placed at least 48 hours in advance. Large events may require additional lead time.</li>
+                <li><strong>Menu &amp; Pricing:</strong> Catering menus and pricing are provided on request and may differ from our regular menu. A customized quote will be provided based on your requirements.</li>
+                <li><strong>Advance Payment:</strong> A minimum advance payment of 50% of the estimated order value is required to confirm a catering booking. The remaining balance is due on or before the day of the event.</li>
+                <li><strong>Cancellation:</strong> Catering cancellations made more than 24 hours before the event will receive a refund of the advance payment, minus a 10% processing fee. Cancellations within 24 hours of the event are non-refundable.</li>
+                <li><strong>Modifications:</strong> Changes to the catering order (guest count, menu items) must be communicated at least 24 hours before the event. We will do our best to accommodate changes, but cannot guarantee availability.</li>
+            </ul>
+        </section>
+
+        <section id="gift-cards">
+            <h2>8. Gift Cards</h2>
+            <ul>
+                <li><strong>Purchase &amp; Redemption:</strong> Gift cards can be purchased through the Service and redeemed against any order. Gift card values are in Indian Rupees (INR).</li>
+                <li><strong>Validity:</strong> Gift cards are valid for 12 months from the date of purchase unless otherwise stated.</li>
+                <li><strong>Non-Transferable for Cash:</strong> Gift cards cannot be exchanged for cash, returned for a refund, or used to purchase other gift cards.</li>
+                <li><strong>Balance:</strong> If the order value exceeds the gift card balance, the remaining amount must be paid using another accepted payment method. Any unused balance remains on the gift card for future use.</li>
+                <li><strong>Lost or Stolen:</strong> We are not responsible for lost, stolen, or unauthorized use of gift cards. Treat your gift card like cash.</li>
+            </ul>
+        </section>
+
+        <section id="loyalty-program">
+            <h2>9. Loyalty Program</h2>
+            <p>Our loyalty program rewards you for ordering with us. By participating, you agree to the following:</p>
+            <ul>
+                <li><strong>Earning Points:</strong> You earn loyalty points on eligible orders placed through the Service. The number of points earned is determined by the order value and any active promotions.</li>
+                <li><strong>Redeeming Points:</strong> Accumulated points can be redeemed for discounts on future orders, as per the redemption rates published on the Service.</li>
+                <li><strong>Expiry:</strong> Loyalty points expire 6 months after the date they were earned if not redeemed.</li>
+                <li><strong>Non-Transferable:</strong> Loyalty points are tied to your account and cannot be transferred to another user, exchanged for cash, or combined with another account.</li>
+                <li><strong>Program Changes:</strong> We reserve the right to modify, suspend, or discontinue the loyalty program at any time, including changing the earning rate, redemption rate, or expiry terms. We will provide reasonable notice of significant changes.</li>
+                <li><strong>Abuse:</strong> We reserve the right to void points and suspend accounts if we detect abuse, fraud, or violation of these Terms in connection with the loyalty program.</li>
+            </ul>
+        </section>
+
+        <section id="intellectual-property">
+            <h2>10. Intellectual Property</h2>
+            <p>All content on the Service, including but not limited to text, graphics, logos, images, photographs, menu descriptions, recipes, software, and design elements, is the property of Amogha Hotels or its licensors and is protected by applicable intellectual property laws.</p>
+            <p>You may not:</p>
+            <ul>
+                <li>Reproduce, distribute, modify, or create derivative works from any content on the Service without our prior written consent.</li>
+                <li>Use our trademarks, service marks, or trade names without authorization.</li>
+                <li>Download, copy, or save content from the Service for commercial purposes.</li>
+            </ul>
+            <p>The "Amogha" name, logo, and associated branding are trademarks of Amogha Hotels. Unauthorized use is strictly prohibited.</p>
+        </section>
+
+        <section id="limitation-liability">
+            <h2>11. Limitation of Liability</h2>
+            <p>To the fullest extent permitted by applicable law:</p>
+            <ul>
+                <li>The Service is provided on an "as is" and "as available" basis without warranties of any kind, whether express or implied.</li>
+                <li>We do not warrant that the Service will be uninterrupted, error-free, or free of viruses or other harmful components.</li>
+                <li>We shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or goodwill, arising out of or in connection with your use of the Service.</li>
+                <li>Our total liability for any claim arising from or related to the Service shall not exceed the amount you paid to us in the 3 months preceding the event giving rise to the claim.</li>
+                <li>We are not liable for any adverse reactions, allergies, or health issues resulting from the consumption of food ordered through the Service. Customers with food allergies or dietary restrictions are advised to contact us directly before placing an order.</li>
+            </ul>
+        </section>
+
+        <section id="changes">
+            <h2>12. Changes to Terms</h2>
+            <p>We may update these Terms from time to time at our sole discretion. When we make changes, we will revise the "Last updated" date at the top of this page and, where appropriate, notify you through the Service or via other communication channels.</p>
+            <p>Your continued use of the Service after the revised Terms have been posted constitutes your acceptance of the changes. If you do not agree to the updated Terms, you must discontinue use of the Service.</p>
+            <p>We encourage you to review these Terms periodically to stay informed of any updates.</p>
+        </section>
+
+        <section id="governing-law">
+            <h2>13. Governing Law</h2>
+            <p>These Terms shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law provisions.</p>
+            <p>Any disputes arising out of or relating to these Terms or the Service shall be subject to the exclusive jurisdiction of the courts in Hyderabad, Telangana, India.</p>
+            <p>If any provision of these Terms is found to be invalid or unenforceable by a court of competent jurisdiction, the remaining provisions shall continue in full force and effect.</p>
+        </section>
+
+        <section id="contact">
+            <h2>14. Contact Us</h2>
+            <div class="card contact-card">
+                <p><strong>Amogha Cafe &amp; Restaurant</strong></p>
+                <p>Kukatpally, Hyderabad, Telangana, India</p>
+                <p>Phone: <a href="tel:+919121004999">+91 91210 04999</a></p>
+                <p>Email: <a href="mailto:amoghahotels@gmail.com">amoghahotels@gmail.com</a></p>
+            </div>
+            <p>If you have any questions, concerns, or feedback regarding these Terms of Service, please do not hesitate to reach out to us.</p>
+        </section>
+
+        <div class="effective-date">
+            <p>These Terms of Service are effective as of March 28, 2026.</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Amogha Hotels. All rights reserved. | <a href="/">Back to Home</a></p>
+    </footer>
+</body>
+</html>

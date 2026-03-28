@@ -1476,6 +1476,8 @@ export function initUI() {
         });
 
         window.addEventListener('unhandledrejection', function(e) {
+            // Suppress AbortError from video/audio play() race conditions
+            if (e.reason && e.reason.name === 'AbortError') { e.preventDefault(); return; }
             console.error('[Amogha Unhandled Promise]', e.reason);
             // Prevent default browser console noise for known non-critical failures
             if (e.reason && e.reason.code === 'permission-denied') {

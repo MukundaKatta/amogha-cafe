@@ -83,6 +83,8 @@ function createAudio() {
     return audio;
 }
 
+var playPromise = null;
+
 function playTrack(playlist, trackIndex) {
     currentPlaylist = playlist;
     currentTrackIndex = trackIndex % playlist.tracks.length;
@@ -90,14 +92,20 @@ function playTrack(playlist, trackIndex) {
 
     var a = createAudio();
     a.src = track.file;
-    a.play().then(function() {
-        isPlaying = true;
-        updatePlayerUI();
-    }).catch(function() {
-        // Autoplay blocked — needs user interaction
-        isPlaying = false;
-        updatePlayerUI();
-    });
+    playPromise = a.play();
+    if (playPromise) {
+        playPromise.then(function() {
+            playPromise = null;
+            isPlaying = true;
+            updatePlayerUI();
+        }).catch(function(err) {
+            playPromise = null;
+            if (err.name !== 'AbortError') {
+                isPlaying = false;
+                updatePlayerUI();
+            }
+        });
+    }
 }
 
 function nextTrack() {
@@ -120,13 +128,30 @@ function togglePlay() {
     }
 
     if (isPlaying) {
-        audio.pause();
-        isPlaying = false;
-    } else {
-        audio.play().then(function() {
-            isPlaying = true;
+        var doPause = function() {
+            audio.pause();
+            isPlaying = false;
             updatePlayerUI();
-        }).catch(function() {});
+        };
+        if (playPromise) {
+            playPromise.then(doPause).catch(function() {});
+        } else {
+            doPause();
+        }
+    } else {
+        playPromise = audio.play();
+        if (playPromise) {
+            playPromise.then(function() {
+                playPromise = null;
+                isPlaying = true;
+                updatePlayerUI();
+            }).catch(function(err) {
+                playPromise = null;
+                if (err.name !== 'AbortError') {
+                    updatePlayerUI();
+                }
+            });
+        }
     }
     updatePlayerUI();
 }

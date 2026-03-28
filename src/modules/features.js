@@ -181,7 +181,7 @@ export function openVideoLightbox(url) {
     if (!lb || !vid) return;
     vid.src = url;
     lb.style.display = 'flex';
-    vid.play();
+    vid.play().catch(function() {});
 }
 
 export function closeVideoLightbox() {

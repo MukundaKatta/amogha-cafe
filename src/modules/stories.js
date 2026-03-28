@@ -11,8 +11,8 @@ var DEMO_STORIES = [
         author: 'Chef\'s Corner',
         avatar: '👨‍🍳',
         items: [
-            { type: 'image', src: '/pics/biryani.jpg', caption: 'Today\'s special Hyderabadi Biryani — made with love!', duration: 5000 },
-            { type: 'image', src: '/pics/tandoori.jpg', caption: 'Fresh tandoori straight from the clay oven', duration: 5000 },
+            { type: 'image', src: '/pics/gourmet-meal-with-grilled-meat-rice-generated-by-ai.jpg', caption: 'Today\'s special Hyderabadi Biryani — made with love!', duration: 5000 },
+            { type: 'image', src: '/pics/Gemini_Generated_Image_umcuogumcuogumcu.png', caption: 'Fresh tandoori straight from the clay oven', duration: 5000 },
             { type: 'text', content: 'Ask your server about our secret masala blend!', bg: 'linear-gradient(135deg, #D4A017, #8B6914)', duration: 4000 }
         ]
     },
@@ -21,7 +21,7 @@ var DEMO_STORIES = [
         author: 'Behind the Scenes',
         avatar: '🍳',
         items: [
-            { type: 'image', src: '/pics/kitchen.jpg', caption: 'Our kitchen runs on passion and fresh ingredients', duration: 5000 },
+            { type: 'image', src: '/pics/Gemini_Generated_Image_gax5k7gax5k7gax5.png', caption: 'Our kitchen runs on passion and fresh ingredients', duration: 5000 },
             { type: 'text', content: 'Did you know? We source spices directly from farms in Andhra Pradesh', bg: 'linear-gradient(135deg, #2c1810, #5a3825)', duration: 5000 }
         ]
     },
@@ -48,7 +48,7 @@ var DEMO_STORIES = [
         author: 'New on Menu',
         avatar: '🆕',
         items: [
-            { type: 'image', src: '/pics/dessert.jpg', caption: 'Introducing: Double Ka Meetha — a Hyderabadi classic!', duration: 5000 },
+            { type: 'image', src: '/pics/Gemini_Generated_Image_h1vezgh1vezgh1ve.png', caption: 'Introducing: Double Ka Meetha — a Hyderabadi classic!', duration: 5000 },
             { type: 'text', content: 'Try our new Mango Lassi — perfect for summer!', bg: 'linear-gradient(135deg, #f9d423, #ff4e50)', duration: 4000 }
         ]
     }
