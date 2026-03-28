@@ -1,0 +1,12 @@
+Initial release of Amogha Cafe & Restaurant app!
+
+- Browse our complete menu with photos and descriptions
+- Place orders with multiple payment options
+- Earn loyalty points and unlock rewards
+- AR dish preview to see items on your table
+- Voice ordering for hands-free convenience
+- AI chatbot for menu recommendations
+- Real-time order tracking
+- Table reservations
+- Gift cards, referrals, and group ordering
+- Dark mode support

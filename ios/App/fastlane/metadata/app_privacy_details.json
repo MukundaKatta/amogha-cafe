@@ -1,0 +1,58 @@
+{
+  "data_protections": [
+    "DATA_NOT_LINKED_TO_YOU"
+  ],
+  "privacy_categories": [
+    {
+      "category": "LOCATION",
+      "purposes": ["APP_FUNCTIONALITY"],
+      "data_protections": ["DATA_NOT_LINKED_TO_YOU"],
+      "description": "Approximate location used for geofence-based order pickup notifications and weather-based menu recommendations. Not linked to user identity."
+    },
+    {
+      "category": "CONTACT_INFO",
+      "purposes": ["APP_FUNCTIONALITY"],
+      "data_protections": ["DATA_LINKED_TO_YOU"],
+      "description": "Phone number collected for account creation, order placement, and WhatsApp-based order confirmations."
+    },
+    {
+      "category": "IDENTIFIERS",
+      "purposes": ["APP_FUNCTIONALITY"],
+      "data_protections": ["DATA_LINKED_TO_YOU"],
+      "description": "User ID (phone number) used for loyalty points tracking, order history, and personalization."
+    },
+    {
+      "category": "USAGE_DATA",
+      "purposes": ["ANALYTICS", "APP_FUNCTIONALITY"],
+      "data_protections": ["DATA_NOT_LINKED_TO_YOU"],
+      "description": "Order history and app usage patterns for personalized recommendations and analytics."
+    },
+    {
+      "category": "PURCHASES",
+      "purposes": ["APP_FUNCTIONALITY"],
+      "data_protections": ["DATA_LINKED_TO_YOU"],
+      "description": "Purchase history for order tracking, loyalty points, and receipt generation."
+    }
+  ],
+  "notes": {
+    "third_party_sdks": [
+      {
+        "name": "Firebase (Google)",
+        "purpose": "Backend database, cloud functions, push notifications, analytics",
+        "data_collected": ["Usage data", "Device identifiers"]
+      },
+      {
+        "name": "Razorpay",
+        "purpose": "Payment processing",
+        "data_collected": ["Payment information (processed by Razorpay, not stored by app)"]
+      },
+      {
+        "name": "Google Vertex AI (Gemini)",
+        "purpose": "AI-powered chatbot and menu recommendations",
+        "data_collected": ["User queries (not linked to identity)"]
+      }
+    ],
+    "encryption": "The app uses HTTPS (TLS) for all network communication. No custom encryption algorithms are used. This qualifies for the encryption exemption under Category 5 Part 2 of the EAR.",
+    "tracking": "The app does NOT use the App Tracking Transparency framework as it does not track users across other companies' apps or websites."
+  }
+}

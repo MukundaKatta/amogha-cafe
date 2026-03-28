@@ -1,16 +1,20 @@
-name: Release iOS to TestFlight
+name: Release iOS
 
-# Builds signed IPA and uploads to TestFlight via fastlane.
+# Builds signed IPA and uploads to TestFlight or submits for App Store review via fastlane.
 # Requires macOS runner for Xcode build.
 
 on:
   workflow_dispatch:
     inputs:
-      upload:
-        description: 'Upload to TestFlight'
+      release_type:
+        description: 'Release type'
         required: true
-        type: boolean
-        default: true
+        type: choice
+        options:
+          - testflight
+          - app_store_review
+          - build_only
+        default: testflight
 
 jobs:
   release-ios:
@@ -46,7 +50,9 @@ jobs:
 
       - name: Run fastlane
         run: |
-          if [ "${{ github.event.inputs.upload }}" == "true" ]; then
+          if [ "${{ github.event.inputs.release_type }}" == "app_store_review" ]; then
+            bundle exec fastlane release
+          elif [ "${{ github.event.inputs.release_type }}" == "testflight" ]; then
             bundle exec fastlane beta
           else
             bundle exec fastlane build_only

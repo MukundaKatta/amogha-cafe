@@ -45,5 +45,15 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Amogha Cafe uses your location to notify you when you're near our cafe and to provide weather-based menu recommendations.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Amogha Cafe uses your camera to preview how dishes look on your table with our AR feature.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Amogha Cafe uses microphone access for voice ordering, allowing you to place orders hands-free.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Amogha Cafe saves AR preview photos to your photo library when you choose to share them.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

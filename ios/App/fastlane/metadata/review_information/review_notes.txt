@@ -1,0 +1,28 @@
+Thank you for reviewing Amogha Cafe & Restaurant!
+
+DEMO ACCOUNT:
+Phone: 9999999999
+PIN: 1234
+
+HOW TO TEST KEY FEATURES:
+
+1. MENU BROWSING: Tap "Menu" in the navigation bar to browse categories. Use the veg/non-veg filters to filter items.
+
+2. ORDERING: Add items to cart, proceed to checkout. For testing payments, use Razorpay test mode (no real charges).
+
+3. LOYALTY: After logging in with the demo account, visit the Loyalty section to see points balance and tier status.
+
+4. AR PREVIEW: On a menu item, tap the AR icon to launch camera-based augmented reality preview of the dish.
+
+5. VOICE ORDERING: Tap the microphone icon to use voice commands for hands-free ordering.
+
+6. RESERVATIONS: Go to the Reservations section to book a table with date and time selection.
+
+7. AI CHATBOT: Tap the chat icon to interact with our AI assistant for menu recommendations.
+
+NOTES:
+- The app requires an internet connection for all features.
+- Location services are used for geofence-based pickup notifications and weather-based menu suggestions.
+- Camera is used for AR dish preview feature.
+- Microphone is used for voice ordering feature.
+- No background location tracking is performed.
