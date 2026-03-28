@@ -4,6 +4,8 @@ import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE } from '../core/constants.js';
 import { getDb } from '../core/firebase.js';
 
 // ===== SHOPPING CART =====
+function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 export let cart = [];
 export let pendingCartItem = null;
 
@@ -185,8 +187,8 @@ export function openAddonPicker(itemName, basePrice) {
         return '<div class="addon-option" data-idx="' + idx + '" onclick="toggleAddonOption(this, ' + idx + ')">' +
             '<div class="addon-checkbox"></div>' +
             '<div class="addon-option-info">' +
-                '<div class="addon-option-name">' + addon.name + '</div>' +
-                '<div class="addon-option-cat">' + (addon.category || '') + '</div>' +
+                '<div class="addon-option-name">' + escapeHtml(addon.name) + '</div>' +
+                '<div class="addon-option-cat">' + escapeHtml(addon.category || '') + '</div>' +
             '</div>' +
             '<div class="addon-option-price">+\u20B9' + addon.price + '</div>' +
         '</div>';
@@ -284,7 +286,7 @@ export function updateButtonState(itemName) {
 
             if (qty > 0 && !btn.classList.contains('has-qty')) {
                 btn.classList.add('has-qty');
-                btn.innerHTML = `<span class="qty-minus" data-item="${itemName}" aria-label="Decrease quantity">−</span><span class="qty-count" aria-live="polite" aria-label="Quantity: ${qty}">${qty}</span><span class="qty-plus" data-item="${itemName}" aria-label="Increase quantity">+</span>`;
+                btn.innerHTML = `<span class="qty-minus" data-item="${escapeHtml(itemName)}" aria-label="Decrease quantity">−</span><span class="qty-count" aria-live="polite" aria-label="Quantity: ${qty}">${qty}</span><span class="qty-plus" data-item="${escapeHtml(itemName)}" aria-label="Increase quantity">+</span>`;
             } else if (qty > 0) {
                 var qtyEl = btn.querySelector('.qty-count');
                 if (qtyEl) {
@@ -473,10 +475,18 @@ export function displayCart() {
 }
 
 // Update quantity
+var MAX_ITEM_QUANTITY = 50;
+
 export function updateQuantity(index, change) {
     if (!cart[index]) return;
     const itemName = cart[index].name;
-    cart[index].quantity += change;
+    var newQty = cart[index].quantity + change;
+
+    if (newQty > MAX_ITEM_QUANTITY) {
+        if (window._ariaAnnounce) window._ariaAnnounce('Maximum quantity is ' + MAX_ITEM_QUANTITY);
+        return;
+    }
+    cart[index].quantity = newQty;
 
     if (cart[index].quantity <= 0) {
         cart.splice(index, 1);
@@ -600,6 +610,7 @@ export function initCart() {
                 saveCart();
                 updateButtonState(itemName);
                 updateFloatingCart();
+                updateFloatingCartBar();
             }
             return;
         }

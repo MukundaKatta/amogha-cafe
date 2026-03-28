@@ -57,6 +57,7 @@ describe('sendChatMessage — action branches', () => {
     it('calls window.checkout when action is "checkout"', async () => {
         window.checkout = vi.fn();
         globalThis.fetch.mockResolvedValueOnce({
+            ok: true,
             json: () => Promise.resolve({ reply: 'Proceeding to checkout', action: 'checkout' }),
         });
 
@@ -74,6 +75,7 @@ describe('sendChatMessage — action branches', () => {
         document.getElementById = (id) => document.body.querySelector('#' + id);
 
         globalThis.fetch.mockResolvedValueOnce({
+            ok: true,
             json: () => Promise.resolve({ reply: 'Here is our menu', action: 'showMenu' }),
         });
 
@@ -84,6 +86,7 @@ describe('sendChatMessage — action branches', () => {
     it('does not call checkout when window.checkout is not a function', async () => {
         window.checkout = 'not-a-function';
         globalThis.fetch.mockResolvedValueOnce({
+            ok: true,
             json: () => Promise.resolve({ reply: 'Checkout', action: 'checkout' }),
         });
 

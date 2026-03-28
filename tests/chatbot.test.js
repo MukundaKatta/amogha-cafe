@@ -163,6 +163,7 @@ describe('sendChatMessage', () => {
     it('adds a user bubble with the message text to #ai-chat-messages', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Test reply', suggestedItems: [] }),
             })
         );
@@ -201,6 +202,7 @@ describe('sendChatMessage', () => {
     it('displays bot reply bubble after successful fetch', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Great choice!', suggestedItems: [] }),
             })
         );
@@ -218,6 +220,7 @@ describe('sendChatMessage', () => {
     it('removes typing indicator after successful fetch', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'All good', suggestedItems: [] }),
             })
         );
@@ -231,6 +234,7 @@ describe('sendChatMessage', () => {
     it('calls fetch with POST to /api/chat', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
             })
         );
@@ -245,6 +249,7 @@ describe('sendChatMessage', () => {
     it('sends message text in fetch body', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
             })
         );
@@ -277,6 +282,7 @@ describe('sendChatMessage', () => {
     it('renders suggested item buttons when suggestedItems is non-empty', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () =>
                     Promise.resolve({
                         reply: 'Try these!',
@@ -300,6 +306,7 @@ describe('sendChatMessage', () => {
     it('does not render item buttons when suggestedItems is empty', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'No items', suggestedItems: [] }),
             })
         );
@@ -314,6 +321,7 @@ describe('sendChatMessage', () => {
     it('clears the text input field after sending', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
             })
         );
@@ -328,6 +336,7 @@ describe('sendChatMessage', () => {
     it('uses presetMsg instead of input value when provided', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
             })
         );
@@ -342,6 +351,7 @@ describe('sendChatMessage', () => {
     it('preset message appears in user bubble', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
             })
         );
@@ -358,6 +368,7 @@ describe('sendChatMessage', () => {
     it('calls window.checkout() when response action is "checkout"', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () =>
                     Promise.resolve({ reply: 'Proceeding to checkout', suggestedItems: [], action: 'checkout' }),
             })
@@ -371,6 +382,7 @@ describe('sendChatMessage', () => {
     it('does not call window.checkout() when action is not "checkout"', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Here is the menu', suggestedItems: [], action: 'showMenu' }),
             })
         );
@@ -391,6 +403,7 @@ describe('sendChatMessage', () => {
 
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () =>
                     Promise.resolve({ reply: 'Here is the menu', suggestedItems: [], action: 'showMenu' }),
             })
@@ -404,6 +417,7 @@ describe('sendChatMessage', () => {
         // No #menu in DOM
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () =>
                     Promise.resolve({ reply: 'Here', suggestedItems: [], action: 'showMenu' }),
             })
@@ -425,6 +439,7 @@ describe('initChatbot — Enter key sends message', () => {
     it('calls sendChatMessage when Enter key is pressed on the input (line 54)', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Enter reply', suggestedItems: [] }),
             })
         );
@@ -477,6 +492,7 @@ describe('sendChatMessage — cart mapping in fetch body (line 103)', () => {
 
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Got it', suggestedItems: [] }),
             })
         );
@@ -499,6 +515,7 @@ describe('sendChatMessage — cart mapping in fetch body (line 103)', () => {
 
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
             })
         );
@@ -559,6 +576,7 @@ describe('sendChatMessage — input element is null (line 74)', () => {
         document.getElementById = (id) => document.body.querySelector('#' + id);
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Reply without input', suggestedItems: [] }),
             })
         );
@@ -582,6 +600,7 @@ describe('sendChatMessage — input exists and gets cleared (line 76)', () => {
     it('clears the input value when input exists and presetMsg is provided', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
             })
         );
@@ -606,6 +625,7 @@ describe('sendChatMessage — complete async fetch flow coverage (lines 76-113)'
     it('sends history (last 6 messages) in the fetch body', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'R1', suggestedItems: [] }),
             })
         );
@@ -630,6 +650,7 @@ describe('sendChatMessage — complete async fetch flow coverage (lines 76-113)'
 
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Veggie!', suggestedItems: [] }),
             })
         );
@@ -643,6 +664,7 @@ describe('sendChatMessage — complete async fetch flow coverage (lines 76-113)'
     it('sends empty preferences when getCurrentUser returns null', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'OK', suggestedItems: [] }),
             })
         );
@@ -656,6 +678,7 @@ describe('sendChatMessage — complete async fetch flow coverage (lines 76-113)'
     it('uses fallback reply text when data.reply is falsy', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ suggestedItems: [] }),
             })
         );
@@ -683,6 +706,7 @@ describe('sendChatMessage — user preferences with dietaryPrefs (line 104)', ()
         global.fetch = vi.fn((url, opts) => {
             capturedBody = JSON.parse(opts.body);
             return Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Test', suggestedItems: [] }),
             });
         });
@@ -701,6 +725,7 @@ describe('sendChatMessage — user preferences with dietaryPrefs (line 104)', ()
         global.fetch = vi.fn((url, opts) => {
             capturedBody = JSON.parse(opts.body);
             return Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Test', suggestedItems: [] }),
             });
         });
@@ -719,6 +744,7 @@ describe('sendChatMessage — user preferences with dietaryPrefs (line 104)', ()
         global.fetch = vi.fn((url, opts) => {
             capturedBody = JSON.parse(opts.body);
             return Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Test', suggestedItems: [] }),
             });
         });
@@ -737,6 +763,7 @@ describe('sendChatMessage — user preferences with dietaryPrefs (line 104)', ()
         global.fetch = vi.fn((url, opts) => {
             capturedBody = JSON.parse(opts.body);
             return Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ reply: 'Test', suggestedItems: [] }),
             });
         });

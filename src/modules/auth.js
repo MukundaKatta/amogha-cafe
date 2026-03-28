@@ -194,7 +194,10 @@ export function switchAuthView(view) {
     document.getElementById('auth-' + view).classList.add('active');
 }
 
+var _authInProgress = false;
+
 export function handleSignUp() {
+    if (_authInProgress) return;
     var name = document.getElementById('signup-name').value.trim();
     var phone = document.getElementById('signup-phone').value.trim();
     var password = document.getElementById('signup-password').value;
@@ -233,15 +236,18 @@ export function handleSignUp() {
         return;
     }
 
+    _authInProgress = true;
     db.collection('users').doc(phone).get().then(async function(doc) {
         if (doc.exists) {
             msg.textContent = 'This phone number is already registered. Please sign in.';
             msg.className = 'auth-msg error';
+            _authInProgress = false;
             return;
         }
         var hashedPin = await hashPin(password);
         var newUser = { name: name, phone: phone, pin: hashedPin, usedWelcomeBonus: false, createdAt: new Date().toISOString() };
         return db.collection('users').doc(phone).set(newUser).then(function() {
+            _authInProgress = false;
             try {
                 setCurrentUser(newUser);
                 updateSignInUI(newUser);
@@ -265,6 +271,7 @@ export function handleSignUp() {
             }
         });
     }).catch(function(err) {
+        _authInProgress = false;
         console.error('SignUp error:', err);
         var errMsg = err.code === 'permission-denied' ? 'Access denied. Please contact support.' : 'Connection error. Please check your internet and try again.';
         msg.textContent = errMsg + ' (' + (err.code || err.message || 'unknown') + ')';
@@ -273,6 +280,7 @@ export function handleSignUp() {
 }
 
 export function handleSignIn() {
+    if (_authInProgress) return;
     var phone = document.getElementById('signin-phone').value.trim();
     var password = document.getElementById('signin-password').value;
     var msg = document.getElementById('signin-msg');
@@ -306,8 +314,10 @@ export function handleSignIn() {
         return;
     }
 
+    _authInProgress = true;
     db.collection('users').doc(phone).get().then(async function(doc) {
         if (!doc.exists) {
+            _authInProgress = false;
             recordLoginAttempt(phone);
             msg.textContent = 'No account found with this number. Please sign up.';
             msg.className = 'auth-msg error';
@@ -317,6 +327,7 @@ export function handleSignIn() {
         var storedPin = user.pin || user.password || '';
         var hashedInput = await hashPin(password);
         if (storedPin !== hashedInput) {
+            _authInProgress = false;
             recordLoginAttempt(phone);
             msg.textContent = 'Incorrect PIN. Please try again.';
             msg.className = 'auth-msg error';
@@ -324,6 +335,7 @@ export function handleSignIn() {
         }
         // Successful login — clear rate limit counter
         clearLoginAttempts(phone);
+        _authInProgress = false;
         try {
             setCurrentUser(user);
             updateSignInUI(user);
@@ -340,6 +352,7 @@ export function handleSignIn() {
             showAuthToast('Signed in successfully!');
         }
     }).catch(function(err) {
+        _authInProgress = false;
         console.error('SignIn error:', err);
         msg.textContent = 'Connection error. Please check your internet and try again.';
         msg.className = 'auth-msg error';
@@ -445,6 +458,21 @@ export function handleResetPassword() {
 
 export function signOut() {
     try { localStorage.removeItem('amoghaUser'); } catch(e) {}
+    // Clear user-specific session data to prevent leaking across accounts
+    try {
+        localStorage.removeItem('amoghaCart');
+        localStorage.removeItem('amoghaMyOrders');
+        localStorage.removeItem('amoghaSharedOrders');
+        localStorage.removeItem('amogha_referral_code');
+        localStorage.removeItem('amogha_referral_count');
+        localStorage.removeItem('amogha_streak');
+    } catch(e) {}
+    // Clear in-memory coupon/gift card/payment state
+    window._appliedCoupon = null;
+    window._lastOrderId = null;
+    window._lastOrderTotal = null;
+    window._lastOrderItems = null;
+    window._lastOrderTotalForShare = null;
     window._notifListenerActive = false;
     if (typeof window._notifListenerUnsub === 'function') {
         window._notifListenerUnsub();
@@ -606,6 +634,7 @@ export function initAuth() {
             refInput.type = 'text';
             refInput.id = 'signup-referral';
             refInput.placeholder = 'Referral Code (Optional)';
+            refInput.setAttribute('aria-label', 'Referral code');
             refInput.maxLength = 20;
             refInput.style.textTransform = 'uppercase';
             pinField.after(refInput);
