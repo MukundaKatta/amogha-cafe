@@ -133,7 +133,13 @@ html { scroll-behavior: auto; }
 .page-scrolled .chef-info,
 .page-scrolled .special-card,
 .page-scrolled .stat-item,
-.page-scrolled .tilt-card {
+.page-scrolled .tilt-card,
+.page-scrolled .newsletter-card,
+.page-scrolled .badge-item,
+.page-scrolled .faq-item,
+.page-scrolled .contact-info-section,
+.page-scrolled .combo-builder-section,
+.page-scrolled .footer-section {
     opacity: 1 !important;
     transform: none !important;
     animation: none !important;
