@@ -11,6 +11,16 @@ html {
     -ms-text-size-adjust: 100%;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+/* Prevent nav overflow from causing horizontal scroll */
+header, nav, .navbar {
+    max-width: 100vw;
 }
 
 /* Hide carousel scrollbars for clean mobile look */
@@ -726,5 +736,7 @@ html {
     .gallery-item:hover {
         transform: none;
     }
-    scroll-behavior: auto;
+    html {
+        scroll-behavior: auto;
+    }
 }

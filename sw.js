@@ -1,4 +1,4 @@
-const CACHE_NAME = 'amogha-v76';
+const CACHE_NAME = 'amogha-v77';
 const MAX_CACHE_ITEMS = 200; // Prevent unbounded cache growth
 const ASSETS = [
   './',
