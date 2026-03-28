@@ -1662,8 +1662,9 @@
         }
         window.addEventListener('scroll', function() { setTimeout(markScrolled, 1500); }, { once: true });
         setTimeout(markScrolled, 4000); // Fallback if user hasn't scrolled
-        // Secondary fallback for stats counter — ensure final values after animations complete
-        setTimeout(function() {
+        // Robust stats fallback — check repeatedly until values reach targets
+        // Two competing rAF animations (ui.js + premium.js) can stall or overwrite each other
+        function fixStats() {
             document.querySelectorAll('.stat-number[data-target]').forEach(function(el) {
                 var target = parseFloat(el.getAttribute('data-target'));
                 if (isNaN(target)) return;
@@ -1672,7 +1673,11 @@
                     el.textContent = (target % 1 !== 0) ? target.toFixed(1) : target.toLocaleString();
                 }
             });
-        }, 7000);
+        }
+        // Run at 7s, 10s, and 15s to catch any animation that overwrites values
+        setTimeout(fixStats, 7000);
+        setTimeout(fixStats, 10000);
+        setTimeout(fixStats, 15000);
         // Fix back-to-top button visibility (script.js handler broken + stuck animations)
         var btt = document.getElementById('back-to-top');
         var bttFixed = false;
