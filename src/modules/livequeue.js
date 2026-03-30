@@ -170,7 +170,8 @@ export function initLiveQueue() {
 
     // Refresh every 30 seconds if not using real-time listener
     if (!getDb()) {
-        setInterval(function() {
+        if (window._liveQueueInterval) clearInterval(window._liveQueueInterval);
+        window._liveQueueInterval = setInterval(function() {
             subscribeToQueue();
         }, 30000);
     }

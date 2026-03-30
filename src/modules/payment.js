@@ -277,7 +277,7 @@ export function openCheckout() {
                     setCurrentUser(currentUser);
                     if (couponInput) couponInput.value = '';
                     if (couponMsg) { couponMsg.textContent = ''; couponMsg.className = 'coupon-msg'; }
-                    updateCheckoutTotals();
+                    setupPayment();
                 }
             }).catch(function() {});
         }

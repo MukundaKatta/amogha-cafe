@@ -116,7 +116,9 @@ export function initGallerySlideshow() {
     };
 
     if (slides.length > 1) {
-        setInterval(() => { window.moveGallerySlide(1); }, 5000);
+        var galleryAutoSlide = setInterval(() => { window.moveGallerySlide(1); }, 5000);
+        // Store ref so it can be cleared if gallery is removed
+        window._galleryAutoSlide = galleryAutoSlide;
     }
     return window.moveGallerySlide;
 }
@@ -764,7 +766,7 @@ export function openReferralModal() {
         '<p class="referral-subtitle">Share your code and both get rewarded!</p>' +
         '<div class="referral-code-box">' +
             '<span class="referral-code">' + code + '</span>' +
-            '<button class="referral-copy" onclick="safeCopy(\'' + code + '\',this)">Copy</button>' +
+            '<button class="referral-copy" onclick="safeCopy(\'' + String(code).replace(/[\\'"]/g, '') + '\',this)">Copy</button>' +
         '</div>' +
         '<div class="referral-rewards">' +
             '<div class="referral-reward"><span class="referral-reward-icon">🎁</span><span>Your friend gets <strong>Rs.50 off</strong> first order</span></div>' +
@@ -856,7 +858,9 @@ export function openMyOrders() {
         console.error('Load orders error:', err);
         var cached = safeGetItem('amoghaMyOrders');
         if (cached) {
-            var orders = JSON.parse(cached);
+            var orders;
+            try { orders = JSON.parse(cached); } catch(e) { orders = null; }
+            if (!orders || !Array.isArray(orders)) { listEl.innerHTML = '<p style="text-align:center;color:#e74c3c">Failed to load orders. Please try again.</p>'; return; }
             var html = '';
             orders.forEach(function(entry) {
                 var o = entry.data;
@@ -976,7 +980,8 @@ export function initFeatures() {
 
     // Happy hour pricing (update every 60 seconds)
     applyHappyHourPricing();
-    setInterval(applyHappyHourPricing, 60000);
+    if (window._happyHourInterval) clearInterval(window._happyHourInterval);
+    window._happyHourInterval = setInterval(applyHappyHourPricing, 60000);
 
     // Voice ordering (delayed)
     setTimeout(initVoiceOrdering, 1000);
@@ -1156,7 +1161,11 @@ export function loadDailySpecial() {
         var priceEl = section.querySelector('.daily-special-price');
         var addBtn  = section.querySelector('.daily-special-add-btn');
 
-        if (d.imageUrl && imgEl) { imgEl.src = d.imageUrl; imgEl.style.display = 'block'; if (phEl) phEl.style.display = 'none'; }
+        var specialImg = d.imageUrl;
+        if (specialImg && specialImg.indexOf('res.cloudinary.com') !== -1 && specialImg.indexOf('/upload/') !== -1 && specialImg.indexOf('f_auto') === -1) {
+            specialImg = specialImg.replace('/upload/', '/upload/f_auto,q_auto,w_600/');
+        }
+        if (specialImg && imgEl) { imgEl.src = specialImg; imgEl.style.display = 'block'; if (phEl) phEl.style.display = 'none'; }
         if (titleEl) titleEl.textContent = d.title || 'Chef\'s Special';
         if (descEl)  descEl.textContent  = d.description || '';
         if (priceEl) priceEl.innerHTML   = '&#8377;' + (d.price || '');
@@ -1181,7 +1190,8 @@ export function loadDailySpecial() {
             if (sEl) sEl.textContent = String(s).padStart(2,'0');
         }
         updateCountdown();
-        setInterval(updateCountdown, 1000);
+        if (window._countdownInterval) clearInterval(window._countdownInterval);
+        window._countdownInterval = setInterval(updateCountdown, 1000);
     }).catch(function() { section.style.display = 'none'; });
 }
 

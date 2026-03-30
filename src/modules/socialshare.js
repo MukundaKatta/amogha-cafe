@@ -33,7 +33,7 @@ function showShareOptions(text) {
         '<div class="share-preview">' +
             '<div class="share-card">' +
                 '<div class="share-card-header">Amogha Cafe</div>' +
-                '<div class="share-card-body">' + text.replace(/\n/g, '<br>') + '</div>' +
+                '<div class="share-card-body">' + text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>') + '</div>' +
             '</div>' +
         '</div>' +
         '<div class="share-buttons">' +

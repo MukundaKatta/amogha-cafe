@@ -28,8 +28,13 @@ function saveStreakData(data) {
     localStorage.setItem('amogha_streak', JSON.stringify(data));
 }
 
+// Use local date strings to avoid UTC midnight timezone issues (e.g. IST is UTC+5:30)
+function localDateStr(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
 function todayStr() {
-    return new Date().toISOString().split('T')[0];
+    return localDateStr(new Date());
 }
 
 function isToday(dateStr) {
@@ -41,7 +46,7 @@ function isYesterday(dateStr) {
     if (!dateStr) return false;
     var yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    return dateStr === yesterday.toISOString().split('T')[0];
+    return dateStr === localDateStr(yesterday);
 }
 
 function getCurrentStreak() {
@@ -62,7 +67,7 @@ function getBestStreak() {
 
 function recordDailyOrder() {
     var data = getStreakData();
-    var today = new Date().toISOString().split('T')[0];
+    var today = todayStr();
 
     // Already recorded today
     if (data.lastOrderDate && isToday(data.lastOrderDate)) return data;
@@ -195,10 +200,14 @@ function renderStreakWidget() {
             widget.classList.toggle('streak-dropdown--open');
         });
 
-        // Close when clicking outside
-        document.addEventListener('click', function() {
-            widget.classList.remove('streak-dropdown--open');
-        });
+        // Close when clicking outside (use named handler to avoid duplicates)
+        if (!window._streakDocClickHandler) {
+            window._streakDocClickHandler = function() {
+                var w = document.getElementById('streakWidget');
+                if (w) w.classList.remove('streak-dropdown--open');
+            };
+            document.addEventListener('click', window._streakDocClickHandler);
+        }
         widget.addEventListener('click', function(e) { e.stopPropagation(); });
     }
 
@@ -230,7 +239,7 @@ function renderStreakWidget() {
                     '<span>Next: ' + nextMilestone.emoji + ' ' + nextMilestone.label + ' (' + (nextMilestone.days - streak) + ' more days)</span>' +
                 '</div>'
             : '<div class="streak-max">🏆 Maximum streak achieved!</div>') +
-            '<div class="streak-daily-bonus">Daily bonus: +' + Math.min(DAILY_BONUS_BASE * Math.max(streak, 1), 200) + ' pts</div>' +
+            '<div class="streak-daily-bonus">Daily bonus: +' + (streak > 0 ? Math.min(DAILY_BONUS_BASE * streak, 200) : 0) + ' pts</div>' +
             (!isActive && streak === 0 ?
                 '<p class="streak-cta">Place an order today to start your streak!</p>' : '') +
         '</div>';

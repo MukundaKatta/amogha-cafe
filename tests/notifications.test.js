@@ -463,6 +463,7 @@ describe('sendSmartNotification', () => {
     it('fetches /api/smart-notify with POST when user is present', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ title: 'Hello', body: 'Come eat!' }),
             })
         );
@@ -475,6 +476,7 @@ describe('sendSmartNotification', () => {
     it('sends userId and context in the fetch body', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ title: 'Hello', body: 'Come eat!' }),
             })
         );
@@ -487,6 +489,7 @@ describe('sendSmartNotification', () => {
     it('uses default context "general" when context is not provided', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ title: 'Hi', body: 'Welcome!' }),
             })
         );
@@ -498,6 +501,7 @@ describe('sendSmartNotification', () => {
     it('sends notification with title and body from API response', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ title: 'Special Offer', body: 'Get 20% off today!' }),
             })
         );
@@ -510,6 +514,7 @@ describe('sendSmartNotification', () => {
     it('uses fallback title "Amogha Cafe" when API response has no title', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ body: 'Check us out!' }),
             })
         );
@@ -522,6 +527,7 @@ describe('sendSmartNotification', () => {
     it('uses fallback body when API response has no body', async () => {
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ title: 'Amogha Cafe' }),
             })
         );
@@ -623,6 +629,7 @@ describe('sendSmartNotification — cached order history (line 125)', () => {
 
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ title: 'Welcome back', body: 'Try biryani again!' }),
             })
         );
@@ -636,6 +643,7 @@ describe('sendSmartNotification — cached order history (line 125)', () => {
         localStorage.removeItem('amoghaMyOrders');
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ title: 'Hi', body: 'Welcome!' }),
             })
         );
@@ -648,6 +656,7 @@ describe('sendSmartNotification — cached order history (line 125)', () => {
         localStorage.setItem('amoghaMyOrders', 'not-json');
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ title: 'Hi', body: 'Welcome!' }),
             })
         );
@@ -664,6 +673,7 @@ describe('sendSmartNotification — cached order history (line 125)', () => {
 
         global.fetch = vi.fn(() =>
             Promise.resolve({
+                ok: true,
                 json: () => Promise.resolve({ title: 'Hi', body: 'Order again!' }),
             })
         );

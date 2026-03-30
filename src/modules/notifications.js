@@ -65,7 +65,7 @@ export function sendPushNotification(title, body) {
                     icon: 'amogha-logo.png',
                     tag: 'amogha-order'
                 });
-            });
+            }).catch(function() {});
         }
     }
 }
@@ -177,6 +177,7 @@ export async function sendSmartNotification(context) {
                 orderHistory: orderHistory.slice(0, 5)
             })
         });
+        if (!resp.ok) throw new Error('Server error');
         var data = await resp.json();
         sendPushNotification(data.title || 'Amogha Cafe', data.body || 'Something delicious awaits!');
     } catch(e) {

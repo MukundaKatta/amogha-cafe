@@ -56,7 +56,8 @@ export function updateChallengeProgress(type, value) {
     user.activeChallenges.forEach(function(ch) {
         if (ch.completed) return;
         var template = CHALLENGE_TEMPLATES.find(function(t) { return t.id === ch.id; });
-        if (!template || template.type !== type) return;
+        if (!template) return;
+        if (template.type !== type) return;
         ch.progress = Math.min((ch.progress || 0) + (value || 1), template.target);
         if (ch.progress >= template.target) {
             ch.completed = true;
@@ -139,11 +140,17 @@ function updateChallengesUI() {
                 '</div>' +
                 '<div class="challenge-reward">' +
                     (ch.claimed ? '<span class="challenge-claimed-badge">Claimed</span>' :
-                     ch.completed ? '<button class="challenge-claim-btn" onclick="claimChallengeReward(\'' + ch.id + '\')">Claim +' + template.reward + 'pts</button>' :
+                     ch.completed ? '<button class="challenge-claim-btn" data-challenge-id="' + (ch.id || '').replace(/[^a-zA-Z0-9_-]/g, '') + '">Claim +' + template.reward + 'pts</button>' :
                      '<span class="challenge-reward-badge">+' + template.reward + '</span>') +
                 '</div>' +
             '</div>';
         }).join('');
+    // Bind claim buttons via event delegation (avoids inline onclick XSS risk)
+    container.querySelectorAll('.challenge-claim-btn[data-challenge-id]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            claimChallengeReward(btn.getAttribute('data-challenge-id'));
+        });
+    });
 }
 
 export function initChallenges() {

@@ -1,6 +1,13 @@
 import { getCurrentUser, showAuthToast } from './auth.js';
 import { getLoyaltyTier } from './loyalty.js';
 
+// HTML escape helper for defense-in-depth
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // ===== SECRET / HIDDEN MENU (Starbucks-style) =====
 
 var SECRET_ITEMS = [
@@ -17,7 +24,11 @@ var SECRET_ITEMS = [
 var TIER_ORDER = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond'];
 
 function canAccessItem(userTier, itemTier) {
-    return TIER_ORDER.indexOf(userTier) >= TIER_ORDER.indexOf(itemTier);
+    var userIdx = TIER_ORDER.indexOf(userTier);
+    var itemIdx = TIER_ORDER.indexOf(itemTier);
+    // Guard: unknown tier must not grant access (-1 >= -1 would be true)
+    if (userIdx === -1 || itemIdx === -1) return false;
+    return userIdx >= itemIdx;
 }
 
 export function openSecretMenu() {
@@ -48,13 +59,13 @@ export function openSecretMenu() {
             return '<div class="secret-item ' + (unlocked ? 'unlocked' : 'locked') + '">' +
                 '<div class="secret-item-icon">' + item.icon + '</div>' +
                 '<div class="secret-item-info">' +
-                    '<div class="secret-item-name">' + (unlocked ? item.name : '???') + '</div>' +
-                    '<div class="secret-item-desc">' + (unlocked ? item.desc : 'Unlock at ' + item.tier + ' tier') + '</div>' +
-                    (unlocked ? '<div class="secret-item-price">₹' + item.price + '</div>' : '') +
+                    '<div class="secret-item-name">' + (unlocked ? escapeHtml(item.name) : '???') + '</div>' +
+                    '<div class="secret-item-desc">' + (unlocked ? escapeHtml(item.desc) : 'Unlock at ' + escapeHtml(item.tier) + ' tier') + '</div>' +
+                    (unlocked ? '<div class="secret-item-price">₹' + (parseInt(item.price, 10) || 0) + '</div>' : '') +
                 '</div>' +
                 '<div class="secret-item-action">' +
                     (unlocked ?
-                        '<button class="secret-item-add" onclick="addSecretItemToCart(\'' + item.name.replace(/'/g, "\\'") + '\',' + item.price + ')">Add to Cart</button>' :
+                        '<button class="secret-item-add" onclick="addSecretItemToCart(\'' + escapeHtml(item.name).replace(/'/g, '&#39;') + '\',' + (parseInt(item.price, 10) || 0) + ')">Add to Cart</button>' :
                         '<span class="secret-item-lock">🔒 ' + item.tier + '</span>') +
                 '</div>' +
             '</div>';
@@ -73,8 +84,9 @@ export function closeSecretMenu() {
 export function addSecretItemToCart(name, price) {
     // Use existing addToCart if available
     if (typeof window.addToCart === 'function') {
-        window.addToCart(name, price, 'Secret Menu');
-        showAuthToast('Added ' + name + ' to cart!');
+        var safeName = (name || '').replace(/<[^>]*>/g, ''); // strip HTML tags
+        window.addToCart(safeName, price, 'Secret Menu');
+        showAuthToast('Added ' + safeName + ' to cart!');
         closeSecretMenu();
     }
 }

@@ -188,6 +188,7 @@ export function addAddress() {
 
     var labelInput = document.getElementById('profile-addr-label');
     var addressInput = document.getElementById('profile-addr-address');
+    if (!labelInput || !addressInput) return;
     var label = labelInput.value.trim();
     var address = addressInput.value.trim();
 

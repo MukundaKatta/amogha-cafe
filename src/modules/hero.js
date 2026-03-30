@@ -40,7 +40,8 @@ export function initDynamicHeroText() {
 
     // 8s interval: 0.7s fade-out + 0.6s fade-in + ~6.7s visible
     setTimeout(() => {
-        setInterval(rotateText, 8000);
+        if (window._heroRotateInterval) clearInterval(window._heroRotateInterval);
+        window._heroRotateInterval = setInterval(rotateText, 8000);
     }, 5000);
 }
 
@@ -48,7 +49,8 @@ export function initHeaderSlideshow() {
     const slides = document.querySelectorAll('.header-slideshow .slide');
     if (slides.length <= 1) return;
     let current = 0;
-    setInterval(() => {
+    if (window._heroSlideshowInterval) clearInterval(window._heroSlideshowInterval);
+    window._heroSlideshowInterval = setInterval(() => {
         slides[current].classList.remove('active');
         let next;
         do {
@@ -206,6 +208,10 @@ export function initHero() {
             div.className = 'hero-slide' + (idx === 0 ? ' active' : '');
             if (idx === 0) div.classList.add(kbClasses[Math.floor(Math.random() * kbClasses.length)]);
 
+            // Accessibility: describe each slide for screen readers
+            div.setAttribute('role', 'img');
+            div.setAttribute('aria-label', slide.alt || slide.name || 'Hero slide ' + (idx + 1));
+
             if (slide.type === 'video') {
                 div.classList.add('hero-slide-video');
                 var video = document.createElement('video');
@@ -218,7 +224,12 @@ export function initHero() {
                 video.setAttribute('webkit-playsinline', '');
                 div.appendChild(video);
             } else {
-                div.style.backgroundImage = 'url(' + slide.url + ')';
+                // Optimize Cloudinary images: add auto-format, auto-quality, and width limit
+                var imgUrl = slide.url;
+                if (imgUrl && imgUrl.indexOf('res.cloudinary.com') !== -1 && imgUrl.indexOf('/upload/') !== -1) {
+                    imgUrl = imgUrl.replace('/upload/', '/upload/f_auto,q_auto,w_1200/');
+                }
+                div.style.backgroundImage = 'url(' + imgUrl + ')';
             }
 
             container.appendChild(div);
