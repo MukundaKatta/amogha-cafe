@@ -184,12 +184,16 @@ export function showBirthdayBanner(user) {
     if (!user || !checkBirthdayRewards(user)) return;
     // Don't show if already shown this session
     if (document.getElementById('birthday-banner')) return;
-    var name = (user.name || 'Guest').split(' ')[0];
+    var rawName = (user.name || 'Guest').split(' ')[0];
+    // Escape name to prevent XSS from user-controlled data
+    var tmp = document.createElement('span');
+    tmp.textContent = rawName;
+    var safeName = tmp.innerHTML;
     var banner = document.createElement('div');
     banner.id = 'birthday-banner';
     banner.className = 'birthday-banner';
     banner.innerHTML = '<span class="birthday-banner-icon">&#127874;</span>' +
-        '<span class="birthday-banner-text">Happy Birthday, ' + name + '! Enjoy special offers this month!</span>' +
+        '<span class="birthday-banner-text">Happy Birthday, ' + safeName + '! Enjoy special offers this month!</span>' +
         '<button class="birthday-banner-close" onclick="closeBirthdayBanner()">&times;</button>';
     var header = document.querySelector('header') || document.querySelector('nav');
     if (header && header.nextSibling) {

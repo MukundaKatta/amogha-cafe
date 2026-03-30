@@ -12,7 +12,7 @@
     <meta property="og:image:width" content="512">
     <meta property="og:image:height" content="512">
     <meta property="og:image:alt" content="Amogha Cafe & Restaurant logo">
-    <meta property="og:type" content="restaurant">
+    <meta property="og:type" content="website">
     <meta property="og:url" content="https://amoghahotels.com/">
     <meta property="og:site_name" content="Amogha Cafe & Restaurant">
     <meta property="og:locale" content="en_IN">
@@ -73,20 +73,20 @@
     /* Ensure dynamically-loaded sections are visible (reveal animation can miss them) */
     .section-reveal{opacity:1!important;transform:none!important}
     </style>
-    <link rel="stylesheet" href="styles.css?v=70" media="all" fetchpriority="high">
-    <link rel="modulepreload" href="/script.js?v=20260305c">
+    <link rel="stylesheet" href="styles.css?v=71" media="all" fetchpriority="high">
+    <link rel="modulepreload" href="/script.js">
     <!-- Non-critical CSS loaded async to improve LCP -->
     <link rel="stylesheet" href="enhancements.css?v=6" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="premium.css?v=4" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="premium.css?v=5" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="worldclass.css?v=2" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="worldclass2.css?v=3">
-    <link rel="stylesheet" href="mobile-responsive.css?v=3" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="mobile-responsive.css?v=6" media="print" onload="this.media='all'">
     <noscript>
         <link rel="stylesheet" href="enhancements.css?v=6">
-        <link rel="stylesheet" href="premium.css?v=2">
+        <link rel="stylesheet" href="premium.css?v=5">
         <link rel="stylesheet" href="worldclass.css?v=2">
-        <link rel="stylesheet" href="worldclass2.css?v=2">
-        <link rel="stylesheet" href="mobile-responsive.css?v=3">
+        <link rel="stylesheet" href="worldclass2.css?v=3">
+        <link rel="stylesheet" href="mobile-responsive.css?v=6">
     </noscript>
     <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
     <script>if('scrollRestoration' in history) history.scrollRestoration='manual'; document.documentElement.style.scrollBehavior='auto'; window.scrollTo(0,0); setTimeout(function(){document.documentElement.style.scrollBehavior='';},100);</script>
@@ -96,15 +96,20 @@
     {
         "@context": "https://schema.org",
         "@type": "Restaurant",
+        "@id": "https://amoghahotels.com/#restaurant",
         "name": "Amogha Cafe & Restaurant",
         "alternateName": "Amogha Hotels",
         "description": "Hyderabad's finest authentic Indian cuisine — Hyderabadi biryani, Andhra curries, tandoori specialties. Order online for delivery in 30-45 mins.",
         "image": ["https://amogha-cafe.web.app/amogha-logo.png"],
         "logo": "https://amogha-cafe.web.app/amogha-logo.png",
-        "url": "https://amoghahotels.com",
+        "url": "https://amoghahotels.com/",
+        "sameAs": [
+            "https://www.instagram.com/amoghahotels/",
+            "https://wa.me/919121004999"
+        ],
         "servesCuisine": ["Indian", "South Indian", "Hyderabadi", "Andhra"],
         "priceRange": "₹₹",
-        "acceptsReservations": "True",
+        "acceptsReservations": true,
         "address": {
             "@type": "PostalAddress",
             "streetAddress": "Ground Floor, 2-23-310/83C, Pragathi Nagar Rd, Addagutta Society, Jal Vayu Vihar, Kukatpally",
@@ -184,7 +189,7 @@
 </head>
 <body>
     <!-- Skip to Content (Accessibility) -->
-    <a href="/menu/" class="skip-to-content">Skip to Menu</a>
+    <a href="#main-content" class="skip-to-content">Skip to Content</a>
 
     <!-- ARIA Live Region for Screen Reader Announcements -->
     <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
@@ -196,19 +201,19 @@
     </div>
 
     <!-- Scroll Progress Bar -->
-    <div class="scroll-progress" id="scroll-progress"></div>
+    <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
 
     <!-- Page Transition Overlay -->
-    <div class="page-transition" id="page-transition"></div>
+    <div class="page-transition" id="page-transition" aria-hidden="true"></div>
 
     <!-- Cursor Glow Trail -->
-    <div class="cursor-glow" id="cursor-glow"></div>
+    <div class="cursor-glow" id="cursor-glow" aria-hidden="true"></div>
 
     <!-- Floating Food Particles -->
-    <div class="food-particles" id="food-particles"></div>
+    <div class="food-particles" id="food-particles" aria-hidden="true"></div>
 
     <!-- Grain Texture Overlay -->
-    <div class="grain-overlay"></div>
+    <div class="grain-overlay" aria-hidden="true"></div>
 
     <!-- Floating Gold Ambient Particles -->
     <div class="ambient-particles" aria-hidden="true">
@@ -268,8 +273,8 @@
                 <div class="slide">
                     <span class="slide-accent"></span>
                     <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"ఆరోగ్యమే మహాభాగ్యం"</span>
-                        <span class="slide-price telugu-sub">"మనం తినే ఆహారమే మన ఆరోగ్యానికి పునాది"</span>
+                        <span class="slide-dish telugu-dish" lang="te">"ఆరోగ్యమే మహాభాగ్యం"</span>
+                        <span class="slide-price telugu-sub" lang="te">"మనం తినే ఆహారమే మన ఆరోగ్యానికి పునాది"</span>
                     </div>
                 </div>
                 <div class="slide">
@@ -283,14 +288,14 @@
                 <div class="slide">
                     <span class="slide-accent"></span>
                     <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"అన్నం పరబ్రహ్మ స్వరూపం"</span>
-                        <span class="slide-price telugu-sub">"దానిని వృధా చేయకండి"</span>
+                        <span class="slide-dish telugu-dish" lang="te">"అన్నం పరబ్రహ్మ స్వరూపం"</span>
+                        <span class="slide-price telugu-sub" lang="te">"దానిని వృధా చేయకండి"</span>
                     </div>
                 </div>
                 <div class="slide">
                     <span class="slide-accent"></span>
                     <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"అమోఘమైన రుచి - అమితమైన తృప్తి!"</span>
+                        <span class="slide-dish telugu-dish" lang="te">"అమోఘమైన రుచి - అమితమైన తృప్తి!"</span>
                     </div>
                 </div>
                 <div class="slide">
@@ -320,19 +325,19 @@
                 <div class="slide">
                     <span class="slide-accent"></span>
                     <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"అమోఘం... మీ అభిరుచికి తగ్గట్టుగా!"</span>
+                        <span class="slide-dish telugu-dish" lang="te">"అమోఘం... మీ అభిరుచికి తగ్గట్టుగా!"</span>
                     </div>
                 </div>
                 <div class="slide">
                     <span class="slide-accent"></span>
                     <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"అమోఘమైన రుచి - అమితమైన తృప్తి!"</span>
+                        <span class="slide-dish telugu-dish" lang="te">"అమోఘమైన రుచి - అమితమైన తృప్తి!"</span>
                     </div>
                 </div>
                 <div class="slide">
                     <span class="slide-accent"></span>
                     <div class="slide-text">
-                        <span class="slide-dish telugu-dish">"రుచిలో అమోఘం... వడ్డనలో స్నేహం!"</span>
+                        <span class="slide-dish telugu-dish" lang="te">"రుచిలో అమోఘం... వడ్డనలో స్నేహం!"</span>
                     </div>
                 </div>
                 <div class="slide">
@@ -389,17 +394,19 @@
         </nav>
     </header>
 
-    <section id="home" class="hero" role="banner" aria-label="Welcome to Amogha Cafe">
+    <main id="main-content">
+
+    <section id="home" class="hero" aria-label="Welcome to Amogha Cafe">
         <div class="hero-slideshow" id="hero-slideshow">
-            <div class="hero-slide active" style="background-image: url('bg.jpeg');"></div>
-            <div class="hero-slide food" style="background-image: url('pics/Gemini_Generated_Image_gax5k7gax5k7gax5.png');"></div>
-            <div class="hero-slide food" style="background-image: url('Gemini_Generated_Image_x9jtrox9jtrox9jt.png');"></div>
-            <div class="hero-slide" style="background-image: url('chefchallu.jpg');"></div>
-            <div class="hero-slide food" style="background-image: url('BreakfastAtSimplySouthNew.png');"></div>
-            <div class="hero-slide" style="background-image: url('chefchallu2.jpg');"></div>
-            <div class="hero-slide" style="background-image: url('SimplySouthAtKnowledgeCityNew.png');"></div>
-            <div class="hero-slide food" style="background-image: url('pics/Gemini_Generated_Image_umcuogumcuogumcu.png');"></div>
-            <div class="hero-slide food" style="background-image: url('pics/gourmet-meal-with-grilled-meat-rice-generated-by-ai.jpg');"></div>
+            <div class="hero-slide active" role="img" aria-label="Amogha Cafe restaurant ambience" style="background-image: url('bg.jpeg');"></div>
+            <div class="hero-slide food" role="img" aria-label="Authentic Indian cuisine dish" style="background-image: url('pics/Gemini_Generated_Image_gax5k7gax5k7gax5.png');"></div>
+            <div class="hero-slide food" role="img" aria-label="Gourmet Indian food platter" style="background-image: url('Gemini_Generated_Image_x9jtrox9jtrox9jt.png');"></div>
+            <div class="hero-slide" role="img" aria-label="Chef Challu preparing dishes" style="background-image: url('chefchallu.jpg');"></div>
+            <div class="hero-slide food" role="img" aria-label="Breakfast spread at Simply South" style="background-image: url('BreakfastAtSimplySouthNew.png');"></div>
+            <div class="hero-slide" role="img" aria-label="Chef Challu in the kitchen" style="background-image: url('chefchallu2.jpg');"></div>
+            <div class="hero-slide" role="img" aria-label="Simply South at Knowledge City location" style="background-image: url('SimplySouthAtKnowledgeCityNew.png');"></div>
+            <div class="hero-slide food" role="img" aria-label="Freshly prepared Indian meal" style="background-image: url('pics/Gemini_Generated_Image_umcuogumcuogumcu.png');"></div>
+            <div class="hero-slide food" role="img" aria-label="Gourmet grilled meat with rice" style="background-image: url('pics/gourmet-meal-with-grilled-meat-rice-generated-by-ai.jpg');"></div>
         </div>
         <div class="hero-overlay"></div>
         <div class="hero-mouse-spotlight"></div>
@@ -627,19 +634,19 @@
                 <div class="combo-selects">
                     <div class="combo-select-wrap">
                         <span class="combo-label">🥗 Starter</span>
-                        <select id="combo-starter"><option value="">— Choose —</option></select>
+                        <select id="combo-starter" aria-label="Choose a starter"><option value="">— Choose —</option></select>
                     </div>
                     <div class="combo-select-wrap">
                         <span class="combo-label">🍛 Main Course</span>
-                        <select id="combo-main"><option value="">— Choose —</option></select>
+                        <select id="combo-main" aria-label="Choose a main course"><option value="">— Choose —</option></select>
                     </div>
                     <div class="combo-select-wrap">
                         <span class="combo-label">🫓 Bread</span>
-                        <select id="combo-bread"><option value="">— Choose —</option></select>
+                        <select id="combo-bread" aria-label="Choose a bread"><option value="">— Choose —</option></select>
                     </div>
                     <div class="combo-select-wrap">
                         <span class="combo-label">🥤 Drink</span>
-                        <select id="combo-drink"><option value="">— Choose —</option></select>
+                        <select id="combo-drink" aria-label="Choose a drink"><option value="">— Choose —</option></select>
                     </div>
                 </div>
                 <div class="combo-pricing">
@@ -809,13 +816,13 @@
                     <h3>Send Us a Message</h3>
                     <form id="contact-form">
                         <label for="contact-name" class="sr-only">Your Name</label>
-                        <input type="text" id="contact-name" name="name" placeholder="Your Name" required autocomplete="name" aria-required="true">
+                        <input type="text" id="contact-name" name="name" placeholder="Your Name" required autocomplete="name" aria-required="true" aria-label="Your name">
                         <label for="contact-email" class="sr-only">Your Email</label>
-                        <input type="email" id="contact-email" name="email" placeholder="Your Email" required autocomplete="email" aria-required="true">
+                        <input type="email" id="contact-email" name="email" placeholder="Your Email" required autocomplete="email" aria-required="true" aria-label="Your email">
                         <label for="contact-phone" class="sr-only">Phone Number</label>
-                        <input type="tel" id="contact-phone" name="phone" placeholder="Phone Number" autocomplete="tel">
+                        <input type="tel" id="contact-phone" name="phone" placeholder="Phone Number" autocomplete="tel" aria-label="Phone number">
                         <label for="contact-message" class="sr-only">Your Message</label>
-                        <textarea id="contact-message" name="message" placeholder="Your Message" rows="5" required aria-required="true"></textarea>
+                        <textarea id="contact-message" name="message" placeholder="Your Message" rows="5" required aria-required="true" aria-label="Your message"></textarea>
                         <button type="submit" class="cta-button">Send Message</button>
                     </form>
                 </div>
@@ -831,27 +838,27 @@
             <h2>Frequently Asked Questions</h2>
             <div class="faq-grid" role="list">
                 <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Do you offer delivery? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <h3>Do you offer delivery? <span class="faq-toggle" aria-hidden="true">+</span></h3>
                     <div class="faq-answer" role="region"><p>Yes! We offer free delivery for orders over &#8377;500 within a 5 km radius. Delivery typically takes 30-45 minutes.</p></div>
                 </div>
                 <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Do you have vegetarian options? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <h3>Do you have vegetarian options? <span class="faq-toggle" aria-hidden="true">+</span></h3>
                     <div class="faq-answer" role="region"><p>Absolutely! We have an extensive vegetarian menu with over 30 dishes including vegan options.</p></div>
                 </div>
                 <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Can you accommodate dietary restrictions? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <h3>Can you accommodate dietary restrictions? <span class="faq-toggle" aria-hidden="true">+</span></h3>
                     <div class="faq-answer" role="region"><p>Yes, we can adjust spice levels and accommodate most dietary needs. Please inform us when ordering.</p></div>
                 </div>
                 <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Do you offer catering services? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <h3>Do you offer catering services? <span class="faq-toggle" aria-hidden="true">+</span></h3>
                     <div class="faq-answer" role="region"><p>Yes! We cater for events of all sizes. Contact us at catering@amogha.com for custom menus.</p></div>
                 </div>
                 <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Is parking available? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <h3>Is parking available? <span class="faq-toggle" aria-hidden="true">+</span></h3>
                     <div class="faq-answer" role="region"><p>Yes, we have free parking available for all guests. The restaurant is also wheelchair accessible.</p></div>
                 </div>
                 <div class="faq-item" role="listitem" tabindex="0" aria-expanded="false" onclick="toggleFaq(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(this)}">
-                    <h4>Do you take reservations? <span class="faq-toggle" aria-hidden="true">+</span></h4>
+                    <h3>Do you take reservations? <span class="faq-toggle" aria-hidden="true">+</span></h3>
                     <div class="faq-answer" role="region"><p>Yes! You can book online through our website or call us directly at +91 91210 04999.</p></div>
                 </div>
             </div>
@@ -877,15 +884,17 @@
                 </div>
                 <form class="newsletter-form" id="newsletter-form" onsubmit="event.preventDefault(); submitNewsletter();">
                     <div class="newsletter-input-group">
-                        <input type="email" id="newsletter-email" placeholder="Your email address" required class="newsletter-input">
+                        <input type="email" id="newsletter-email" placeholder="Your email address" required class="newsletter-input" aria-label="Email for newsletter">
                         <button type="submit" class="newsletter-btn">Subscribe</button>
                     </div>
-                    <p class="newsletter-msg" id="newsletter-msg"></p>
+                    <p class="newsletter-msg" id="newsletter-msg" aria-live="polite"></p>
                     <p class="newsletter-privacy">No spam, ever. Unsubscribe anytime.</p>
                 </form>
             </div>
         </div>
     </section>
+
+    </main>
 
     <footer role="contentinfo">
         <div class="footer-content">
@@ -932,7 +941,7 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                     </button>
                 </form>
-                <p id="footer-newsletter-msg" class="newsletter-msg"></p>
+                <p id="footer-newsletter-msg" class="newsletter-msg" aria-live="polite"></p>
             </div>
         </div>
         <div class="trust-badges">
@@ -959,7 +968,7 @@
     </footer>
 
     <!-- Catering Enquiry Modal -->
-    <div id="catering-modal" class="catering-modal-overlay" onclick="if(event.target===this)closeCateringModal()">
+    <div id="catering-modal" class="catering-modal-overlay" role="dialog" aria-modal="true" aria-label="Catering enquiry" onclick="if(event.target===this)closeCateringModal()">
         <div class="catering-modal-card">
             <button class="catering-modal-close" onclick="closeCateringModal()" aria-label="Close">&times;</button>
             <div class="catering-modal-header">
@@ -1009,17 +1018,17 @@
     </div>
 
     <!-- Reservation Modal -->
-    <div id="reservation-modal" class="modal">
+    <div id="reservation-modal" class="modal" role="dialog" aria-modal="true" aria-label="Reserve your table">
         <div class="modal-content">
-            <span class="close" onclick="document.getElementById('reservation-modal').style.display='none'">&times;</span>
+            <button type="button" class="close" aria-label="Close reservation" onclick="document.getElementById('reservation-modal').style.display='none'">&times;</button>
             <h2>Reserve Your Table</h2>
             <form id="reservation-form">
-                <input type="text" name="name" placeholder="Your Name" required>
-                <input type="email" name="email" placeholder="Email Address" required>
-                <input type="tel" name="phone" placeholder="Phone Number" required>
-                <input type="date" name="date" required>
-                <input type="time" name="time" required>
-                <select name="guests" required>
+                <input type="text" name="name" placeholder="Your Name" required aria-label="Your name">
+                <input type="email" name="email" placeholder="Email Address" required aria-label="Email address">
+                <input type="tel" name="phone" placeholder="Phone Number" required aria-label="Phone number">
+                <input type="date" name="date" required aria-label="Reservation date">
+                <input type="time" name="time" required aria-label="Reservation time">
+                <select name="guests" required aria-label="Number of guests">
                     <option value="">Number of Guests</option>
                     <option value="1">1 Guest</option>
                     <option value="2">2 Guests</option>
@@ -1028,7 +1037,7 @@
                     <option value="5">5 Guests</option>
                     <option value="6">6+ Guests</option>
                 </select>
-                <textarea name="requests" placeholder="Special Requests (Optional)" rows="3"></textarea>
+                <textarea name="requests" placeholder="Special Requests (Optional)" rows="3" aria-label="Special requests"></textarea>
                 <button type="submit" class="cta-button">Confirm Reservation</button>
             </form>
         </div>
@@ -1043,7 +1052,7 @@
 
     <div id="cart-modal" class="modal" role="dialog" aria-modal="true" aria-label="Shopping cart">
         <div class="modal-content">
-            <span class="close" aria-label="Close cart" onclick="document.getElementById('cart-modal').style.display='none'">&times;</span>
+            <button type="button" class="close" aria-label="Close cart" onclick="document.getElementById('cart-modal').style.display='none'">&times;</button>
             <h2>Your Order</h2>
             <div id="cart-items"></div>
             <div class="cart-total">
@@ -1066,7 +1075,7 @@
     <!-- Checkout Modal -->
     <div id="checkout-modal" class="modal" role="dialog" aria-modal="true" aria-label="Checkout">
         <div class="modal-content checkout-content">
-            <span class="close" onclick="closeCheckout()">&times;</span>
+            <button type="button" class="close" aria-label="Close checkout" onclick="closeCheckout()">&times;</button>
 
             <!-- Step 1: Order Summary -->
             <div id="checkout-step-1" class="checkout-step active" role="tabpanel" aria-labelledby="checkout-step-1-title">
@@ -1079,18 +1088,18 @@
                 </div>
                 <div class="coupon-section">
                     <div class="coupon-input-row">
-                        <input type="text" id="coupon-code" placeholder="Enter promo code" class="coupon-input">
+                        <input type="text" id="coupon-code" placeholder="Enter promo code" class="coupon-input" aria-label="Promo code">
                         <button type="button" class="coupon-apply-btn" onclick="applyCoupon()">Apply</button>
                     </div>
-                    <p id="coupon-msg" class="coupon-msg"></p>
+                    <p id="coupon-msg" class="coupon-msg" aria-live="polite"></p>
                     <button type="button" class="loyalty-redeem-btn" id="loyalty-redeem-btn" onclick="redeemLoyaltyAtCheckout()" style="display:none">Redeem Loyalty Points</button>
                 </div>
                 <div class="giftcard-section">
                     <div class="coupon-input-row">
-                        <input type="text" id="giftcard-code" placeholder="Gift card code" class="coupon-input gc-code-input">
+                        <input type="text" id="giftcard-code" placeholder="Gift card code" class="coupon-input gc-code-input" aria-label="Gift card code">
                         <button type="button" class="coupon-apply-btn" onclick="applyGiftCard()">Redeem</button>
                     </div>
-                    <p id="giftcard-msg" class="coupon-msg"></p>
+                    <p id="giftcard-msg" class="coupon-msg" aria-live="polite"></p>
                 </div>
                 <button class="cta-button" onclick="goToStep(2)">Continue</button>
             </div>
@@ -1212,9 +1221,9 @@
     </div>
 
     <!-- Auth Modal (Sign In / Sign Up) -->
-    <div id="auth-modal" class="modal">
+    <div id="auth-modal" class="modal" role="dialog" aria-modal="true" aria-label="Sign in or create account">
         <div class="modal-content auth-modal-content">
-            <span class="close" onclick="closeAuthModal()">&times;</span>
+            <button type="button" class="close" aria-label="Close authentication" onclick="closeAuthModal()">&times;</button>
 
             <!-- Sign Up View -->
             <div id="auth-signup" class="auth-view active">
@@ -1225,10 +1234,10 @@
                 <h2>Create Account</h2>
                 <p class="auth-subtitle">Join Amogha for exclusive offers</p>
                 <form id="signup-form" onsubmit="return false;">
-                    <input type="text" id="signup-name" placeholder="Your Name" required>
-                    <input type="tel" id="signup-phone" placeholder="Phone Number (10 digits)" required maxlength="10">
+                    <input type="text" id="signup-name" placeholder="Your Name" required aria-label="Your name">
+                    <input type="tel" id="signup-phone" placeholder="Phone Number (10 digits)" required maxlength="10" aria-label="Phone number">
                     <div class="password-field">
-                        <input type="password" id="signup-password" placeholder="Create 4-Digit PIN" required maxlength="4" minlength="4" inputmode="numeric" pattern="\d{4}">
+                        <input type="password" id="signup-password" placeholder="Create 4-Digit PIN" required maxlength="4" minlength="4" inputmode="numeric" pattern="\d{4}" aria-label="Create 4-digit PIN">
                         <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)" aria-label="Show PIN">
                             <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                             <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -1236,7 +1245,7 @@
                     </div>
                     <button type="submit" class="cta-button auth-submit-btn" onclick="handleSignUp()">Create Account</button>
                 </form>
-                <p id="signup-msg" class="auth-msg"></p>
+                <p id="signup-msg" class="auth-msg" aria-live="polite"></p>
                 <p class="auth-switch">Already have an account? <a href="#" onclick="event.preventDefault(); switchAuthView('signin')">Sign In</a></p>
             </div>
 
@@ -1245,9 +1254,9 @@
                 <h2>Welcome Back</h2>
                 <p class="auth-subtitle">Sign in to your Amogha account</p>
                 <form id="signin-form" onsubmit="return false;">
-                    <input type="tel" id="signin-phone" placeholder="Phone Number" required maxlength="10">
+                    <input type="tel" id="signin-phone" placeholder="Phone Number" required maxlength="10" aria-label="Phone number">
                     <div class="password-field">
-                        <input type="password" id="signin-password" placeholder="4-Digit PIN" required maxlength="4" inputmode="numeric" pattern="\d{4}">
+                        <input type="password" id="signin-password" placeholder="4-Digit PIN" required maxlength="4" inputmode="numeric" pattern="\d{4}" aria-label="4-digit PIN">
                         <button type="button" class="password-toggle" onclick="togglePassword('signin-password', this)" aria-label="Show PIN">
                             <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                             <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -1255,7 +1264,7 @@
                     </div>
                     <button type="submit" class="cta-button auth-submit-btn" onclick="handleSignIn()">Sign In</button>
                 </form>
-                <p id="signin-msg" class="auth-msg"></p>
+                <p id="signin-msg" class="auth-msg" aria-live="polite"></p>
                 <p class="forgot-password-link"><a href="#" onclick="event.preventDefault(); switchAuthView('forgot')">Forgot PIN?</a></p>
                 <p class="auth-switch">New here? <a href="#" onclick="event.preventDefault(); switchAuthView('signup')">Create Account</a></p>
             </div>
@@ -1268,8 +1277,8 @@
                 <!-- Step 1: Verify Identity -->
                 <div id="forgot-step-1" class="forgot-step">
                     <form id="forgot-verify-form" onsubmit="return false;">
-                        <input type="tel" id="forgot-phone" placeholder="Registered Phone Number" required maxlength="10">
-                        <input type="text" id="forgot-name" placeholder="Registered Name" required>
+                        <input type="tel" id="forgot-phone" placeholder="Registered Phone Number" required maxlength="10" aria-label="Registered phone number">
+                        <input type="text" id="forgot-name" placeholder="Registered Name" required aria-label="Registered name">
                         <button type="submit" class="cta-button auth-submit-btn" onclick="handleForgotPassword()">Verify Identity</button>
                     </form>
                 </div>
@@ -1278,14 +1287,14 @@
                 <div id="forgot-step-2" class="forgot-step" style="display:none;">
                     <form id="forgot-reset-form" onsubmit="return false;">
                         <div class="password-field">
-                            <input type="password" id="forgot-new-password" placeholder="New 4-Digit PIN" required maxlength="4" minlength="4" inputmode="numeric" pattern="\d{4}">
+                            <input type="password" id="forgot-new-password" placeholder="New 4-Digit PIN" required maxlength="4" minlength="4" inputmode="numeric" pattern="\d{4}" aria-label="New 4-digit PIN">
                             <button type="button" class="password-toggle" onclick="togglePassword('forgot-new-password', this)" aria-label="Show PIN">
                                 <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                             </button>
                         </div>
                         <div class="password-field">
-                            <input type="password" id="forgot-confirm-password" placeholder="Confirm PIN" required maxlength="4" minlength="4" inputmode="numeric" pattern="\d{4}">
+                            <input type="password" id="forgot-confirm-password" placeholder="Confirm PIN" required maxlength="4" minlength="4" inputmode="numeric" pattern="\d{4}" aria-label="Confirm PIN">
                             <button type="button" class="password-toggle" onclick="togglePassword('forgot-confirm-password', this)" aria-label="Show PIN">
                                 <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -1295,16 +1304,16 @@
                     </form>
                 </div>
 
-                <p id="forgot-msg" class="auth-msg"></p>
+                <p id="forgot-msg" class="auth-msg" aria-live="polite"></p>
                 <p class="auth-switch"><a href="#" onclick="event.preventDefault(); switchAuthView('signin')">Back to Sign In</a></p>
             </div>
         </div>
     </div>
 
     <!-- Combo Meal Builder Modal -->
-    <div id="combo-modal" class="modal">
+    <div id="combo-modal" class="modal" role="dialog" aria-modal="true" aria-label="Build your combo meal">
         <div class="modal-content combo-modal-content">
-            <span class="close" onclick="closeComboModal()">&times;</span>
+            <button type="button" class="close" aria-label="Close combo builder" onclick="closeComboModal()">&times;</button>
             <h2>Build Your Combo</h2>
             <p class="combo-subtitle">Pick a biryani + starter + drink and save 15%!</p>
             <div class="combo-builder">
@@ -1334,12 +1343,12 @@
     </div>
 
     <!-- Gift Card Modal -->
-    <div id="giftcard-modal" class="modal">
+    <div id="giftcard-modal" class="modal" role="dialog" aria-modal="true" aria-label="Gift a meal">
         <div class="modal-content gc-modal-content">
-            <span class="close" onclick="closeGiftCardModal()">&times;</span>
+            <button type="button" class="close" aria-label="Close gift card" onclick="closeGiftCardModal()">&times;</button>
             <h2 class="gc-modal-title">🎁 Gift a Meal</h2>
             <p class="gc-modal-subtitle">Send the joy of Amogha to someone special</p>
-            <input type="tel" id="gc-recipient-phone" placeholder="Recipient's phone number" maxlength="10" class="gc-phone-input">
+            <input type="tel" id="gc-recipient-phone" placeholder="Recipient's phone number" maxlength="10" class="gc-phone-input" aria-label="Recipient phone number">
             <div class="gc-amounts">
                 <button class="gc-amount-btn" onclick="selectGcAmount(250, this)">&#8377;250</button>
                 <button class="gc-amount-btn active" onclick="selectGcAmount(500, this)">&#8377;500</button>
@@ -1356,7 +1365,7 @@
         <div class="addon-sheet" onclick="event.stopPropagation()">
             <div class="addon-sheet-header">
                 <h3>Customize Your Item</h3>
-                <button class="addon-sheet-close" onclick="closeAddonPicker()">&times;</button>
+                <button class="addon-sheet-close" onclick="closeAddonPicker()" aria-label="Close customization">&times;</button>
             </div>
             <div class="addon-sheet-item" id="addon-item-name"></div>
             <div class="addon-sheet-list" id="addon-sheet-list"></div>
@@ -1373,8 +1382,8 @@
     </a>
 
     <!-- Gallery Lightbox -->
-    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
-        <span class="lightbox-close">&times;</span>
+    <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Gallery image viewer" onclick="closeLightbox()">
+        <button type="button" class="lightbox-close" aria-label="Close gallery" onclick="closeLightbox()">&times;</button>
         <img id="lightbox-img" alt="Gallery Image" loading="lazy">
         <button class="lightbox-nav lightbox-prev" onclick="event.stopPropagation(); navigateLightbox(-1)">&#10094;</button>
         <button class="lightbox-nav lightbox-next" onclick="event.stopPropagation(); navigateLightbox(1)">&#10095;</button>
@@ -1484,7 +1493,7 @@
     </div>
 
     <!-- Social Proof Toast -->
-    <div id="social-proof-toast" class="social-proof-toast" style="display:none">
+    <div id="social-proof-toast" class="social-proof-toast" style="display:none" role="status" aria-live="polite">
         <span class="sp-avatar"></span>
         <div class="sp-content">
             <span class="sp-text"></span>
@@ -1577,13 +1586,13 @@
             storageBucket: "amogha-cafe.firebasestorage.app",
             messagingSenderId: "1000994409697",
             appId: "1:1000994409697:web:983214bafab529d6a2fba0",
-            measurementId: "G-PLACEHOLDER"
+            measurementId: "G-T5CJZGMHZX"
         });
         var db = firebase.firestore();
         var analytics = firebase.analytics();
     </script>
-    <script type="module" src="/script.js?v=20260305c"></script>
-    <script nomodule src="/script-legacy.js?v=20260305c"></script>
+    <script type="module" src="/script.js"></script>
+    <script nomodule src="/script-legacy.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(function(reg) {
@@ -1598,6 +1607,14 @@
         }
     </script>
     <script>window.scrollTo(0,0);</script>
+    <script>
+        // Patch: guard querySelector against bare '#' selectors (from href="#" anchors)
+        var _origQS = Document.prototype.querySelector;
+        Document.prototype.querySelector = function(sel) {
+            if (sel === '#' || sel === '') return null;
+            return _origQS.call(this, sel);
+        };
+    </script>
     <script>
     /* Fix stuck Web Animations on .reveal elements and lazy-loaded images.
        The bundled JS uses element.animate() which gets stuck at progress:0,
@@ -1697,6 +1714,13 @@
         setTimeout(fixStats, 7000);
         setTimeout(fixStats, 10000);
         setTimeout(fixStats, 15000);
+        // Accessibility: add aria-labels to dynamically created elements
+        setTimeout(function() {
+            var chatClose = document.querySelector('.ai-chat-close');
+            if (chatClose && !chatClose.hasAttribute('aria-label')) chatClose.setAttribute('aria-label', 'Close chat');
+            var chatSend = document.getElementById('ai-chat-send');
+            if (chatSend && !chatSend.hasAttribute('aria-label')) chatSend.setAttribute('aria-label', 'Send message');
+        }, 5000);
         // Fix back-to-top button visibility (script.js handler broken + stuck animations)
         var btt = document.getElementById('back-to-top');
         var bttFixed = false;
@@ -1775,6 +1799,7 @@
                         slides.forEach(function(s, i) {
                             var dot = document.createElement('button');
                             dot.className = 'gallery-dot' + (i === 0 ? ' active' : '');
+                            dot.setAttribute('aria-label', 'Gallery image ' + (i + 1));
                             dot.addEventListener('click', function() { showSlide(i); });
                             dots.appendChild(dot);
                         });
@@ -2011,9 +2036,9 @@
                 try { currentLang = localStorage.getItem('amoghaLang') || 'en'; } catch(e) {}
                 var langLi = document.createElement('li');
                 langLi.className = 'lang-switcher';
-                langLi.innerHTML = '<button class="lang-btn' + (currentLang === 'en' ? ' active' : '') + '" data-lang="en" onclick="switchLanguage(\'en\')">EN</button>' +
-                    '<button class="lang-btn' + (currentLang === 'hi' ? ' active' : '') + '" data-lang="hi" onclick="switchLanguage(\'hi\')">हि</button>' +
-                    '<button class="lang-btn' + (currentLang === 'te' ? ' active' : '') + '" data-lang="te" onclick="switchLanguage(\'te\')">తె</button>';
+                langLi.innerHTML = '<button class="lang-btn' + (currentLang === 'en' ? ' active' : '') + '" data-lang="en" onclick="switchLanguage(\'en\')" aria-label="Switch to English">EN</button>' +
+                    '<button class="lang-btn' + (currentLang === 'hi' ? ' active' : '') + '" data-lang="hi" onclick="switchLanguage(\'hi\')" aria-label="Switch to Hindi">हि</button>' +
+                    '<button class="lang-btn' + (currentLang === 'te' ? ' active' : '') + '" data-lang="te" onclick="switchLanguage(\'te\')" aria-label="Switch to Telugu">తె</button>';
                 var themeToggle = nav.querySelector('.theme-toggle');
                 if (themeToggle) {
                     nav.insertBefore(langLi, themeToggle.parentElement);

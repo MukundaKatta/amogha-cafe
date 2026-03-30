@@ -2195,7 +2195,7 @@ img:not([loading="lazy"]) {
     background: rgba(212, 160, 23, .02);
 }
 
-.faq-item h4 {
+.faq-item h3 {
     transition: color .3s ease;
 }
 

@@ -59,13 +59,23 @@ function getRateLimitRemainingSeconds(phone) {
     } catch(e) { return 0; }
 }
 
-// Simple PIN hashing using SHA-256 (Web Crypto API)
+// Simple PIN hashing using SHA-256 (Web Crypto API with HTTP fallback)
 async function hashPin(pin) {
-    var encoder = new TextEncoder();
-    var data = encoder.encode(pin + '_amogha_salt');
-    var hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    var hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    var encoded = pin + '_amogha_salt';
+    // crypto.subtle requires secure context (HTTPS); fall back to simple hash on HTTP
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+        var encoder = new TextEncoder();
+        var data = encoder.encode(encoded);
+        var hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        var hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    }
+    // Fallback: simple djb2-style hash (not cryptographic, but functional on HTTP)
+    var hash = 5381;
+    for (var i = 0; i < encoded.length; i++) {
+        hash = ((hash << 5) + hash + encoded.charCodeAt(i)) >>> 0;
+    }
+    return 'fb_' + hash.toString(16).padStart(8, '0');
 }
 
 export function getCurrentUser() {
@@ -191,7 +201,8 @@ export function closeAuthModal() {
 
 export function switchAuthView(view) {
     document.querySelectorAll('.auth-view').forEach(v => v.classList.remove('active'));
-    document.getElementById('auth-' + view).classList.add('active');
+    var el = document.getElementById('auth-' + view);
+    if (el) el.classList.add('active');
 }
 
 var _authInProgress = false;

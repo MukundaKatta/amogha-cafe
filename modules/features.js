@@ -1156,7 +1156,11 @@ export function loadDailySpecial() {
         var priceEl = section.querySelector('.daily-special-price');
         var addBtn  = section.querySelector('.daily-special-add-btn');
 
-        if (d.imageUrl && imgEl) { imgEl.src = d.imageUrl; imgEl.style.display = 'block'; if (phEl) phEl.style.display = 'none'; }
+        var specialImg = d.imageUrl;
+        if (specialImg && specialImg.indexOf('res.cloudinary.com') !== -1 && specialImg.indexOf('/upload/') !== -1 && specialImg.indexOf('f_auto') === -1) {
+            specialImg = specialImg.replace('/upload/', '/upload/f_auto,q_auto,w_600/');
+        }
+        if (specialImg && imgEl) { imgEl.src = specialImg; imgEl.style.display = 'block'; if (phEl) phEl.style.display = 'none'; }
         if (titleEl) titleEl.textContent = d.title || 'Chef\'s Special';
         if (descEl)  descEl.textContent  = d.description || '';
         if (priceEl) priceEl.innerHTML   = '&#8377;' + (d.price || '');

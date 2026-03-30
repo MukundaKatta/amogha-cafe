@@ -1566,13 +1566,13 @@
             storageBucket: "amogha-cafe.firebasestorage.app",
             messagingSenderId: "1000994409697",
             appId: "1:1000994409697:web:983214bafab529d6a2fba0",
-            measurementId: "G-PLACEHOLDER"
+            measurementId: "G-T5CJZGMHZX"
         });
         var db = firebase.firestore();
         var analytics = firebase.analytics();
     </script>
-    <script type="module" src="/script.js?v=20260305c"></script>
-    <script nomodule src="/script-legacy.js?v=20260305c"></script>
+    <script type="module" src="/script.js"></script>
+    <script nomodule src="/script-legacy.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(function(reg) {
@@ -1587,5 +1587,13 @@
         }
     </script>
     <script>window.scrollTo(0,0);</script>
+    <script>
+        // Patch: guard querySelector against bare '#' selectors (from href="#" anchors)
+        var _origQS = Document.prototype.querySelector;
+        Document.prototype.querySelector = function(sel) {
+            if (sel === '#' || sel === '') return null;
+            return _origQS.call(this, sel);
+        };
+    </script>
 </body>
 </html>

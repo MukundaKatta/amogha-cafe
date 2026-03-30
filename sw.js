@@ -1,4 +1,4 @@
-const CACHE_NAME = 'amogha-v87';
+const CACHE_NAME = 'amogha-v95';
 const MAX_CACHE_ITEMS = 200; // Prevent unbounded cache growth
 const ASSETS = [
   './',
@@ -38,7 +38,10 @@ const ASSETS = [
   './pics/stall-wide.jpeg',
   './pics/street-view.jpeg',
   './pics/stall-close.jpeg',
-  './pics/curries-menu.jpeg'
+  './pics/curries-menu.jpeg',
+  // Shortcut target pages (for offline access from PWA shortcuts)
+  './menu/',
+  './menu/index.html'
 ];
 
 // Placeholder SVG for offline image fallback
@@ -48,10 +51,16 @@ var OFFLINE_IMAGE_PLACEHOLDER = '<svg xmlns="http://www.w3.org/2000/svg" width="
   + '<text x="200" y="170" text-anchor="middle" fill="#8a6d3b" font-size="14" font-family="sans-serif">Amogha Cafe</text>'
   + '</svg>';
 
-// Install — cache all assets, skip waiting immediately
+// Install — cache all assets (gracefully skip failures), skip waiting immediately
 self.addEventListener('install', function(e) {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache) { return cache.addAll(ASSETS); })
+    caches.open(CACHE_NAME).then(function(cache) {
+      return Promise.all(
+        ASSETS.map(function(url) {
+          return cache.add(url).catch(function() { /* skip failed asset */ });
+        })
+      );
+    })
   );
   self.skipWaiting();
 });
@@ -85,6 +94,23 @@ self.addEventListener('fetch', function(e) {
 
   // Skip API requests from caching (they have their own caching in-app)
   if (url.pathname.startsWith('/api')) return;
+
+  // Hashed chunk files (assets/*-[hash].js/css) — cache first (immutable by content hash)
+  if (url.pathname.startsWith('/assets/')) {
+    e.respondWith(
+      caches.match(e.request).then(function(cached) {
+        if (cached) return cached;
+        return fetch(e.request).then(function(response) {
+          if (response.ok) {
+            var clone = response.clone();
+            caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
 
   // HTML documents, CSS, JS — stale-while-revalidate (fast + fresh)
   var isDocument = e.request.destination === 'document';
@@ -139,23 +165,6 @@ self.addEventListener('fetch', function(e) {
         });
         // Return cached immediately if available, revalidate in background
         return cached || fetchPromise;
-      })
-    );
-    return;
-  }
-
-  // Hashed chunk files (assets/*-[hash].js) — cache first (immutable by content hash)
-  if (url.pathname.startsWith('/assets/') && url.pathname.endsWith('.js')) {
-    e.respondWith(
-      caches.match(e.request).then(function(cached) {
-        if (cached) return cached;
-        return fetch(e.request).then(function(response) {
-          if (response.ok) {
-            var clone = response.clone();
-            caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
-          }
-          return response;
-        });
       })
     );
     return;

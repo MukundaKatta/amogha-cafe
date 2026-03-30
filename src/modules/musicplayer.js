@@ -76,6 +76,12 @@ function createAudio() {
             nextTrack();
         });
         audio.addEventListener('error', function() {
+            consecutiveErrors++;
+            if (consecutiveErrors >= 3) {
+                isPlaying = false;
+                updatePlayerUI();
+                return;
+            }
             // Skip to next track on error
             setTimeout(nextTrack, 1000);
         });
@@ -84,6 +90,7 @@ function createAudio() {
 }
 
 var playPromise = null;
+var consecutiveErrors = 0;
 
 function playTrack(playlist, trackIndex) {
     currentPlaylist = playlist;
@@ -96,6 +103,7 @@ function playTrack(playlist, trackIndex) {
     if (playPromise) {
         playPromise.then(function() {
             playPromise = null;
+            consecutiveErrors = 0;
             isPlaying = true;
             updatePlayerUI();
         }).catch(function(err) {

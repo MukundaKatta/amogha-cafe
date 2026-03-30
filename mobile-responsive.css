@@ -60,6 +60,68 @@ header, nav, .navbar {
     -webkit-overflow-scrolling: touch;
 }
 
+/* Fix small font sizes on hero slide overlays */
+.slide-label {
+    font-size: 0.75rem;
+}
+.slide-price {
+    font-size: 0.8rem;
+}
+.slide-price .telugu-sub {
+    font-size: 0.7rem;
+}
+.status-text {
+    font-size: 0.75rem;
+}
+
+/* FAQ heading fix: h4 changed to h3 for proper heading hierarchy */
+.faq-item h3 {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Reset button defaults on close buttons (converted from span to button for a11y) */
+button.close,
+button.lightbox-close {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    line-height: inherit;
+}
+
+/* AI chat close button — increase touch target */
+.ai-chat-close {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* AI chat send button — ensure touch target */
+.ai-chat-send, #ai-chat-send {
+    min-width: 44px !important;
+    min-height: 44px !important;
+}
+
+/* Gallery slideshow dots — touch target */
+.gallery-dot {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 8px;
+    cursor: pointer;
+}
+
 
 /* === SECTION 2: @media (max-width: 768px) — Tablet & Large Phone === */
 
@@ -147,9 +209,97 @@ header, nav, .navbar {
         align-items: center;
     }
 
+    /* -- Touch targets: critical mobile fixes -- */
+    .add-to-cart {
+        min-height: 44px;
+    }
+    .hub-chip {
+        min-height: 44px;
+    }
+    .gallery-slide-btn,
+    .gallery-prev,
+    .gallery-next {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .carousel-btn,
+    .carousel-prev,
+    .carousel-next {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .write-review-btn {
+        min-height: 44px;
+        padding: 0.6rem 1.5rem;
+    }
+    .newsletter-btn {
+        min-height: 44px;
+    }
+    .sticky-order-bar {
+        min-height: 48px !important;
+    }
+    .sticky-order-bar .bar-cta,
+    .bar-cta {
+        height: 44px !important;
+        min-height: 44px !important;
+    }
+    .floating-cart-btn {
+        min-height: 44px;
+        padding: 0.5rem 1rem;
+    }
+    .weather-item-chip {
+        min-height: 44px;
+        padding: 0.5rem 1rem;
+    }
+    .ai-suggest-btn {
+        min-height: 44px;
+        padding: 0.5rem 0.8rem;
+    }
+    .contact-link,
+    .footer-contact-link {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+    /* Footer links */
+    footer a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+    .ai-chat-close {
+        min-width: 44px !important;
+        min-height: 44px !important;
+    }
+    #ai-chat-send {
+        min-width: 44px !important;
+        min-height: 44px !important;
+    }
+    #ai-chat-input {
+        min-height: 44px !important;
+    }
+    .ai-suggest-btn {
+        min-height: 44px !important;
+        padding: 0.5rem 0.8rem !important;
+    }
+
     /* -- Social proof toast: above FABs -- */
     .social-proof-toast {
         bottom: 140px !important;
+    }
+
+    /* -- FAB stacking: prevent overlap between back-to-top and ai-chat-fab -- */
+    .back-to-top {
+        bottom: 140px !important;
+    }
+    .ai-chat-fab {
+        bottom: 76px !important;
     }
 
     /* -- Badge grid: 2 columns -- */
@@ -390,8 +540,8 @@ header, nav, .navbar {
         font-size: 8px;
     }
     .back-to-top {
-        width: 36px !important;
-        height: 36px !important;
+        width: 40px !important;
+        height: 40px !important;
         bottom: 116px !important;
     }
     .referral-fab {
@@ -681,7 +831,99 @@ header, nav, .navbar {
     .nav-link, .signin-nav-btn,
     .carousel-arrow {
         min-height: 44px;
+    }
+
+    /* Buttons that are also navigation arrows need min-width */
+    .carousel-arrow, .qty-btn, .close, .modal-close,
+    .gallery-slide-btn, .carousel-btn {
         min-width: 44px;
+    }
+
+    /* Gallery slideshow arrows */
+    .gallery-slide-btn.gallery-prev,
+    .gallery-slide-btn.gallery-next,
+    .gallery-prev, .gallery-next {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Reviews carousel arrows */
+    .carousel-btn.carousel-prev,
+    .carousel-btn.carousel-next {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Write a Review button */
+    .write-review-btn {
+        min-height: 44px;
+        padding: 0.6rem 1.5rem;
+    }
+
+    /* Newsletter subscribe buttons */
+    .newsletter-btn {
+        min-height: 44px;
+        padding: 0.6rem 1.2rem;
+    }
+
+    /* Sticky order bar CTA */
+    .bar-cta {
+        min-height: 44px;
+        padding: 0.5rem 1.2rem;
+    }
+
+    /* Floating cart View Cart button */
+    .floating-cart-btn {
+        min-height: 44px;
+        padding: 0.5rem 1rem;
+    }
+
+    /* Weather suggestion chips */
+    .weather-item-chip {
+        min-height: 44px;
+        padding: 0.5rem 1rem;
+    }
+
+    /* AI chat suggestion buttons */
+    .ai-suggest-btn {
+        min-height: 44px;
+        padding: 0.5rem 0.8rem;
+    }
+
+    /* Phone number / contact links */
+    .contact-link,
+    .footer-contact-link {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* Footer navigation links */
+    footer a,
+    .footer-links a,
+    .footer-nav a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* Privacy policy / terms links */
+    .footer-bottom a,
+    .legal-links a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* Hub chips (gamification) */
+    .hub-chip {
+        min-height: 44px;
     }
 
     /* Quantity controls need bigger tap area */
@@ -706,6 +948,21 @@ header, nav, .navbar {
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    /* AI chat close and send */
+    .ai-chat-close {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    #ai-chat-send, .ai-chat-send {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* AI chat input */
+    #ai-chat-input {
+        min-height: 44px;
     }
 }
 
@@ -733,7 +990,7 @@ header, nav, .navbar {
         bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
     }
     .back-to-top {
-        bottom: calc(132px + env(safe-area-inset-bottom, 0px)) !important;
+        bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
     }
     .referral-fab {
         bottom: calc(192px + env(safe-area-inset-bottom, 0px)) !important;
