@@ -3,6 +3,9 @@
 // Lets users see how dishes look on their table before ordering
 // Inspired by: IKEA Place, Amazon AR View, Snapchat food filters
 
+function escH(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function safeId(s) { return String(s || '').replace(/[^a-z0-9_-]/gi, ''); }
+
 var AR_ITEMS = {
     'biryani': { model: '/assets/models/biryani.glb', scale: 0.3, name: 'Hyderabadi Biryani' },
     'tandoori': { model: '/assets/models/tandoori.glb', scale: 0.25, name: 'Tandoori Chicken' },
@@ -44,14 +47,14 @@ function openARPreview(itemId, itemName) {
     overlay.className = 'ar-overlay';
     overlay.innerHTML =
         '<div class="ar-header">' +
-            '<span class="ar-title">AR Preview: ' + (itemName || 'Food Item') + '</span>' +
+            '<span class="ar-title">AR Preview: ' + escH(itemName || 'Food Item') + '</span>' +
             '<button class="ar-close" aria-label="Close AR preview">&times;</button>' +
         '</div>' +
         '<div class="ar-camera-container">' +
             '<video id="arVideo" autoplay playsinline muted></video>' +
             '<canvas id="arCanvas"></canvas>' +
             '<div class="ar-food-overlay" id="arFoodOverlay">' +
-                '<img src="/pics/' + (itemId || 'biryani') + '.jpg" alt="' + (itemName || 'Food') + '" class="ar-food-image" id="arFoodImage">' +
+                '<img src="/pics/' + safeId(itemId || 'biryani') + '.jpg" alt="' + escH(itemName || 'Food') + '" class="ar-food-image" id="arFoodImage">' +
             '</div>' +
             '<div class="ar-instructions">Move your phone over a flat surface. Pinch to resize.</div>' +
         '</div>' +

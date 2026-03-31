@@ -249,6 +249,10 @@ export function initGiftCards() {
             redeemedAt: null
         };
 
+        // Guard against double-submit
+        var nextBtn = document.getElementById('gcNext');
+        if (nextBtn) { if (nextBtn.disabled) return; nextBtn.disabled = true; }
+
         // Save to Firestore
         var db = getDb();
         if (db) {
@@ -257,6 +261,7 @@ export function initGiftCards() {
             }).catch(function(e) {
                 console.error('Gift card save error:', e);
                 showToast('Could not save gift card. Please try again.');
+                if (nextBtn) nextBtn.disabled = false;
             });
         } else {
             showGiftSuccess(code, selectedDesign, selectedAmount, recipientName, senderName);

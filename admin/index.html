@@ -3450,7 +3450,7 @@
                     '<div style="color:#aaa;font-size:0.85rem;margin-bottom:0.25rem">ID: ' + escHtml(s.id) + '</div>' +
                     '<div style="color:#888;font-size:0.8rem;margin-bottom:0.75rem">' + escHtml(s.tagline || '') + '</div>' +
                     '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">' +
-                    '<button onclick="selectShopAndManage(\'' + s.id + '\')" style="background:#D4A017;color:#000;border:none;border-radius:6px;padding:5px 12px;font-size:0.8rem;font-weight:600;cursor:pointer">' + (isActive ? '✓ Managing' : 'Manage Menu') + '</button>' +
+                    '<button onclick="selectShopAndManage(\'' + escHtml(s.id) + '\')" style="background:#D4A017;color:#000;border:none;border-radius:6px;padding:5px 12px;font-size:0.8rem;font-weight:600;cursor:pointer">' + (isActive ? '✓ Managing' : 'Manage Menu') + '</button>' +
                     '<a href="/kiosk/?shop=' + encodeURIComponent(s.id) + '" target="_blank" style="display:inline-flex;align-items:center;color:#D4A017;font-size:0.8rem;text-decoration:none;border:1px solid #D4A01766;border-radius:6px;padding:5px 10px">Kiosk &#8599;</a>' +
                     '</div>' +
                     '<div style="border-top:1px solid #D4A01733;padding-top:0.75rem;display:grid;gap:0.75rem">' +
@@ -3480,7 +3480,7 @@
                     '</select></div>' +
                     '</div></div>' +
                     // Save button
-                    '<button onclick="savePrinterConfig(\'' + s.id + '\')" style="background:#1a472a;color:#4caf50;border:1px solid #4caf5066;border-radius:6px;padding:7px 12px;font-size:0.8rem;font-weight:600;cursor:pointer;width:100%">💾 Save Printer Config</button>' +
+                    '<button onclick="savePrinterConfig(\'' + escHtml(s.id) + '\')" style="background:#1a472a;color:#4caf50;border:1px solid #4caf5066;border-radius:6px;padding:7px 12px;font-size:0.8rem;font-weight:600;cursor:pointer;width:100%">💾 Save Printer Config</button>' +
                     '</div>' +
                     '</div>';
             }).join('');
@@ -3637,10 +3637,10 @@
                     '<span style="font-size:.72rem;font-weight:700;color:' + statusColor + ';background:' + statusColor + '22;padding:3px 8px;border-radius:20px">' + statusLabel + '</span>' +
                     '</div>' +
                     '<div style="display:flex;gap:.4rem;margin-top:.8rem;flex-wrap:wrap">' +
-                    '<button onclick="toggleKioskActive(\'' + k.id + '\',' + !k.active + ')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#9a9ab0;cursor:pointer;font-size:.78rem">' +
+                    '<button onclick="toggleKioskActive(\'' + escHtml(k.id) + '\',' + !k.active + ')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#9a9ab0;cursor:pointer;font-size:.78rem">' +
                     (k.active ? 'Disable' : 'Enable') + '</button>' +
-                    '<button onclick="promptKioskPassword(\'' + k.id + '\')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(212,160,23,.3);background:rgba(212,160,23,.06);color:#D4A017;cursor:pointer;font-size:.78rem">Reset Password</button>' +
-                    '<button onclick="deleteKiosk(\'' + k.id + '\',\'' + escHtml(k.name || k.username) + '\')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(231,76,60,.3);background:rgba(231,76,60,.06);color:#e74c3c;cursor:pointer;font-size:.78rem">Delete</button>' +
+                    '<button onclick="promptKioskPassword(\'' + escHtml(k.id) + '\')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(212,160,23,.3);background:rgba(212,160,23,.06);color:#D4A017;cursor:pointer;font-size:.78rem">Reset Password</button>' +
+                    '<button onclick="deleteKiosk(\'' + escHtml(k.id) + '\',\'' + escHtml(k.name || k.username) + '\')" style="padding:5px 12px;border-radius:6px;border:1px solid rgba(231,76,60,.3);background:rgba(231,76,60,.06);color:#e74c3c;cursor:pointer;font-size:.78rem">Delete</button>' +
                     '</div></div>';
             }).join('');
         }
@@ -4655,10 +4655,10 @@
                         '<span class="sc-order">#' + (idx + 1) + '</span>' +
                     '</div>' +
                     '<div class="sc-controls">' +
-                        '<button class="sc-move-btn" onclick="moveSlide(\'' + slide.id + '\', -1)" title="Move up" ' + (idx === 0 ? 'disabled' : '') + '>&#9650;</button>' +
-                        '<button class="sc-move-btn" onclick="moveSlide(\'' + slide.id + '\', 1)" title="Move down" ' + (idx === allHeroSlides.length - 1 ? 'disabled' : '') + '>&#9660;</button>' +
-                        '<label class="toggle-switch"><input type="checkbox"' + checked + ' onchange="toggleSlideActive(\'' + slide.id + '\', this.checked)"><span class="toggle-slider"></span></label>' +
-                        '<button class="sc-remove-btn" onclick="removeHeroSlide(\'' + slide.id + '\')" title="Remove">&#10005;</button>' +
+                        '<button class="sc-move-btn" onclick="moveSlide(\'' + escHtml(slide.id) + '\', -1)" title="Move up" ' + (idx === 0 ? 'disabled' : '') + '>&#9650;</button>' +
+                        '<button class="sc-move-btn" onclick="moveSlide(\'' + escHtml(slide.id) + '\', 1)" title="Move down" ' + (idx === allHeroSlides.length - 1 ? 'disabled' : '') + '>&#9660;</button>' +
+                        '<label class="toggle-switch"><input type="checkbox"' + checked + ' onchange="toggleSlideActive(\'' + escHtml(slide.id) + '\', this.checked)"><span class="toggle-slider"></span></label>' +
+                        '<button class="sc-remove-btn" onclick="removeHeroSlide(\'' + escHtml(slide.id) + '\')" title="Remove">&#10005;</button>' +
                     '</div>' +
                 '</div>';
             }).join('');
@@ -4801,11 +4801,11 @@
                     '<div class="media-thumb" style="background-image:url(' + escHtml(thumbUrl) + ')"><div class="media-play">▶</div></div>' +
                     '<div class="media-info">' +
                         '<input class="media-name-input" value="' + escHtml(t.customerName || '') + '" placeholder="Customer name" onchange="updateTestimonial(\'' + t.id + '\', \'customerName\', this.value)">' +
-                        '<input class="media-caption-input" value="' + escHtml(t.caption || '') + '" placeholder="Caption" onchange="updateTestimonial(\'' + t.id + '\', \'caption\', this.value)">' +
+                        '<input class="media-caption-input" value="' + escHtml(t.caption || '') + '" placeholder="Caption" onchange="updateTestimonial(\'' + escHtml(t.id) + '\', \'caption\', this.value)">' +
                     '</div>' +
                     '<div class="media-actions">' +
-                        '<label class="toggle-switch"><input type="checkbox"' + (t.active ? ' checked' : '') + ' onchange="updateTestimonial(\'' + t.id + '\', \'active\', this.checked)"><span class="toggle-slider"></span></label>' +
-                        '<button class="sc-remove-btn" onclick="removeTestimonial(\'' + t.id + '\')" title="Remove">&#10005;</button>' +
+                        '<label class="toggle-switch"><input type="checkbox"' + (t.active ? ' checked' : '') + ' onchange="updateTestimonial(\'' + escHtml(t.id) + '\', \'active\', this.checked)"><span class="toggle-slider"></span></label>' +
+                        '<button class="sc-remove-btn" onclick="removeTestimonial(\'' + escHtml(t.id) + '\')" title="Remove">&#10005;</button>' +
                     '</div>' +
                 '</div>';
             }).join('');
@@ -4880,11 +4880,11 @@
                     '<img class="media-thumb-img" src="' + escHtml(p.imageUrl) + '" alt="" loading="lazy">' +
                     '<div class="media-info">' +
                         '<input class="media-caption-input" value="' + escHtml(p.caption || '') + '" placeholder="Caption" onchange="updateSocialPost(\'' + p.id + '\', \'caption\', this.value)">' +
-                        '<input class="media-caption-input" value="' + escHtml(p.link || '') + '" placeholder="Link (optional)" onchange="updateSocialPost(\'' + p.id + '\', \'link\', this.value)">' +
+                        '<input class="media-caption-input" value="' + escHtml(p.link || '') + '" placeholder="Link (optional)" onchange="updateSocialPost(\'' + escHtml(p.id) + '\', \'link\', this.value)">' +
                     '</div>' +
                     '<div class="media-actions">' +
-                        '<label class="toggle-switch"><input type="checkbox"' + (p.active ? ' checked' : '') + ' onchange="updateSocialPost(\'' + p.id + '\', \'active\', this.checked)"><span class="toggle-slider"></span></label>' +
-                        '<button class="sc-remove-btn" onclick="removeSocialPost(\'' + p.id + '\')" title="Remove">&#10005;</button>' +
+                        '<label class="toggle-switch"><input type="checkbox"' + (p.active ? ' checked' : '') + ' onchange="updateSocialPost(\'' + escHtml(p.id) + '\', \'active\', this.checked)"><span class="toggle-slider"></span></label>' +
+                        '<button class="sc-remove-btn" onclick="removeSocialPost(\'' + escHtml(p.id) + '\')" title="Remove">&#10005;</button>' +
                     '</div>' +
                 '</div>';
             }).join('');
@@ -5081,8 +5081,8 @@
                         (e.paidBy ? '<div class="exp-paid-by" style="font-size:0.75rem;color:var(--text-dim);margin-top:0.2rem">Paid by: <strong style="color:var(--cream)">' + escHtml(e.paidBy) + '</strong></div>' : '') +
                     '</div>' +
                     '<div class="exp-actions">' +
-                        '<button class="btn-sm btn-outline" onclick="openExpenseModal(\'' + e.id + '\')">Edit</button>' +
-                        '<button class="btn-sm btn-danger" onclick="deleteExpense(\'' + e.id + '\',\'' + escHtml(e.description || '') + '\')">Delete</button>' +
+                        '<button class="btn-sm btn-outline" onclick="openExpenseModal(\'' + escHtml(e.id) + '\')">Edit</button>' +
+                        '<button class="btn-sm btn-danger" onclick="deleteExpense(\'' + escHtml(e.id) + '\',\'' + escHtml(e.description || '') + '\')">Delete</button>' +
                     '</div>' +
                 '</div>';
             }).join('');
@@ -5108,8 +5108,8 @@
                     '<td style="white-space:nowrap">' + escHtml(e.paidBy || '-') + '</td>' +
                     '<td class="exp-amount-cell">\u20B9' + Number(e.amount || 0).toLocaleString('en-IN') + '</td>' +
                     '<td><div class="exp-actions-cell">' +
-                        '<button class="btn-sm btn-outline" onclick="openExpenseModal(\'' + e.id + '\')">Edit</button>' +
-                        '<button class="btn-sm btn-danger" onclick="deleteExpense(\'' + e.id + '\',\'' + escHtml(e.description || '') + '\')">Del</button>' +
+                        '<button class="btn-sm btn-outline" onclick="openExpenseModal(\'' + escHtml(e.id) + '\')">Edit</button>' +
+                        '<button class="btn-sm btn-danger" onclick="deleteExpense(\'' + escHtml(e.id) + '\',\'' + escHtml(e.description || '') + '\')">Del</button>' +
                     '</div></td>' +
                 '</tr>';
             }).join('');
@@ -6752,8 +6752,8 @@
                     '</div>' +
                     '<div class="staff-status"><span class="staff-status-dot ' + dotClass + '"></span> ' + activeLabel + '</div>' +
                     '<div class="staff-card-actions">' +
-                        '<button class="staff-btn" onclick="editStaff(\'' + s.id + '\')">Edit</button>' +
-                        '<button class="staff-btn ' + (s.active !== false ? 'danger' : '') + '" onclick="toggleStaffActive(\'' + s.id + '\')">' + toggleLabel + '</button>' +
+                        '<button class="staff-btn" onclick="editStaff(\'' + escHtml(s.id) + '\')">Edit</button>' +
+                        '<button class="staff-btn ' + (s.active !== false ? 'danger' : '') + '" onclick="toggleStaffActive(\'' + escHtml(s.id) + '\')">' + toggleLabel + '</button>' +
                     '</div>' +
                 '</div>';
             }).join('');
@@ -6907,7 +6907,7 @@
                         if (rHour !== hour) return;
                         var status = (r.status || 'pending').toLowerCase();
                         var blockClass = 'cal-block cal-block-' + status;
-                        blocks += '<div class="' + blockClass + '" onclick="showReservationDetail(\'' + r.id + '\')">' +
+                        blocks += '<div class="' + blockClass + '" onclick="showReservationDetail(\'' + escHtml(r.id) + '\')">' +
                             '<div class="cal-block-name">' + escHtml(r.name || 'Guest') + '</div>' +
                             '<div class="cal-block-info">' + (r.partySize || '?') + ' guests' + (r.tableNumber ? ' · T' + r.tableNumber : '') + '</div>' +
                         '</div>';

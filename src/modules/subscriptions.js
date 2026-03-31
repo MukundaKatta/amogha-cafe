@@ -2,6 +2,8 @@ import { getDb } from '../core/firebase.js';
 import { getCurrentUser, setCurrentUser } from './auth.js';
 import { lockScroll, unlockScroll } from '../core/utils.js';
 
+function escH(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
 // ===== SUBSCRIPTION MEAL PLANS =====
 // Customers can subscribe to weekly meal plans for discounted pricing.
 var _planCatalog = {};
@@ -101,22 +103,22 @@ function renderSubscriptionModal(modal, plans, user) {
         var savingsPercent = regularPrice > 0 ? Math.round((savings / regularPrice) * 100) : 0;
         html += '<div style="background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.15);border-radius:14px;padding:1.2rem;margin-bottom:1rem">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">' +
-                '<h3 style="color:#e8d5b5;margin:0;font-size:1.1rem">' + plan.name + '</h3>' +
+                '<h3 style="color:#e8d5b5;margin:0;font-size:1.1rem">' + escH(plan.name) + '</h3>' +
                 '<span style="background:#D4A017;color:#1a0f08;padding:0.15rem 0.5rem;border-radius:8px;font-size:0.7rem;font-weight:700">Save ' + savingsPercent + '%</span>' +
             '</div>' +
-            '<p style="color:#a09080;font-size:0.8rem;margin-bottom:0.6rem">' + plan.description + '</p>' +
+            '<p style="color:#a09080;font-size:0.8rem;margin-bottom:0.6rem">' + escH(plan.description) + '</p>' +
             '<div style="display:flex;align-items:baseline;gap:0.5rem;margin-bottom:0.6rem">' +
-                '<span style="font-size:1.4rem;font-weight:700;color:#D4A017">Rs.' + plan.pricePerMonth + '</span>' +
-                '<span style="color:#a09080;font-size:0.8rem;text-decoration:line-through">Rs.' + regularPrice + '</span>' +
+                '<span style="font-size:1.4rem;font-weight:700;color:#D4A017">Rs.' + Number(plan.pricePerMonth || 0) + '</span>' +
+                '<span style="color:#a09080;font-size:0.8rem;text-decoration:line-through">Rs.' + Number(regularPrice) + '</span>' +
                 '<span style="color:#a09080;font-size:0.75rem">/month</span>' +
             '</div>' +
             '<div style="margin-bottom:0.8rem">' +
                 '<div style="font-size:0.75rem;color:#a09080;margin-bottom:0.3rem">Includes:</div>' +
-                plan.items.map(function(item) {
-                    return '<span style="display:inline-block;font-size:0.7rem;padding:0.15rem 0.4rem;border-radius:6px;background:rgba(255,255,255,0.05);color:#e8d5b5;margin:0.1rem">' + item + '</span>';
+                (plan.items || []).map(function(item) {
+                    return '<span style="display:inline-block;font-size:0.7rem;padding:0.15rem 0.4rem;border-radius:6px;background:rgba(255,255,255,0.05);color:#e8d5b5;margin:0.1rem">' + escH(item) + '</span>';
                 }).join(' ') +
             '</div>' +
-            '<button onclick="subscribeToPlan(\'' + plan.id + '\')" style="width:100%;padding:0.55rem;background:linear-gradient(135deg,#D4A017,#B8860B);color:#1a0f08;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.85rem">Subscribe Now</button>' +
+            '<button onclick="subscribeToPlan(\'' + escH(plan.id) + '\')" style="width:100%;padding:0.55rem;background:linear-gradient(135deg,#D4A017,#B8860B);color:#1a0f08;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.85rem">Subscribe Now</button>' +
         '</div>';
     });
 
@@ -124,8 +126,8 @@ function renderSubscriptionModal(modal, plans, user) {
     if (user.activeSubscription) {
         html += '<div style="background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.2);border-radius:14px;padding:1rem;margin-bottom:1rem">' +
             '<h4 style="color:#4CAF50;margin:0 0 0.3rem">Your Active Plan</h4>' +
-            '<p style="color:#e8d5b5;font-size:0.85rem">' + user.activeSubscription.planName + '</p>' +
-            '<p style="color:#a09080;font-size:0.75rem">Next delivery: ' + (user.activeSubscription.nextDeliveryDate || 'Tomorrow') + '</p>' +
+            '<p style="color:#e8d5b5;font-size:0.85rem">' + escH(user.activeSubscription.planName) + '</p>' +
+            '<p style="color:#a09080;font-size:0.75rem">Next delivery: ' + escH(user.activeSubscription.nextDeliveryDate || 'Tomorrow') + '</p>' +
             '<button onclick="cancelSubscription()" style="margin-top:0.5rem;padding:0.4rem 1rem;background:rgba(244,67,54,0.1);color:#f44336;border:1px solid rgba(244,67,54,0.2);border-radius:8px;font-size:0.75rem;cursor:pointer">Cancel Plan</button>' +
         '</div>';
     }

@@ -1204,7 +1204,7 @@ function cardHTML(o,type){
                 '</span>';
             if(iAllergens.length){h+='<span class="ai-tags">';iAllergens.forEach(function(a){h+='<span class="ai-tag">'+(ALLERGEN_LABELS[a]||a)+'</span>';});h+='</span>';}
             h+='<span class="course-bdg c-'+course+'">'+course[0].toUpperCase()+'</span>';
-            if(type==='prog')h+='<span class="ichk'+(ck?' chk':'')+'" onclick="K.chk(\''+o.id+'\','+idx+')">&#10003;</span>';
+            if(type==='prog')h+='<span class="ichk'+(ck?' chk':'')+'" onclick="K.chk(\''+esc(o.id)+'\','+idx+')">&#10003;</span>';
             h+='</div>';
         });h+='</div>';}
 
@@ -1222,23 +1222,23 @@ function cardHTML(o,type){
     // Staff assignment (for new orders with staff roster)
     if(type==='new'&&staffRoster.length>0){
         h+='<div class="staff-assign">';
-        staffRoster.forEach(function(s){h+='<span class="staff-pick" onclick="K.assignStart(\''+o.id+'\',\''+esc(s.name).replace(/'/g,"\\'")+'\')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+s.color+';vertical-align:middle;margin-right:3px"></span>'+esc(s.name)+'</span>';});
+        staffRoster.forEach(function(s){h+='<span class="staff-pick" onclick="K.assignStart(\''+esc(o.id)+'\',\''+esc(s.name).replace(/'/g,"\\'")+'\')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+s.color+';vertical-align:middle;margin-right:3px"></span>'+esc(s.name)+'</span>';});
         h+='</div>';
     }
 
     // Actions
     h+='<div class="cact">';
     if(type==='new'){
-        h+='<button class="abtn bstart" onclick="K.start(\''+o.id+'\')">&#9654; START</button>';
-        if(!isRush)h+='<button class="abtn brush" onclick="K.rush(\''+o.id+'\')" title="Rush">&#128293;</button>';
-        h+='<button class="abtn bprint" onclick="K.print(\''+o.id+'\')" title="Print">&#128424;</button>';
+        h+='<button class="abtn bstart" onclick="K.start(\''+esc(o.id)+'\')">&#9654; START</button>';
+        if(!isRush)h+='<button class="abtn brush" onclick="K.rush(\''+esc(o.id)+'\')" title="Rush">&#128293;</button>';
+        h+='<button class="abtn bprint" onclick="K.print(\''+esc(o.id)+'\')" title="Print">&#128424;</button>';
     }else if(type==='prog'){
-        h+='<button class="abtn bdone" onclick="K.done(\''+o.id+'\')">&#10003; DONE</button>';
-        if(o.phone)h+='<button class="abtn bwhatsapp" onclick="K.notify(\''+o.id+'\')" title="WhatsApp update">&#128172;</button>';
-        h+='<button class="abtn bprint" onclick="K.print(\''+o.id+'\')" title="Print">&#128424;</button>';
+        h+='<button class="abtn bdone" onclick="K.done(\''+esc(o.id)+'\')">&#10003; DONE</button>';
+        if(o.phone)h+='<button class="abtn bwhatsapp" onclick="K.notify(\''+esc(o.id)+'\')" title="WhatsApp update">&#128172;</button>';
+        h+='<button class="abtn bprint" onclick="K.print(\''+esc(o.id)+'\')" title="Print">&#128424;</button>';
     }else{
-        h+='<button class="abtn brecall" onclick="K.recall(\''+o.id+'\')">&#8634; RECALL</button>';
-        if(o.phone)h+='<button class="abtn bwhatsapp" onclick="K.notify(\''+o.id+'\')" title="WhatsApp notify">&#128172;</button>';
+        h+='<button class="abtn brecall" onclick="K.recall(\''+esc(o.id)+'\')">&#8634; RECALL</button>';
+        if(o.phone)h+='<button class="abtn bwhatsapp" onclick="K.notify(\''+esc(o.id)+'\')" title="WhatsApp notify">&#128172;</button>';
     }
     h+='</div></div>';
     return h;
