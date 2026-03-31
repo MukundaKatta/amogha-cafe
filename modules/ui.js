@@ -1312,12 +1312,26 @@ export function initUI() {
         if (cookieChoice) return; // Already responded
 
         // Show after a short delay to not compete with preloader
+        consent.style.pointerEvents = 'none';
         setTimeout(function() {
+            // Cancel any CSS animations that don't work with display:none
+            consent.style.animation = 'none';
+            consent.style.transition = 'none';
+            consent.style.opacity = '0';
+            consent.style.transform = 'translateY(30px)';
             consent.style.display = '';
+            // Wait for paint, then animate in
+            setTimeout(function() {
+                consent.style.transition = 'opacity .5s ease, transform .5s ease';
+                consent.style.opacity = '1';
+                consent.style.transform = 'translateY(0)';
+                consent.style.pointerEvents = '';
+            }, 50);
         }, 2500);
 
         function handleConsent(choice) {
             safeSetItem('amogha-cookie-consent', choice);
+            consent.style.pointerEvents = 'none';
             consent.style.opacity = '0';
             consent.style.transform = 'translateY(20px)';
             setTimeout(function() { consent.style.display = 'none'; }, 400);

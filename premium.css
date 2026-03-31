@@ -2665,7 +2665,10 @@ footer::before {
    V5 — PREMIUM COOKIE CONSENT & SOCIAL PROOF
    ══════════════════════════════════════════════════════ */
 #cookie-consent {
-    animation: slideUpReveal .5s cubic-bezier(.22, 1, .36, 1);
+    animation: slideUpReveal .5s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+#cookie-consent[style*="display: none"], #cookie-consent[style*="display:none"] {
+    pointer-events: none;
 }
 
 @keyframes slideUpReveal {
