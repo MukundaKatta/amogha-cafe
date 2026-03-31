@@ -1,0 +1,1 @@
+cafe,restaurant,food,order,delivery,menu,loyalty,rewards,dining,takeaway
