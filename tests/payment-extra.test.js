@@ -1923,7 +1923,7 @@ describe('placeOrderToFirestore — inventory deduction (line 502)', () => {
 
         expect(batchObj.commit).toHaveBeenCalled();
         expect(batchUpdates.length).toBeGreaterThan(0);
-        expect(batchUpdates[0].data.quantity).toBe(8); // 10 - 2
+        expect(batchUpdates[0].data.quantity).toEqual({ _increment: -2 }); // atomic FieldValue.increment(-qty)
     });
 });
 

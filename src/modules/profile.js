@@ -72,7 +72,7 @@ export function openProfileModal() {
         // Phone field (read-only)
         '<div class="profile-field" style="margin-bottom:14px;">' +
             '<label class="premium-label">Phone</label>' +
-            '<input type="text" id="profile-phone" class="premium-input" value="' + (user.phone || '') + '" readonly>' +
+            '<input type="text" id="profile-phone" class="premium-input" value="' + (user.phone || '').replace(/"/g, '&quot;') + '" readonly>' +
         '</div>' +
 
         // Date of Birth field
@@ -160,13 +160,13 @@ export function saveProfile() {
     // Save to Firestore
     var db = getDb();
     if (db && user.phone) {
-        db.collection('users').doc(user.phone).update({
+        db.collection('users').doc(user.phone).set({
             name: name,
             dob: dob,
             dietaryPrefs: dietaryPrefs,
             allergenAlerts: allergenAlerts,
             savedAddresses: user.savedAddresses || []
-        }).then(function() {
+        }, { merge: true }).then(function() {
             showAuthToast('Profile updated!');
             closeProfileModal();
             // Update the sign-in button to reflect name change

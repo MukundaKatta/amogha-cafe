@@ -227,6 +227,7 @@ describe('saveProfile', () => {
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     update: updateMock,
+                    set: updateMock,
                     onSnapshot: vi.fn(() => vi.fn()),
                 })),
                 where: vi.fn().mockReturnThis(),
@@ -247,7 +248,7 @@ describe('saveProfile', () => {
         expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({
             name: 'Test Name',
             dob: '1990-05-15',
-        }));
+        }), expect.anything());
     });
 
     it('shows toast on Firestore error', async () => {
@@ -256,6 +257,7 @@ describe('saveProfile', () => {
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     update: updateMock,
+                    set: updateMock,
                     onSnapshot: vi.fn(() => vi.fn()),
                 })),
                 where: vi.fn().mockReturnThis(),
@@ -495,6 +497,7 @@ describe('profile.js uncovered branches', () => {
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     update: updateMock,
+                    set: updateMock,
                     onSnapshot: vi.fn(() => vi.fn()),
                 })),
                 where: vi.fn().mockReturnThis(),
@@ -599,7 +602,7 @@ describe('saveProfile — updateSignInUI not a function (line 167)', () => {
 
     it('does not throw when window.updateSignInUI is not a function', async () => {
         const updateMock = vi.fn(() => Promise.resolve());
-        const docMock = vi.fn(() => ({ update: updateMock }));
+        const docMock = vi.fn(() => ({ update: updateMock, set: updateMock }));
         const collectionMock = vi.fn(() => ({ doc: docMock }));
         window.db = { collection: collectionMock };
         window.updateSignInUI = 'not a function';
@@ -749,6 +752,7 @@ describe('saveProfile — Firestore update success and failure (lines 63-69)', (
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     update: vi.fn(() => Promise.resolve()),
+                    set: vi.fn(() => Promise.resolve()),
                 })),
             })),
         };
@@ -779,6 +783,7 @@ describe('saveProfile — Firestore update success and failure (lines 63-69)', (
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     update: vi.fn(() => Promise.reject(new Error('network fail'))),
+                    set: vi.fn(() => Promise.reject(new Error('network fail'))),
                 })),
             })),
         };
@@ -836,6 +841,7 @@ describe('saveProfile — user without phone saves locally only (line 63-69)', (
             collection: vi.fn(() => ({
                 doc: vi.fn(() => ({
                     update: vi.fn(() => Promise.resolve()),
+                    set: vi.fn(() => Promise.resolve()),
                 })),
             })),
         };

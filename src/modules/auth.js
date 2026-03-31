@@ -53,7 +53,9 @@ function getRateLimitRemainingSeconds(phone) {
         var data = JSON.parse(safeGetItem('amoghaLoginAttempts') || '{}');
         var entry = data[phone];
         if (!entry || !entry.timestamps || entry.timestamps.length === 0) return 0;
-        var oldest = Math.min.apply(null, entry.timestamps.filter(function(t) { return Date.now() - t < LOGIN_WINDOW_MS; }));
+        var recent = entry.timestamps.filter(function(t) { return Date.now() - t < LOGIN_WINDOW_MS; });
+        if (recent.length === 0) return 0;
+        var oldest = Math.min.apply(null, recent);
         var unlocksAt = oldest + LOGIN_WINDOW_MS;
         return Math.max(0, Math.ceil((unlocksAt - Date.now()) / 1000));
     } catch(e) { return 0; }
@@ -439,6 +441,12 @@ export function handleResetPassword() {
     }
     if (newPass !== confirmPass) {
         msg.textContent = 'PINs do not match.';
+        msg.className = 'auth-msg error';
+        return;
+    }
+
+    if (!forgotPhoneVerified) {
+        msg.textContent = 'Please verify your identity first.';
         msg.className = 'auth-msg error';
         return;
     }

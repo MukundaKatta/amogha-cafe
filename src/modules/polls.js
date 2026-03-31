@@ -2,6 +2,8 @@ import { getCurrentUser, showAuthToast } from './auth.js';
 import { getDb } from '../core/firebase.js';
 import { safeGetItem, safeSetItem } from '../core/utils.js';
 
+function escH(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
 // ===== COMMUNITY POLLS (Vote on new menu items) =====
 
 var DEMO_POLLS = [
@@ -63,17 +65,17 @@ function renderPolls(container, polls) {
         var timeLeft = getTimeLeft(poll.endsAt);
 
         return '<div class="poll-card">' +
-            '<h4 class="poll-question">' + poll.question + '</h4>' +
-            '<div class="poll-timer">' + timeLeft + '</div>' +
+            '<h4 class="poll-question">' + escH(poll.question) + '</h4>' +
+            '<div class="poll-timer">' + escH(timeLeft) + '</div>' +
             '<div class="poll-options">' +
             poll.options.map(function(opt) {
                 var pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
                 var isVoted = userVote === opt.id;
                 var showResults = !!userVote;
                 return '<button class="poll-option ' + (isVoted ? 'voted' : '') + (showResults ? ' show-results' : '') + '" ' +
-                    (userVote ? 'disabled' : 'onclick="votePoll(\'' + String(poll.id).replace(/'/g, "\\'") + '\',\'' + String(opt.id).replace(/'/g, "\\'") + '\')"') + '>' +
-                    '<span class="poll-option-icon">' + opt.icon + '</span>' +
-                    '<span class="poll-option-text">' + opt.text + '</span>' +
+                    (userVote ? 'disabled' : 'onclick="votePoll(\'' + escH(String(poll.id)) + '\',\'' + escH(String(opt.id)) + '\')"') + '>' +
+                    '<span class="poll-option-icon">' + escH(opt.icon) + '</span>' +
+                    '<span class="poll-option-text">' + escH(opt.text) + '</span>' +
                     (showResults ? '<span class="poll-option-pct">' + pct + '%</span>' +
                         '<div class="poll-option-bar" style="width:' + pct + '%"></div>' : '') +
                     (isVoted ? '<span class="poll-voted-check">✓</span>' : '') +

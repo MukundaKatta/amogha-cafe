@@ -729,7 +729,7 @@ function renderPOSCats() {
     categories.forEach(function(cat) {
         var count = cat === 'All' ? allMenu.length : allMenu.filter(function(m){ return m.category===cat; }).length;
         html += '<button class="pos-cat-btn' + (cat===activeCat?' active':'') +
-                '" onclick="setPosCat(\'' + cat.replace(/'/g,"\\'") + '\')">' +
+                '" onclick="setPosCat(\'' + escH(cat) + '\')">' +
                 escH(cat) + '<span class="pos-cat-count">' + count + '</span></button>';
     });
     document.getElementById('pos-cats').innerHTML = html;

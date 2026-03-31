@@ -41,22 +41,22 @@ export function checkMilestones(user, orderData) {
     });
 
     if (newMilestones.length > 0) {
+        // Calculate total reward points upfront (before Firestore write)
+        var totalReward = newMilestones.reduce(function(sum, ms) { return sum + ms.reward; }, 0);
         user.earnedMilestones = earned;
         user.totalOrders = totalOrders;
         user.totalSpend = totalSpend;
+        user.loyaltyPoints = (user.loyaltyPoints || 0) + totalReward;
         setCurrentUser(user);
 
-        // Show celebrations with delay between each
+        // Show celebrations with delay between each (visual only, points already awarded)
         newMilestones.forEach(function(ms, idx) {
             setTimeout(function() {
                 showMilestoneCelebration(ms);
-                // Award reward points
-                user.loyaltyPoints = (user.loyaltyPoints || 0) + ms.reward;
-                setCurrentUser(user);
             }, (idx + 1) * 3000);
         });
 
-        // Persist to Firestore
+        // Persist to Firestore with correct loyaltyPoints (includes all rewards)
         var db = getDb();
         if (db && user.phone) {
             db.collection('users').doc(user.phone).update({
@@ -77,6 +77,12 @@ export function checkMilestones(user, orderData) {
 function calculateStreak(dates) {
     if (!dates || dates.length === 0) return 0;
     var sorted = dates.slice().sort().reverse();
+    // Verify the most recent date is today or yesterday (streak must be active)
+    var today = new Date();
+    var mostRecent = new Date(sorted[0] + 'T12:00:00');
+    var daysSinceLast = Math.round((today - mostRecent) / 86400000);
+    if (daysSinceLast > 1) return 0; // Streak is broken
+
     var streak = 1;
     for (var i = 0; i < sorted.length - 1; i++) {
         var d1 = new Date(sorted[i] + 'T12:00:00');

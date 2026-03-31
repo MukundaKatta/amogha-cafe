@@ -52,11 +52,13 @@ export function showOrderTracker(orderId) {
         });
     }
 
-    // Start listening for real-time updates
-    listenToOrder(orderId);
-
-    // Simulate progression for demo (real app uses Firestore listener)
-    simulateOrderProgress(orderId);
+    // Start listening for real-time updates; only simulate if no Firestore
+    var db = getDb();
+    if (db) {
+        listenToOrder(orderId);
+    } else {
+        simulateOrderProgress(orderId);
+    }
 }
 
 function listenToOrder(orderId) {
@@ -82,6 +84,8 @@ function simulateOrderProgress(orderId) {
     // Auto-advance stages for demo (in production, kitchen staff updates Firestore)
     var currentStage = 0;
     updateTrackerUI(currentStage);
+    // Clear any existing interval for this order to prevent duplicates
+    if (activeTrackers[orderId]) clearInterval(activeTrackers[orderId]);
     activeTrackers[orderId] = setInterval(function() {
         currentStage++;
         if (currentStage >= TRACKER_STAGES.length) {

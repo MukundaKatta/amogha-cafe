@@ -392,22 +392,25 @@ export function initMenuSync() {
         if (typeof window.updateHeroSlides === 'function') window.updateHeroSlides(slides);
     }, { orderBy: ['sortOrder'] });
 
-    // 4. Seasonal Theme Loader (cached)
+    // 4. Seasonal Theme Loader (cached) — skip Firestore if cache is fresh
+    var themeCacheHit = false;
     try {
         var cached = localStorage.getItem('theme_cache');
         if (cached) {
             var p = JSON.parse(cached);
-            if (p.ts && (Date.now() - p.ts) < 600000 && p.theme && p.theme !== 'default') {
-                document.body.classList.add('theme-' + p.theme);
-                return;
+            if (p.ts && (Date.now() - p.ts) < 600000 && p.theme) {
+                if (p.theme !== 'default') document.body.classList.add('theme-' + p.theme);
+                themeCacheHit = true;
             }
         }
     } catch(e) {}
-    db.collection('settings').doc('global').get().then(function(doc) {
-        var theme = doc.exists && doc.data().activeTheme ? doc.data().activeTheme : 'default';
-        if (theme !== 'default') document.body.classList.add('theme-' + theme);
-        try { localStorage.setItem('theme_cache', JSON.stringify({ ts: Date.now(), theme: theme })); } catch(e) {}
-    }).catch(function() {});
+    if (!themeCacheHit) {
+        db.collection('settings').doc('global').get().then(function(doc) {
+            var theme = doc.exists && doc.data().activeTheme ? doc.data().activeTheme : 'default';
+            if (theme !== 'default') document.body.classList.add('theme-' + theme);
+            try { localStorage.setItem('theme_cache', JSON.stringify({ ts: Date.now(), theme: theme })); } catch(e) {}
+        }).catch(function() {});
+    }
 
     // 5. Testimonials Loader (cached)
     var grid = document.getElementById('testimonials-grid');
@@ -422,7 +425,7 @@ export function initMenuSync() {
                 var thumb = t.thumbnailUrl || (t.videoUrl ? t.videoUrl.replace('/upload/', '/upload/f_jpg,so_1/') : '');
                 return '<div class="testimonial-card" onclick="openVideoLightbox(\'' + escH(t.videoUrl || '') + '\')">' +
                     '<div class="testimonial-thumb">' +
-                        (thumb ? '<img src="' + thumb + '" alt="" loading="lazy">' : '<div class="testimonial-placeholder">🎬</div>') +
+                        (thumb ? '<img src="' + escH(thumb) + '" alt="" loading="lazy">' : '<div class="testimonial-placeholder">🎬</div>') +
                         '<div class="testimonial-play">&#9654;</div>' +
                     '</div>' +
                     '<p class="testimonial-name">' + escH(t.customerName || '') + '</p>' +
@@ -523,7 +526,7 @@ export function checkAllergenWarning(cartItems, callback) {
         '<h3>Allergen Warning</h3>' +
         '<div class="allergen-list">';
     flagged.forEach(function(f) {
-        html += '<p><strong>' + f.name + '</strong> contains: ' + f.allergens.join(', ') + '</p>';
+        html += '<p><strong>' + escH(f.name) + '</strong> contains: ' + f.allergens.map(escH).join(', ') + '</p>';
     });
     html += '</div>' +
         '<button class="btn-proceed" onclick="document.getElementById(\'allergen-warning-popup\').remove();window._allergenCb(true)">Proceed Anyway</button>' +
@@ -585,7 +588,7 @@ function applyAllergenFilters() {
     });
 
     // Update count
-    var visible = document.querySelectorAll('.menu-item-card[style=""], .menu-item-card:not([style])').length;
+    var visible = Array.prototype.filter.call(cards, function(c) { return c.style.display !== 'none'; }).length;
     var total = cards.length;
     if (activeAllergenFilters.length > 0 && visible < total) {
         showFilterCount(visible, total);

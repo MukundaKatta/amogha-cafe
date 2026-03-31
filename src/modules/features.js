@@ -4,6 +4,9 @@ import { cart, updateCartCount, saveCart, updateFloatingCart, updateCartFab, add
 import { ITEM_PAIRINGS, ITEM_PRICES, HAPPY_HOURS, TRANSLATIONS, DYNAMIC_PRICING_RULES } from '../core/constants.js';
 import { getDb } from '../core/firebase.js';
 
+// HTML escape helper
+function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 // ===== SPICE LEVEL SELECTOR =====
 export function selectSpice(el) {
     const selector = el.parentElement;
@@ -211,8 +214,8 @@ export function openReviewModal(orderItems) {
     html += '<h2>Rate Your Order</h2><p class="review-subtitle">Help us serve you better!</p>';
     html += '<div id="review-items">';
     items.forEach(function(item, idx) {
-        html += '<div class="review-item" data-item="' + item.name + '">' +
-            '<span class="review-item-name">' + item.name + '</span>' +
+        html += '<div class="review-item" data-item="' + escH(item.name) + '">' +
+            '<span class="review-item-name">' + escH(item.name) + '</span>' +
             '<div class="review-stars" data-idx="' + idx + '">';
         for (var s = 1; s <= 5; s++) {
             html += '<span class="review-star" data-star="' + s + '" onclick="setReviewStar(this, ' + idx + ', ' + s + ')">&#9734;</span>';
@@ -839,11 +842,11 @@ export function openMyOrders() {
             var d = o.createdAt ? new Date(o.createdAt) : new Date();
             var dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
             var statusClass = 'status-badge status-badge--' + (o.status || 'pending');
-            var items = (o.items || []).map(function(i) { return i.name + ' x' + i.qty; }).join(', ');
+            var items = (o.items || []).map(function(i) { return escH(i.name) + ' x' + i.qty; }).join(', ');
             html += '<div class="myorder-card">' +
                 '<div class="myorder-header">' +
-                    '<span class="myorder-date">' + dateStr + '</span>' +
-                    '<span class="' + statusClass + '">' + (o.status || 'pending') + '</span>' +
+                    '<span class="myorder-date">' + escH(dateStr) + '</span>' +
+                    '<span class="' + statusClass + '">' + escH(o.status || 'pending') + '</span>' +
                 '</div>' +
                 '<p class="myorder-items">' + items + '</p>' +
                 '<div class="myorder-footer">' +
@@ -866,8 +869,8 @@ export function openMyOrders() {
                 var o = entry.data;
                 var d = o.createdAt ? new Date(o.createdAt) : new Date();
                 var dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-                var items = (o.items || []).map(function(i) { return i.name + ' x' + i.qty; }).join(', ');
-                html += '<div class="myorder-card"><div class="myorder-header"><span class="myorder-date">' + dateStr + '</span><span class="myorder-status">' + (o.status || '').toUpperCase() + '</span></div><p class="myorder-items">' + items + '</p><div class="myorder-footer"><span class="myorder-total">Rs.' + (o.total || 0) + '</span><button class="myorder-reorder-btn" onclick="reorderFromHistory(\'' + entry.id + '\')">Order Again</button></div></div>';
+                var items = (o.items || []).map(function(i) { return escH(i.name) + ' x' + i.qty; }).join(', ');
+                html += '<div class="myorder-card"><div class="myorder-header"><span class="myorder-date">' + escH(dateStr) + '</span><span class="myorder-status">' + escH((o.status || '').toUpperCase()) + '</span></div><p class="myorder-items">' + items + '</p><div class="myorder-footer"><span class="myorder-total">Rs.' + (o.total || 0) + '</span><button class="myorder-reorder-btn" onclick="reorderFromHistory(\'' + entry.id + '\')">Order Again</button></div></div>';
             });
             listEl.innerHTML = html;
         } else {
@@ -884,7 +887,8 @@ export function closeMyOrders() {
 export function reorderFromHistory(orderId) {
     var cached = safeGetItem('amoghaMyOrders');
     if (cached) {
-        var orders = JSON.parse(cached);
+        var orders;
+        try { orders = JSON.parse(cached); } catch(e) { showAuthToast('Could not load order history.'); return; }
         var found = orders.find(function(e) { return e.id === orderId; });
         if (found && found.data.items) {
             found.data.items.forEach(function(item) {
@@ -1310,10 +1314,10 @@ export function initLiveOrderTicker() {
             if (items.length < 3) return;
 
             function makeItem(emoji, text) {
-                return `<div class="bar-ticker-item"><span>${emoji}</span><span>${text}</span></div><span class="bar-dot"></span>`;
+                return '<div class="bar-ticker-item"><span>' + emoji + '</span><span>' + text + '</span></div><span class="bar-dot"></span>';
             }
             const html = items.map(function(o) {
-                return makeItem('🍛', `${o.firstName} just ordered ${o.itemName}`);
+                return makeItem('🍛', escH(o.firstName) + ' just ordered ' + escH(o.itemName));
             }).join('');
             // Duplicate for seamless CSS marquee loop
             track.innerHTML = html + html;

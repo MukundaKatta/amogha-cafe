@@ -95,7 +95,9 @@ function showSeasonalBanner(data) {
     banner.innerHTML =
         '<span class="seasonal-banner-particles">' + data.particles.join(' ') + '</span>' +
         '<span class="seasonal-banner-text">' + data.banner + '</span>' +
-        '<button class="seasonal-banner-close" onclick="dismissSeasonalBanner(\'' + data.name + '\')" aria-label="Dismiss">&times;</button>';
+        '<button class="seasonal-banner-close" data-season="' + data.name.replace(/"/g, '&quot;') + '" aria-label="Dismiss">&times;</button>';
+    var closeBtn = banner.querySelector('.seasonal-banner-close');
+    if (closeBtn) closeBtn.addEventListener('click', function() { dismissSeasonalBanner(closeBtn.getAttribute('data-season')); });
 
     var header = document.querySelector('header');
     if (header && header.nextSibling) {

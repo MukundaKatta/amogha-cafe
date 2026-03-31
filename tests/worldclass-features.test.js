@@ -104,7 +104,8 @@ describe('Streaks Module', () => {
     it('should store streak data in localStorage', async () => {
         const { recordDailyOrder } = await import('../src/modules/streaks.js');
         recordDailyOrder();
-        const stored = JSON.parse(localStorage.getItem('amogha_streak'));
+        // Streak data is user-scoped; with no user it falls back to legacy key or user-scoped key
+        var stored = JSON.parse(localStorage.getItem('amogha_streak_') || localStorage.getItem('amogha_streak') || 'null');
         expect(stored).toBeTruthy();
         expect(stored.currentStreak).toBe(1);
         expect(stored.lastOrderDate).toBeTruthy();

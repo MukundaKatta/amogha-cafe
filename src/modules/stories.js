@@ -184,7 +184,7 @@ function showStoryItem() {
     if (!story) { closeStoryViewer(); return; }
 
     var item = story.items[currentStoryItem];
-    if (!item) { advanceStory(); return; }
+    if (!item) { closeStoryViewer(); return; }
 
     // Update header
     var avatar = document.getElementById('storyAvatar');

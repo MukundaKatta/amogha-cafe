@@ -87,4 +87,4 @@ export function shareAchievement(badgeName, badgeIcon) {
 
 export function initSocialShare() {}
 
-Object.assign(window, { shareOrderCard, closeShareModal, shareMenuItem, shareAchievement });
+Object.assign(window, { shareOrderCard, closeShareModal, shareMenuItem, shareAchievement, copyShareText, onShareComplete });
