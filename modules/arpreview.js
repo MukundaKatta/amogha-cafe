@@ -160,15 +160,19 @@ function makeDraggable(el) {
         e.preventDefault();
     });
 
-    document.addEventListener('mousemove', function(e) {
+    // Remove previous global handlers to prevent leak on repeated opens
+    if (window._arDragMove) document.removeEventListener('mousemove', window._arDragMove);
+    if (window._arDragUp) document.removeEventListener('mouseup', window._arDragUp);
+    window._arDragMove = function(e) {
         if (isDragging) {
             offsetX = e.clientX - startX;
             offsetY = e.clientY - startY;
             el.style.transform = 'translate(' + offsetX + 'px,' + offsetY + 'px) scale(' + (el._scale || 1) + ')';
         }
-    });
-
-    document.addEventListener('mouseup', function() { isDragging = false; });
+    };
+    window._arDragUp = function() { isDragging = false; };
+    document.addEventListener('mousemove', window._arDragMove);
+    document.addEventListener('mouseup', window._arDragUp);
 }
 
 function makePinchResizable(el) {

@@ -182,4 +182,7 @@ function showTrackerNotification(orderId) {
     setTimeout(function() { notif.classList.add('show'); }, 100);
 }
 
-Object.assign(window, { showOrderTracker, closeOrderTracker, shareOrderStatus, initOrderTracker });
+if (!window._ordertrackerGlobalsSet) {
+    window._ordertrackerGlobalsSet = true;
+    Object.assign(window, { showOrderTracker, closeOrderTracker, shareOrderStatus, initOrderTracker });
+}

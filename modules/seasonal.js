@@ -175,4 +175,7 @@ export function initSeasonal() {
     }
 }
 
-Object.assign(window, { dismissSeasonalBanner, initSeasonal });
+if (!window._seasonalGlobalsSet) {
+    window._seasonalGlobalsSet = true;
+    Object.assign(window, { dismissSeasonalBanner, initSeasonal });
+}

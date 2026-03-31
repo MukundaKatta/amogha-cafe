@@ -275,7 +275,8 @@ export function initUI() {
     // Handle browser back/forward button for hash changes
     window.addEventListener('popstate', function() {
         if (window.location.hash) {
-            var target = document.querySelector(window.location.hash);
+            var cleanHash = window.location.hash.split('?')[0];
+            var target = cleanHash.length > 1 ? document.querySelector(cleanHash) : null;
             if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1227,7 +1228,8 @@ export function initUI() {
     // ===== HASH-BASED NAVIGATION ON PAGE LOAD =====
     // If URL has a hash (e.g. /#menu), scroll to that section after preloader finishes
     if (window.location.hash) {
-        var hashTarget = document.querySelector(window.location.hash);
+        var cleanLoadHash = window.location.hash.split('?')[0];
+        var hashTarget = cleanLoadHash.length > 1 ? document.querySelector(cleanLoadHash) : null;
         if (hashTarget) {
             // Delay to let preloader finish and layout settle
             setTimeout(function() {
@@ -1476,6 +1478,8 @@ export function initUI() {
         });
 
         window.addEventListener('unhandledrejection', function(e) {
+            // Suppress AbortError from video/audio play() race conditions
+            if (e.reason && e.reason.name === 'AbortError') { e.preventDefault(); return; }
             console.error('[Amogha Unhandled Promise]', e.reason);
             // Prevent default browser console noise for known non-critical failures
             if (e.reason && e.reason.code === 'permission-denied') {
@@ -1528,4 +1532,7 @@ function toggleFaq(el) {
     el.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 
-Object.assign(window, { closeMobileMenu, launchConfetti, toggleFaq });
+if (!window._uiGlobalsSet) {
+    window._uiGlobalsSet = true;
+    Object.assign(window, { closeMobileMenu, launchConfetti, toggleFaq });
+}

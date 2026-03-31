@@ -190,21 +190,21 @@ function openReferralModal() {
         navigator.clipboard.writeText(referralCode).then(function() {
             document.getElementById('refCopyCode').textContent = 'Copied!';
             setTimeout(function() { document.getElementById('refCopyCode').textContent = 'Copy'; }, 2000);
-        });
+        }).catch(function() {});
     });
 
     document.getElementById('refCopyLink').addEventListener('click', function() {
         navigator.clipboard.writeText(referralLink).then(function() {
             document.getElementById('refCopyLink').textContent = 'Copied!';
             setTimeout(function() { document.getElementById('refCopyLink').textContent = 'Copy'; }, 2000);
-        });
+        }).catch(function() {});
     });
 
     // Native share
     var nativeBtn = document.getElementById('refNativeShare');
     if (navigator.share) {
         nativeBtn.addEventListener('click', function() {
-            navigator.share({ title: 'Join Amogha Cafe', text: shareText, url: referralLink });
+            navigator.share({ title: 'Join Amogha Cafe', text: shareText, url: referralLink }).catch(function() {});
         });
     } else {
         nativeBtn.style.display = 'none';
@@ -213,4 +213,7 @@ function openReferralModal() {
 
 export { openReferralModal };
 
-Object.assign(window, { openReferralModal, initReferral });
+if (!window._referralGlobalsSet) {
+    window._referralGlobalsSet = true;
+    Object.assign(window, { openReferralModal, initReferral });
+}

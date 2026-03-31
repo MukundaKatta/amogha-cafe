@@ -59,13 +59,23 @@ function getRateLimitRemainingSeconds(phone) {
     } catch(e) { return 0; }
 }
 
-// Simple PIN hashing using SHA-256 (Web Crypto API)
+// Simple PIN hashing using SHA-256 (Web Crypto API with HTTP fallback)
 async function hashPin(pin) {
-    var encoder = new TextEncoder();
-    var data = encoder.encode(pin + '_amogha_salt');
-    var hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    var hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    var encoded = pin + '_amogha_salt';
+    // crypto.subtle requires secure context (HTTPS); fall back to simple hash on HTTP
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+        var encoder = new TextEncoder();
+        var data = encoder.encode(encoded);
+        var hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        var hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    }
+    // Fallback: simple djb2-style hash (not cryptographic, but functional on HTTP)
+    var hash = 5381;
+    for (var i = 0; i < encoded.length; i++) {
+        hash = ((hash << 5) + hash + encoded.charCodeAt(i)) >>> 0;
+    }
+    return 'fb_' + hash.toString(16).padStart(8, '0');
 }
 
 export function getCurrentUser() {
@@ -91,22 +101,26 @@ export function setCurrentUser(user) {
     safeSetItem('amoghaUser', JSON.stringify(user));
     // Start listening for order status notifications
     var db = getDb();
-    if (user && user.phone && typeof db !== 'undefined' && db) {
+    if (user && user.phone && typeof db !== 'undefined' && db && !window._notifListenerActive) {
         // Unsubscribe existing listener to prevent duplicates
         if (typeof window._notifListenerUnsub === 'function') {
             window._notifListenerUnsub();
         }
-        window._notifListenerActive = true;
-        window._notifListenerUnsub = db.collection('notifications').where('userPhone', '==', user.phone).where('read', '==', false)
-            .onSnapshot(function(snap) {
-                snap.docChanges().forEach(function(change) {
-                    if (change.type === 'added') {
-                        var n = change.doc.data();
-                        if (typeof window.sendPushNotification === 'function') window.sendPushNotification(n.title, n.body);
-                        change.doc.ref.update({ read: true });
-                    }
-                });
-            }, function(err) { console.error('Notification listener error:', err); });
+        try {
+            window._notifListenerUnsub = db.collection('notifications').where('userPhone', '==', user.phone).where('read', '==', false)
+                .onSnapshot(function(snap) {
+                    snap.docChanges().forEach(function(change) {
+                        if (change.type === 'added') {
+                            var n = change.doc.data();
+                            if (typeof window.sendPushNotification === 'function') window.sendPushNotification(n.title, n.body);
+                            change.doc.ref.update({ read: true });
+                        }
+                    });
+                }, function(err) { console.error('Notification listener error:', err); });
+            window._notifListenerActive = true;
+        } catch (e) {
+            console.error('Notification listener setup error:', e);
+        }
     }
 }
 
@@ -187,10 +201,14 @@ export function closeAuthModal() {
 
 export function switchAuthView(view) {
     document.querySelectorAll('.auth-view').forEach(v => v.classList.remove('active'));
-    document.getElementById('auth-' + view).classList.add('active');
+    var el = document.getElementById('auth-' + view);
+    if (el) el.classList.add('active');
 }
 
+var _authInProgress = false;
+
 export function handleSignUp() {
+    if (_authInProgress) return;
     var name = document.getElementById('signup-name').value.trim();
     var phone = document.getElementById('signup-phone').value.trim();
     var password = document.getElementById('signup-password').value;
@@ -229,15 +247,18 @@ export function handleSignUp() {
         return;
     }
 
+    _authInProgress = true;
     db.collection('users').doc(phone).get().then(async function(doc) {
         if (doc.exists) {
             msg.textContent = 'This phone number is already registered. Please sign in.';
             msg.className = 'auth-msg error';
+            _authInProgress = false;
             return;
         }
         var hashedPin = await hashPin(password);
         var newUser = { name: name, phone: phone, pin: hashedPin, usedWelcomeBonus: false, createdAt: new Date().toISOString() };
         return db.collection('users').doc(phone).set(newUser).then(function() {
+            _authInProgress = false;
             try {
                 setCurrentUser(newUser);
                 updateSignInUI(newUser);
@@ -261,6 +282,7 @@ export function handleSignUp() {
             }
         });
     }).catch(function(err) {
+        _authInProgress = false;
         console.error('SignUp error:', err);
         var errMsg = err.code === 'permission-denied' ? 'Access denied. Please contact support.' : 'Connection error. Please check your internet and try again.';
         msg.textContent = errMsg + ' (' + (err.code || err.message || 'unknown') + ')';
@@ -269,6 +291,7 @@ export function handleSignUp() {
 }
 
 export function handleSignIn() {
+    if (_authInProgress) return;
     var phone = document.getElementById('signin-phone').value.trim();
     var password = document.getElementById('signin-password').value;
     var msg = document.getElementById('signin-msg');
@@ -302,8 +325,10 @@ export function handleSignIn() {
         return;
     }
 
+    _authInProgress = true;
     db.collection('users').doc(phone).get().then(async function(doc) {
         if (!doc.exists) {
+            _authInProgress = false;
             recordLoginAttempt(phone);
             msg.textContent = 'No account found with this number. Please sign up.';
             msg.className = 'auth-msg error';
@@ -313,6 +338,7 @@ export function handleSignIn() {
         var storedPin = user.pin || user.password || '';
         var hashedInput = await hashPin(password);
         if (storedPin !== hashedInput) {
+            _authInProgress = false;
             recordLoginAttempt(phone);
             msg.textContent = 'Incorrect PIN. Please try again.';
             msg.className = 'auth-msg error';
@@ -320,6 +346,7 @@ export function handleSignIn() {
         }
         // Successful login — clear rate limit counter
         clearLoginAttempts(phone);
+        _authInProgress = false;
         try {
             setCurrentUser(user);
             updateSignInUI(user);
@@ -336,6 +363,7 @@ export function handleSignIn() {
             showAuthToast('Signed in successfully!');
         }
     }).catch(function(err) {
+        _authInProgress = false;
         console.error('SignIn error:', err);
         msg.textContent = 'Connection error. Please check your internet and try again.';
         msg.className = 'auth-msg error';
@@ -441,6 +469,21 @@ export function handleResetPassword() {
 
 export function signOut() {
     try { localStorage.removeItem('amoghaUser'); } catch(e) {}
+    // Clear user-specific session data to prevent leaking across accounts
+    try {
+        localStorage.removeItem('amoghaCart');
+        localStorage.removeItem('amoghaMyOrders');
+        localStorage.removeItem('amoghaSharedOrders');
+        localStorage.removeItem('amogha_referral_code');
+        localStorage.removeItem('amogha_referral_count');
+        localStorage.removeItem('amogha_streak');
+    } catch(e) {}
+    // Clear in-memory coupon/gift card/payment state
+    window._appliedCoupon = null;
+    window._lastOrderId = null;
+    window._lastOrderTotal = null;
+    window._lastOrderItems = null;
+    window._lastOrderTotalForShare = null;
     window._notifListenerActive = false;
     if (typeof window._notifListenerUnsub === 'function') {
         window._notifListenerUnsub();
@@ -602,6 +645,7 @@ export function initAuth() {
             refInput.type = 'text';
             refInput.id = 'signup-referral';
             refInput.placeholder = 'Referral Code (Optional)';
+            refInput.setAttribute('aria-label', 'Referral code');
             refInput.maxLength = 20;
             refInput.style.textTransform = 'uppercase';
             pinField.after(refInput);
@@ -644,18 +688,21 @@ function closeUserDropdown() {
     if (dd) dd.classList.remove('visible');
 }
 
-Object.assign(window, {
-    openAuthModal,
-    closeAuthModal,
-    switchAuthView,
-    handleSignUp,
-    handleSignIn,
-    handleForgotPassword,
-    handleResetPassword,
-    signOut,
-    updateSignInUI,
-    togglePassword,
-    showAuthToast,
-    updateCarouselGreeting,
-    closeUserDropdown
-});
+if (!window._authGlobalsSet) {
+    window._authGlobalsSet = true;
+    Object.assign(window, {
+        openAuthModal,
+        closeAuthModal,
+        switchAuthView,
+        handleSignUp,
+        handleSignIn,
+        handleForgotPassword,
+        handleResetPassword,
+        signOut,
+        updateSignInUI,
+        togglePassword,
+        showAuthToast,
+        updateCarouselGreeting,
+        closeUserDropdown
+    });
+}

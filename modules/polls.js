@@ -71,7 +71,7 @@ function renderPolls(container, polls) {
                 var isVoted = userVote === opt.id;
                 var showResults = !!userVote;
                 return '<button class="poll-option ' + (isVoted ? 'voted' : '') + (showResults ? ' show-results' : '') + '" ' +
-                    (userVote ? 'disabled' : 'onclick="votePoll(\'' + poll.id + '\',\'' + opt.id + '\')"') + '>' +
+                    (userVote ? 'disabled' : 'onclick="votePoll(\'' + String(poll.id).replace(/'/g, "\\'") + '\',\'' + String(opt.id).replace(/'/g, "\\'") + '\')"') + '>' +
                     '<span class="poll-option-icon">' + opt.icon + '</span>' +
                     '<span class="poll-option-text">' + opt.text + '</span>' +
                     (showResults ? '<span class="poll-option-pct">' + pct + '%</span>' +
@@ -131,4 +131,7 @@ export function votePoll(pollId, optionId) {
 
 export function initPolls() {}
 
-Object.assign(window, { openPollsModal, closePollsModal, votePoll });
+if (!window._pollsGlobalsSet) {
+    window._pollsGlobalsSet = true;
+    Object.assign(window, { openPollsModal, closePollsModal, votePoll });
+}

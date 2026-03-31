@@ -79,7 +79,7 @@ function joinGroupCart(cartId) {
         isGroupHost = false;
 
         var user = getCurrentUser();
-        if (user) {
+        if (user && Array.isArray(data.participants)) {
             var alreadyJoined = data.participants.some(function(p) { return p.phone === user.phone; });
             if (!alreadyJoined) {
                 data.participants.push({ phone: user.phone, name: user.name || 'Guest', items: [] });
@@ -226,11 +226,14 @@ function showGroupStatus() {
     document.body.appendChild(indicator);
 }
 
-Object.assign(window, {
-    createGroupCart,
-    closeGroupModal,
-    copyGroupLink,
-    addToGroupCart,
-    lockGroupCart,
-    initGroupOrdering
-});
+if (!window._groupGlobalsSet) {
+    window._groupGlobalsSet = true;
+    Object.assign(window, {
+        createGroupCart,
+        closeGroupModal,
+        copyGroupLink,
+        addToGroupCart,
+        lockGroupCart,
+        initGroupOrdering
+    });
+}

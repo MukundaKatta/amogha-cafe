@@ -107,9 +107,12 @@ export function shareSplitBill(count, perPerson) {
     }
 }
 
-Object.assign(window, {
-    openSplitBill,
-    closeSplitBill,
-    setSplitCount,
-    shareSplitBill
-});
+if (!window._splitbillGlobalsSet) {
+    window._splitbillGlobalsSet = true;
+    Object.assign(window, {
+        openSplitBill,
+        closeSplitBill,
+        setSplitCount,
+        shareSplitBill
+    });
+}

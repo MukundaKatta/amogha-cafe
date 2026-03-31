@@ -188,6 +188,7 @@ export function addAddress() {
 
     var labelInput = document.getElementById('profile-addr-label');
     var addressInput = document.getElementById('profile-addr-address');
+    if (!labelInput || !addressInput) return;
     var label = labelInput.value.trim();
     var address = addressInput.value.trim();
 
@@ -223,4 +224,7 @@ export function initProfile() {
     // Placeholder for future profile initialization logic
 }
 
-Object.assign(window, { openProfileModal, saveProfile, closeProfileModal, addAddress, removeAddress });
+if (!window._profileGlobalsSet) {
+    window._profileGlobalsSet = true;
+    Object.assign(window, { openProfileModal, saveProfile, closeProfileModal, addAddress, removeAddress });
+}

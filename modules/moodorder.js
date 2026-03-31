@@ -127,7 +127,7 @@ function showMoodResults(mood) {
                     matches.map(function(m) {
                         return '<div class="mood-result-item" data-id="' + (m.id || '') + '">' +
                             '<span class="mood-result-name">' + escapeHtml(m.name) + '</span>' +
-                            '<button class="mood-add-btn" data-item="' + (m.id || m.name) + '">+ Add</button>' +
+                            '<button class="mood-add-btn" data-item="' + escapeHtml(m.id || m.name) + '">+ Add</button>' +
                         '</div>';
                     }).join('')
                 :

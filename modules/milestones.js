@@ -176,4 +176,7 @@ function getMilestoneProgress(ms, user) {
 
 export function initMilestones() {}
 
-Object.assign(window, { checkMilestones, openMilestonesModal, closeMilestonesModal });
+if (!window._milestonesGlobalsSet) {
+    window._milestonesGlobalsSet = true;
+    Object.assign(window, { checkMilestones, openMilestonesModal, closeMilestonesModal });
+}

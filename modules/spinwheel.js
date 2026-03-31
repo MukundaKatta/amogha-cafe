@@ -196,4 +196,7 @@ export function initSpinWheel() {
     // Expose for order completion hook
 }
 
-Object.assign(window, { openSpinWheel, closeSpinWheel, spinTheWheel, awardSpin });
+if (!window._spinwheelGlobalsSet) {
+    window._spinwheelGlobalsSet = true;
+    Object.assign(window, { openSpinWheel, closeSpinWheel, spinTheWheel, awardSpin });
+}
