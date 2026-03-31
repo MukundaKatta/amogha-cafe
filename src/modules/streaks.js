@@ -3,6 +3,7 @@
 // Inspired by: Duolingo streaks, Starbucks bonus stars, Snapchat streaks
 
 import { getDb } from '../core/firebase.js';
+import { getCurrentUser, setCurrentUser } from './auth.js';
 
 var STREAK_MILESTONES = [
     { days: 3, reward: 50, label: '3-Day Streak', emoji: '🔥', description: 'Order 3 days in a row' },
@@ -16,16 +17,25 @@ var STREAK_MILESTONES = [
 
 var DAILY_BONUS_BASE = 10; // base points per day of streak
 
+function getStreakKey() {
+    var user = getCurrentUser();
+    var phone = user ? user.phone : '';
+    return 'amogha_streak_' + phone;
+}
+
 function getStreakData() {
     try {
-        return JSON.parse(localStorage.getItem('amogha_streak') || '{}');
+        // Try user-scoped key first, fall back to legacy key for migration
+        var data = localStorage.getItem(getStreakKey());
+        if (!data) data = localStorage.getItem('amogha_streak');
+        return JSON.parse(data || '{}');
     } catch(e) {
         return {};
     }
 }
 
 function saveStreakData(data) {
-    localStorage.setItem('amogha_streak', JSON.stringify(data));
+    localStorage.setItem(getStreakKey(), JSON.stringify(data));
 }
 
 // Use local date strings to avoid UTC midnight timezone issues (e.g. IST is UTC+5:30)
@@ -98,6 +108,19 @@ function recordDailyOrder() {
     data.todayBonus = dailyBonus + (milestoneReached ? milestoneReached.reward : 0);
 
     saveStreakData(data);
+
+    // Actually award the bonus points to the user's loyalty balance
+    var user = getCurrentUser();
+    if (user && data.todayBonus > 0) {
+        user.loyaltyPoints = (user.loyaltyPoints || 0) + data.todayBonus;
+        setCurrentUser(user);
+        var db = getDb();
+        if (db && user.phone) {
+            db.collection('users').doc(user.phone).update({
+                loyaltyPoints: user.loyaltyPoints
+            }).catch(function() {});
+        }
+    }
 
     // Show celebration if milestone reached
     if (milestoneReached) {
@@ -252,11 +275,15 @@ export function initStreaks() {
 
     renderStreakWidget();
 
-    // Listen for order completion to record streak
-    window.addEventListener('amogha-order-placed', function() {
+    // Listen for order completion to record streak (remove previous to avoid duplicates)
+    if (window._streakOrderHandler) {
+        window.removeEventListener('amogha-order-placed', window._streakOrderHandler);
+    }
+    window._streakOrderHandler = function() {
         recordDailyOrder();
         renderStreakWidget();
-    });
+    };
+    window.addEventListener('amogha-order-placed', window._streakOrderHandler);
 
     // Also check on page load if today was already recorded
     var data = getStreakData();

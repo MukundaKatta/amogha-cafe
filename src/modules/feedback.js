@@ -100,6 +100,16 @@ export function submitFeedback(orderId, orderTotal) {
         return;
     }
 
+    // Prevent double submit
+    var submitBtn = document.querySelector('.feedback-submit-btn');
+    if (submitBtn) {
+        if (submitBtn.disabled) return;
+        submitBtn.disabled = true;
+    }
+
+    // Validate tip bounds
+    tipAmount = Math.max(0, Math.min(tipAmount, 10000));
+
     var user = getCurrentUser();
     var feedbackData = {
         orderId: orderId,
@@ -125,12 +135,15 @@ export function submitFeedback(orderId, orderTotal) {
                     window.updateChallengeProgress('reviews', 1);
                 }
             }
+            closeFeedback();
         }).catch(function(e) {
             console.error('Feedback save error:', e);
+            showAuthToast('Failed to save feedback. Please try again.');
+            if (submitBtn) submitBtn.disabled = false;
         });
+    } else {
+        closeFeedback();
     }
-
-    closeFeedback();
 }
 
 export function closeFeedback() {

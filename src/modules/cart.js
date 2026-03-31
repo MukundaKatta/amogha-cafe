@@ -237,7 +237,7 @@ export function confirmAddonSelection() {
     selectedAddons.length = 0;
     var overlay = document.getElementById('addon-picker-overlay');
     if (overlay) overlay.style.display = 'none';
-    finalizeAddToCart(item.name, item.price, item.spiceLevel, addons);
+    finalizeAddToCart(item.name, item.price, item.spiceLevel, addons, item.btnEl);
 }
 
 function showCartCheckmark(btnEl) {
@@ -345,7 +345,7 @@ export function updateFloatingCart() {
         const addonTotal = (item.addons || []).reduce((s, a) => s + a.price, 0);
         const itemTotal = (item.price + addonTotal) * item.quantity;
         subtotal += itemTotal;
-        html += `<div class="fc-item"><span>${item.name} x${item.quantity}</span><span>₹${itemTotal}</span></div>`;
+        html += `<div class="fc-item"><span>${escapeHtml(item.name)} x${item.quantity}</span><span>₹${itemTotal}</span></div>`;
     });
 
     itemsContainer.innerHTML = html;
@@ -438,19 +438,20 @@ export function displayCart() {
         const spiceTag = item.spiceLevel && item.spiceLevel !== 'medium' ? ' <span class="spice-tag">(' + item.spiceLevel + ')</span>' : '';
         const addonTags = (item.addons || []).map(a => '<span class="addon-tag">+ ' + a.name + ' ₹' + a.price + '</span>').join(' ');
 
+        var safeName = escapeHtml(item.name);
         html += `
             <div class="cart-item">
                 <div class="cart-item-info">
-                    <div class="cart-item-name">${item.name}${spiceTag}</div>
+                    <div class="cart-item-name">${safeName}${spiceTag}</div>
                     ${addonTags ? '<div style="margin-top:2px">' + addonTags + '</div>' : ''}
                     <div class="cart-item-price">₹${(item.price + addonTotal).toFixed(2)}</div>
                 </div>
                 <div class="cart-item-quantity">
-                    <button class="qty-btn" onclick="updateQuantity(${index}, -1)" aria-label="Decrease quantity of ${item.name}">-</button>
+                    <button class="qty-btn" onclick="updateQuantity(${index}, -1)" aria-label="Decrease quantity of ${safeName}">-</button>
                     <span>${item.quantity}</span>
-                    <button class="qty-btn" onclick="updateQuantity(${index}, 1)" aria-label="Increase quantity of ${item.name}">+</button>
+                    <button class="qty-btn" onclick="updateQuantity(${index}, 1)" aria-label="Increase quantity of ${safeName}">+</button>
                 </div>
-                <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${item.name} from cart">Remove</button>
+                <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${safeName} from cart">Remove</button>
             </div>
         `;
     });
@@ -486,12 +487,12 @@ export function updateQuantity(index, change) {
         if (window._ariaAnnounce) window._ariaAnnounce('Maximum quantity is ' + MAX_ITEM_QUANTITY);
         return;
     }
-    cart[index].quantity = newQty;
 
-    if (cart[index].quantity <= 0) {
+    if (newQty <= 0) {
         cart.splice(index, 1);
         if (window._ariaAnnounce) window._ariaAnnounce(itemName + ' removed from cart');
     } else {
+        cart[index].quantity = newQty;
         if (window._ariaAnnounce) window._ariaAnnounce(itemName + ' quantity: ' + cart[index].quantity);
     }
 

@@ -778,6 +778,9 @@ function initCartItemAnimations() {
     if (!cartItems) return;
 
     // Watch for cart items being removed — animate out before DOM removal
+    // Guard against double-patching which causes infinite recursion
+    if (cartItems._removeChildPatched) return;
+    cartItems._removeChildPatched = true;
     var origRemoveChild = cartItems.removeChild.bind(cartItems);
     cartItems.removeChild = function(child) {
         if (child.classList && child.classList.contains('cart-item')) {

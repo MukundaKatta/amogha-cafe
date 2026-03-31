@@ -23,13 +23,24 @@ export function getActiveChallenges() {
     var now = new Date();
     var weekKey = now.getFullYear() + '-W' + getWeekNumber(now);
     if (user.lastChallengeWeek !== weekKey) {
-        // Assign 3 random weekly + 1 monthly challenge
+        // Preserve unclaimed monthly challenges; refresh only weekly ones
+        var existingMonthly = saved.filter(function(ch) {
+            var tpl = CHALLENGE_TEMPLATES.find(function(t) { return t.id === ch.id; });
+            return tpl && tpl.duration === 'monthly' && !ch.claimed;
+        });
         var weekly = CHALLENGE_TEMPLATES.filter(function(c) { return c.duration === 'weekly'; });
-        var monthly = CHALLENGE_TEMPLATES.filter(function(c) { return c.duration === 'monthly'; });
         shuffle(weekly);
-        saved = weekly.slice(0, 3).concat(monthly.slice(0, 1)).map(function(c) {
+        var newWeekly = weekly.slice(0, 3).map(function(c) {
             return { id: c.id, progress: 0, completed: false, claimed: false };
         });
+        // Keep existing monthly if still active, otherwise assign a new one
+        if (existingMonthly.length === 0) {
+            var monthly = CHALLENGE_TEMPLATES.filter(function(c) { return c.duration === 'monthly'; });
+            existingMonthly = monthly.slice(0, 1).map(function(c) {
+                return { id: c.id, progress: 0, completed: false, claimed: false };
+            });
+        }
+        saved = newWeekly.concat(existingMonthly);
         user.activeChallenges = saved;
         user.lastChallengeWeek = weekKey;
         setCurrentUser(user);
@@ -65,7 +76,8 @@ export function updateChallengeProgress(type, value) {
             showAuthToast('Challenge complete: ' + template.title + '! Claim your ' + template.reward + ' points!');
         }
     });
-    if (changed) {
+    // Save progress even if no challenge completed (incremental progress)
+    if (changed || user.activeChallenges.some(function(ch) { return ch.progress > 0; })) {
         setCurrentUser(user);
         updateChallengesUI();
     }

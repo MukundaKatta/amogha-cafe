@@ -12,6 +12,7 @@ var GEOFENCE_CHECK_INTERVAL = 15000; // check every 15 seconds when active
 var watchId = null;
 var isNearby = false;
 var hasArrived = false;
+var activeOrderId = null;
 
 function haversineDistance(lat1, lon1, lat2, lon2) {
     var R = 6371e3; // Earth radius in meters
@@ -151,10 +152,17 @@ export function initGeofence() {
     // Only activate if user has an active order
     var orderId = getActiveOrderId();
     if (!orderId) {
-        // Set up a listener for when orders are placed
-        window.addEventListener('amogha-order-placed', function() {
-            startGeofenceWatch();
-        });
+        // Set up a listener for when orders are placed (avoid duplicate listeners)
+        if (!window._geofenceOrderHandler) {
+            window._geofenceOrderHandler = function() {
+                // Reset state for new order
+                isNearby = false;
+                hasArrived = false;
+                activeOrderId = null;
+                startGeofenceWatch();
+            };
+            window.addEventListener('amogha-order-placed', window._geofenceOrderHandler);
+        }
         return;
     }
 

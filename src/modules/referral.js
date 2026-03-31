@@ -46,6 +46,10 @@ function injectReferralWidget() {
     try { user = JSON.parse(localStorage.getItem('amoghaUser')); } catch(e) {}
     if (!user) return;
 
+    // Prevent duplicate FAB buttons
+    var existing = document.querySelector('.referral-fab');
+    if (existing) return;
+
     // Create floating referral button
     var fab = document.createElement('button');
     fab.className = 'referral-fab';

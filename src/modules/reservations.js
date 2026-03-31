@@ -116,6 +116,12 @@ export function submitReservation() {
         msg.className = 'auth-msg error';
         return;
     }
+    // Prevent double submit
+    var submitBtn = document.querySelector('#reservation-form button[type="submit"], #reservation-form .cta-button');
+    if (submitBtn) {
+        if (submitBtn.disabled) return;
+        submitBtn.disabled = true;
+    }
     msg.textContent = 'Booking your table...';
     msg.className = 'auth-msg';
     var db = getDb();
@@ -136,7 +142,7 @@ export function submitReservation() {
     };
     db.collection('reservations').add(resData).then(function(docRef) {
         var form = document.getElementById('reservation-form');
-        var displayDate = new Date(date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+        var displayDate = new Date(date + 'T12:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
         var displayTime = time;
         var h = parseInt(time.split(':')[0]);
         var mn = time.split(':')[1];
@@ -156,6 +162,7 @@ export function submitReservation() {
     }).catch(function() {
         msg.textContent = 'Failed to book. Please try again.';
         msg.className = 'auth-msg error';
+        if (submitBtn) submitBtn.disabled = false;
     });
 }
 

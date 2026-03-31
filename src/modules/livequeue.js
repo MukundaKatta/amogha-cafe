@@ -146,8 +146,13 @@ function subscribeToQueue() {
         return;
     }
 
+    // Unsubscribe previous listener if any to prevent leaks
+    if (window._liveQueueUnsubscribe) {
+        window._liveQueueUnsubscribe();
+        window._liveQueueUnsubscribe = null;
+    }
     // Listen to active orders in real-time
-    db.collection('orders')
+    window._liveQueueUnsubscribe = db.collection('orders')
         .where('status', 'in', ['pending', 'preparing', 'confirmed'])
         .onSnapshot(function(snap) {
             currentQueueData.activeOrders = snap.size;
@@ -176,11 +181,15 @@ export function initLiveQueue() {
         }, 30000);
     }
 
-    // Hook into checkout to show estimates
-    window.addEventListener('amogha-cart-updated', function(e) {
+    // Hook into checkout to show estimates (avoid duplicate listeners)
+    if (window._liveQueueCartHandler) {
+        window.removeEventListener('amogha-cart-updated', window._liveQueueCartHandler);
+    }
+    window._liveQueueCartHandler = function(e) {
         var items = (e.detail && e.detail.items) || [];
         renderCheckoutEstimate(items);
-    });
+    };
+    window.addEventListener('amogha-cart-updated', window._liveQueueCartHandler);
 }
 
 export { estimateWaitTime, currentQueueData };

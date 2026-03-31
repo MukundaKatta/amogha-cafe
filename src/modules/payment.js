@@ -357,11 +357,12 @@ export function validateAndPay() {
     var name = document.getElementById('co-name').value.trim();
     var phone = document.getElementById('co-phone').value.trim();
     var address = document.getElementById('co-address').value.trim();
-    if (!name || !phone || !address) {
+    var isPickup = window._selectedOrderType === 'pickup';
+    if (!name || !phone || (!isPickup && !address)) {
         showAuthToast('Please fill in all required fields.');
         if (!name) document.getElementById('co-name').focus();
         else if (!phone) document.getElementById('co-phone').focus();
-        else document.getElementById('co-address').focus();
+        else if (!isPickup) document.getElementById('co-address').focus();
         return;
     }
     // Strict input validation
@@ -375,12 +376,12 @@ export function validateAndPay() {
         document.getElementById('co-phone').focus();
         return;
     }
-    if (address.length < 10) {
+    if (!isPickup && address.length < 10) {
         showAuthToast('Please enter a complete delivery address.');
         document.getElementById('co-address').focus();
         return;
     }
-    if (address.length > 500) {
+    if (!isPickup && address.length > 500) {
         showAuthToast('Address is too long (max 500 characters).');
         document.getElementById('co-address').focus();
         return;
@@ -401,6 +402,15 @@ export function openRazorpay() {
     }
 
     var totals = getCheckoutTotals();
+    if (isNaN(totals.total) || totals.total < 0) {
+        showAuthToast('Invalid order total. Please try again.');
+        return;
+    }
+    // If gift card covers full amount, place order directly without Razorpay
+    if (totals.total === 0) {
+        placeOrderToFirestore('Gift Card (Full)', null, 'paid');
+        return;
+    }
     var name = document.getElementById('co-name').value.trim();
     var phone = document.getElementById('co-phone').value.trim();
 
@@ -522,7 +532,8 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
     if (notes) msg += '*Notes:* ' + notes + '\n';
     msg += '\n*Items:*\n';
     cart.forEach(function(item) {
-        msg += '- ' + item.name + ' x' + item.quantity + ' = \u20B9' + (item.price * item.quantity) + '\n';
+        var addonTotal = (item.addons || []).reduce(function(s, a) { return s + a.price; }, 0);
+        msg += '- ' + item.name + ' x' + item.quantity + ' = \u20B9' + ((item.price + addonTotal) * item.quantity) + '\n';
     });
     msg += '\n*Subtotal:* \u20B9' + totals.subtotal;
     msg += '\n*Delivery:* ' + (totals.deliveryFee === 0 ? 'FREE' : '\u20B9' + totals.deliveryFee);
@@ -635,9 +646,6 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
         itemNames.forEach(function(n) { updateButtonState(n); });
         updateFloatingCart();
 
-        // Launch confetti for celebration
-        if (typeof window.launchConfetti === 'function') window.launchConfetti();
-
         // Award loyalty points
         if (typeof window.awardLoyaltyPoints === 'function') window.awardLoyaltyPoints(orderData.total);
 
@@ -705,31 +713,42 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
             window.open('https://wa.me/' + customerPhone + '?text=' + encodeURIComponent(custMsg), '_blank');
         }
 
-        // Inventory auto-deduction
-        db.collection('inventory').get().then(function(invSnap) {
-            var inventoryMap = {};
-            invSnap.forEach(function(doc) {
-                var d = doc.data();
-                inventoryMap[(d.name || '').toLowerCase()] = { id: doc.id, qty: d.quantity || 0 };
-            });
-            var batch = db.batch();
-            var hasUpdates = false;
-            orderData.items.forEach(function(item) {
-                var key = item.name.toLowerCase();
-                var itemQty = parseInt(item.qty) || 0;
-                if (inventoryMap[key] && inventoryMap[key].qty > 0 && itemQty > 0) {
-                    var ref = db.collection('inventory').doc(inventoryMap[key].id);
-                    batch.update(ref, { quantity: Math.max(0, inventoryMap[key].qty - itemQty) });
-                    hasUpdates = true;
-                }
-            });
-            if (hasUpdates) batch.commit().catch(function(e) { console.error('Inventory deduction error:', e); });
-        }).catch(function(e) { console.error('Inventory fetch error:', e); });
+        // Inventory auto-deduction (use FieldValue.increment for atomicity)
+        var fvInv = getFieldValue();
+        if (fvInv) {
+            db.collection('inventory').get().then(function(invSnap) {
+                var inventoryMap = {};
+                invSnap.forEach(function(doc) {
+                    var d = doc.data();
+                    inventoryMap[(d.name || '').toLowerCase()] = { id: doc.id };
+                });
+                var batch = db.batch();
+                var hasUpdates = false;
+                orderData.items.forEach(function(item) {
+                    var key = item.name.toLowerCase();
+                    var itemQty = parseInt(item.qty) || 0;
+                    if (inventoryMap[key] && itemQty > 0) {
+                        var ref = db.collection('inventory').doc(inventoryMap[key].id);
+                        batch.update(ref, { quantity: fvInv.increment(-itemQty) });
+                        hasUpdates = true;
+                    }
+                });
+                if (hasUpdates) batch.commit().catch(function(e) { console.error('Inventory deduction error:', e); });
+            }).catch(function(e) { console.error('Inventory fetch error:', e); });
+        }
 
     }).catch(function(err) {
         _orderInProgress = false;
         if (window._hidePaymentProcessing) window._hidePaymentProcessing();
         console.error('Order save error:', err);
+        // Restore loyalty points if they were deducted optimistically
+        if (appliedCoupon && appliedCoupon._loyaltyPointsToDeduct) {
+            var rollbackUser = getCurrentUser();
+            if (rollbackUser) {
+                rollbackUser.loyaltyPoints = (rollbackUser.loyaltyPoints || 0) + appliedCoupon._loyaltyPointsToDeduct;
+                setCurrentUser(rollbackUser);
+            }
+        }
         showAuthToast('Order failed to save. Please try again or check your connection.');
     });
 }
@@ -873,7 +892,7 @@ export function selectGcAmount(amount, btn) {
 export function buyGiftCard() {
     var recipientPhone = document.getElementById('gc-recipient-phone').value.trim();
     var msg = document.getElementById('gc-msg');
-    if (!recipientPhone || recipientPhone.length !== 10) {
+    if (!recipientPhone || !/^\d{10}$/.test(recipientPhone)) {
         msg.textContent = 'Please enter a valid 10-digit phone number';
         msg.className = 'coupon-msg error';
         return;

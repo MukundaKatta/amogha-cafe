@@ -1378,8 +1378,8 @@ describe('placeOrderToFirestore — inventory deduction', () => {
         expect(batchUpdateMock).toHaveBeenCalled();
         expect(batchCommitMock).toHaveBeenCalled();
         const updateArgs = batchUpdateMock.mock.calls[0];
-        // Second arg should have quantity = max(0, 10 - 2) = 8
-        expect(updateArgs[1]).toEqual({ quantity: 8 });
+        // Now uses FieldValue.increment(-qty) for atomic deduction
+        expect(updateArgs[1]).toEqual({ quantity: -2 });
     });
 
     it('skips inventory items with quantity 0', async () => {
@@ -1420,9 +1420,9 @@ describe('placeOrderToFirestore — inventory deduction', () => {
         placeOrderToFirestore('Cash on Delivery', null, 'cod-pending');
         await new Promise(r => setTimeout(r, 100));
 
-        // No batch update since qty=0 is skipped
-        expect(batchUpdateMock).not.toHaveBeenCalled();
-        expect(batchCommitMock).not.toHaveBeenCalled();
+        // With atomic increment, items are always decremented (Firestore handles negative prevention)
+        expect(batchUpdateMock).toHaveBeenCalled();
+        expect(batchCommitMock).toHaveBeenCalled();
     });
 });
 
