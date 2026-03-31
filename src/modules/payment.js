@@ -132,6 +132,10 @@ export function checkout() {
 }
 
 export function openCheckout() {
+    if (cart.length === 0) {
+        if (typeof showAuthToast === 'function') showAuthToast('Your cart is empty. Add items before checkout.');
+        return;
+    }
     var subtotal = cart.reduce(function(sum, item) { return sum + itemSubtotal(item); }, 0);
     var deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
     var total = subtotal + deliveryFee;
@@ -260,11 +264,17 @@ export function openCheckout() {
         appliedCouponCode = 'WELCOME25';
         if (couponInput) couponInput.value = 'WELCOME25';
         if (couponMsg) { couponMsg.textContent = 'Welcome bonus applied! You get 25% off!'; couponMsg.className = 'coupon-msg success'; }
-        var discount = subtotal * 0.25;
+        var discount = Math.floor(subtotal * 0.25);
         discount = Math.min(discount, subtotal);
         var discountedTotal = subtotal - discount + deliveryFee;
         var coTotWelcome = document.getElementById('co-total');
-        if (coTotWelcome) coTotWelcome.textContent = '\u20B9' + discountedTotal.toFixed(0);
+        if (coTotWelcome) coTotWelcome.textContent = '\u20B9' + discountedTotal;
+        var discountRow = document.getElementById('co-discount-row');
+        var discountEl = document.getElementById('co-discount');
+        var discountLabel = document.getElementById('co-discount-label');
+        if (discountRow) { discountRow.style.display = ''; }
+        if (discountEl) { discountEl.textContent = '-\u20B9' + discount; }
+        if (discountLabel) { discountLabel.textContent = 'Welcome Bonus (25% off)'; }
         // Re-verify welcome bonus status from Firestore to prevent localStorage manipulation
         var bonusDb = getDb();
         if (bonusDb && currentUser.phone) {
@@ -286,6 +296,8 @@ export function openCheckout() {
         appliedCouponCode = '';
         if (couponInput) couponInput.value = '';
         if (couponMsg) { couponMsg.textContent = ''; couponMsg.className = 'coupon-msg'; }
+        var discountRowElse = document.getElementById('co-discount-row');
+        if (discountRowElse) discountRowElse.style.display = 'none';
     }
     syncCouponToWindow();
 }
@@ -322,7 +334,7 @@ export function goToStep(step) {
 export function setupPayment() {
     var totals = getCheckoutTotals();
     var total = totals.total;
-    var totalStr = '\u20B9' + total.toFixed(0);
+    var totalStr = '\u20B9' + Math.round(total);
 
     var payTotalEl = document.getElementById('pay-total');
     if (payTotalEl) payTotalEl.textContent = totalStr;
@@ -759,7 +771,15 @@ export function applyCoupon() {
         var discount = calcDiscount(coupon, subtotal);
         var total = subtotal - discount + deliveryFee;
         var coTotalCpn = document.getElementById('co-total');
-        if (coTotalCpn) coTotalCpn.textContent = '\u20B9' + total.toFixed(0);
+        if (coTotalCpn) coTotalCpn.textContent = '\u20B9' + total;
+        var discountRowCpn = document.getElementById('co-discount-row');
+        var discountElCpn = document.getElementById('co-discount');
+        var discountLabelCpn = document.getElementById('co-discount-label');
+        if (discount > 0 && discountRowCpn) {
+            discountRowCpn.style.display = '';
+            if (discountElCpn) discountElCpn.textContent = '-\u20B9' + discount;
+            if (discountLabelCpn) discountLabelCpn.textContent = coupon.label || 'Discount';
+        }
     }
 
     var db = getDb();
@@ -806,6 +826,8 @@ export function removeCoupon() {
     var msg = document.getElementById('coupon-msg');
     if (input) input.value = '';
     if (msg) { msg.textContent = ''; msg.className = 'coupon-msg'; }
+    var discountRowRm = document.getElementById('co-discount-row');
+    if (discountRowRm) discountRowRm.style.display = 'none';
     setupPayment();
 }
 
@@ -1043,27 +1065,30 @@ export function selectOrderType(btn, type) {
     window._selectedOrderType = type;
 }
 
-Object.assign(window, {
-    checkout,
-    openCheckout,
-    closeCheckout,
-    goToStep,
-    setupPayment,
-    switchPayTab,
-    validateAndPay,
-    openRazorpay,
-    placeCodOrder,
-    placeOrderToFirestore,
-    applyCoupon,
-    removeCoupon,
-    applyGiftCard,
-    removeGiftCard,
-    openGiftCardModal,
-    closeGiftCardModal,
-    buyGiftCard,
-    selectGcAmount,
-    redeemLoyaltyAtCheckout,
-    shareOrder,
-    addUpsellItem,
-    selectOrderType
-});
+if (!window._paymentGlobalsSet) {
+    window._paymentGlobalsSet = true;
+    Object.assign(window, {
+        checkout,
+        openCheckout,
+        closeCheckout,
+        goToStep,
+        setupPayment,
+        switchPayTab,
+        validateAndPay,
+        openRazorpay,
+        placeCodOrder,
+        placeOrderToFirestore,
+        applyCoupon,
+        removeCoupon,
+        applyGiftCard,
+        removeGiftCard,
+        openGiftCardModal,
+        closeGiftCardModal,
+        buyGiftCard,
+        selectGcAmount,
+        redeemLoyaltyAtCheckout,
+        shareOrder,
+        addUpsellItem,
+        selectOrderType
+    });
+}
