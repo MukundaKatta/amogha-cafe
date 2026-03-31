@@ -125,7 +125,8 @@ export function initSocialProof() {
 
     // First toast after 15s, then every 30-60s
     setTimeout(show, 15000);
-    setInterval(function () {
+    if (window._socialProofInterval) clearInterval(window._socialProofInterval);
+    window._socialProofInterval = setInterval(function () {
         // Only show if user hasn't scrolled to checkout and page is visible
         if (!document.querySelector('.modal[style*="block"]') && document.visibilityState !== 'hidden') {
             show();

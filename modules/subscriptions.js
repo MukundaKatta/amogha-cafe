@@ -225,10 +225,13 @@ export function initSubscriptions() {
     // No-op — modal opens on demand
 }
 
-Object.assign(window, {
-    openSubscriptionModal,
-    closeSubscriptionModal,
-    subscribeToPlan,
-    cancelSubscription,
-    initSubscriptions
-});
+if (!window._subscriptionsGlobalsSet) {
+    window._subscriptionsGlobalsSet = true;
+    Object.assign(window, {
+        openSubscriptionModal,
+        closeSubscriptionModal,
+        subscribeToPlan,
+        cancelSubscription,
+        initSubscriptions
+    });
+}

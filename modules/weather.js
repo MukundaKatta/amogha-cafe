@@ -132,4 +132,7 @@ export function initWeather() {
     setTimeout(fetchWeatherRecommendations, 3000);
 }
 
-Object.assign(window, { scrollToMenuItem, initWeather });
+if (!window._weatherGlobalsSet) {
+    window._weatherGlobalsSet = true;
+    Object.assign(window, { scrollToMenuItem, initWeather });
+}

@@ -500,6 +500,7 @@ export function updateQuantity(index, change) {
     displayCart();
     updateButtonState(itemName);
     updateFloatingCart();
+    updateFloatingCartBar();
 }
 
 // Remove item
@@ -512,6 +513,7 @@ export function removeItem(index) {
     displayCart();
     updateButtonState(itemName);
     updateFloatingCart();
+    updateFloatingCartBar();
     if (window._ariaAnnounce) window._ariaAnnounce(itemName + ' removed from cart');
 }
 
@@ -525,6 +527,7 @@ export function clearCart() {
         displayCart();
         itemNames.forEach(name => updateButtonState(name));
         updateFloatingCart();
+        updateFloatingCartBar();
         var cm = document.getElementById('cart-modal');
         if (cm) cm.style.display = 'none';
         unlockScroll();
@@ -633,16 +636,22 @@ export function initCart() {
     });
 }
 
-Object.assign(window, {
-    addToCart,
-    finalizeAddToCart,
-    updateQuantity,
-    removeItem,
-    clearCart,
-    closeAddonPicker,
-    toggleAddonOption,
-    confirmAddonSelection,
-    closeFloatingCart,
-    closeSignInPrompt,
-    updateFloatingCartBar
-});
+// Guard: only assign globals if not already set by the bundled script.
+// Lazy-loaded modules re-import this file, creating a second cart array;
+// without this guard the new (empty) closures would overwrite the working ones.
+if (!window._cartGlobalsSet) {
+    window._cartGlobalsSet = true;
+    Object.assign(window, {
+        addToCart,
+        finalizeAddToCart,
+        updateQuantity,
+        removeItem,
+        clearCart,
+        closeAddonPicker,
+        toggleAddonOption,
+        confirmAddonSelection,
+        closeFloatingCart,
+        closeSignInPrompt,
+        updateFloatingCartBar
+    });
+}

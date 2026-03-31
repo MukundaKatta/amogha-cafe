@@ -1,6 +1,13 @@
 import { getDb } from '../core/firebase.js';
 import { safeGetItem, safeSetItem } from '../core/utils.js';
 
+// HTML escape to prevent XSS from Firestore data
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // ===== CACHED FIRESTORE GET =====
 // Reads from localStorage first, then refreshes from Firestore if stale.
 // Saves thousands of Firestore reads per day.
@@ -144,15 +151,19 @@ function renderSpecials(specials) {
 
     grid.innerHTML = specials.map(function(item) {
         var cls = item.available ? '' : ' item-unavailable';
-        return '<div class="special-card' + cls + '" data-id="' + item.name + '">' +
+        var safeName = escapeHtml(item.name || '');
+        var safeDesc = escapeHtml(item.description || '');
+        var safeBadge = escapeHtml(item.badge || 'Special');
+        var safePrice = parseInt(item.price, 10) || 0;
+        return '<div class="special-card' + cls + '" data-id="' + safeName.replace(/"/g, '&quot;') + '">' +
             '<div class="glow-border"></div>' +
-            '<div class="special-badge">' + (item.badge || 'Special') + '</div>' +
-            '<h3>' + item.name + '</h3>' +
-            '<p>' + (item.description || '') + '</p>' +
+            '<div class="special-badge">' + safeBadge + '</div>' +
+            '<h3>' + safeName + '</h3>' +
+            '<p>' + safeDesc + '</p>' +
             '<div class="special-price">' +
-                '<span class="new-price">&#8377;' + item.price + '</span>' +
+                '<span class="new-price">&#8377;' + safePrice + '</span>' +
             '</div>' +
-            '<button class="add-to-cart" data-item="' + item.name + '" data-price="' + item.price + '">Order Now</button>' +
+            '<button class="add-to-cart" data-item="' + safeName.replace(/"/g, '&quot;') + '" data-price="' + safePrice + '">Order Now</button>' +
         '</div>';
     }).join('');
 }
@@ -242,8 +253,13 @@ function catSlug(cat) { return cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').rep
 function renderItemCard(item) {
     var isVeg = item.type === 'veg' || item.isVeg === true;
     var badge = isVeg ? '<span class="veg-badge" aria-label="Vegetarian">🟢</span>' : '<span class="nonveg-badge" aria-label="Non-Vegetarian">🔴</span>';
-    var imgHtml = item.imageUrl
-        ? '<div class="menu-item-img-wrap has-image"><img class="menu-item-img loaded" src="' + escH(item.imageUrl) + '" alt="' + escH(item.name) + '" loading="lazy" decoding="async"></div>'
+    // Optimize Cloudinary menu images: auto-format, auto-quality, width 400px
+    var optimizedImg = item.imageUrl;
+    if (optimizedImg && optimizedImg.indexOf('res.cloudinary.com') !== -1 && optimizedImg.indexOf('/upload/') !== -1 && optimizedImg.indexOf('f_auto') === -1) {
+        optimizedImg = optimizedImg.replace('/upload/', '/upload/f_auto,q_auto,w_400/');
+    }
+    var imgHtml = optimizedImg
+        ? '<div class="menu-item-img-wrap has-image"><img class="menu-item-img loaded" src="' + escH(optimizedImg) + '" alt="' + escH(item.name) + '" loading="lazy" decoding="async"></div>'
         : '';
     var allergens = (item.allergens || []).join(',');
     var itemType = isVeg ? 'veg' : 'non-veg';

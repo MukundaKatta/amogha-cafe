@@ -44,7 +44,7 @@ export function initChatbot() {
                 '</div></div>' +
             '</div>' +
             '<div class="ai-chat-input-area">' +
-                '<input type="text" id="ai-chat-input" placeholder="Ask me anything..." autocomplete="off">' +
+                '<input type="text" id="ai-chat-input" placeholder="Ask me anything..." autocomplete="off" aria-label="Chat message">' +
                 '<button id="ai-chat-send" onclick="sendChatMessage()"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>' +
             '</div>' +
         '</div>';
@@ -95,6 +95,8 @@ export async function sendChatMessage(presetMsg) {
 
     try {
         var user = getCurrentUser();
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function() { controller.abort(); }, 10000);
         var resp = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -103,8 +105,11 @@ export async function sendChatMessage(presetMsg) {
                 cart: cart.map(function(i) { return { name: i.name, qty: i.quantity, price: i.price }; }),
                 preferences: user ? { name: user.name, isVeg: (user.dietaryPrefs || []).includes('Vegetarian') } : {},
                 history: chatHistory.slice(-6)
-            })
+            }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
+        if (!resp.ok) throw new Error('Server responded with status ' + resp.status);
         var data = await resp.json();
         typing.remove();
 
@@ -152,4 +157,7 @@ export async function sendChatMessage(presetMsg) {
     }
 }
 
-Object.assign(window, { toggleChat, sendChatMessage, initChatbot });
+if (!window._chatbotGlobalsSet) {
+    window._chatbotGlobalsSet = true;
+    Object.assign(window, { toggleChat, sendChatMessage, initChatbot });
+}

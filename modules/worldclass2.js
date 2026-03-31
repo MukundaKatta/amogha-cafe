@@ -38,7 +38,7 @@ function initPhotoReviews() {
                 }).join('') +
             '</div>' +
             '<p class="pr-star-label" id="pr-star-label">Tap to rate</p>' +
-            '<textarea id="pr-text" class="pr-text" placeholder="Tell us about your experience..." rows="3" maxlength="500"></textarea>' +
+            '<textarea id="pr-text" class="pr-text" placeholder="Tell us about your experience..." rows="3" maxlength="500" aria-label="Review text"></textarea>' +
             '<div class="pr-photo-section">' +
                 '<label class="pr-photo-upload" for="pr-photo-input">' +
                     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>' +
@@ -314,8 +314,9 @@ function initCartCalorieCounter() {
     // Also hook into cart mutations
     var cartItems = document.getElementById('cart-items');
     if (cartItems) {
-        var observer = new MutationObserver(updateCalorieDisplay);
-        observer.observe(cartItems, { childList: true, subtree: true });
+        if (window._calorieObserver) window._calorieObserver.disconnect();
+        window._calorieObserver = new MutationObserver(updateCalorieDisplay);
+        window._calorieObserver.observe(cartItems, { childList: true, subtree: true });
     }
 }
 
@@ -539,7 +540,9 @@ window.updateCustomizeTotal = function() {
         var match = text.match(/\+₹(\d+)/);
         if (match) extra += parseInt(match[1]);
     });
-    var base = parseInt(modal.querySelector('.customize-base').textContent.match(/₹(\d+)/)[1]);
+    var baseEl = modal.querySelector('.customize-base');
+    var baseMatch = baseEl ? baseEl.textContent.match(/₹(\d+)/) : null;
+    var base = baseMatch ? parseInt(baseMatch[1]) : 0; // safe: null-check regex match
     document.getElementById('customize-total-val').textContent = base + extra;
 };
 

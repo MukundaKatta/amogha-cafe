@@ -254,9 +254,9 @@ export function initGiftCards() {
         if (db) {
             db.collection('giftcards').doc(code).set(giftData).then(function() {
                 showGiftSuccess(code, selectedDesign, selectedAmount, recipientName, senderName);
-            }).catch(function() {
-                // Fallback to local
-                showGiftSuccess(code, selectedDesign, selectedAmount, recipientName, senderName);
+            }).catch(function(e) {
+                console.error('Gift card save error:', e);
+                showToast('Could not save gift card. Please try again.');
             });
         } else {
             showGiftSuccess(code, selectedDesign, selectedAmount, recipientName, senderName);

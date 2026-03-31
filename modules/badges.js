@@ -230,9 +230,12 @@ export function initBadges() {
     // No initialization needed; badges are checked after each order
 }
 
-Object.assign(window, {
-    checkAndAwardBadges: checkAndAwardBadges,
-    openBadgeGallery: openBadgeGallery,
-    closeBadgeGallery: closeBadgeGallery,
-    getBadgeDefinitions: getBadgeDefinitions
-});
+if (!window._badgesGlobalsSet) {
+    window._badgesGlobalsSet = true;
+    Object.assign(window, {
+        checkAndAwardBadges: checkAndAwardBadges,
+        openBadgeGallery: openBadgeGallery,
+        closeBadgeGallery: closeBadgeGallery,
+        getBadgeDefinitions: getBadgeDefinitions
+    });
+}

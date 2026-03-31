@@ -58,7 +58,14 @@ export function showPostOrderFeedback(orderId, orderTotal) {
                 '<input type="number" id="custom-tip" placeholder="Custom ₹" min="0" max="1000" class="tip-custom-input">' +
             '</div>' +
         '</div>' +
-        '<button class="feedback-submit-btn" id="feedback-submit-btn" onclick="submitFeedback(\'' + orderId + '\',' + orderTotal + ')">Submit Feedback</button>';
+        '<button class="feedback-submit-btn" id="feedback-submit-btn" data-order-id="' + (orderId || '').replace(/[^a-zA-Z0-9_-]/g, '') + '" data-order-total="' + (parseInt(orderTotal, 10) || 0) + '">Submit Feedback</button>';
+    // Bind submit via event listener (avoids inline onclick XSS risk)
+    var submitBtn = document.getElementById('feedback-submit-btn');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function() {
+            submitFeedback(submitBtn.getAttribute('data-order-id'), parseFloat(submitBtn.getAttribute('data-order-total')) || 0);
+        });
+    }
 
     overlay.style.display = 'flex';
 }
@@ -142,4 +149,7 @@ export function initFeedback() {
     // Hook into order completion
 }
 
-Object.assign(window, { showPostOrderFeedback, closeFeedback, selectFeedbackEmoji, selectTip, submitFeedback, schedulePostOrderFeedback });
+if (!window._feedbackGlobalsSet) {
+    window._feedbackGlobalsSet = true;
+    Object.assign(window, { showPostOrderFeedback, closeFeedback, selectFeedbackEmoji, selectTip, submitFeedback, schedulePostOrderFeedback });
+}

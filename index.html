@@ -1608,11 +1608,12 @@
     </script>
     <script>window.scrollTo(0,0);</script>
     <script>
-        // Patch: guard querySelector against bare '#' selectors (from href="#" anchors)
+        // Patch: guard querySelector against invalid selectors (bare '#', query params in hash, etc.)
         var _origQS = Document.prototype.querySelector;
         Document.prototype.querySelector = function(sel) {
             if (sel === '#' || sel === '') return null;
-            return _origQS.call(this, sel);
+            try { return _origQS.call(this, sel); }
+            catch(e) { return null; }
         };
     </script>
     <script>

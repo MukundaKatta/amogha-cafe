@@ -7,6 +7,7 @@ var isListening = false;
 var recognition = null;
 var synthesis = window.speechSynthesis;
 var voiceEnabled = false;
+var consecutiveRestarts = 0;
 
 var VOICE_COMMANDS = {
     greetings: /^(hi|hello|hey|namaste|howdy)/i,
@@ -41,6 +42,7 @@ function initRecognition() {
     recognition.maxAlternatives = 3;
 
     recognition.onresult = function(event) {
+        consecutiveRestarts = 0;
         var transcript = '';
         for (var i = event.resultIndex; i < event.results.length; i++) {
             transcript += event.results[i][0].transcript;
@@ -58,6 +60,12 @@ function initRecognition() {
         updateMicButton();
         // Auto-restart if voice mode is enabled
         if (voiceEnabled) {
+            consecutiveRestarts++;
+            if (consecutiveRestarts >= 5) {
+                voiceEnabled = false;
+                updateMicButton();
+                return;
+            }
             setTimeout(function() {
                 if (voiceEnabled) startListening();
             }, 1000);
@@ -67,7 +75,7 @@ function initRecognition() {
     recognition.onerror = function(e) {
         isListening = false;
         updateMicButton();
-        if (e.error === 'not-allowed') {
+        if (e.error === 'not-allowed' || e.error === 'audio-capture' || e.error === 'service-not-allowed') {
             speak('Microphone access was denied. Please enable it in your browser settings.');
             voiceEnabled = false;
         }
