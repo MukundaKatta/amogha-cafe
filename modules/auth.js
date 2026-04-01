@@ -664,7 +664,7 @@ export function initAuth() {
             '<button onclick="openMyOrders(); closeUserDropdown();">My Orders</button>' +
             '<button onclick="openReferralModal(); closeUserDropdown();">Refer a Friend</button>' +
             '<button onclick="openLoyaltyModal(); closeUserDropdown();">Loyalty Points</button>' +
-            '<button onclick="openAuthModal(); closeUserDropdown();">Sign Out</button>';
+            '<button onclick="signOut(); closeUserDropdown();">Sign Out</button>';
         signinBtn.parentElement.style.position = 'relative';
         signinBtn.parentElement.appendChild(dropdown);
         signinBtn.addEventListener('click', function(e) {

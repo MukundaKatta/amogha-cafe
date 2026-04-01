@@ -95,7 +95,7 @@ function showSeasonalBanner(data) {
     banner.innerHTML =
         '<span class="seasonal-banner-particles">' + data.particles.join(' ') + '</span>' +
         '<span class="seasonal-banner-text">' + data.banner + '</span>' +
-        '<button class="seasonal-banner-close" onclick="dismissSeasonalBanner(\'' + data.name + '\')" aria-label="Dismiss">&times;</button>';
+        '<button class="seasonal-banner-close" onclick="dismissSeasonalBanner(\'' + data.name.replace(/'/g, "\\'").replace(/&/g, '&amp;') + '\')" aria-label="Dismiss">&times;</button>';
 
     var header = document.querySelector('header');
     if (header && header.nextSibling) {

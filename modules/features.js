@@ -265,7 +265,8 @@ export function submitReviews() {
         return;
     }
     batch.commit().then(function() {
-        document.getElementById('review-modal').style.display = 'none';
+        var reviewModal = document.getElementById('review-modal');
+        if (reviewModal) reviewModal.style.display = 'none';
         showAuthToast('Thank you for your review!');
         // Award 25 loyalty points for submitting a review
         var reviewUser = getCurrentUser();

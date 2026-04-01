@@ -187,4 +187,7 @@ export function initReservations() {
     }
 }
 
-Object.assign(window, { openReservationModal, closeReservationModal, submitReservation });
+if (!window._reservationsGlobalsSet) {
+    window._reservationsGlobalsSet = true;
+    Object.assign(window, { openReservationModal, closeReservationModal, submitReservation });
+}

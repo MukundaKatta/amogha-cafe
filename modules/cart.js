@@ -436,21 +436,22 @@ export function displayCart() {
         const itemTotal = (item.price + addonTotal) * item.quantity;
         subtotal += itemTotal;
         const spiceTag = item.spiceLevel && item.spiceLevel !== 'medium' ? ' <span class="spice-tag">(' + item.spiceLevel + ')</span>' : '';
-        const addonTags = (item.addons || []).map(a => '<span class="addon-tag">+ ' + a.name + ' ₹' + a.price + '</span>').join(' ');
+        const addonTags = (item.addons || []).map(a => '<span class="addon-tag">+ ' + escapeHtml(a.name) + ' ₹' + a.price + '</span>').join(' ');
 
+        const safeName = escapeHtml(item.name);
         html += `
             <div class="cart-item">
                 <div class="cart-item-info">
-                    <div class="cart-item-name">${item.name}${spiceTag}</div>
+                    <div class="cart-item-name">${safeName}${spiceTag}</div>
                     ${addonTags ? '<div style="margin-top:2px">' + addonTags + '</div>' : ''}
                     <div class="cart-item-price">₹${(item.price + addonTotal).toFixed(2)}</div>
                 </div>
                 <div class="cart-item-quantity">
-                    <button class="qty-btn" onclick="updateQuantity(${index}, -1)" aria-label="Decrease quantity of ${item.name}">-</button>
+                    <button class="qty-btn" onclick="updateQuantity(${index}, -1)" aria-label="Decrease quantity of ${safeName}">-</button>
                     <span>${item.quantity}</span>
-                    <button class="qty-btn" onclick="updateQuantity(${index}, 1)" aria-label="Increase quantity of ${item.name}">+</button>
+                    <button class="qty-btn" onclick="updateQuantity(${index}, 1)" aria-label="Increase quantity of ${safeName}">+</button>
                 </div>
-                <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${item.name} from cart">Remove</button>
+                <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${safeName} from cart">Remove</button>
             </div>
         `;
     });
@@ -599,6 +600,7 @@ export function initCart() {
         if (e.target.classList.contains('qty-plus')) {
             const itemName = e.target.dataset.item;
             const btn = e.target.closest('.add-to-cart');
+            if (!btn) return;
             addToCart(itemName, btn.dataset.price, btn);
             return;
         }

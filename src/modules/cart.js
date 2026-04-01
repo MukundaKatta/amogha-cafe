@@ -438,7 +438,7 @@ export function displayCart() {
         const spiceTag = item.spiceLevel && item.spiceLevel !== 'medium' ? ' <span class="spice-tag">(' + escapeHtml(item.spiceLevel) + ')</span>' : '';
         const addonTags = (item.addons || []).map(a => '<span class="addon-tag">+ ' + escapeHtml(a.name) + ' ₹' + Number(a.price || 0) + '</span>').join(' ');
 
-        var safeName = escapeHtml(item.name);
+        const safeName = escapeHtml(item.name);
         html += `
             <div class="cart-item">
                 <div class="cart-item-info">
@@ -600,6 +600,7 @@ export function initCart() {
         if (e.target.classList.contains('qty-plus')) {
             const itemName = e.target.dataset.item;
             const btn = e.target.closest('.add-to-cart');
+            if (!btn) return;
             addToCart(itemName, btn.dataset.price, btn);
             return;
         }

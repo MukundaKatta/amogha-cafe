@@ -3838,7 +3838,7 @@
                         '<span class="payment">' + escHtml(order.payment || 'N/A') + '</span>' +
                     '</div>' +
                     '<div class="order-actions">' +
-                        '<select data-order-id="' + escHtml(order.id) + '" onchange="updateStatus(this.dataset.orderId, this.value, \'' + escHtml(order.customer || '') + '\', \'' + waPhone + '\')">' +
+                        '<select data-order-id="' + escHtml(order.id) + '" data-customer="' + escHtml(order.customer || '') + '" data-phone="' + escHtml(waPhone) + '" onchange="updateStatus(this.dataset.orderId, this.value, this.dataset.customer, this.dataset.phone)">' +
                             '<option value="pending"' + (order.status === 'pending' ? ' selected' : '') + '>Pending</option>' +
                             '<option value="confirmed"' + (order.status === 'confirmed' ? ' selected' : '') + '>Confirmed</option>' +
                             '<option value="preparing"' + (order.status === 'preparing' ? ' selected' : '') + '>Preparing</option>' +

@@ -139,8 +139,8 @@ window.submitPhotoReview = function() {
     window.closePhotoReviewModal();
 
     // Award loyalty points
-    if (user && user.loyalty !== undefined) {
-        user.loyalty = (user.loyalty || 0) + 15;
+    if (user && user.loyaltyPoints !== undefined) {
+        user.loyaltyPoints = (user.loyaltyPoints || 0) + 15;
         try { localStorage.setItem('amoghaUser', JSON.stringify(user)); } catch(e) {}
     }
 };
