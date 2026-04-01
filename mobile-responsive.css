@@ -1027,3 +1027,62 @@ button.lightbox-close {
         scroll-behavior: auto;
     }
 }
+
+/* === iOS zoom prevention: all inputs must be >= 16px on mobile === */
+@media (max-width: 768px) {
+    input,
+    textarea,
+    select,
+    #ai-chat-input,
+    .chat-input,
+    .search-input,
+    .meal-planner-controls input,
+    .form-input,
+    [type="text"],
+    [type="email"],
+    [type="tel"],
+    [type="number"],
+    [type="password"],
+    [type="search"] {
+        font-size: max(1rem, 16px) !important;
+    }
+}
+
+/* === Focus-visible styles for keyboard navigation (accessibility) === */
+button:focus-visible,
+.btn:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--gold, #D4A017);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.2);
+}
+
+/* === 360px ultra-small phone fixes === */
+@media (max-width: 360px) {
+    /* FAB stack: tighten vertical spacing */
+    .whatsapp-float  { bottom: 20px !important; }
+    .ai-chat-fab     { bottom: 64px !important; }
+    .back-to-top     { bottom: 110px !important; }
+    .referral-fab    { bottom: 154px !important; }
+
+    /* Modal safe-area on tiny phones */
+    .modal-content {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Gallery height on tiny phones */
+    .gallery-grid .gallery-item {
+        height: 180px;
+    }
+
+    /* Customize modal touch targets */
+    .customize-opt,
+    .customize-check {
+        min-height: 44px;
+        padding: 10px 14px;
+    }
+}

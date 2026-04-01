@@ -656,7 +656,7 @@ function loadAvailable() {
         }, function(e) {
             console.error('Available orders error:', e);
             var el = document.getElementById('available-list');
-            if (el) el.innerHTML = '<div class="empty-state"><div class="es-icon">⚠️</div><div class="es-title">Failed to load orders</div><div class="es-sub">' + (e.message || e) + '</div></div>';
+            if (el) el.innerHTML = '<div class="empty-state"><div class="es-icon">⚠️</div><div class="es-title">Failed to load orders</div><div class="es-sub">' + escHtml(e.message || String(e)) + '</div></div>';
         });
 }
 
@@ -687,7 +687,7 @@ function renderAvailable() {
             '<div class="oc-addr">📍 ' + escHtml(o.address || 'No address') + '</div>' +
             '<div class="oc-customer">👤 ' + escHtml(o.customer || '') + ' &nbsp; 📞 ' + escHtml(o.phone || '') + '</div>' +
             '<div class="oc-actions">' +
-                '<button class="btn-accept" onclick="acceptOrder(\'' + o.id + '\',\'' + escHtml(o.customer || '') + '\')">Accept Delivery</button>' +
+                '<button class="btn-accept" onclick="acceptOrder(\'' + escHtml(o.id) + '\',' + JSON.stringify(o.customer || '') + ')">Accept Delivery</button>' +
             '</div>' +
         '</div>';
     }).join('');
@@ -813,10 +813,10 @@ function loadMyActive() {
                     '<hr class="active-divider">' +
                     '<div class="active-total"><span>' + fmtAmount(o.total) + '</span><span class="payment-tag">' + escHtml(o.payment || 'Cash on Delivery') + '</span></div>' +
                     '<div class="active-btns">' +
-                        '<button class="btn-navigate" onclick="navigate(\'' + escHtml(o.address || '') + '\')">📍 Navigate</button>' +
-                        '<button class="btn-call" onclick="callCustomer(\'' + escHtml(o.phone || '') + '\')">📞 Call</button>' +
+                        '<button class="btn-navigate" onclick="navigate(' + JSON.stringify(o.address || '') + ')">📍 Navigate</button>' +
+                        '<button class="btn-call" onclick="callCustomer(' + JSON.stringify(o.phone || '') + ')">📞 Call</button>' +
                     '</div>' +
-                    '<button class="btn-delivered" onclick="markDelivered(\'' + o.id + '\',\'' + escHtml(o.customer || '') + '\')">✅ Mark as Delivered</button>' +
+                    '<button class="btn-delivered" onclick="markDelivered(\'' + escHtml(o.id) + '\',' + JSON.stringify(o.customer || '') + ')">✅ Mark as Delivered</button>' +
                 '</div>';
             }).join('');
         }, function(e) { console.error('Active delivery error:', e); });

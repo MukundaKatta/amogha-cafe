@@ -176,12 +176,12 @@ function checkPoints() {
         var rewardEl = document.getElementById('reward-msg');
         if (pts >= REDEEM_POINTS) {
             rewardEl.className = 'reward-msg reward-ready';
-            rewardEl.innerHTML = '🎉 You have enough points!<br>Ask the cashier to redeem <strong>₹100 off</strong> on your next order of ₹250+';
+            rewardEl.innerHTML = '<div>🎉 You have enough points!</div><div>Ask the cashier to redeem <strong>₹100 off</strong> on your next order of ₹250+</div>';
         } else {
             var needed = REDEEM_POINTS - pts;
             var rupees = Math.ceil(needed / (100 / 2000));
             rewardEl.className = 'reward-msg reward-progress';
-            rewardEl.innerHTML = 'Spend <strong>₹' + rupees.toLocaleString('en-IN') + ' more</strong> to earn <strong>' + needed + ' pts</strong> and get ₹100 off!';
+            rewardEl.innerHTML = 'Spend <strong>₹' + Number(rupees).toLocaleString('en-IN') + ' more</strong> to earn <strong>' + Number(needed) + ' pts</strong> and get ₹100 off!';
         }
 
         document.getElementById('result').style.display = 'block';

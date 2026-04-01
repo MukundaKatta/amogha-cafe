@@ -190,7 +190,7 @@ export function openAddonPicker(itemName, basePrice) {
                 '<div class="addon-option-name">' + escapeHtml(addon.name) + '</div>' +
                 '<div class="addon-option-cat">' + escapeHtml(addon.category || '') + '</div>' +
             '</div>' +
-            '<div class="addon-option-price">+\u20B9' + addon.price + '</div>' +
+            '<div class="addon-option-price">+\u20B9' + Number(addon.price || 0) + '</div>' +
         '</div>';
     }).join('');
 
@@ -435,8 +435,8 @@ export function displayCart() {
         const addonTotal = (item.addons || []).reduce((s, a) => s + a.price, 0);
         const itemTotal = (item.price + addonTotal) * item.quantity;
         subtotal += itemTotal;
-        const spiceTag = item.spiceLevel && item.spiceLevel !== 'medium' ? ' <span class="spice-tag">(' + item.spiceLevel + ')</span>' : '';
-        const addonTags = (item.addons || []).map(a => '<span class="addon-tag">+ ' + a.name + ' ₹' + a.price + '</span>').join(' ');
+        const spiceTag = item.spiceLevel && item.spiceLevel !== 'medium' ? ' <span class="spice-tag">(' + escapeHtml(item.spiceLevel) + ')</span>' : '';
+        const addonTags = (item.addons || []).map(a => '<span class="addon-tag">+ ' + escapeHtml(a.name) + ' ₹' + Number(a.price || 0) + '</span>').join(' ');
 
         var safeName = escapeHtml(item.name);
         html += `
