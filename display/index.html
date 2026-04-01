@@ -687,8 +687,18 @@
 
     function showToast(orderNumber, name) {
         $toastNum.textContent = orderNumber;
-        $toast.querySelector('.toast-text').innerHTML =
-            'Order <span class="toast-num">' + orderNumber + '</span> for <strong>' + name + '</strong> is ready!';
+        var toastText = $toast.querySelector('.toast-text');
+        toastText.textContent = '';
+        toastText.appendChild(document.createTextNode('Order '));
+        var numSpan = document.createElement('span');
+        numSpan.className = 'toast-num';
+        numSpan.textContent = orderNumber;
+        toastText.appendChild(numSpan);
+        toastText.appendChild(document.createTextNode(' for '));
+        var nameStrong = document.createElement('strong');
+        nameStrong.textContent = name;
+        toastText.appendChild(nameStrong);
+        toastText.appendChild(document.createTextNode(' is ready!'));
         $toast.classList.add('show');
         setTimeout(function() { $toast.classList.remove('show'); }, 4000);
     }

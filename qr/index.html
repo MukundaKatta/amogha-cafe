@@ -524,6 +524,21 @@ function escHtml(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
 
+function showQrToast(msg, isError) {
+    var t = document.getElementById('qr-toast-msg');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'qr-toast-msg';
+        t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(30,24,16,.96);color:#ede2d2;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;max-width:90vw;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:opacity .3s';
+        document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.borderLeft = isError ? '3px solid #e74c3c' : '3px solid #D4A017';
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function() { t.style.opacity = '0'; }, 3000);
+}
+
 // ── Firebase Init ──────────────────────────────────────────────
 firebase.initializeApp({
     apiKey: "AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",
@@ -900,9 +915,10 @@ function placeOrder() {
     var phone = document.getElementById('co-phone').value.trim();
     var notes = document.getElementById('co-notes').value.trim();
 
-    if (!name) { alert('Please enter your name.'); return; }
+    if (!name) { showQrToast('Please enter your name.', true); return; }
+    if (name.length > 60) { showQrToast('Name is too long.', true); return; }
     if (!phone || !/^\d{10}$/.test(phone)) {
-        alert('Please enter a valid 10-digit phone number.');
+        showQrToast('Please enter a valid 10-digit phone number.', true);
         return;
     }
 
@@ -961,7 +977,7 @@ function placeOrder() {
         document.getElementById('loader').classList.remove('show');
         btn.disabled = false;
         btn.textContent = 'Place Order';
-        alert('Failed to place order. Please try again.\n' + err.message);
+        showQrToast('Failed to place order. Please try again.', true);
         console.error('Order error:', err);
     });
 }

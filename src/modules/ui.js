@@ -1079,16 +1079,36 @@ export function initUI() {
                     return;
                 }
 
-                dropdown.innerHTML = matches.map(function(m) {
-                    var badge = m.isVeg ? '<span class="ac-badge veg">VEG</span>' : '<span class="ac-badge non-veg">NON-VEG</span>';
-                    return '<button class="ac-item" data-name="' + m.name + '">' +
-                        '<div class="ac-info">' +
-                            '<span class="ac-name">' + m.name + '</span>' +
-                            '<span class="ac-meta">' + badge + ' <span class="ac-cat">' + m.category + '</span></span>' +
-                        '</div>' +
-                        '<span class="ac-price">' + m.price + '</span>' +
-                    '</button>';
-                }).join('');
+                dropdown.innerHTML = '';
+                matches.forEach(function(m) {
+                    var btn = document.createElement('button');
+                    btn.className = 'ac-item';
+                    btn.dataset.name = m.name;
+                    var info = document.createElement('div');
+                    info.className = 'ac-info';
+                    var nameSpan = document.createElement('span');
+                    nameSpan.className = 'ac-name';
+                    nameSpan.textContent = m.name;
+                    var meta = document.createElement('span');
+                    meta.className = 'ac-meta';
+                    var badge = document.createElement('span');
+                    badge.className = m.isVeg ? 'ac-badge veg' : 'ac-badge non-veg';
+                    badge.textContent = m.isVeg ? 'VEG' : 'NON-VEG';
+                    var cat = document.createElement('span');
+                    cat.className = 'ac-cat';
+                    cat.textContent = m.category;
+                    meta.appendChild(badge);
+                    meta.appendChild(document.createTextNode(' '));
+                    meta.appendChild(cat);
+                    info.appendChild(nameSpan);
+                    info.appendChild(meta);
+                    var priceSpan = document.createElement('span');
+                    priceSpan.className = 'ac-price';
+                    priceSpan.textContent = m.price;
+                    btn.appendChild(info);
+                    btn.appendChild(priceSpan);
+                    dropdown.appendChild(btn);
+                });
                 dropdown.classList.add('visible');
             }, 150);
         });

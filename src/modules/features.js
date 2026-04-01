@@ -225,7 +225,9 @@ export function openReviewModal(orderItems) {
     html += '</div>';
     html += '<textarea id="review-text" class="review-textarea" placeholder="Share your thoughts (optional)" maxlength="200"></textarea>';
     html += '<button class="cta-button" onclick="submitReviews()">Submit Review</button><span style="color:#D4A017;font-size:0.75rem;margin-left:8px">Earn 25 pts</span>';
-    modal.querySelector('.review-modal-content').innerHTML = html;
+    var reviewContent = modal.querySelector('.review-modal-content');
+    if (!reviewContent) return;
+    reviewContent.innerHTML = html;
     modal.style.display = 'block';
     window._reviewRatings = new Array(items.length).fill(0);
     window._reviewItems = items;
