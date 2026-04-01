@@ -76,6 +76,9 @@ export function updateCartCount() {
 }
 
 export function addToCart(itemName, price, btnEl) {
+    // Reject empty/placeholder items
+    if (!itemName || !itemName.trim()) return;
+
     // Prompt sign-in on first add (gentle — doesn't block)
     if (cart.length === 0 && !getCurrentUser()) {
         pendingCartItem = { name: itemName, price: price };
