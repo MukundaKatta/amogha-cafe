@@ -962,7 +962,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
         var overlay=document.getElementById('addon-picker-overlay'),nameEl=document.getElementById('addon-item-name'),listEl=document.getElementById('addon-sheet-list');
         if(!overlay||!nameEl||!listEl)return;
         nameEl.textContent=itemName+' \u2014 \u20B9'+basePrice;
-        listEl.innerHTML=cachedAddons.map(function(addon,idx){return '<div class="addon-option" data-idx="'+idx+'" onclick="toggleAddonOption(this,'+idx+')"><div class="addon-checkbox"></div><div class="addon-option-info"><div class="addon-option-name">'+addon.name+'</div><div class="addon-option-cat">'+(addon.category||'')+'</div></div><div class="addon-option-price">+\u20B9'+addon.price+'</div></div>';}).join('');
+        listEl.innerHTML=cachedAddons.map(function(addon,idx){return '<div class="addon-option" data-idx="'+idx+'" onclick="toggleAddonOption(this,'+idx+')"><div class="addon-checkbox"></div><div class="addon-option-info"><div class="addon-option-name">'+escH(addon.name||'')+'</div><div class="addon-option-cat">'+escH(addon.category||'')+'</div></div><div class="addon-option-price">+\u20B9'+Number(addon.price||0)+'</div></div>';}).join('');
         updateAddonTotal();overlay.style.display='flex';
     }
     function toggleAddonOption(el,idx) {
