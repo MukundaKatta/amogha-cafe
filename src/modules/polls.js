@@ -73,7 +73,7 @@ function renderPolls(container, polls) {
                 var isVoted = userVote === opt.id;
                 var showResults = !!userVote;
                 return '<button class="poll-option ' + (isVoted ? 'voted' : '') + (showResults ? ' show-results' : '') + '" ' +
-                    (userVote ? 'disabled' : 'onclick="votePoll(\'' + escH(String(poll.id)) + '\',\'' + escH(String(opt.id)) + '\')"') + '>' +
+                    (userVote ? 'disabled' : 'onclick="votePoll(' + JSON.stringify(String(poll.id)).replace(/"/g,'&quot;') + ',' + JSON.stringify(String(opt.id)).replace(/"/g,'&quot;') + ')"') + '>' +
                     '<span class="poll-option-icon">' + escH(opt.icon) + '</span>' +
                     '<span class="poll-option-text">' + escH(opt.text) + '</span>' +
                     (showResults ? '<span class="poll-option-pct">' + pct + '%</span>' +

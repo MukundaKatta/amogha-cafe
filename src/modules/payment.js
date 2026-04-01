@@ -279,7 +279,7 @@ export function openCheckout() {
                     if (couponMsg) { couponMsg.textContent = ''; couponMsg.className = 'coupon-msg'; }
                     setupPayment();
                 }
-            }).catch(function() {});
+            }).catch(function(e) { console.error('Welcome bonus re-verify error:', e); });
         }
     } else {
         appliedCoupon = null;

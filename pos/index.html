@@ -1090,7 +1090,7 @@ function placeOrder() {
         // Print KOT after bill screen is shown so print dialog doesn't block UI
         setTimeout(function() { printKOT(); }, 300);
     }).catch(function(err) {
-        alert('Order failed: ' + err.message);
+        showToast('Order failed: ' + err.message, 'error');
         btn.disabled = false; btn.textContent = 'Place Order';
     });
 }
@@ -1927,7 +1927,7 @@ function voidOrder(orderId) {
         if (idx !== -1) { recentOrders[idx].status = 'voided'; }
         renderRecentOrders();
     }).catch(function(err) {
-        alert('Failed to void order: ' + err.message);
+        showToast('Failed to void order: ' + err.message, 'error');
     });
 }
 </script>

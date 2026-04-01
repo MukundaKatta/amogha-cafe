@@ -137,38 +137,43 @@ export function initGiftCards() {
         showStep(1);
 
         modal.querySelector('.modal-close').onclick = closeModal;
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeModal();
-        });
 
-        // Design selection
-        modal.querySelectorAll('.gift-design-btn').forEach(function(b) {
-            b.addEventListener('click', function() {
-                modal.querySelectorAll('.gift-design-btn').forEach(function(x) { x.classList.remove('selected'); });
-                b.classList.add('selected');
-                selectedDesign = b.dataset.design;
+        if (!modal._gcListenersAdded) {
+            modal._gcListenersAdded = true;
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeModal();
             });
-        });
 
-        // Amount selection
-        modal.querySelectorAll('.gift-amount-btn').forEach(function(b) {
-            b.addEventListener('click', function() {
-                modal.querySelectorAll('.gift-amount-btn').forEach(function(x) { x.classList.remove('selected'); });
-                b.classList.add('selected');
-                selectedAmount = parseInt(b.dataset.amount);
-                var custom = document.getElementById('gcCustomAmount');
-                if (custom) custom.value = '';
+            // Design selection
+            modal.querySelectorAll('.gift-design-btn').forEach(function(b) {
+                b.addEventListener('click', function() {
+                    modal.querySelectorAll('.gift-design-btn').forEach(function(x) { x.classList.remove('selected'); });
+                    b.classList.add('selected');
+                    selectedDesign = b.dataset.design;
+                });
             });
-        });
 
-        var customInput = document.getElementById('gcCustomAmount');
-        if (customInput) {
-            customInput.addEventListener('input', function() {
-                if (this.value) {
+            // Amount selection
+            modal.querySelectorAll('.gift-amount-btn').forEach(function(b) {
+                b.addEventListener('click', function() {
                     modal.querySelectorAll('.gift-amount-btn').forEach(function(x) { x.classList.remove('selected'); });
-                    selectedAmount = parseInt(this.value) || 0;
-                }
+                    b.classList.add('selected');
+                    selectedAmount = parseInt(b.dataset.amount);
+                    var custom = document.getElementById('gcCustomAmount');
+                    if (custom) custom.value = '';
+                });
             });
+
+            var customInput = document.getElementById('gcCustomAmount');
+            if (customInput) {
+                customInput.addEventListener('input', function() {
+                    if (this.value) {
+                        modal.querySelectorAll('.gift-amount-btn').forEach(function(x) { x.classList.remove('selected'); });
+                        selectedAmount = parseInt(this.value) || 0;
+                    }
+                });
+            }
         }
 
         // Navigation
@@ -327,7 +332,7 @@ export function redeemGiftCard(code) {
             if (!doc.exists) return reject(new Error('Invalid gift card code'));
             var data = doc.data();
             if (data.status !== 'active') return reject(new Error('This gift card has already been redeemed'));
-            if (data.balance <= 0) return reject(new Error('This gift card has no remaining balance'));
+            if (typeof data.balance !== 'number' || data.balance <= 0) return reject(new Error('This gift card has no remaining balance'));
             resolve({ code: data.code, balance: data.balance, design: data.design });
         }).catch(reject);
     });

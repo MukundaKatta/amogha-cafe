@@ -1450,8 +1450,8 @@
             try{
                 if(!m){m=new Audio('music/bg-music.mp3');m.loop=true;m.volume=0.35;}
                 if(on){var pp=m._playPromise;var doPause=function(){m.pause();on=false;b.classList.remove('playing');b.querySelector('.music-off').style.display='';b.querySelector('.music-on').style.display='none';};if(pp){pp.then(doPause).catch(function(){});}else{doPause();}}
-                else{m._playPromise=m.play();if(m._playPromise){m._playPromise.then(function(){m._playPromise=null;on=true;b.classList.add('playing');b.querySelector('.music-off').style.display='none';b.querySelector('.music-on').style.display='';}).catch(function(e){m._playPromise=null;if(e.name!=='AbortError'){alert('Music error: '+e.message);}});}}
-            }catch(ex){alert('Music exception: '+ex.message);}
+                else{m._playPromise=m.play();if(m._playPromise){m._playPromise.then(function(){m._playPromise=null;on=true;b.classList.add('playing');b.querySelector('.music-off').style.display='none';b.querySelector('.music-on').style.display='';}).catch(function(e){m._playPromise=null;if(e.name!=='AbortError'){console.warn('Music error:',e.message);}});}}
+            }catch(ex){console.warn('Music exception:',ex.message);}
         };
     })();
     </script>

@@ -171,6 +171,8 @@ function initMealTimeMenu() {
 
 // ===== MAIN INIT =====
 export function initPersonalize() {
+    if (window._personalizeInitDone) return;
+    window._personalizeInitDone = true;
     initGreeting();
     initMealTimeMenu();
     // Delay reorder bar so auth + orders are loaded
