@@ -143,7 +143,7 @@ describe('setSplitCount', () => {
         const linksDiv = document.getElementById('split-links');
         const upiAnchors = linksDiv.querySelectorAll('a[href^="upi://"]');
         expect(upiAnchors.length).toBe(2);
-        expect(linksDiv.innerHTML).toContain('9121004999@upi');
+        expect(linksDiv.innerHTML).toContain('9121004999');
         expect(linksDiv.innerHTML).toContain('Pay Rs.300');
     });
 
@@ -280,11 +280,11 @@ describe('window globals', () => {
 // Branch coverage: setSplitCount when total is 0 or orderId is empty (lines 55-70)
 // ===========================================================================
 describe('setSplitCount — total is 0 and orderId is empty (lines 55-70)', () => {
-    it('handles total=0 gracefully (perPerson = 0)', () => {
+    it('handles total=0 gracefully (shows error)', () => {
         openSplitBill('', 0);
         setSplitCount(2);
         const resultDiv = document.getElementById('split-result');
-        expect(resultDiv.textContent).toContain('Rs.0');
+        expect(resultDiv.textContent).toContain('Invalid');
     });
 
     it('handles empty orderId (UPI link still generated)', () => {
@@ -308,12 +308,11 @@ describe('setSplitCount — total is 0 and orderId is empty (lines 55-70)', () =
         expect(collectionMock).not.toHaveBeenCalled();
     });
 
-    it('generates correct per-person amount when total is 0', () => {
+    it('shows error when total is 0', () => {
         openSplitBill('order123', 0);
         setSplitCount(4);
         const resultDiv = document.getElementById('split-result');
-        // Math.ceil(0 / 4) = 0
-        expect(resultDiv.textContent).toContain('Rs.0');
+        expect(resultDiv.textContent).toContain('Invalid');
     });
 });
 

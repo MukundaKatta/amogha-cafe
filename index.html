@@ -1807,7 +1807,10 @@
                     window.moveGallerySlide = function(dir) {
                         showSlide((slideIdx + dir + slides.length) % slides.length);
                     };
-                    if (slides.length > 1) setInterval(function() { window.moveGallerySlide(1); }, 5000);
+                    if (slides.length > 1) {
+                        if (window._galleryIntervalId) clearInterval(window._galleryIntervalId);
+                        window._galleryIntervalId = setInterval(function() { window.moveGallerySlide(1); }, 5000);
+                    }
                 }
             }
 
@@ -1830,7 +1833,8 @@
                         carouselIdx = Math.max(0, Math.min(carouselIdx + dir, maxIdx));
                         updateCarousel();
                     };
-                    setInterval(function() {
+                    if (window._carouselIntervalId) clearInterval(window._carouselIntervalId);
+                    window._carouselIntervalId = setInterval(function() {
                         var maxIdx = Math.max(0, cards.length - visibleCards());
                         carouselIdx = carouselIdx >= maxIdx ? 0 : carouselIdx + 1;
                         updateCarousel();
@@ -2143,7 +2147,8 @@
                     if (item.type === 'image') {
                         content.innerHTML = '<div class="story-image-container"><img src="' + escHtml(item.src) + '" alt="' + escHtml(item.caption || '') + '" class="story-image" loading="eager">' + (item.caption ? '<div class="story-caption">' + escHtml(item.caption) + '</div>' : '') + '</div>';
                     } else {
-                        content.innerHTML = '<div class="story-text-container" style="background:' + escHtml(item.bg || '#2c1810') + '"><p class="story-text-content">' + escHtml(item.content) + '</p></div>';
+                        var safeBg = (item.bg || '#2c1810').replace(/[^a-zA-Z0-9#(),%. ]/g, '');
+                        content.innerHTML = '<div class="story-text-container" style="background:' + safeBg + '"><p class="story-text-content">' + escHtml(item.content) + '</p></div>';
                     }
                     try { localStorage.setItem('amogha_story_viewed_' + story.id, '1'); } catch(e) {}
                     var bubble = document.querySelector('.story-bubble[data-story="' + storyGroup + '"]');

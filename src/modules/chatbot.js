@@ -76,6 +76,7 @@ export async function sendChatMessage(presetMsg) {
     if (input) input.value = '';
 
     var messagesEl = document.getElementById('ai-chat-messages');
+    if (!messagesEl) return;
 
     // User bubble
     var userBubble = document.createElement('div');
@@ -149,10 +150,15 @@ export async function sendChatMessage(presetMsg) {
             else if (data.action === 'showMenu') { var menuEl = document.getElementById('menu'); if (menuEl) menuEl.scrollIntoView({ behavior: 'smooth' }); }
         }
     } catch (e) {
+        clearTimeout(timeoutId);
         typing.remove();
         var errBubble = document.createElement('div');
         errBubble.className = 'ai-msg bot';
-        errBubble.innerHTML = '<p>Sorry, I couldn\'t process that. Try again or call us at +91 91210 04999.</p>';
+        if (e && e.name === 'AbortError') {
+            errBubble.innerHTML = '<p>Request timed out. Please try again.</p>';
+        } else {
+            errBubble.innerHTML = '<p>Sorry, I couldn\'t process that. Try again or call us at +91 91210 04999.</p>';
+        }
         messagesEl.appendChild(errBubble);
     }
 }
