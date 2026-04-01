@@ -1,17 +1,21 @@
 // Kitchen Display System Service Worker v1
 var CACHE_NAME = 'kds-v1';
-var ASSETS = [
+var CORE_ASSETS = [
   './',
   './index.html',
-  '../amogha-logo.png',
+  '../amogha-logo.png'
+];
+var OPTIONAL_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@500;700&family=JetBrains+Mono:wght@400;600;700&display=swap'
 ];
 
-// Install: cache core assets
+// Install: cache core assets (required), then optional assets (best-effort)
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(ASSETS);
+      return cache.addAll(CORE_ASSETS).then(function() {
+        return Promise.allSettled(OPTIONAL_ASSETS.map(function(url) { return cache.add(url); }));
+      });
     })
   );
   self.skipWaiting();
@@ -36,14 +40,14 @@ self.addEventListener('fetch', function(e) {
   if (e.request.method !== 'GET') return;
   var url = e.request.url;
   if (url.indexOf('firestore.googleapis.com') !== -1 ||
-      url.indexOf('firebase') !== -1 && url.indexOf('.js') !== -1) {
+      (url.indexOf('firebase') !== -1 && url.indexOf('.js') !== -1)) {
     return;
   }
 
   e.respondWith(
     fetch(e.request).then(function(response) {
-      // Cache successful responses
-      if (response && response.status === 200) {
+      // Cache successful responses only
+      if (response && response.ok) {
         var clone = response.clone();
         caches.open(CACHE_NAME).then(function(cache) {
           cache.put(e.request, clone);

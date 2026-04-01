@@ -196,19 +196,22 @@ export function lockGroupCart() {
 
     db.collection('groupCarts').doc(groupCartId).update({ status: 'locked' }).then(function() {
         // Merge all participant items into the main cart
-        db.collection('groupCarts').doc(groupCartId).get().then(function(doc) {
-            if (!doc.exists) return;
-            var data = doc.data();
-            data.participants.forEach(function(p) {
-                (p.items || []).forEach(function(item) {
-                    if (typeof window.finalizeAddToCart === 'function') {
-                        window.finalizeAddToCart(item.name, item.price, 'medium', []);
-                    }
-                });
+        return db.collection('groupCarts').doc(groupCartId).get();
+    }).then(function(doc) {
+        if (!doc || !doc.exists) return;
+        var data = doc.data();
+        data.participants.forEach(function(p) {
+            (p.items || []).forEach(function(item) {
+                if (typeof window.finalizeAddToCart === 'function') {
+                    window.finalizeAddToCart(item.name, item.price, 'medium', []);
+                }
             });
-            closeGroupModal();
-            if (typeof window.showAuthToast === 'function') window.showAuthToast('Group cart locked! Proceed to checkout.');
         });
+        closeGroupModal();
+        if (typeof window.showAuthToast === 'function') window.showAuthToast('Group cart locked! Proceed to checkout.');
+    }).catch(function(err) {
+        console.error('Lock group cart error:', err);
+        if (typeof window.showAuthToast === 'function') window.showAuthToast('Failed to lock cart. Try again.');
     });
 }
 

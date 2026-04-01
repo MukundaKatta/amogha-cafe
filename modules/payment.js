@@ -32,7 +32,7 @@ function syncCouponToWindow() {
 // Keep a module-level reference that cart.getCheckoutTotal can access via window
 // (payment.js owns the coupon state so it re-exports a totals getter)
 function itemSubtotal(item) {
-    var addonTotal = (item.addons || []).reduce(function(s, a) { return s + a.price; }, 0);
+    var addonTotal = (item.addons || []).reduce(function(s, a) { return s + (typeof a.price === 'number' ? a.price : 0); }, 0);
     return (item.price + addonTotal) * item.quantity;
 }
 
@@ -142,7 +142,7 @@ export function openCheckout() {
 
     var itemsHtml = '';
     cart.forEach(function(item) {
-        var addonTotal = (item.addons || []).reduce(function(s, a) { return s + a.price; }, 0);
+        var addonTotal = (item.addons || []).reduce(function(s, a) { return s + (typeof a.price === 'number' ? a.price : 0); }, 0);
         var lineTotal = (item.price + addonTotal) * item.quantity;
         var addonLabel = addonTotal > 0 ? ' (+\u20B9' + addonTotal + ')' : '';
         itemsHtml += '<div class="co-item"><span>' + escapeHtml(item.name) + addonLabel + ' x' + item.quantity + '</span><span>\u20B9' + lineTotal + '</span></div>';
@@ -306,10 +306,18 @@ export function closeCheckout() {
     var modal = document.getElementById('checkout-modal');
     if (modal) modal.style.display = 'none';
     unlockScroll();
+    appliedCoupon = null;
+    appliedCouponCode = '';
+    appliedGiftCard = null;
+    syncCouponToWindow();
     ['co-name', 'co-phone', 'co-address', 'co-notes'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.value = '';
     });
+    var couponInput = document.getElementById('coupon-code');
+    var couponMsg = document.getElementById('coupon-msg');
+    if (couponInput) couponInput.value = '';
+    if (couponMsg) { couponMsg.textContent = ''; couponMsg.className = 'coupon-msg'; }
 }
 
 export function goToStep(step) {

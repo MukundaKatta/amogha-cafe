@@ -79,12 +79,16 @@ function notifyArrival(orderId) {
         customerArrived: true,
         arrivalTime: new Date().toISOString(),
         arrivalNotified: true
-    }).catch(function() {});
-
-    // Show toast
-    if (typeof window.showToast === 'function') {
-        window.showToast('Kitchen has been notified of your arrival!');
-    }
+    }).then(function() {
+        if (typeof window.showToast === 'function') {
+            window.showToast('Kitchen has been notified of your arrival!');
+        }
+    }).catch(function(err) {
+        console.error('Arrival notification error:', err);
+        if (typeof window.showToast === 'function') {
+            window.showToast('Could not notify kitchen. Please inform staff.');
+        }
+    });
 }
 
 function showNearbyBanner() {

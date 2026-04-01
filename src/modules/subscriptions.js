@@ -196,9 +196,10 @@ export function cancelSubscription() {
 
     if (!confirm('Are you sure you want to cancel your meal plan?')) return;
 
+    var subId = user.activeSubscription ? user.activeSubscription.id : null;
     var db = getDb();
-    if (db && user.activeSubscription.id) {
-        db.collection('subscriptions').doc(user.activeSubscription.id).update({
+    if (db && subId) {
+        db.collection('subscriptions').doc(subId).update({
             status: 'cancelled',
             cancelledAt: new Date().toISOString()
         }).catch(function(e) { console.error('Cancel subscription error:', e); });
