@@ -4,6 +4,8 @@
 //     countdown tick, floating cart bump, theme transitions, premium nav
 
 export function initPremium() {
+    if (window._premiumInitDone) return;
+    window._premiumInitDone = true;
     initScrollReveal();
     initRippleEffect();
     initLazyImageFade();

@@ -936,7 +936,11 @@
         statusSub.textContent = cfg.sub;
 
         if (status === 'cancelled') {
-            statusSub.innerHTML = cfg.sub + '<div class="cancelled-badge">Cancelled</div>';
+            statusSub.textContent = cfg.sub;
+            var badge = document.createElement('div');
+            badge.className = 'cancelled-badge';
+            badge.textContent = 'Cancelled';
+            statusSub.appendChild(badge);
         }
     }
 
@@ -1190,7 +1194,7 @@
 
         // Calculate and display distance
         var dist = haversineDistance(RESTAURANT_LAT, RESTAURANT_LNG, lat, lng);
-        driverDistanceEl.innerHTML = 'Your delivery partner is <b>' + dist.toFixed(1) + ' km</b> away';
+        driverDistanceEl.innerHTML = 'Your delivery partner is <b>' + Number(dist.toFixed(1)) + ' km</b> away';
     }
 
     function hideDeliveryMap() {

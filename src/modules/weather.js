@@ -106,11 +106,18 @@ function displayWeatherWidget(condition, temp) {
             '<p class="weather-banner">' + rec.banner + '</p>' +
             '<div class="weather-items">' +
             rec.items.map(function(item) {
-                return '<button class="weather-item-chip" onclick="scrollToMenuItem(\'' + item + '\')">' + item + '</button>';
+                var tmp = document.createElement('div');
+                tmp.textContent = item;
+                var safeItem = tmp.innerHTML;
+                return '<button class="weather-item-chip" data-item="' + safeItem + '">' + safeItem + '</button>';
             }).join('') +
             '</div>' +
         '</div>';
     widget.style.display = 'block';
+    widget.querySelector('.weather-items').addEventListener('click', function(e) {
+        var chip = e.target.closest('.weather-item-chip');
+        if (chip) scrollToMenuItem(chip.dataset.item);
+    });
 }
 
 export function scrollToMenuItem(name) {

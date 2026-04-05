@@ -106,13 +106,18 @@ window.handlePhotoUpload = function(input) {
             img.innerHTML = '<img src="'+e.target.result+'" alt="Review photo"><button class="pr-remove-photo" onclick="this.parentElement.remove()">&times;</button>';
             previews.appendChild(img);
         };
+        reader.onerror = function() {
+            showAuthToast('Could not read image file. Please try another.');
+        };
         reader.readAsDataURL(file);
     });
 };
 
 window.submitPhotoReview = function() {
+    if (window._prSubmitting) return;
+    window._prSubmitting = true;
     var rating = window._prRating ? window._prRating() : 0;
-    if (rating === 0) { showAuthToast('Please select a rating'); return; }
+    if (rating === 0) { window._prSubmitting = false; showAuthToast('Please select a rating'); return; }
     var text = document.getElementById('pr-text').value.trim();
     var dish = document.getElementById('pr-dish').value.trim();
     var user = getCurrentUser();
@@ -136,6 +141,7 @@ window.submitPhotoReview = function() {
     addReviewToDOM(review, window._prPhotos || []);
 
     showAuthToast('Thank you for your review! +15 loyalty points earned');
+    window._prSubmitting = false;
     window.closePhotoReviewModal();
 
     // Award loyalty points

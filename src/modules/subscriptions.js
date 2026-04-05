@@ -123,7 +123,7 @@ function renderSubscriptionModal(modal, plans, user) {
     });
 
     // Show active subscription if any
-    if (user.activeSubscription) {
+    if (user.activeSubscription && user.activeSubscription.planName) {
         html += '<div style="background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.2);border-radius:14px;padding:1rem;margin-bottom:1rem">' +
             '<h4 style="color:#4CAF50;margin:0 0 0.3rem">Your Active Plan</h4>' +
             '<p style="color:#e8d5b5;font-size:0.85rem">' + escH(user.activeSubscription.planName) + '</p>' +
@@ -180,7 +180,7 @@ export function subscribeToPlan(planId) {
         setCurrentUser(user);
         db.collection('users').doc(user.phone).update({
             activeSubscription: user.activeSubscription
-        }).catch(function() {});
+        }).catch(function(e) { console.error('Subscription update error:', e); });
 
         closeSubscriptionModal();
         if (typeof window.showAuthToast === 'function') window.showAuthToast('Subscribed to ' + plan.name + '! Your first delivery is on the way.');
@@ -201,7 +201,7 @@ export function cancelSubscription() {
         db.collection('subscriptions').doc(user.activeSubscription.id).update({
             status: 'cancelled',
             cancelledAt: new Date().toISOString()
-        }).catch(function() {});
+        }).catch(function(e) { console.error('Cancel subscription error:', e); });
     }
 
     delete user.activeSubscription;
@@ -209,7 +209,7 @@ export function cancelSubscription() {
     if (db) {
         db.collection('users').doc(user.phone).update({
             activeSubscription: null
-        }).catch(function() {});
+        }).catch(function(e) { console.error('Cancel user update error:', e); });
     }
 
     closeSubscriptionModal();

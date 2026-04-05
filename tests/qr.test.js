@@ -175,7 +175,8 @@ describe('QR — Checkout', () => {
         document.getElementById('co-name').value = '';
         document.getElementById('co-phone').value = '9876543210';
         fns.placeOrder();
-        expect(fns.__context.alert).toHaveBeenCalledWith(expect.stringContaining('name'));
+        var toast = document.getElementById('qr-toast-msg');
+        expect(toast && toast.textContent.toLowerCase()).toEqual(expect.stringContaining('name'));
     });
 
     it('placeOrder validates phone number', () => {
@@ -183,7 +184,8 @@ describe('QR — Checkout', () => {
         document.getElementById('co-name').value = 'Test User';
         document.getElementById('co-phone').value = '123';
         fns.placeOrder();
-        expect(fns.__context.alert).toHaveBeenCalledWith(expect.stringContaining('phone'));
+        var toast = document.getElementById('qr-toast-msg');
+        expect(toast && toast.textContent.toLowerCase()).toEqual(expect.stringContaining('phone'));
     });
 
     it('resetOrder does not throw', () => {

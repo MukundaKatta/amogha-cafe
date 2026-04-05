@@ -82,7 +82,7 @@ function openARPreview(itemId, itemName) {
         if (container) {
             container.innerHTML =
                 '<div class="ar-fallback">' +
-                    '<img src="/pics/' + (itemId || 'biryani') + '.jpg" alt="' + (itemName || 'Food') + '" class="ar-fallback-image">' +
+                    '<img src="/pics/' + safeId(itemId || 'biryani') + '.jpg" alt="' + String(itemName || 'Food').replace(/"/g, '&quot;').replace(/</g, '&lt;') + '" class="ar-fallback-image">' +
                     '<p>Camera access not available. Here\'s how your dish looks!</p>' +
                 '</div>';
         }
@@ -213,6 +213,7 @@ function captureARPhoto() {
     canvas.width = video.videoWidth || 1280;
     canvas.height = video.videoHeight || 720;
     var ctx = canvas.getContext('2d');
+    if (!ctx) return;
     ctx.drawImage(video, 0, 0);
 
     // Draw food overlay

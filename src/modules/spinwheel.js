@@ -43,6 +43,7 @@ function renderWheel() {
     var canvas = document.getElementById('spin-canvas');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
+    if (!ctx) return;
     var size = Math.min(300, window.innerWidth - 60);
     canvas.width = size;
     canvas.height = size;
@@ -161,7 +162,7 @@ function awardSpinPrize(result) {
     if (resultEl) {
         resultEl.innerHTML = '<div class="spin-result-card">' +
             '<div class="spin-result-icon">' + (result.type !== 'none' ? '🎉' : '😅') + '</div>' +
-            '<div class="spin-result-text">' + message + '</div>' +
+            '<div class="spin-result-text">' + (function(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;})(message) + '</div>' +
             '<button class="spin-result-btn" onclick="document.getElementById(\'spin-result\').style.display=\'none\'">' +
             (result.type !== 'none' ? 'Awesome!' : 'Try Again Later') + '</button>' +
         '</div>';

@@ -65,7 +65,7 @@ export function openSecretMenu() {
                 '</div>' +
                 '<div class="secret-item-action">' +
                     (unlocked ?
-                        '<button class="secret-item-add" onclick="addSecretItemToCart(\'' + escapeHtml(item.name).replace(/'/g, '&#39;') + '\',' + (parseInt(item.price, 10) || 0) + ')">Add to Cart</button>' :
+                        '<button class="secret-item-add" onclick="addSecretItemToCart(' + JSON.stringify(item.name).replace(/"/g, '&quot;') + ',' + (parseInt(item.price, 10) || 0) + ')">Add to Cart</button>' :
                         '<span class="secret-item-lock">🔒 ' + item.tier + '</span>') +
                 '</div>' +
             '</div>';

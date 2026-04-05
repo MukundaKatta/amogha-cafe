@@ -53,6 +53,11 @@ export function setSplitCount(n) {
     if (!modal) return;
 
     var total = parseFloat(modal.dataset.total) || 0;
+    if (total <= 0) {
+        var rd = document.getElementById('split-result');
+        if (rd) rd.innerHTML = '<div style="color:#e74c3c;text-align:center;padding:1rem">Invalid order total. Please try again.</div>';
+        return;
+    }
     var orderId = modal.dataset.orderId || '';
     // Use floor to avoid overpayment; first person pays any remainder
     var perPerson = Math.floor(total / n);
@@ -79,7 +84,7 @@ export function setSplitCount(n) {
         for (var i = 0; i < n; i++) {
             var label = i === 0 ? 'You' : 'Person ' + (i + 1);
             var personAmount = i === 0 ? firstPersonPays : perPerson;
-            var upiLink = 'upi://pay?pa=' + upiId + '&pn=Amogha%20Cafe&am=' + personAmount + '&tn=Split%20Bill%20' + orderId.slice(-6);
+            var upiLink = 'upi://pay?pa=' + encodeURIComponent(upiId) + '&pn=' + encodeURIComponent('Amogha Cafe') + '&am=' + personAmount + '&tn=' + encodeURIComponent('Split Bill ' + orderId.slice(-6));
             html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.05)">' +
                 '<span style="font-size:0.85rem">' + label + '</span>' +
                 '<a href="' + upiLink + '" style="padding:0.3rem 0.8rem;background:linear-gradient(135deg,#D4A017,#B8860B);color:#1a0f08;border-radius:8px;font-weight:700;font-size:0.75rem;text-decoration:none">Pay Rs.' + personAmount + '</a>' +

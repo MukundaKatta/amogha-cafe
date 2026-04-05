@@ -524,8 +524,10 @@ export function updateSignInUI(user) {
 
 export function togglePassword(inputId, btn) {
     var input = document.getElementById(inputId);
+    if (!input || !btn) return;
     var eyeOpen = btn.querySelector('.eye-open');
     var eyeClosed = btn.querySelector('.eye-closed');
+    if (!eyeOpen || !eyeClosed) return;
     if (input.type === 'password') {
         input.type = 'text';
         eyeOpen.style.display = 'none';

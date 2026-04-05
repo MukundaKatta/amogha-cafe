@@ -524,6 +524,21 @@ function escHtml(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
 
+function showQrToast(msg, isError) {
+    var t = document.getElementById('qr-toast-msg');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'qr-toast-msg';
+        t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(30,24,16,.96);color:#ede2d2;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;max-width:90vw;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:opacity .3s';
+        document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.borderLeft = isError ? '3px solid #e74c3c' : '3px solid #D4A017';
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function() { t.style.opacity = '0'; }, 3000);
+}
+
 // ── Firebase Init ──────────────────────────────────────────────
 firebase.initializeApp({
     apiKey: "AIzaSyCM0LIBRVreGCYBknlk_xEXoomzM3JAVBw",
@@ -683,7 +698,7 @@ function renderCatTabs() {
     categories.forEach(function(cat) {
         var count = getCatCount(cat);
         html += '<div class="cat-tab' + (cat === activeCat ? ' active' : '') +
-                '" onclick="setCat(\'' + escHtml(cat) + '\',this)">' + escHtml(cat) +
+                '" onclick="setCat(' + JSON.stringify(cat) + ',this)">' + escHtml(cat) +
                 ' <span class="cat-count">(' + count + ')</span></div>';
     });
     document.getElementById('cat-tabs').innerHTML = html;
@@ -827,7 +842,7 @@ function renderMenu() {
         html += '<div class="section-title">' + escHtml(cat) + '</div>';
         grouped[cat].forEach(function(item) {
             var qty = getCartQty(item.name);
-            var escapedName = escHtml(item.name).replace(/'/g, "&#039;");
+            var jsName = JSON.stringify(item.name);
             var delay = Math.min(itemIndex * 40, 400);
             itemIndex++;
             html += '<div class="item-card" style="animation-delay:' + delay + 'ms">';
@@ -836,16 +851,16 @@ function renderMenu() {
             html += '<div class="item-name">' + escHtml(item.name);
             if (item.best) html += ' <span class="bestseller-tag">Bestseller</span>';
             html += '</div>';
-            html += '<div class="item-price">\u20B9' + item.price + '</div>';
+            html += '<div class="item-price">\u20B9' + Number(item.price || 0) + '</div>';
             html += '</div>';
             html += '<div class="item-right">';
             if (qty === 0) {
-                html += '<button class="add-btn" onclick="addToCart(\'' + escapedName + '\',' + item.price + ',this)">ADD</button>';
+                html += '<button class="add-btn" onclick="addToCart(' + jsName + ',' + Number(item.price || 0) + ',this)">ADD</button>';
             } else {
                 html += '<div class="qty-ctrl">';
-                html += '<button onclick="changeQty(\'' + escapedName + '\',-1)">&minus;</button>';
+                html += '<button onclick="changeQty(' + jsName + ',-1)">&minus;</button>';
                 html += '<span>' + qty + '</span>';
-                html += '<button onclick="changeQty(\'' + escapedName + '\',1)">+</button>';
+                html += '<button onclick="changeQty(' + jsName + ',1)">+</button>';
                 html += '</div>';
             }
             html += '</div></div>';
@@ -900,9 +915,10 @@ function placeOrder() {
     var phone = document.getElementById('co-phone').value.trim();
     var notes = document.getElementById('co-notes').value.trim();
 
-    if (!name) { alert('Please enter your name.'); return; }
+    if (!name) { showQrToast('Please enter your name.', true); return; }
+    if (name.length > 60) { showQrToast('Name is too long.', true); return; }
     if (!phone || !/^\d{10}$/.test(phone)) {
-        alert('Please enter a valid 10-digit phone number.');
+        showQrToast('Please enter a valid 10-digit phone number.', true);
         return;
     }
 
@@ -961,7 +977,7 @@ function placeOrder() {
         document.getElementById('loader').classList.remove('show');
         btn.disabled = false;
         btn.textContent = 'Place Order';
-        alert('Failed to place order. Please try again.\n' + err.message);
+        showQrToast('Failed to place order. Please try again.', true);
         console.error('Order error:', err);
     });
 }

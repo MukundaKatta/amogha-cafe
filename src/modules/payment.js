@@ -289,7 +289,7 @@ export function openCheckout() {
                     if (couponMsg) { couponMsg.textContent = ''; couponMsg.className = 'coupon-msg'; }
                     setupPayment();
                 }
-            }).catch(function() {});
+            }).catch(function(e) { console.error('Welcome bonus re-verify error:', e); });
         }
     } else {
         appliedCoupon = null;
@@ -366,15 +366,19 @@ export function switchPayTab(tab) {
 }
 
 export function validateAndPay() {
-    var name = document.getElementById('co-name').value.trim();
-    var phone = document.getElementById('co-phone').value.trim();
-    var address = document.getElementById('co-address').value.trim();
+    var nameEl = document.getElementById('co-name');
+    var phoneEl = document.getElementById('co-phone');
+    var addressEl = document.getElementById('co-address');
+    if (!nameEl || !phoneEl || !addressEl) { showAuthToast('Form error. Please refresh the page.'); return; }
+    var name = nameEl.value.trim();
+    var phone = phoneEl.value.trim();
+    var address = addressEl.value.trim();
     var isPickup = window._selectedOrderType === 'pickup';
     if (!name || !phone || (!isPickup && !address)) {
         showAuthToast('Please fill in all required fields.');
-        if (!name) document.getElementById('co-name').focus();
-        else if (!phone) document.getElementById('co-phone').focus();
-        else if (!isPickup) document.getElementById('co-address').focus();
+        if (!name) nameEl.focus();
+        else if (!phone) phoneEl.focus();
+        else if (!isPickup) addressEl.focus();
         return;
     }
     // Strict input validation
