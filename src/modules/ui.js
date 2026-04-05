@@ -1328,6 +1328,19 @@ export function initUI() {
         var declineBtn = document.getElementById('cookie-decline');
         if (!consent) return;
 
+        // Native apps (Capacitor iOS/Android) don't need a web cookie-consent
+        // banner — the app doesn't set third-party cookies and Apple App Store
+        // reviewers flag a visible consent banner as a web-like experience.
+        // Hide it entirely when running inside a Capacitor native wrapper.
+        var isNativeApp = !!(window.Capacitor &&
+            typeof window.Capacitor.isNativePlatform === 'function' &&
+            window.Capacitor.isNativePlatform());
+        if (isNativeApp) {
+            consent.style.display = 'none';
+            consent.setAttribute('aria-hidden', 'true');
+            return;
+        }
+
         var cookieChoice = safeGetItem('amogha-cookie-consent');
         if (cookieChoice) return; // Already responded
 
