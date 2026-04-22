@@ -270,7 +270,8 @@ export function submitReviews() {
         return;
     }
     batch.commit().then(function() {
-        document.getElementById('review-modal').style.display = 'none';
+        var reviewModal = document.getElementById('review-modal');
+        if (reviewModal) reviewModal.style.display = 'none';
         showAuthToast('Thank you for your review!');
         // Award 25 loyalty points for submitting a review
         var reviewUser = getCurrentUser();
@@ -1070,40 +1071,43 @@ export function getUpsellItems(cartItems) {
     return suggestions;
 }
 
-Object.assign(window, {
-    selectSpice,
-    moveCarousel: window.moveCarousel,
-    moveGallerySlide: window.moveGallerySlide,
-    closeLightbox: window.closeLightbox,
-    navigateLightbox: window.navigateLightbox,
-    openVideoLightbox,
-    closeVideoLightbox,
-    openReviewModal,
-    setReviewStar,
-    submitReviews,
-    scheduleReviewPrompt,
-    openComboModal: window.openComboModal,
-    closeComboModal: window.closeComboModal,
-    addComboToCart: window.addComboToCart,
-    getActiveHappyHour,
-    getRecommendations,
-    showRecommendations,
-    initVoiceOrdering,
-    toggleVoice,
-    showVoiceOverlay,
-    switchLanguage,
-    applyTranslations,
-    openReferralModal,
-    closeReferralModal,
-    generateReferralCode,
-    applyReferralAtSignup,
-    openMyOrders,
-    closeMyOrders,
-    reorderFromHistory,
-    loadDailySpecial,
-    initComboBuilder,
-    getUpsellItems
-});
+if (!window._featuresGlobalsSet) {
+    window._featuresGlobalsSet = true;
+    Object.assign(window, {
+        selectSpice,
+        moveCarousel: window.moveCarousel,
+        moveGallerySlide: window.moveGallerySlide,
+        closeLightbox: window.closeLightbox,
+        navigateLightbox: window.navigateLightbox,
+        openVideoLightbox,
+        closeVideoLightbox,
+        openReviewModal,
+        setReviewStar,
+        submitReviews,
+        scheduleReviewPrompt,
+        openComboModal: window.openComboModal,
+        closeComboModal: window.closeComboModal,
+        addComboToCart: window.addComboToCart,
+        getActiveHappyHour,
+        getRecommendations,
+        showRecommendations,
+        initVoiceOrdering,
+        toggleVoice,
+        showVoiceOverlay,
+        switchLanguage,
+        applyTranslations,
+        openReferralModal,
+        closeReferralModal,
+        generateReferralCode,
+        applyReferralAtSignup,
+        openMyOrders,
+        closeMyOrders,
+        reorderFromHistory,
+        loadDailySpecial,
+        initComboBuilder,
+        getUpsellItems
+    });
+}
 
 // ===== B3: WELCOME-BACK REORDER TOAST =====
 export function showReorderToast() {

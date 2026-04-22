@@ -93,11 +93,14 @@ function findMatchingItems(mood) {
         });
 
         if (score > 0) {
+            var priceBtn = card.querySelector('.add-to-cart');
+            var price = priceBtn ? priceBtn.dataset.price : '0';
             matches.push({
                 element: card,
                 name: name,
                 score: score,
-                id: card.dataset.id || card.dataset.itemId
+                id: card.dataset.id || card.dataset.itemId,
+                price: price
             });
         }
     });
@@ -127,7 +130,7 @@ function showMoodResults(mood) {
                     matches.map(function(m) {
                         return '<div class="mood-result-item" data-id="' + (m.id || '') + '">' +
                             '<span class="mood-result-name">' + escapeHtml(m.name) + '</span>' +
-                            '<button class="mood-add-btn" data-item="' + escapeHtml(m.id || m.name) + '">+ Add</button>' +
+                            '<button class="mood-add-btn" data-item="' + escapeHtml(m.id || m.name) + '" data-price="' + escapeHtml(m.price) + '">+ Add</button>' +
                         '</div>';
                     }).join('')
                 :
@@ -160,8 +163,9 @@ function showMoodResults(mood) {
     overlay.querySelectorAll('.mood-add-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var itemId = btn.dataset.item;
+            var itemPrice = btn.dataset.price || '0';
             if (typeof window.addToCart === 'function') {
-                window.addToCart(itemId);
+                window.addToCart(itemId, itemPrice, btn);
             }
             btn.textContent = '✓ Added';
             btn.disabled = true;

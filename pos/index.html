@@ -1568,7 +1568,7 @@ function sendWhatsAppBill() {
         ph = prompt('Enter customer phone number (10 digits):');
         if (!ph) return;
         ph = ph.replace(/\D/g,'');
-        if (ph.length !== 10) { document.getElementById('pos-toast').textContent = 'Please enter a valid 10-digit number'; document.getElementById('pos-toast').classList.add('show'); setTimeout(function(){document.getElementById('pos-toast').classList.remove('show')},2500); return; }
+        if (ph.length !== 10) { showToast('Please enter a valid 10-digit number'); return; }
         phoneWasNew = true;
     }
     if (ph.length === 10) {
@@ -1834,7 +1834,7 @@ function startRecentOrdersListener() {
         .limit(50)
         .onSnapshot(function(snap) {
             recentOrders = [];
-            snap.forEach(function(doc) { recentOrders.push({ id: doc.id, ...doc.data() }); });
+            snap.forEach(function(doc) { recentOrders.push(Object.assign({}, doc.data(), { id: doc.id })); });
             renderRecentOrders();
         }, function(err) { console.error('Recent orders error:', err); });
 }

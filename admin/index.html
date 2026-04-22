@@ -2837,7 +2837,7 @@
                     <div class="exp-bill-upload-area" onclick="document.getElementById('exp-bill-input').click()">
                         <div style="color:var(--text-dim);font-size:0.82rem">📷 Click to upload bill image or PDF</div>
                         <div style="color:var(--text-dim);font-size:0.72rem;margin-top:0.2rem">JPG, PNG, WebP or PDF · max 2MB</div>
-                        <img id="exp-bill-preview" src="" alt="Bill preview">
+                        <img id="exp-bill-preview" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Bill preview">
                         <div id="exp-pdf-indicator" style="display:none;color:var(--gold);font-size:0.82rem;margin-top:0.5rem"></div>
                     </div>
                     <input type="file" id="exp-bill-input" accept="image/jpeg,image/png,image/webp,application/pdf" style="display:none" onchange="handleExpBillSelect()">
@@ -3247,7 +3247,7 @@
             <div class="mac-image-section" style="margin-top:0.5rem;">
                 <label class="mac-img-upload-btn" for="menu-item-image" style="display:inline-flex;margin-bottom:0.4rem;">&#128247; Attach Image (optional)</label>
                 <input type="file" id="menu-item-image" accept="image/jpeg,image/png,image/webp" style="display:none">
-                <img id="new-item-img-preview" src="" alt="" loading="lazy" style="display:none;width:100%;max-height:100px;object-fit:cover;border-radius:8px;margin-top:0.4rem;border:1px solid rgba(212,160,23,0.12);">
+                <img id="new-item-img-preview" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" loading="lazy" style="display:none;width:100%;max-height:100px;object-fit:cover;border-radius:8px;margin-top:0.4rem;border:1px solid rgba(212,160,23,0.12);">
             </div>
             <button class="add-special-confirm" onclick="addMenuItem()">Add to Menu</button>
         </div>
@@ -3838,7 +3838,7 @@
                         '<span class="payment">' + escHtml(order.payment || 'N/A') + '</span>' +
                     '</div>' +
                     '<div class="order-actions">' +
-                        '<select data-order-id="' + escHtml(order.id) + '" onchange="updateStatus(this.dataset.orderId, this.value, \'' + escHtml(order.customer || '') + '\', \'' + waPhone + '\')">' +
+                        '<select data-order-id="' + escHtml(order.id) + '" data-customer="' + escHtml(order.customer || '') + '" data-phone="' + escHtml(waPhone) + '" onchange="updateStatus(this.dataset.orderId, this.value, this.dataset.customer, this.dataset.phone)">' +
                             '<option value="pending"' + (order.status === 'pending' ? ' selected' : '') + '>Pending</option>' +
                             '<option value="confirmed"' + (order.status === 'confirmed' ? ' selected' : '') + '>Confirmed</option>' +
                             '<option value="preparing"' + (order.status === 'preparing' ? ' selected' : '') + '>Preparing</option>' +

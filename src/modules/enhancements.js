@@ -25,6 +25,7 @@ export function initOpenStatus() {
         var isOpen = t >= open && t < close;
         var dot = badge.querySelector('.status-dot');
         var text = badge.querySelector('.status-text');
+        if (!dot || !text) return;
 
         if (isOpen) {
             badge.classList.add('is-open');
@@ -141,10 +142,12 @@ export function initCookieConsent() {}
 
 
 // ── Newsletter ──
-window.submitNewsletter = function () {
-    var email = document.getElementById('newsletter-email').value.trim();
-    var msg = document.getElementById('newsletter-msg');
-    if (!email) return;
+window.submitNewsletter = function (emailId, msgId) {
+    var emailEl = document.getElementById(emailId || 'newsletter-email');
+    if (!emailEl) return;
+    var email = emailEl.value.trim();
+    var msg = document.getElementById(msgId || 'newsletter-msg');
+    if (!email || !msg) return;
 
     // Validate email format
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
@@ -163,9 +166,12 @@ window.submitNewsletter = function () {
 
     msg.textContent = 'You\'re in! Watch your inbox for delicious updates.';
     msg.style.color = '#22c55e';
-    document.getElementById('newsletter-email').value = '';
-    document.getElementById('newsletter-form').querySelector('button').textContent = 'Subscribed!';
-    document.getElementById('newsletter-form').querySelector('button').disabled = true;
+    emailEl.value = '';
+    var formEl = emailEl.closest('form');
+    if (formEl) {
+        var btn = formEl.querySelector('button');
+        if (btn) { btn.textContent = 'Subscribed!'; btn.disabled = true; }
+    }
 };
 
 

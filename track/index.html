@@ -252,6 +252,13 @@
             background:radial-gradient(ellipse at 50% 80%,rgba(212,160,23,.04),transparent 60%);
             pointer-events:none;
         }
+        .status-card.st-ready{border-color:rgba(245,166,35,.15);box-shadow:var(--shadow-m),0 0 30px rgba(245,166,35,.06)}
+        .status-card.st-ready .status-text{color:#f5a623}
+        .status-card.st-ready::after{
+            content:'';position:absolute;inset:0;border-radius:var(--r);
+            background:radial-gradient(ellipse at 50% 80%,rgba(245,166,35,.04),transparent 60%);
+            pointer-events:none;
+        }
         .status-card.st-delivered{border-color:rgba(46,204,113,.15);box-shadow:var(--shadow-m),0 0 30px rgba(46,204,113,.06)}
         .status-card.st-delivered .status-text{color:var(--grn)}
         .status-card.st-delivered::after{
@@ -900,8 +907,8 @@
             icon: '🍽️',
             iconClass: 'bounce',
             text: 'Food is ready!',
-            sub: 'A delivery partner will pick it up shortly.',
-            cardClass: 'st-delivered'
+            sub: 'Your order is ready for pickup or will be served shortly.',
+            cardClass: 'st-ready'
         },
         'out_for_delivery': {
             icon: '🛵',
@@ -1393,6 +1400,7 @@
     window.addEventListener('beforeunload', function() {
         if (timerInterval) clearInterval(timerInterval);
         if (prepCountdownInterval) clearInterval(prepCountdownInterval);
+        if (typeof unsubscribe === 'function') unsubscribe();
     });
 
     // Start

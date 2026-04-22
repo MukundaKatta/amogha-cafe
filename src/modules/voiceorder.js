@@ -170,7 +170,7 @@ function processVoiceCommand(text) {
         if (found) {
             speak('Adding ' + found.name + ' to your cart.');
             if (typeof window.addToCart === 'function') {
-                window.addToCart(found.id || found.name);
+                window.addToCart(found.name, found.price || '0', found.element ? found.element.querySelector('.add-to-cart') : null);
             }
         } else {
             speak('Sorry, I couldn\'t find ' + itemName + ' on the menu. Try saying it differently.');
@@ -255,7 +255,9 @@ function findMenuItem(name) {
         var score = similarity(name.toLowerCase(), cardName.toLowerCase());
         if (score > bestScore && score > 0.3) {
             bestScore = score;
-            bestMatch = { name: cardName, id: card.dataset.id || card.dataset.itemId, element: card };
+            var priceBtn = card.querySelector('.add-to-cart');
+            var price = priceBtn ? priceBtn.dataset.price : '0';
+            bestMatch = { name: cardName, id: card.dataset.id || card.dataset.itemId, element: card, price: price };
         }
     });
 

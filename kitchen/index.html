@@ -652,7 +652,7 @@
         }
         @supports(padding: env(safe-area-inset-top)) {
             .hdr { padding-top: max(0.4rem, env(safe-area-inset-top)); }
-            .toast-container { bottom: max(1rem, env(safe-area-inset-bottom)); }
+            .toasts { bottom: max(1rem, env(safe-area-inset-bottom)); }
         }
 
         @media print{
@@ -1513,7 +1513,7 @@ function close86Modal(){E.m86.classList.remove('open');}
 function closeAll(){E.scov.classList.remove('open');close86Modal();closeRecipe();if(E.hpanel.classList.contains('open'))toggleHist();if(chatOpen)toggleChat();if(staffOpen)toggleStaff();if(invOpen)toggleInv();if(tblOpen)toggleTbl();if(rptOpen)toggleRpt();if(E.sbar.classList.contains('open'))toggleSearch();if(curView==='analytics'||curView==='batch')setView('board');wakeSS();}
 
 // === UTILS ===
-function todayISO(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+'T00:00:00.000Z';}
+function todayISO(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+'T00:00:00';}
 function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
 // === STATION TAGS ===

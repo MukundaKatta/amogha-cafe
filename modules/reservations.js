@@ -136,7 +136,7 @@ export function submitReservation() {
     };
     db.collection('reservations').add(resData).then(function(docRef) {
         var form = document.getElementById('reservation-form');
-        var displayDate = new Date(date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+        var displayDate = new Date(date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
         var displayTime = time;
         var h = parseInt(time.split(':')[0]);
         var mn = time.split(':')[1];
