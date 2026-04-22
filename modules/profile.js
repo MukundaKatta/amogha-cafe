@@ -125,8 +125,11 @@ export function saveProfile() {
     var user = getCurrentUser();
     if (!user) return;
 
-    var name = document.getElementById('profile-name').value.trim();
-    var dob = document.getElementById('profile-dob').value;
+    var nameEl = document.getElementById('profile-name');
+    var dobEl = document.getElementById('profile-dob');
+    if (!nameEl || !dobEl) return;
+    var name = nameEl.value.trim();
+    var dob = dobEl.value;
 
     // Gather dietary preferences
     var dietaryPrefs = [];

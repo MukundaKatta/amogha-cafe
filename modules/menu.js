@@ -585,7 +585,8 @@ function applyAllergenFilters() {
     });
 
     // Update count
-    var visible = document.querySelectorAll('.menu-item-card[style=""], .menu-item-card:not([style])').length;
+    var visible = 0;
+    cards.forEach(function(c) { if (c.style.display !== 'none') visible++; });
     var total = cards.length;
     if (activeAllergenFilters.length > 0 && visible < total) {
         showFilterCount(visible, total);

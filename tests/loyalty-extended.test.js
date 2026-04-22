@@ -17,6 +17,11 @@ function setupDOM(html) {
     document.querySelector = (sel) => document.body.querySelector(sel);
 }
 
+// Helper: format a Date as local YYYY-MM-DD (matches the module's date format)
+function toLocalDateStr(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // awardLoyaltyPoints
 // ═══════════════════════════════════════════════════════════════════════════
@@ -78,8 +83,8 @@ describe('awardLoyaltyPoints', () => {
             phone: '1234567890',
             loyaltyPoints: 0,
             orderDates: [
-                dayBefore.toISOString().split('T')[0],
-                yesterday.toISOString().split('T')[0],
+                toLocalDateStr(dayBefore),
+                toLocalDateStr(yesterday),
             ],
         });
 
@@ -94,7 +99,7 @@ describe('awardLoyaltyPoints', () => {
         for (let i = 35; i >= 1; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
-            dates.push(d.toISOString().split('T')[0]);
+            dates.push(toLocalDateStr(d));
         }
         setCurrentUser({ name: 'Test', phone: '1234567890', loyaltyPoints: 0, orderDates: dates });
         awardLoyaltyPoints(100);
@@ -484,17 +489,17 @@ describe('awardLoyaltyPoints — date tracking (line 21)', () => {
             name: 'Date Push User',
             phone: '1234567890',
             loyaltyPoints: 0,
-            orderDates: [yesterday.toISOString().split('T')[0]],
+            orderDates: [toLocalDateStr(yesterday)],
         });
         awardLoyaltyPoints(100);
         const user = getCurrentUser();
-        const today = new Date().toISOString().split('T')[0];
+        const today = toLocalDateStr(new Date());
         expect(user.orderDates).toContain(today);
         expect(user.orderDates.length).toBe(2);
     });
 
     it('does NOT push today when last date is already today', () => {
-        const today = new Date().toISOString().split('T')[0];
+        const today = toLocalDateStr(new Date());
         setCurrentUser({
             name: 'No Dup Date User',
             phone: '1234567890',
@@ -503,7 +508,8 @@ describe('awardLoyaltyPoints — date tracking (line 21)', () => {
         });
         awardLoyaltyPoints(100);
         const user = getCurrentUser();
-        const todayCount = user.orderDates.filter((d) => d === today).length;
+        const todayLocal = toLocalDateStr(new Date());
+        const todayCount = user.orderDates.filter((d) => d === todayLocal).length;
         expect(todayCount).toBe(1);
     });
 
@@ -516,7 +522,7 @@ describe('awardLoyaltyPoints — date tracking (line 21)', () => {
         });
         awardLoyaltyPoints(100);
         const user = getCurrentUser();
-        const today = new Date().toISOString().split('T')[0];
+        const today = toLocalDateStr(new Date());
         expect(user.orderDates).toContain(today);
     });
 });
@@ -551,7 +557,7 @@ describe('awardLoyaltyPoints — 3 consecutive days 2x bonus (line 29)', () => {
             name: 'Streak Bonus',
             phone: '1234567890',
             loyaltyPoints: 0,
-            orderDates: [d1.toISOString().split('T')[0], d2.toISOString().split('T')[0]],
+            orderDates: [toLocalDateStr(d1), toLocalDateStr(d2)],
         });
         awardLoyaltyPoints(200); // 200/10=20, 2x=40
         expect(getCurrentUser().loyaltyPoints).toBe(40);
@@ -568,7 +574,7 @@ describe('awardLoyaltyPoints — 3 consecutive days 2x bonus (line 29)', () => {
             name: 'No Streak',
             phone: '1234567890',
             loyaltyPoints: 0,
-            orderDates: [d1.toISOString().split('T')[0], d2.toISOString().split('T')[0]],
+            orderDates: [toLocalDateStr(d1), toLocalDateStr(d2)],
         });
         awardLoyaltyPoints(200); // 200/10=20, no 2x
         expect(getCurrentUser().loyaltyPoints).toBe(20);
@@ -582,7 +588,7 @@ describe('awardLoyaltyPoints — 3 consecutive days 2x bonus (line 29)', () => {
             name: 'Too Few',
             phone: '1234567890',
             loyaltyPoints: 0,
-            orderDates: [yesterday.toISOString().split('T')[0]],
+            orderDates: [toLocalDateStr(yesterday)],
         });
         awardLoyaltyPoints(200); // 200/10=20, only 2 dates
         expect(getCurrentUser().loyaltyPoints).toBe(20);
@@ -599,7 +605,7 @@ describe('awardLoyaltyPoints — 3 consecutive days 2x bonus (line 29)', () => {
             name: 'Streak Msg',
             phone: '1234567890',
             loyaltyPoints: 0,
-            orderDates: [d1.toISOString().split('T')[0], d2.toISOString().split('T')[0]],
+            orderDates: [toLocalDateStr(d1), toLocalDateStr(d2)],
         });
         awardLoyaltyPoints(100);
         const toast = document.getElementById('auth-toast');

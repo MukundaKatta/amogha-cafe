@@ -106,7 +106,7 @@ function displayWeatherWidget(condition, temp) {
             '<p class="weather-banner">' + rec.banner + '</p>' +
             '<div class="weather-items">' +
             rec.items.map(function(item) {
-                return '<button class="weather-item-chip" onclick="scrollToMenuItem(\'' + item + '\')">' + item + '</button>';
+                return '<button class="weather-item-chip" onclick="scrollToMenuItem(\'' + item.replace(/'/g, "\\'") + '\')">' + item + '</button>';
             }).join('') +
             '</div>' +
         '</div>';

@@ -240,7 +240,7 @@ export function confirmAddonSelection() {
     selectedAddons.length = 0;
     var overlay = document.getElementById('addon-picker-overlay');
     if (overlay) overlay.style.display = 'none';
-    finalizeAddToCart(item.name, item.price, item.spiceLevel, addons);
+    finalizeAddToCart(item.name, item.price, item.spiceLevel, addons, item.btnEl);
 }
 
 function showCartCheckmark(btnEl) {
