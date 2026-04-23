@@ -651,7 +651,7 @@ export function placeOrderToFirestore(payMethod, paymentRef, paymentStatus) {
             var gcDeduction = Math.min(appliedGiftCard.balance, preGcTotal);
             var fvGc = getFieldValue();
             if (fvGc) {
-                db.collection('giftcards').doc(appliedGiftCard.code).update({
+                db.collection('giftCards').doc(appliedGiftCard.code).update({
                     balance: fvGc.increment(-gcDeduction),
                     redeemedAt: new Date().toISOString()
                 }).catch(function(e) { console.error('Gift card deduction error:', e); });
