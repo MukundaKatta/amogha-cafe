@@ -214,7 +214,7 @@ test('home page renders core UI', async ({ page }) => {
     await expect(page.locator('header')).toBeVisible();
     await expect(page.locator('#signin-btn')).toBeVisible();
     await expect(page.locator('#cart-icon')).toBeVisible();
-    await expect(page.locator('#menu')).toBeVisible();
+    await expect(page.locator('#home')).toBeVisible();
 });
 
 test('cart flow opens checkout and redirects unauthenticated user to auth modal', async ({ page }) => {
@@ -241,7 +241,7 @@ test('auth modal switches between signup and signin views', async ({ page }) => 
 });
 
 test('veg filter button is clickable', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/menu/');
     const vegBtn = page.locator('button:has-text("Veg"), .filter-btn:has-text("Veg")').first();
     await expect(vegBtn).toBeVisible({ timeout: 10000 });
     await vegBtn.click();
@@ -623,6 +623,8 @@ test('profile modal saves user preferences and addresses', async ({ page }) => {
     });
     await setSignedInUser(page, { name: 'Profile User', phone: '9000000005', pin: '1234', usedWelcomeBonus: true });
     await page.goto('/');
+    // profile.js is dynamically imported — wait for its window export to be ready
+    await page.waitForFunction(() => typeof window.openProfileModal === 'function', { timeout: 15000 });
     await page.evaluate(() => window.openProfileModal());
     await expect(page.locator('#profile-modal')).toBeVisible();
     await page.evaluate(() => {
@@ -675,9 +677,7 @@ test('group ordering and subscriptions complete main interactions', async ({ pag
     });
     await setSignedInUser(page, { name: 'Group User', phone: '9000000007', pin: '1234', usedWelcomeBonus: true });
     await page.goto('/');
-    // Scroll menu into view to trigger lazy-loaded modules (group.js loads via loadOnVisible)
-    await page.locator('#menu, #dynamic-menu-container').first().scrollIntoViewIfNeeded().catch(() => {});
-    // group.js is dynamically imported — wait for its window exports to be available
+    // group.js is dynamically imported via main.js loadOnVisible fallback (1500ms) — wait for its window exports
     await page.waitForFunction(() => typeof window.createGroupCart === 'function', { timeout: 15000 });
     await page.evaluate(() => window.createGroupCart());
     await expect(page.locator('#group-modal')).toBeVisible();
@@ -708,8 +708,8 @@ test('badges, split bill and meal planner modals render correctly', async ({ pag
         badges: [{ badgeId: 'first_bite', earnedAt: '2025-01-01T00:00:00.000Z' }]
     });
     await page.goto('/');
-    // Scroll menu into view to trigger lazy-loaded modules
-    await page.locator('#menu, #dynamic-menu-container').first().scrollIntoViewIfNeeded().catch(() => {});
+    // Wait for lazy-loaded modules (splitbill, subscriptions, etc.) — fallback timer is 1500ms
+    await page.waitForFunction(() => typeof window.openSplitBill === 'function', { timeout: 15000 });
     await page.click('button[title="My Badges"]');
     await expect(page.locator('#badge-gallery-modal')).toHaveClass(/show/);
 

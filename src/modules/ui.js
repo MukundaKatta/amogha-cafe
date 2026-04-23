@@ -216,12 +216,11 @@ export function initUI() {
                 unlockScroll();
             }
         }
+        // Single click handler — touch devices synthesize click, so adding a
+        // separate touchend listener would toggle twice (open then immediately
+        // close) on every tap. Rely on `touch-action: manipulation` in CSS
+        // for snappy mobile response.
         mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-        // Also handle touchend for more reliable mobile response
-        mobileMenuToggle.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            toggleMobileMenu(e);
-        }, { passive: false });
 
         if (mobileMenuOverlay) {
             mobileMenuOverlay.addEventListener('click', closeMobileMenu);
@@ -239,10 +238,11 @@ export function initUI() {
                     mobileMenuToggle.setAttribute('aria-expanded', 'false');
                     return;
                 }
-                if (href && href.startsWith('#')) {
+                if (href && href.startsWith('#') && href.length > 1) {
                     e.preventDefault();
                     closeMobileMenu(true);
-                    var target = document.querySelector(href);
+                    var target = null;
+                    try { target = document.querySelector(href); } catch (_) {}
                     if (target && typeof target.scrollIntoView === 'function') {
                         setTimeout(function() {
                             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -259,9 +259,12 @@ export function initUI() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             if (this.id === 'cart-icon') return;
-            e.preventDefault();
             var href = this.getAttribute('href');
-            const target = document.querySelector(href);
+            // Skip empty "#" hrefs — not a valid selector and nothing to scroll to
+            if (!href || href === '#') return;
+            e.preventDefault();
+            var target = null;
+            try { target = document.querySelector(href); } catch (_) {}
             if (target && typeof target.scrollIntoView === 'function') {
                 closeMobileMenu(true);
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -274,9 +277,10 @@ export function initUI() {
 
     // Handle browser back/forward button for hash changes
     window.addEventListener('popstate', function() {
-        if (window.location.hash) {
-            var cleanHash = window.location.hash.split('?')[0];
-            var target = cleanHash.length > 1 ? document.querySelector(cleanHash) : null;
+        var h = (window.location.hash || '').split('?')[0];
+        if (h && h.length > 1) {
+            var target = null;
+            try { target = document.querySelector(h); } catch (_) {}
             if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1249,7 +1253,10 @@ export function initUI() {
     // If URL has a hash (e.g. /#menu), scroll to that section after preloader finishes
     if (window.location.hash) {
         var cleanLoadHash = window.location.hash.split('?')[0];
-        var hashTarget = cleanLoadHash.length > 1 ? document.querySelector(cleanLoadHash) : null;
+        var hashTarget = null;
+        if (cleanLoadHash.length > 1) {
+            try { hashTarget = document.querySelector(cleanLoadHash); } catch (_) {}
+        }
         if (hashTarget) {
             // Delay to let preloader finish and layout settle
             setTimeout(function() {

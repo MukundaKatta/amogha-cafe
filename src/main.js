@@ -67,12 +67,14 @@ deferInit(function() {
     import('./modules/badges.js');
 });
 
-// Safe dynamic import helper — logs failures gracefully without crashing the app
-function safeImport(path, initFn) {
-    return import(path).then(function(m) {
+// Safe dynamic import helper — logs failures gracefully without crashing the app.
+// IMPORTANT: takes a pre-built import() promise so Vite can statically analyze
+// the module specifier (dynamic string paths break chunk resolution in production).
+function safeInit(importPromise, label, initFn) {
+    return importPromise.then(function(m) {
         if (initFn && typeof m[initFn] === 'function') m[initFn]();
     }).catch(function(err) {
-        console.error('[Amogha] Module load failed: ' + path, err.message || err);
+        console.error('[Amogha] Module load failed: ' + label, err.message || err);
     });
 }
 
@@ -117,16 +119,16 @@ loadOnVisible(['menu', 'dynamic-menu-container'], function() {
     initOrderAgainSection();
 
     // Group ordering, chatbot, splitbill, subscriptions — separate chunks
-    safeImport('./modules/group.js', 'initGroupOrdering');
-    safeImport('./modules/chatbot.js', 'initChatbot');
-    safeImport('./modules/splitbill.js');
-    safeImport('./modules/subscriptions.js');
+    safeInit(import('./modules/group.js'), 'group', 'initGroupOrdering');
+    safeInit(import('./modules/chatbot.js'), 'chatbot', 'initChatbot');
+    safeInit(import('./modules/splitbill.js'), 'splitbill');
+    safeInit(import('./modules/subscriptions.js'), 'subscriptions');
 
     // Enhancements — open/closed status, social proof, cookie consent, tilt, search suggestions
-    safeImport('./modules/enhancements.js', 'initEnhancements');
+    safeInit(import('./modules/enhancements.js'), 'enhancements', 'initEnhancements');
 
     // Premium interactions — scroll reveals, ripple effects, accessibility
-    safeImport('./modules/premium.js', 'initPremium');
+    safeInit(import('./modules/premium.js'), 'premium', 'initPremium');
 }, 1500);
 
 // Show reorder toast once auth is likely ready — use idle callback instead of fixed delay
@@ -140,37 +142,37 @@ deferReorder(function() {
 // --- Tier 2: Engagement features (loaded when gallery/reviews section nears viewport or after 2.5s) ---
 loadOnVisible(['reviews', 'gallery', 'menu'], function() {
     // Engagement world-class features
-    safeImport('./modules/challenges.js', 'initChallenges');
-    safeImport('./modules/spinwheel.js', 'initSpinWheel');
-    safeImport('./modules/secretmenu.js', 'initSecretMenu');
-    safeImport('./modules/feedback.js', 'initFeedback');
-    safeImport('./modules/socialshare.js', 'initSocialShare');
-    safeImport('./modules/polls.js', 'initPolls');
-    safeImport('./modules/milestones.js');
-    safeImport('./modules/ordertracker.js', 'initOrderTracker');
+    safeInit(import('./modules/challenges.js'), 'challenges', 'initChallenges');
+    safeInit(import('./modules/spinwheel.js'), 'spinwheel', 'initSpinWheel');
+    safeInit(import('./modules/secretmenu.js'), 'secretmenu', 'initSecretMenu');
+    safeInit(import('./modules/feedback.js'), 'feedback', 'initFeedback');
+    safeInit(import('./modules/socialshare.js'), 'socialshare', 'initSocialShare');
+    safeInit(import('./modules/polls.js'), 'polls', 'initPolls');
+    safeInit(import('./modules/milestones.js'), 'milestones');
+    safeInit(import('./modules/ordertracker.js'), 'ordertracker', 'initOrderTracker');
 
     // Seasonal theme + weather
-    safeImport('./modules/seasonal.js', 'initSeasonal');
-    safeImport('./modules/weather.js', 'initWeather');
+    safeInit(import('./modules/seasonal.js'), 'seasonal', 'initSeasonal');
+    safeInit(import('./modules/weather.js'), 'weather', 'initWeather');
 }, 2500);
 
 // --- Tier 3: World-class features Phase 12 (loaded on scroll engagement or after 3.5s) ---
 loadOnVisible(['gallery', 'footer', 'contact'], function() {
-    safeImport('./modules/stories.js', 'initStories');
-    safeImport('./modules/moodorder.js', 'initMoodOrder');
-    safeImport('./modules/livequeue.js', 'initLiveQueue');
-    safeImport('./modules/streaks.js', 'initStreaks');
-    safeImport('./modules/giftcards.js', 'initGiftCards');
-    safeImport('./modules/referral.js', 'initReferral');
-    safeImport('./modules/musicplayer.js', 'initMusicPlayer');
-    safeImport('./modules/arpreview.js', 'initARPreview');
-    safeImport('./modules/voiceorder.js', 'initVoiceOrder');
-    safeImport('./modules/geofence.js', 'initGeofence');
+    safeInit(import('./modules/stories.js'), 'stories', 'initStories');
+    safeInit(import('./modules/moodorder.js'), 'moodorder', 'initMoodOrder');
+    safeInit(import('./modules/livequeue.js'), 'livequeue', 'initLiveQueue');
+    safeInit(import('./modules/streaks.js'), 'streaks', 'initStreaks');
+    safeInit(import('./modules/giftcards.js'), 'giftcards', 'initGiftCards');
+    safeInit(import('./modules/referral.js'), 'referral', 'initReferral');
+    safeInit(import('./modules/musicplayer.js'), 'musicplayer', 'initMusicPlayer');
+    safeInit(import('./modules/arpreview.js'), 'arpreview', 'initARPreview');
+    safeInit(import('./modules/voiceorder.js'), 'voiceorder', 'initVoiceOrder');
+    safeInit(import('./modules/geofence.js'), 'geofence', 'initGeofence');
 }, 3500);
 
 // --- Tier 4: World-class Phase 13 (loaded deep in page or after 5s) ---
 loadOnVisible(['footer', 'contact', 'gallery'], function() {
-    safeImport('./modules/worldclass2.js', 'initWorldClass2');
+    safeInit(import('./modules/worldclass2.js'), 'worldclass2', 'initWorldClass2');
 }, 5000);
 
 // AI For You recommendations — use requestIdleCallback since it's truly non-critical

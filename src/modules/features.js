@@ -1541,6 +1541,8 @@ export async function initAiForYou() {
                 isVegOnly: user && (user.dietaryPrefs || []).includes('Vegetarian')
             })
         });
+        // Cloud Function may be unavailable in local preview / offline — hide section silently
+        if (!resp.ok) { section.style.display = 'none'; return; }
         var data = await resp.json();
         if (data.recommendations && data.recommendations.length > 0) {
             renderAiForYou(section, container, data.recommendations);

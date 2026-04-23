@@ -1225,6 +1225,7 @@ describe('initAiForYou', () => {
         localStorage.setItem('ai_recommendations', JSON.stringify({ ts: Date.now() - 2000000, data: [] }));
         setupDOM('<div id="ai-for-you"><div id="ai-for-you-cards"></div></div>');
         global.fetch = vi.fn(() => Promise.resolve({
+            ok: true,
             json: () => Promise.resolve({ recommendations: [{ name: 'Dal Tadka', price: 149, reason: 'Light meal' }] })
         }));
         await initAiForYou();
