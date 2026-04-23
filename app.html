@@ -1247,6 +1247,17 @@
                 <p id="signin-msg" class="auth-msg"></p>
                 <p class="forgot-password-link"><a href="#" onclick="event.preventDefault(); switchAuthView('forgot')">Forgot PIN?</a></p>
                 <p class="auth-switch">New here? <a href="#" onclick="event.preventDefault(); switchAuthView('signup')">Create Account</a></p>
+                <!-- Apple 5.1.1(v): apps that let users create accounts must
+                     offer an in-app deletion mechanism. A pre-filled email to
+                     support is an acceptable path per Apple's App Review
+                     guidelines. -->
+                <p class="delete-account-link" style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(0,0,0,0.08);font-size:13px;text-align:center;">
+                    <a
+                        href="mailto:hello@amoghahotels.com?subject=Account%20deletion%20request&body=Please%20permanently%20delete%20my%20Amogha%20account%20and%20all%20personal%20data%20linked%20to%20it.%20I%20understand%20this%20cannot%20be%20undone."
+                        style="color:#b91c1c;text-decoration:none;"
+                    >Delete my account</a>
+                    <span style="color:#9ca3af;display:block;margin-top:4px;font-size:11px;">Requests processed within 30 days</span>
+                </p>
             </div>
 
             <!-- Forgot Password View -->
