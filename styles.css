@@ -960,6 +960,15 @@ body.dark-mode .modal select {
 .cookie-consent[style*="display: none"], .cookie-consent[style*="display:none"] {
     pointer-events: none !important;
 }
+/* Hide the cookie consent banner and floating cart bar while any full-screen
+   modal is open so they cannot intercept clicks on cart/checkout/auth action
+   buttons sitting at the bottom of the modal viewport. */
+body.modal-open .cookie-consent,
+body.modal-open #floating-cart-bar,
+body.modal-open .floating-cart-bar {
+    display: none !important;
+    pointer-events: none !important;
+}
 @keyframes slideUpCookie {
     from { transform: translateY(100%); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }

@@ -27,12 +27,16 @@ async function waitForApp(page) {
     await page.waitForTimeout(800);
 }
 
-// Open cart modal directly (avoids nav visibility issues on mobile)
+// Open cart modal directly. Mirrors the cart-icon click handler
+// (displayCart + show + lockScroll) so `body.modal-open` is set and modal-aware
+// CSS (e.g. hiding the cookie-consent banner while a modal is open) applies.
 async function openCartDirect(page) {
     await page.evaluate(() => {
         window.displayCart();
         const cm = document.getElementById('cart-modal');
         if (cm) cm.style.display = 'block';
+        if (typeof window.lockScroll === 'function') window.lockScroll();
+        else document.body.classList.add('modal-open');
     });
     await expect(page.locator('#cart-modal')).toBeVisible({ timeout: 5000 });
 }
