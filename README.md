@@ -141,7 +141,7 @@ amogha-cafe/
 │   └── helpers/
 │
 ├── scripts/                   # Build and seeding utilities
-│   ├── prepare-ios.mjs        # iOS build preparation
+│   ├── prepare-ios.mjs        # Capacitor web bundle prep (used for iOS + Android)
 │   ├── build-kiosk.sh         # Kiosk-specific Android build
 │   ├── build-pos.sh           # POS-specific Android build
 │   ├── seed-menu.js           # Menu data seeder (57 items)

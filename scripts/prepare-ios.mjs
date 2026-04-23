@@ -1,5 +1,8 @@
-// Prepare ios-dist/ folder for Capacitor iOS build
-// Copies all web assets needed for the app into a clean directory
+// Prepare ios-dist/ folder for Capacitor (shared by iOS and Android builds).
+// Copies all web assets needed for the app into a clean directory.
+// Despite the filename, this is also invoked by build:android and the
+// release-android GitHub workflow, because capacitor.config.ts has
+// webDir: 'ios-dist' for both platforms.
 
 import { cpSync, mkdirSync, rmSync, existsSync, readFileSync, readdirSync } from 'fs';
 
