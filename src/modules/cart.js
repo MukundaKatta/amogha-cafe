@@ -43,14 +43,18 @@ export function loadCart() {
         const savedCart = safeGetItem('amoghaCart');
         if (savedCart) {
             var parsed = JSON.parse(savedCart);
+            if (!Array.isArray(parsed)) throw new Error('cart payload not an array');
             // Mutate in-place (never reassign the exported reference)
             cart.length = 0;
             parsed.forEach(function(item) { cart.push(item); });
             updateCartCount();
         }
-    } catch(e) {
-        console.error('Failed to load cart from storage:', e);
+    } catch(_) {
+        // Corrupt JSON / wrong shape — start fresh and clear the bad payload
+        // silently (corrupt persisted state is normal after migrations / abrupt
+        // browser kills; no value in surfacing it as a console error).
         cart.length = 0;
+        try { safeSetItem('amoghaCart', JSON.stringify([])); } catch (_) {}
     }
 }
 

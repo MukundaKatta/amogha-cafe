@@ -1337,6 +1337,18 @@
         }
 
         orderId = orderId.trim();
+        // Reject anything that isn't a Firestore-safe doc id (alphanumerics,
+        // dashes, underscores). A "/" turns it into a multi-segment path and
+        // Firestore throws "must have an even number of segments"; HTML/JS
+        // payloads slip through the existing trim() guard otherwise.
+        if (!/^[A-Za-z0-9_-]{1,128}$/.test(orderId)) {
+            showError(
+                '🔍',
+                'Order Not Found',
+                'We couldn\'t find an order with this ID. It may have been removed or the link may be incorrect.'
+            );
+            return;
+        }
         showLoading();
 
         // Load menu prep times for countdown display

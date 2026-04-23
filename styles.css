@@ -2560,6 +2560,12 @@ img[loading="lazy"] {
     color: #fff;
     font-size: 20px;
     cursor: pointer;
+    /* Comfortable touch-target on mobile (Apple HIG: ≥44×44) */
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 .seasonal-particle {
     position: absolute;
@@ -3170,4 +3176,13 @@ body.dark-mode .pin-dot.filled {
         transform: none;
         visibility: visible;
     }
+}
+
+/* ===== Touch-target sizing (WCAG 2.5.5 / Apple HIG: ≥44×44) =====
+   Icon-only nav buttons (cart) need explicit min-width so the SVG glyph
+   doesn't shrink the tap area to a 20-wide stripe on phones. */
+#cart-icon {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px;
 }

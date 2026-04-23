@@ -185,6 +185,21 @@ export function saveProfile() {
     }
 }
 
+// Snapshot every editable field so re-renders triggered by add/remove
+// address don't blow away the user's in-progress edits to name/DOB/dietary.
+function captureProfileEdits(user) {
+    var nameEl = document.getElementById('profile-name');
+    var dobEl = document.getElementById('profile-dob');
+    if (nameEl) user.name = nameEl.value.trim() || user.name;
+    if (dobEl) user.dob = dobEl.value || user.dob;
+    var dietary = [];
+    document.querySelectorAll('.profile-dietary-cb:checked').forEach(function(cb) { dietary.push(cb.value); });
+    if (dietary.length || document.querySelectorAll('.profile-dietary-cb').length) user.dietaryPrefs = dietary;
+    var allergens = [];
+    document.querySelectorAll('.profile-allergen-cb:checked').forEach(function(cb) { allergens.push(cb.value); });
+    if (allergens.length || document.querySelectorAll('.profile-allergen-cb').length) user.allergenAlerts = allergens;
+}
+
 export function addAddress() {
     var user = getCurrentUser();
     if (!user) return;
@@ -206,6 +221,8 @@ export function addAddress() {
         address: address
     });
 
+    // Preserve in-progress edits before the modal re-renders
+    captureProfileEdits(user);
     setCurrentUser(user);
 
     // Re-render the modal to show updated addresses
@@ -217,6 +234,7 @@ export function removeAddress(index) {
     if (!user || !user.savedAddresses) return;
 
     user.savedAddresses.splice(index, 1);
+    captureProfileEdits(user);
     setCurrentUser(user);
 
     // Re-render the modal to show updated addresses
