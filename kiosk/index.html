@@ -945,7 +945,7 @@
                 </div>
                 <div class="loyalty-redeem" id="loyalty-redeem" style="display:none">
                     <span class="loyalty-redeem-label" id="loyalty-redeem-label"></span>
-                    <button class="loyalty-redeem-toggle" id="loyalty-redeem-toggle" onclick="toggleLoyaltyRedeem()"></button>
+                    <button class="loyalty-redeem-toggle" id="loyalty-redeem-toggle" role="switch" aria-checked="false" aria-label="Redeem loyalty points" onclick="toggleLoyaltyRedeem()"></button>
                 </div>
             </div>
             <div class="recent-section" id="recent-section">
@@ -2291,6 +2291,7 @@ function toggleLoyaltyRedeem() {
     loyaltyRedeemActive = !loyaltyRedeemActive;
     var tog = document.getElementById('loyalty-redeem-toggle');
     tog.classList.toggle('on', loyaltyRedeemActive);
+    tog.setAttribute('aria-checked', loyaltyRedeemActive ? 'true' : 'false');
     openCheckout(); // Refresh totals
 }
 function awardPoints(phone, total) {

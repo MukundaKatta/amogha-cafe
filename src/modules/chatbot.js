@@ -45,7 +45,7 @@ export function initChatbot() {
             '</div>' +
             '<div class="ai-chat-input-area">' +
                 '<input type="text" id="ai-chat-input" placeholder="Ask me anything..." autocomplete="off" aria-label="Chat message">' +
-                '<button id="ai-chat-send" onclick="sendChatMessage()"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>' +
+                '<button id="ai-chat-send" onclick="sendChatMessage()" aria-label="Send message" title="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>' +
             '</div>' +
         '</div>';
     document.body.appendChild(modal);
