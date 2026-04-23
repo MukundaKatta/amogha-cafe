@@ -74,6 +74,11 @@
     .section-reveal{opacity:1!important;transform:none!important}
     </style>
     <link rel="stylesheet" href="styles.css?v=71" media="all" fetchpriority="high">
+    <!-- IMPORTANT: do not add a ?v= query string to the modulepreload or
+         the <script type="module"> tag below. Vite-built chunks import
+         "../script.js" (no query), so a versioned URL would make the
+         browser load and execute the entry module twice — duplicating
+         every event listener, init call, and observer. -->
     <link rel="modulepreload" href="/script.js">
     <!-- Non-critical CSS loaded async to improve LCP -->
     <link rel="stylesheet" href="enhancements.css?v=6" media="print" onload="this.media='all'">
@@ -1596,12 +1601,17 @@
     <script nomodule src="/script-legacy.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
+            // On first install the page has no controller, so `controllerchange`
+            // from the fresh SW would trigger an immediate reload — breaking
+            // every once-per-session init (event listeners, analytics, etc).
+            // Only reload when an *existing* controller is replaced.
+            var _hadController = !!navigator.serviceWorker.controller;
+            var _swRefreshing = false;
             navigator.serviceWorker.register('./sw.js').then(function(reg) {
                 reg.update();
             });
-            var _swRefreshing = false;
             navigator.serviceWorker.addEventListener('controllerchange', function() {
-                if (_swRefreshing) return;
+                if (!_hadController || _swRefreshing) return;
                 _swRefreshing = true;
                 window.location.reload();
             });

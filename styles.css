@@ -1604,6 +1604,11 @@ html { scroll-behavior: smooth; }
    ============================================================ */
 
 /* --- Premium Font Rendering --- */
+html {
+    /* Prevent horizontal scroll from off-screen fixed elements
+       (mobile-menu drawer, translated overlays, etc.). */
+    overflow-x: hidden;
+}
 body {
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -3109,4 +3114,51 @@ body.dark-mode .pin-dot.filled {
 #loyalty-widget {
     position: relative;
     flex-wrap: wrap;
+}
+
+/* ===== Tablet landscape (769-1024px): collapse nav to hamburger =====
+   The full desktop nav has too many items to fit at 1024px, causing
+   horizontal overflow. Reuse the mobile-menu hamburger pattern at
+   this range — use `right: -100%` instead of transform so the hidden
+   drawer contributes zero to body.scrollWidth. */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .mobile-menu-toggle {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #f0e0c0;
+        width: 44px;
+        height: 44px;
+        z-index: 1002;
+        position: relative;
+    }
+    .nav-links {
+        display: none !important;
+    }
+    .nav-links.active {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 360px;
+        max-width: 75vw;
+        height: 100vh;
+        height: 100dvh;
+        background: rgba(26, 15, 8, 0.98);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        flex-direction: column;
+        gap: 0;
+        padding: 6.5rem 2rem 2rem;
+        box-shadow: -5px 0 30px rgba(0, 0, 0, 0.5);
+        z-index: 1001;
+        border-left: 1px solid rgba(239, 179, 26, 0.1);
+        overflow-y: auto;
+        transform: none;
+        visibility: visible;
+    }
 }
