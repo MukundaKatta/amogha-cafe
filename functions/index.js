@@ -24,8 +24,21 @@ function timingSafeEqual(a, b) {
 }
 
 // SHA-256 hash helper for server-side PIN comparison
+// Salt is REQUIRED — no default. Use per-user random salts for user PINs,
+// or context-specific static salts ('kiosk', 'admin', 'delivery') for legacy auth.
 function hashValue(value, salt) {
-    return crypto.createHash('sha256').update(value + '_' + (salt || 'amogha_salt')).digest('hex');
+    if (!salt) throw new Error('hashValue requires an explicit salt');
+    return crypto.createHash('sha256').update(value + '_' + salt).digest('hex');
+}
+
+// Legacy hash using the old hardcoded salt — ONLY for migration/backwards compat
+function hashValueLegacy(value) {
+    return crypto.createHash('sha256').update(value + '_amogha_salt').digest('hex');
+}
+
+// Generate a cryptographically random salt for per-user PIN hashing
+function generateSalt() {
+    return crypto.randomBytes(16).toString('hex');
 }
 
 // ===== GEMINI AI HELPER =====

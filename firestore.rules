@@ -166,11 +166,13 @@ service cloud.firestore {
     // TODO: Move admin kiosk CRUD to Cloud Functions to fully lock this down
     // -------------------------------------------------------------------------
     // KIOSKS — POS terminal credentials
-    // WARNING: This collection contains passwords. Read access is restricted.
+    // WARNING: This collection contains passwords. Read access is BLOCKED.
     // Auth goes through Cloud Function /auth/kiosk-login (server-side validation).
-    // Admin panel can still create/manage kiosks via these rules.
+    // TODO: Move admin kiosk CRUD to Cloud Functions so admin panel doesn't need
+    //       direct Firestore access. Until then, admin panel kiosk management
+    //       will NOT work with these rules — use Firebase Console or Admin SDK.
     match /kiosks/{kioskId} {
-      allow read: if true;
+      allow read: if false;
       allow create: if request.resource.data.keys().hasAll(['username', 'shopId', 'active', 'createdAt'])
                     && request.resource.data.username is string
                     && request.resource.data.shopId is string;

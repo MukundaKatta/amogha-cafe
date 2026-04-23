@@ -59,9 +59,18 @@ function getRateLimitRemainingSeconds(phone) {
     } catch(e) { return 0; }
 }
 
-// Simple PIN hashing using SHA-256 (Web Crypto API with HTTP fallback)
-async function hashPin(pin) {
-    var encoded = pin + '_amogha_salt';
+// Generate a cryptographically random salt (hex string)
+function generatePinSalt() {
+    var bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+// PIN hashing using SHA-256 with an explicit salt
+// Salt is REQUIRED for new hashes. Pass 'amogha_salt' for legacy compat reads.
+async function hashPin(pin, salt) {
+    if (!salt) throw new Error('hashPin requires an explicit salt');
+    var encoded = pin + '_' + salt;
     // crypto.subtle requires secure context (HTTPS); fall back to simple hash on HTTP
     if (typeof crypto !== 'undefined' && crypto.subtle) {
         var encoder = new TextEncoder();
@@ -255,8 +264,9 @@ export function handleSignUp() {
             _authInProgress = false;
             return;
         }
-        var hashedPin = await hashPin(password);
-        var newUser = { name: name, phone: phone, pin: hashedPin, usedWelcomeBonus: false, createdAt: new Date().toISOString() };
+        var pinSalt = generatePinSalt();
+        var hashedPin = await hashPin(password, pinSalt);
+        var newUser = { name: name, phone: phone, pin: hashedPin, pinSalt: pinSalt, usedWelcomeBonus: false, createdAt: new Date().toISOString() };
         return db.collection('users').doc(phone).set(newUser).then(function() {
             _authInProgress = false;
             try {
@@ -336,14 +346,42 @@ export function handleSignIn() {
         }
         var user = doc.data();
         var storedPin = user.pin || user.password || '';
-        var hashedInput = await hashPin(password);
-        if (storedPin !== hashedInput) {
+        var pinMatch = false;
+        var needsMigration = false;
+
+        if (user.pinSalt) {
+            // New format: per-user random salt
+            var hashedInput = await hashPin(password, user.pinSalt);
+            pinMatch = storedPin === hashedInput;
+        } else {
+            // Legacy format: hardcoded 'amogha_salt' — migrate on success
+            var hashedInputLegacy = await hashPin(password, 'amogha_salt');
+            pinMatch = storedPin === hashedInputLegacy;
+            if (pinMatch) needsMigration = true;
+        }
+
+        if (!pinMatch) {
             _authInProgress = false;
             recordLoginAttempt(phone);
             msg.textContent = 'Incorrect PIN. Please try again.';
             msg.className = 'auth-msg error';
             return;
         }
+
+        // Migrate legacy hash to per-user random salt on successful login
+        if (needsMigration) {
+            try {
+                var newSalt = generatePinSalt();
+                var newHash = await hashPin(password, newSalt);
+                await db.collection('users').doc(phone).update({ pin: newHash, pinSalt: newSalt });
+                user.pin = newHash;
+                user.pinSalt = newSalt;
+            } catch (migErr) {
+                // Migration failure is non-fatal — user can still log in
+                console.error('PIN salt migration error:', migErr);
+            }
+        }
+
         // Successful login — clear rate limit counter
         clearLoginAttempts(phone);
         _authInProgress = false;
@@ -453,8 +491,9 @@ export function handleResetPassword() {
         return;
     }
 
-    hashPin(newPass).then(function(hashedPin) {
-    return db.collection('users').doc(forgotPhoneVerified).update({ pin: hashedPin });
+    var resetSalt = generatePinSalt();
+    hashPin(newPass, resetSalt).then(function(hashedPin) {
+    return db.collection('users').doc(forgotPhoneVerified).update({ pin: hashedPin, pinSalt: resetSalt });
     }).then(function() {
         forgotPhoneVerified = null;
         msg.textContent = '';
