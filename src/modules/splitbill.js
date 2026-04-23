@@ -94,12 +94,18 @@ export function setSplitCount(n) {
         linksDiv.innerHTML = html;
     }
 
-    // Save split bill info to Firestore
+    // Save split bill info to Firestore.
+    // It's normal for the order doc to not exist yet (e.g. user is splitting
+    // before the order is finalized) — log only on unexpected errors.
     var db = getDb();
     if (db && orderId) {
         db.collection('orders').doc(orderId).update({
             splitBill: { count: n, perPerson: perPerson, firstPersonPays: firstPersonPays, total: total }
-        }).catch(function(err) { console.error('Split bill save error:', err); });
+        }).catch(function(err) {
+            var msg = (err && (err.message || err.code || '')) + '';
+            if (/not[- ]?found/i.test(msg)) return; // benign: order not yet persisted
+            console.error('Split bill save error:', err);
+        });
     }
 }
 
