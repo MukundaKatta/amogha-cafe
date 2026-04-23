@@ -16,8 +16,9 @@ export function awardLoyaltyPoints(orderTotal) {
     if (!user) return;
     var points = Math.floor(orderTotal / 10);
     // Streak bonus: check if ordered 3 consecutive days
-    // Use UTC ISO date for consistency across timezones and tests
-    var today = new Date().toISOString().split('T')[0];
+    // Use local date (not UTC) to match user's calendar day
+    var _d = new Date();
+    var today = _d.getFullYear() + '-' + String(_d.getMonth() + 1).padStart(2, '0') + '-' + String(_d.getDate()).padStart(2, '0');
     var dates = user.orderDates || [];
     if (dates[dates.length - 1] !== today) {
         dates.push(today);
