@@ -600,27 +600,48 @@ setInterval(updateClock, 1000); updateClock();
 function posLogin() {
     var username = (document.getElementById('pos-username').value || '').trim().toLowerCase();
     var password = document.getElementById('pos-password').value;
+    var errEl = document.getElementById('pos-login-err');
     if (!username || !password) {
-        document.getElementById('pos-login-err').textContent = 'Enter username and password.';
+        errEl.textContent = 'Enter username and password.';
         return;
     }
     var btn = document.getElementById('pos-login-btn');
     btn.disabled = true;
     btn.textContent = 'Signing in…';
-    document.getElementById('pos-login-err').textContent = '';
+    errEl.textContent = '';
+
+    // Pre-flight diagnostic: bail out cleanly with a specific message before
+    // we even hit the network. Reported by a tablet on the floor whose WiFi
+    // had dropped — the user couldn't tell whether the tablet was offline,
+    // the server was down, or their password was wrong (everything just
+    // said "Connection error").
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        btn.disabled = false;
+        btn.textContent = 'Login';
+        errEl.textContent = 'Tablet is offline. Check WiFi and try again.';
+        return;
+    }
 
     // Authenticate via Cloud Function (absolute URL for native app compatibility)
     var apiBase = (window.location.hostname === 'localhost' || window.location.protocol === 'capacitor:' || window.location.protocol === 'ionic:')
         ? 'https://amogha-cafe.web.app' : '';
+
+    // Hard timeout so a hung connection (e.g. captive-portal WiFi that
+    // accepts the connection but never responds) doesn't leave the button
+    // disabled forever.
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timeoutId = ctrl ? setTimeout(function() { ctrl.abort(); }, 12000) : null;
+
     fetch(apiBase + '/api/auth/kiosk-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username, password: password })
+        body: JSON.stringify({ username: username, password: password }),
+        signal: ctrl ? ctrl.signal : undefined
     }).then(function(resp) {
+        if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
         // Tolerate non-JSON bodies (HTML error page from Cloud Function,
         // CORS-stripped body, empty 204, etc.) so the user gets a clean
-        // message instead of an "Unexpected end of JSON input" stack
-        // trace in the console.
+        // message instead of an "Unexpected end of JSON input" stack trace.
         return resp.text().then(function(text) {
             var data = {};
             try { data = text ? JSON.parse(text) : {}; } catch (_) {
@@ -637,20 +658,36 @@ function posLogin() {
         } else {
             btn.disabled = false;
             btn.textContent = 'Login';
-            document.getElementById('pos-login-err').textContent = result.data.error || 'Invalid username or password.';
+            // Map common HTTP statuses to actionable copy. The server's own
+            // `error` field wins when present (e.g. "Invalid username or
+            // password" on 401).
+            var msg = result.data.error;
+            if (!msg) {
+                if (result.status === 401 || result.status === 403) msg = 'Invalid username or password.';
+                else if (result.status === 429) msg = 'Too many attempts. Wait a minute.';
+                else if (result.status >= 500) msg = 'Login server error (' + result.status + '). Try again in a moment.';
+                else msg = 'Login failed (' + (result.status || '?') + '). Try again.';
+            }
+            errEl.textContent = msg;
             document.getElementById('pos-password').value = '';
             document.getElementById('pos-password').focus();
         }
     }).catch(function(e) {
+        if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
         btn.disabled = false;
         btn.textContent = 'Login';
-        // Distinguish the genuine network/CORS failure ("TypeError: Failed
-        // to fetch") from a logic error so support staff get an actionable
-        // message rather than a generic "Connection error" for everything.
-        var isNetwork = !e || e.name === 'TypeError' || (e.message && /failed to fetch|networkerror|network request failed/i.test(e.message));
-        document.getElementById('pos-login-err').textContent = isNetwork
-            ? 'Cannot reach login server. Check your internet connection.'
-            : 'Login error. Please try again.';
+        // Distinguish the genuine network/CORS/abort failure from a logic
+        // error so support staff get actionable copy rather than a generic
+        // "Connection error" for everything.
+        var msg;
+        if (e && e.name === 'AbortError') {
+            msg = 'Login timed out (12 s). Server may be slow — try again.';
+        } else if (!e || e.name === 'TypeError' || (e.message && /failed to fetch|networkerror|network request failed|load failed/i.test(e.message))) {
+            msg = 'Cannot reach login server. Check tablet WiFi or try again.';
+        } else {
+            msg = 'Login error: ' + (e.message || 'unknown') + '. Try again.';
+        }
+        errEl.textContent = msg;
     });
 }
 
