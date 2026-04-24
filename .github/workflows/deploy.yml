@@ -27,6 +27,31 @@ jobs:
       - name: Install functions dependencies
         run: cd functions && npm install
 
+      # ── Pull latest POS APK so /pos-latest.apk stays live ──────────────
+      # pos-latest.apk is gitignored (4 MB binary), so without this step
+      # every deploy from CI would 404 the install URL staff use to update
+      # POS tablets (learned the hard way when PR #65's auto-deploy wiped
+      # the APK that was uploaded separately from a local machine).
+      # Pull the most recent successful artifact from the build-pos-apk.yml
+      # workflow and drop it at the repo root where firebase.json's
+      # *.apk header rule serves it with the correct Android MIME type.
+      - name: Pull latest POS APK artifact
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          RUN_ID=$(gh run list --workflow=build-pos-apk.yml --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+          if [ -z "$RUN_ID" ]; then
+            echo "No successful POS APK build yet — /pos-latest.apk will 404 until build-pos-apk.yml completes one."
+            exit 0
+          fi
+          echo "Downloading APK from build-pos-apk.yml run $RUN_ID"
+          mkdir -p /tmp/pos-apk
+          gh run download "$RUN_ID" -n amogha-pos-debug -D /tmp/pos-apk
+          cp /tmp/pos-apk/app-debug.apk pos-latest.apk
+          ls -lh pos-latest.apk
+
       # TODO: Re-enable tests after E2E fixes are verified
       # ── Unit tests (Vitest) ─────────────────────────────────────────────
       # - name: Run unit tests
