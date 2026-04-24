@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/clean-stale-assets.mjs",
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "mkdir -p coverage/.tmp && vitest --run --coverage",

@@ -174,6 +174,29 @@ export function initHero() {
     var kbClasses = ['kb-zoom-left', 'kb-zoom-right', 'kb-pan-down', 'kb-zoom-center'];
     var slideshowInterval = null;
 
+    // Lazy-load hero slide backgrounds: keep the first slide eager (above the
+    // fold), defer the rest by stripping their inline background-image into
+    // data-bg, then apply when the slide is about to become active. This
+    // prevents the browser from downloading every multi-MB hero image on
+    // first paint — the heaviest `gourmet-meal-with-grilled-meat-rice…jpg`
+    // is the LAST slide and was 5.8 MB before optimization.
+    function lazifyHeroBgs() {
+        var hs = document.querySelectorAll('#hero-slideshow .hero-slide');
+        for (var i = 1; i < hs.length; i++) {
+            var bg = hs[i].style.backgroundImage;
+            if (bg && bg !== 'none') {
+                hs[i].dataset.bg = bg;
+                hs[i].style.backgroundImage = 'none';
+            }
+        }
+    }
+    function applyHeroBg(slideEl) {
+        if (slideEl && slideEl.dataset.bg && slideEl.style.backgroundImage === '' || (slideEl && slideEl.dataset.bg && /none/.test(slideEl.style.backgroundImage))) {
+            slideEl.style.backgroundImage = slideEl.dataset.bg;
+        }
+    }
+    lazifyHeroBgs();
+
     function startSlideshow() {
         if (slideshowInterval) clearInterval(slideshowInterval);
         slides = document.querySelectorAll('#hero-slideshow .hero-slide');
@@ -185,6 +208,9 @@ export function initHero() {
                 for (var k = 0; k < kbClasses.length; k++) slides[current].classList.remove(kbClasses[k]);
                 slides[current].classList.add(kbClasses[Math.floor(Math.random() * kbClasses.length)]);
                 slides[current].classList.add('active');
+                applyHeroBg(slides[current]);
+                // Pre-warm the next slide's image so the transition has it ready
+                applyHeroBg(slides[(current + 1) % slides.length]);
             }, 5000);
         }
     }
