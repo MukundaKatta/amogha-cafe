@@ -985,17 +985,17 @@
                 <div class="catering-form-row">
                     <div class="catering-field">
                         <label for="catering-name">Your Name *</label>
-                        <input type="text" id="catering-name" placeholder="e.g. Arjun Sharma" required>
+                        <input type="text" id="catering-name" placeholder="e.g. Arjun Sharma" required aria-label="e.g. Arjun Sharma">
                     </div>
                     <div class="catering-field">
                         <label for="catering-phone">Phone Number *</label>
-                        <input type="tel" id="catering-phone" placeholder="+91 98765 43210" required>
+                        <input type="tel" id="catering-phone" placeholder="+91 98765 43210" required aria-label="+91 98765 43210">
                     </div>
                 </div>
                 <div class="catering-form-row">
                     <div class="catering-field">
                         <label for="catering-event">Event Type *</label>
-                        <select id="catering-event" required>
+                        <select id="catering-event" required aria-label="Catering Event">
                             <option value="">Select event type</option>
                             <option value="Wedding">Wedding</option>
                             <option value="Corporate">Corporate Event</option>
@@ -1006,16 +1006,16 @@
                     </div>
                     <div class="catering-field">
                         <label for="catering-guests">Number of Guests *</label>
-                        <input type="number" id="catering-guests" min="10" max="5000" placeholder="e.g. 150" required>
+                        <input type="number" id="catering-guests" min="10" max="5000" placeholder="e.g. 150" required aria-label="e.g. 150">
                     </div>
                 </div>
                 <div class="catering-field">
                     <label for="catering-date">Preferred Date *</label>
-                    <input type="date" id="catering-date" required>
+                    <input type="date" id="catering-date" required aria-label="Catering Date">
                 </div>
                 <div class="catering-field">
                     <label for="catering-message">Additional Details</label>
-                    <textarea id="catering-message" rows="3" placeholder="Dietary requirements, theme, venue, special requests…"></textarea>
+                    <textarea id="catering-message" rows="3" placeholder="Dietary requirements, theme, venue, special requests…" aria-label="Dietary requirements, theme, venue, special requests…"></textarea>
                 </div>
                 <button type="submit" id="catering-submit-btn" class="catering-submit-btn">Submit Enquiry</button>
             </form>
@@ -1115,13 +1115,13 @@
                 <h2 id="checkout-step-2-title">Your Details</h2>
                 <form id="checkout-form" onsubmit="return false;" novalidate>
                     <label for="co-name" class="sr-only">Full Name</label>
-                    <input type="text" id="co-name" placeholder="Full Name" required autocomplete="name" aria-required="true">
+                    <input type="text" id="co-name" placeholder="Full Name" required autocomplete="name" aria-required="true" aria-label="Full Name">
                     <label for="co-phone" class="sr-only">Phone Number</label>
-                    <input type="tel" id="co-phone" placeholder="Phone Number" required autocomplete="tel" pattern="[0-9]{10}" aria-required="true">
+                    <input type="tel" id="co-phone" placeholder="Phone Number" required autocomplete="tel" pattern="[0-9]{10}" aria-required="true" aria-label="Phone Number">
                     <label for="co-address" class="sr-only">Delivery Address</label>
-                    <textarea id="co-address" placeholder="Delivery Address" rows="3" required autocomplete="street-address" aria-required="true"></textarea>
+                    <textarea id="co-address" placeholder="Delivery Address" rows="3" required autocomplete="street-address" aria-required="true" aria-label="Delivery Address"></textarea>
                     <label for="co-notes" class="sr-only">Special Instructions</label>
-                    <textarea id="co-notes" placeholder="Special Instructions (Optional)" rows="2"></textarea>
+                    <textarea id="co-notes" placeholder="Special Instructions (Optional)" rows="2" aria-label="Special Instructions (Optional)"></textarea>
                 </form>
                 <!-- Scheduled Orders -->
                 <label class="schedule-toggle-row" for="schedule-order-check">
@@ -1131,11 +1131,11 @@
                 <div id="schedule-picker" class="schedule-picker">
                     <div>
                         <label for="schedule-date">Date</label>
-                        <input type="date" id="schedule-date">
+                        <input type="date" id="schedule-date" aria-label="Schedule Date">
                     </div>
                     <div>
                         <label for="schedule-time">Time</label>
-                        <input type="time" id="schedule-time" min="10:00" max="23:00">
+                        <input type="time" id="schedule-time" min="10:00" max="23:00" aria-label="Schedule Time">
                     </div>
                 </div>
                 <div class="checkout-nav">

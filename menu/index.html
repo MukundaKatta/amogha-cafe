@@ -664,7 +664,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
             <!-- Category Carousel -->
             <div class="category-carousel-section">
-                <h3 class="carousel-heading">What are you craving?</h3>
+                <h2 class="carousel-heading">What are you craving?</h2>
                 <div class="category-carousel-wrapper">
                     <button class="carousel-arrow carousel-arrow-left" id="cat-arrow-left" aria-label="Scroll left">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -697,7 +697,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
             <!-- Menu Filter/Search -->
             <div class="menu-filters">
-                <input type="text" id="menu-search" placeholder="Search menu..." class="menu-search-input">
+                <input type="text" id="menu-search" placeholder="Search menu..." class="menu-search-input" aria-label="Search menu...">
                 <div class="filter-btns">
                     <button class="filter-btn active" data-filter="all">All</button>
                     <button class="filter-btn" data-filter="veg">&#x1F7E2; Veg</button>
@@ -746,7 +746,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
                 </div>
                 <div class="coupon-section">
                     <div class="coupon-input-row">
-                        <input type="text" id="coupon-code" placeholder="Enter promo code" class="coupon-input">
+                        <input type="text" id="coupon-code" placeholder="Enter promo code" class="coupon-input" aria-label="Enter promo code">
                         <button type="button" class="coupon-apply-btn" onclick="applyCoupon()">Apply</button>
                     </div>
                     <p id="coupon-msg" class="coupon-msg"></p>
@@ -754,7 +754,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
                 </div>
                 <div class="giftcard-section">
                     <div class="coupon-input-row">
-                        <input type="text" id="giftcard-code" placeholder="Gift card code" class="coupon-input gc-code-input">
+                        <input type="text" id="giftcard-code" placeholder="Gift card code" class="coupon-input gc-code-input" aria-label="Gift card code">
                         <button type="button" class="coupon-apply-btn" onclick="applyGiftCard()">Redeem</button>
                     </div>
                     <p id="giftcard-msg" class="coupon-msg"></p>
@@ -765,21 +765,21 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
                 <h2>Your Details</h2>
                 <form id="checkout-form" onsubmit="return false;" novalidate>
                     <label for="co-name" class="sr-only">Full Name</label>
-                    <input type="text" id="co-name" placeholder="Full Name" required autocomplete="name">
+                    <input type="text" id="co-name" placeholder="Full Name" required autocomplete="name" aria-label="Full Name">
                     <label for="co-phone" class="sr-only">Phone Number</label>
-                    <input type="tel" id="co-phone" placeholder="Phone Number" required autocomplete="tel" pattern="[0-9]{10}">
+                    <input type="tel" id="co-phone" placeholder="Phone Number" required autocomplete="tel" pattern="[0-9]{10}" aria-label="Phone Number">
                     <label for="co-address" class="sr-only">Delivery Address</label>
-                    <textarea id="co-address" placeholder="Delivery Address" rows="3" required autocomplete="street-address"></textarea>
+                    <textarea id="co-address" placeholder="Delivery Address" rows="3" required autocomplete="street-address" aria-label="Delivery Address"></textarea>
                     <label for="co-notes" class="sr-only">Special Instructions</label>
-                    <textarea id="co-notes" placeholder="Special Instructions (Optional)" rows="2"></textarea>
+                    <textarea id="co-notes" placeholder="Special Instructions (Optional)" rows="2" aria-label="Special Instructions (Optional)"></textarea>
                 </form>
                 <label class="schedule-toggle-row" for="schedule-order-check">
                     <input type="checkbox" id="schedule-order-check" onchange="document.getElementById('schedule-picker').classList.toggle('active',this.checked)">
                     <span>&#x1F550; Schedule for later</span>
                 </label>
                 <div id="schedule-picker" class="schedule-picker">
-                    <div><label for="schedule-date">Date</label><input type="date" id="schedule-date"></div>
-                    <div><label for="schedule-time">Time</label><input type="time" id="schedule-time" min="10:00" max="23:00"></div>
+                    <div><label for="schedule-date">Date</label><input type="date" id="schedule-date" aria-label="Schedule Date"></div>
+                    <div><label for="schedule-time">Time</label><input type="time" id="schedule-time" min="10:00" max="23:00" aria-label="Schedule Time"></div>
                 </div>
                 <div class="checkout-nav">
                     <button class="btn-secondary" onclick="goToStep(1)">Back</button>

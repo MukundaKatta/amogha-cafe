@@ -48,8 +48,8 @@ function initPhotoReviews() {
                 '<div class="pr-photo-previews" id="pr-photo-previews"></div>' +
             '</div>' +
             '<div class="pr-dish-select">' +
-                '<label>What did you order?</label>' +
-                '<input type="text" id="pr-dish" placeholder="e.g. Chicken Biryani" class="pr-dish-input">' +
+                '<label for="pr-dish">What did you order?</label>' +
+                '<input type="text" id="pr-dish" placeholder="e.g. Chicken Biryani" class="pr-dish-input" aria-label="What did you order">' +
             '</div>' +
             '<button class="pr-submit-btn" id="pr-submit" onclick="submitPhotoReview()">Submit Review</button>' +
         '</div>';

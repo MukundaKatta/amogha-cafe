@@ -58,7 +58,7 @@ body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:'Poppins
 
 <div class="card">
   <div class="input-group">
-    <input type="tel" class="phone-input" id="phone-input" placeholder="Enter your phone number" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+    <input type="tel" class="phone-input" id="phone-input" placeholder="Enter your phone number" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')" aria-label="Enter your phone number">
     <button class="check-btn" onclick="checkPoints()">Check</button>
   </div>
   <div class="hint">Enter the phone number you gave at the counter</div>
