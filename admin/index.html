@@ -2399,7 +2399,7 @@
             <img src="../amogha-logo.png" alt="Amogha" class="login-logo">
             <h2>Admin Panel</h2>
             <p id="admin-login-sub">Enter admin password to continue</p>
-            <input type="password" id="admin-pin" placeholder="Password" maxlength="100" autofocus>
+            <input type="password" id="admin-pin" placeholder="Password" maxlength="100" autofocus aria-label="Password">
             <button class="login-btn" onclick="adminLogin()">Access Dashboard</button>
             <p id="login-error" class="login-error"></p>
         </div>
@@ -2418,13 +2418,13 @@
                     <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                     <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                 </button>
-                <select class="theme-selector" id="theme-selector" onchange="setSeasonalTheme(this.value)" title="Seasonal Theme">
+                <select class="theme-selector" id="theme-selector" onchange="setSeasonalTheme(this.value)" title="Seasonal Theme" aria-label="Seasonal Theme">
                     <option value="default">Default Theme</option>
                     <option value="diwali">Diwali</option>
                     <option value="holi">Holi</option>
                     <option value="christmas">Christmas</option>
                 </select>
-                <select id="shop-selector" onchange="switchShop(this.value)" style="background:#1a1a2e;color:#D4A017;border:1px solid #D4A01766;border-radius:6px;padding:6px 10px;font-size:13px;cursor:pointer;display:none">
+                <select id="shop-selector" onchange="switchShop(this.value)" style="background:#1a1a2e;color:#D4A017;border:1px solid #D4A01766;border-radius:6px;padding:6px 10px;font-size:13px;cursor:pointer;display:none" aria-label="Shop Selector">
                     <option value="amogha">Amogha Cafe</option>
                 </select>
                 <button class="logout-btn" onclick="adminLogout()">Logout</button>
@@ -2504,9 +2504,9 @@
                 <h3>Item Add-ons (Extra Cheese, Sides, etc.)</h3>
                 <div id="addons-list"></div>
                 <div class="addon-add-row">
-                    <input type="text" id="addon-name-input" placeholder="Add-on name">
-                    <input type="number" id="addon-price-input" placeholder="₹" min="1" style="max-width:70px">
-                    <select id="addon-cat-input">
+                    <input type="text" id="addon-name-input" placeholder="Add-on name" aria-label="Add-on name">
+                    <input type="number" id="addon-price-input" placeholder="₹" min="1" style="max-width:70px" aria-label="₹">
+                    <select id="addon-cat-input" aria-label="Add-on category">
                         <option value="topping">Topping</option>
                         <option value="side">Side</option>
                         <option value="sauce">Sauce</option>
@@ -2571,7 +2571,7 @@
             <div class="panel-header">
                 <h2 class="panel-title">Analytics Dashboard</h2>
                 <button class="exp-download-btn" onclick="exportRevenueReportCSV()" title="Download revenue report as CSV">Revenue Report CSV</button>
-                <select id="analytics-range" onchange="renderAnalytics()">
+                <select id="analytics-range" onchange="renderAnalytics()" aria-label="Analytics Range">
                     <option value="7">Last 7 Days</option>
                     <option value="30" selected>Last 30 Days</option>
                     <option value="0">All Time</option>
@@ -2581,7 +2581,7 @@
             <div class="aq-wrap">
                 <div class="aq-title">🔍 Ask anything about your sales</div>
                 <div class="aq-row">
-                    <input class="aq-input" id="aq-input" placeholder="e.g. how many cokes sold today, biryani revenue this week…" onkeydown="if(event.key==='Enter')runAnalyticsQuery()">
+                    <input class="aq-input" id="aq-input" placeholder="e.g. how many cokes sold today, biryani revenue this week…" onkeydown="if(event.key==='Enter')runAnalyticsQuery()" aria-label="e.g. how many cokes sold today, biryani revenue this week…">
                     <button class="aq-btn" onclick="runAnalyticsQuery()">Ask</button>
                 </div>
                 <div class="aq-chips">
@@ -2687,7 +2687,7 @@
         <div id="reviews-panel" class="admin-panel" style="display:none;">
             <div class="panel-header">
                 <h2 class="panel-title">Customer Reviews</h2>
-                <select id="review-sort" onchange="renderReviewsAdmin()">
+                <select id="review-sort" onchange="renderReviewsAdmin()" aria-label="Review Sort">
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
                     <option value="highest">Highest Rated</option>
@@ -2712,7 +2712,7 @@
         <div id="crm-panel" class="admin-panel" style="display:none;">
             <div class="panel-header">
                 <h2 class="panel-title">Customer CRM</h2>
-                <select id="crm-sort" onchange="renderCRM()">
+                <select id="crm-sort" onchange="renderCRM()" aria-label="Crm Sort">
                     <option value="spent">Top Spenders</option>
                     <option value="orders">Most Orders</option>
                     <option value="recent">Most Recent</option>
@@ -2740,19 +2740,19 @@
                 <div style="display:grid;gap:1rem">
                     <div>
                         <label style="display:block;font-size:0.78rem;color:#a09080;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.07em">Title</label>
-                        <input type="text" id="ds-title" placeholder="e.g. Hyderabadi Biryani Special" style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem">
+                        <input type="text" id="ds-title" placeholder="e.g. Hyderabadi Biryani Special" style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem" aria-label="e.g. Hyderabadi Biryani Special">
                     </div>
                     <div>
                         <label style="display:block;font-size:0.78rem;color:#a09080;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.07em">Description</label>
-                        <textarea id="ds-desc" rows="2" placeholder="e.g. Slow-cooked dum biryani with raita and salan" style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem;resize:vertical"></textarea>
+                        <textarea id="ds-desc" rows="2" placeholder="e.g. Slow-cooked dum biryani with raita and salan" style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem;resize:vertical" aria-label="e.g. Slow-cooked dum biryani with raita and salan"></textarea>
                     </div>
                     <div>
                         <label style="display:block;font-size:0.78rem;color:#a09080;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.07em">Price (₹)</label>
-                        <input type="number" id="ds-price" placeholder="e.g. 299" style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem">
+                        <input type="number" id="ds-price" placeholder="e.g. 299" style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem" aria-label="e.g. 299">
                     </div>
                     <div>
                         <label style="display:block;font-size:0.78rem;color:#a09080;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.07em">Image URL (optional)</label>
-                        <input type="url" id="ds-image" placeholder="https://..." style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem">
+                        <input type="url" id="ds-image" placeholder="https://..." style="width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.2);border-radius:8px;color:#e8dcc8;font-size:0.9rem" aria-label="https://...">
                     </div>
                 </div>
                 <div id="ds-msg" style="margin-top:1rem;font-size:0.85rem;display:none"></div>
@@ -2778,11 +2778,11 @@
             <div id="expenses-summary"></div>
             <div class="expenses-filter-bar" id="expenses-filter-bar">
                 <label style="font-size:0.75rem;color:var(--gold);font-weight:600;white-space:nowrap">📅 Month</label>
-                <input type="month" id="exp-month-input" onchange="expMonthFilter=this.value;expDateFrom='';expDateTo='';document.getElementById('exp-date-from').value='';document.getElementById('exp-date-to').value='';renderExpenses()" style="padding:0.4rem 0.7rem;background:rgba(212,160,23,0.1);border:1.5px solid rgba(212,160,23,0.5);border-radius:8px;color:var(--cream);font-size:0.85rem;font-weight:600">
+                <input type="month" id="exp-month-input" onchange="expMonthFilter=this.value;expDateFrom='';expDateTo='';document.getElementById('exp-date-from').value='';document.getElementById('exp-date-to').value='';renderExpenses()" style="padding:0.4rem 0.7rem;background:rgba(212,160,23,0.1);border:1.5px solid rgba(212,160,23,0.5);border-radius:8px;color:var(--cream);font-size:0.85rem;font-weight:600" aria-label="Exp Month Input">
                 <label style="font-size:0.75rem;color:var(--text-dim);margin-left:0.5rem">From</label>
-                <input type="date" id="exp-date-from" onchange="expDateFrom=this.value;expMonthFilter='';document.getElementById('exp-month-input').value='';renderExpenses()" style="padding:0.4rem 0.6rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.25);border-radius:8px;color:var(--cream);font-size:0.8rem">
+                <input type="date" id="exp-date-from" onchange="expDateFrom=this.value;expMonthFilter='';document.getElementById('exp-month-input').value='';renderExpenses()" style="padding:0.4rem 0.6rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.25);border-radius:8px;color:var(--cream);font-size:0.8rem" aria-label="Exp Date From">
                 <label style="font-size:0.75rem;color:var(--text-dim)">To</label>
-                <input type="date" id="exp-date-to" onchange="expDateTo=this.value;expMonthFilter='';document.getElementById('exp-month-input').value='';renderExpenses()" style="padding:0.4rem 0.6rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.25);border-radius:8px;color:var(--cream);font-size:0.8rem">
+                <input type="date" id="exp-date-to" onchange="expDateTo=this.value;expMonthFilter='';document.getElementById('exp-month-input').value='';renderExpenses()" style="padding:0.4rem 0.6rem;background:rgba(255,255,255,0.05);border:1px solid rgba(212,160,23,0.25);border-radius:8px;color:var(--cream);font-size:0.8rem" aria-label="Exp Date To">
                 <button class="filter-btn active" onclick="expCatFilter='all';document.querySelectorAll('#expenses-filter-bar .filter-btn').forEach(function(b){b.classList.remove('active')});this.classList.add('active');renderExpenses()">All</button>
                 <button class="filter-btn" onclick="expCatFilter='Ingredients';document.querySelectorAll('#expenses-filter-bar .filter-btn').forEach(function(b){b.classList.remove('active')});this.classList.add('active');renderExpenses()">Ingredients</button>
                 <button class="filter-btn" onclick="expCatFilter='Utilities';document.querySelectorAll('#expenses-filter-bar .filter-btn').forEach(function(b){b.classList.remove('active')});this.classList.add('active');renderExpenses()">Utilities</button>
@@ -2805,11 +2805,11 @@
                 <input type="hidden" id="expense-pending-bill-url">
                 <div class="exp-form-row">
                     <label>Date</label>
-                    <input type="date" id="exp-date">
+                    <input type="date" id="exp-date" aria-label="Exp Date">
                 </div>
                 <div class="exp-form-row">
                     <label>Category</label>
-                    <select id="exp-category">
+                    <select id="exp-category" aria-label="Exp Category">
                         <option value="">Select category…</option>
                         <option value="Ingredients">Ingredients / Raw Materials</option>
                         <option value="Utilities">Utilities (Electricity, Water, Gas)</option>
@@ -2822,15 +2822,15 @@
                 </div>
                 <div class="exp-form-row">
                     <label>Amount (₹)</label>
-                    <input type="number" id="exp-amount" placeholder="0" min="1" step="0.01">
+                    <input type="number" id="exp-amount" placeholder="0" min="1" step="0.01" aria-label="0">
                 </div>
                 <div class="exp-form-row">
                     <label>Description</label>
-                    <textarea id="exp-description" rows="2" placeholder="e.g. Chicken and vegetables from market"></textarea>
+                    <textarea id="exp-description" rows="2" placeholder="e.g. Chicken and vegetables from market" aria-label="e.g. Chicken and vegetables from market"></textarea>
                 </div>
                 <div class="exp-form-row">
                     <label>Paid By</label>
-                    <input type="text" id="exp-paid-by" placeholder="e.g. Ravi, Suresh, Owner">
+                    <input type="text" id="exp-paid-by" placeholder="e.g. Ravi, Suresh, Owner" aria-label="e.g. Ravi, Suresh, Owner">
                 </div>
                 <div class="exp-form-row">
                     <label>Bill / Receipt (optional)</label>
@@ -2877,15 +2877,15 @@
                 <div class="staff-form-grid">
                     <div class="staff-form-field">
                         <label>Name</label>
-                        <input type="text" id="staff-name-input" placeholder="Full name">
+                        <input type="text" id="staff-name-input" placeholder="Full name" aria-label="Full name">
                     </div>
                     <div class="staff-form-field">
                         <label>Phone</label>
-                        <input type="tel" id="staff-phone-input" placeholder="Phone number">
+                        <input type="tel" id="staff-phone-input" placeholder="Phone number" aria-label="Phone number">
                     </div>
                     <div class="staff-form-field">
                         <label>Role</label>
-                        <select id="staff-role-input">
+                        <select id="staff-role-input" aria-label="Staff Role Input">
                             <option value="chef">Chef</option>
                             <option value="waiter">Waiter</option>
                             <option value="delivery">Delivery</option>
@@ -2894,7 +2894,7 @@
                     </div>
                     <div class="staff-form-field">
                         <label>Shift</label>
-                        <select id="staff-shift-input">
+                        <select id="staff-shift-input" aria-label="Staff Shift Input">
                             <option value="morning">Morning</option>
                             <option value="evening">Evening</option>
                             <option value="full">Full Day</option>
@@ -2943,7 +2943,7 @@
                     <div class="mkt-filters">
                         <div class="mkt-filter-group">
                             <label>Loyalty Tier</label>
-                            <select id="mkt-tier-filter" onchange="filterCustomers()">
+                            <select id="mkt-tier-filter" onchange="filterCustomers()" aria-label="Mkt Tier Filter">
                                 <option value="all">All Tiers</option>
                                 <option value="Bronze">Bronze</option>
                                 <option value="Silver">Silver</option>
@@ -2952,15 +2952,15 @@
                         </div>
                         <div class="mkt-filter-group">
                             <label>Min Spend</label>
-                            <input type="number" id="mkt-min-spend" placeholder="0" min="0" onchange="filterCustomers()">
+                            <input type="number" id="mkt-min-spend" placeholder="0" min="0" onchange="filterCustomers()" aria-label="0">
                         </div>
                         <div class="mkt-filter-group">
                             <label>Max Spend</label>
-                            <input type="number" id="mkt-max-spend" placeholder="No limit" min="0" onchange="filterCustomers()">
+                            <input type="number" id="mkt-max-spend" placeholder="No limit" min="0" onchange="filterCustomers()" aria-label="No limit">
                         </div>
                         <div class="mkt-filter-group">
                             <label>Last Order Before</label>
-                            <input type="date" id="mkt-last-order" onchange="filterCustomers()">
+                            <input type="date" id="mkt-last-order" onchange="filterCustomers()" aria-label="Mkt Last Order">
                         </div>
                     </div>
                     <div class="mkt-results-count" id="mkt-results-count">Load CRM data first (visit Customers tab)</div>
@@ -2985,7 +2985,7 @@
                             <div class="mkt-template-body">Hi {name}! This weekend at Amogha: Special Hyderabadi Biryani festival. Family packs starting at Rs.499. Order now on amoghahotels.com!</div>
                         </div>
                     </div>
-                    <textarea class="mkt-custom-msg" id="mkt-custom-msg" placeholder="Or write a custom message... Use {name}, {points}, {tier} as placeholders."></textarea>
+                    <textarea class="mkt-custom-msg" id="mkt-custom-msg" placeholder="Or write a custom message... Use {name}, {points}, {tier} as placeholders." aria-label="Or write a custom message... Use {name}, {points}, {tier} as placeholders."></textarea>
                     <div style="margin-top:1rem;display:flex;gap:0.5rem;">
                         <button class="btn-primary" onclick="generateWhatsAppLinks()">Generate WhatsApp Links</button>
                     </div>
@@ -3007,7 +3007,7 @@
                     <div class="dp-form-grid">
                         <div class="dp-field">
                             <label>Day of Week</label>
-                            <select id="dp-day">
+                            <select id="dp-day" aria-label="Dp Day">
                                 <option value="0">Sunday</option>
                                 <option value="1">Monday</option>
                                 <option value="2">Tuesday</option>
@@ -3020,7 +3020,7 @@
                         </div>
                         <div class="dp-field">
                             <label>Start Hour</label>
-                            <select id="dp-start-hour">
+                            <select id="dp-start-hour" aria-label="Dp Start Hour">
                                 <option value="0">12 AM</option>
                                 <option value="6">6 AM</option>
                                 <option value="7">7 AM</option>
@@ -3044,7 +3044,7 @@
                         </div>
                         <div class="dp-field">
                             <label>End Hour</label>
-                            <select id="dp-end-hour">
+                            <select id="dp-end-hour" aria-label="Dp End Hour">
                                 <option value="6">6 AM</option>
                                 <option value="7">7 AM</option>
                                 <option value="8">8 AM</option>
@@ -3068,7 +3068,7 @@
                         </div>
                         <div class="dp-field">
                             <label>Multiplier</label>
-                            <input type="number" id="dp-multiplier" placeholder="e.g. 0.8 or 1.2" step="0.05" min="0.1" max="3" value="0.9">
+                            <input type="number" id="dp-multiplier" placeholder="e.g. 0.8 or 1.2" step="0.05" min="0.1" max="3" value="0.9" aria-label="e.g. 0.8 or 1.2">
                         </div>
                     </div>
                     <div style="margin-bottom:0.5rem;font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Applicable Categories</div>
@@ -3106,7 +3106,7 @@
                 <h3 style="color:#D4A017;margin:0 0 .8rem;font-size:.95rem">🔑 Admin Password</h3>
                 <div style="display:flex;gap:.5rem">
                     <input type="password" id="new-admin-password" placeholder="New admin password" maxlength="100"
-                        style="flex:1;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none">
+                        style="flex:1;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none" aria-label="New admin password">
                     <button onclick="changeAdminPassword()"
                         style="padding:9px 16px;background:#D4A017;color:#080604;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.85rem;white-space:nowrap">
                         Update
@@ -3122,14 +3122,14 @@
             <div style="background:#1a1d27;border:1px solid rgba(212,160,23,.15);border-radius:12px;padding:1.5rem;max-width:480px">
                 <h3 style="color:#D4A017;margin:0 0 1rem;font-size:.95rem">➕ Add New Kiosk</h3>
                 <input type="text" id="new-kiosk-name" placeholder="Display name (e.g. Main Counter)"
-                    style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:.5rem">
+                    style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:.5rem" aria-label="Display name (e.g. Main Counter)">
                 <input type="text" id="new-kiosk-username" placeholder="Username (e.g. counter1)"
                     style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:.5rem"
-                    autocapitalize="off" autocorrect="off">
+                    autocapitalize="off" autocorrect="off" aria-label="Username (e.g. counter1)">
                 <input type="password" id="new-kiosk-password" placeholder="Password"
-                    style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:.5rem">
+                    style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:.5rem" aria-label="Password">
                 <select id="new-kiosk-shop"
-                    style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:1rem">
+                    style="width:100%;box-sizing:border-box;padding:9px 12px;background:#22263a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e8e8f0;font-size:.85rem;outline:none;margin-bottom:1rem" aria-label="New Kiosk Shop">
                 </select>
                 <button onclick="addKiosk()"
                     style="width:100%;padding:11px;background:#D4A017;color:#080604;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9rem">
@@ -3147,10 +3147,10 @@
             <div id="shops-list" style="display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:2rem"></div>
             <div style="background:#111;border-radius:12px;padding:1.5rem;max-width:480px">
                 <h3 style="color:#D4A017;margin:0 0 1rem">Add New Shop</h3>
-                <input type="text" id="new-shop-id" placeholder="Shop ID (e.g. teashop, bakery)" style="margin-bottom:0.5rem">
-                <input type="text" id="new-shop-name" placeholder="Shop Name" style="margin-bottom:0.5rem">
-                <input type="text" id="new-shop-tagline" placeholder="Tagline (e.g. Fresh Teas & Snacks)" style="margin-bottom:0.5rem">
-                <input type="text" id="new-shop-pin" placeholder="Admin PIN (6 digits)" style="margin-bottom:0.5rem">
+                <input type="text" id="new-shop-id" placeholder="Shop ID (e.g. teashop, bakery)" style="margin-bottom:0.5rem" aria-label="Shop ID (e.g. teashop, bakery)">
+                <input type="text" id="new-shop-name" placeholder="Shop Name" style="margin-bottom:0.5rem" aria-label="Shop Name">
+                <input type="text" id="new-shop-tagline" placeholder="Tagline (e.g. Fresh Teas & Snacks)" style="margin-bottom:0.5rem" aria-label="Tagline (e.g. Fresh Teas &amp; Snacks)">
+                <input type="text" id="new-shop-pin" placeholder="Admin PIN (6 digits)" style="margin-bottom:0.5rem" aria-label="Admin PIN (6 digits)">
                 <button class="add-special-confirm" onclick="addShop()">Create Shop</button>
             </div>
         </div>
@@ -3164,22 +3164,22 @@
                 <h3>Add Coupon</h3>
                 <button class="modal-close" onclick="hideAddCoupon()">&times;</button>
             </div>
-            <input type="text" id="coupon-code-input" placeholder="Coupon code (e.g. SAVE20)" style="text-transform:uppercase">
+            <input type="text" id="coupon-code-input" placeholder="Coupon code (e.g. SAVE20)" style="text-transform:uppercase" aria-label="Coupon code (e.g. SAVE20)">
             <div style="display:flex;gap:0.5rem">
-                <input type="number" id="coupon-discount" placeholder="Discount value" min="1" style="flex:1">
-                <select id="coupon-type" style="flex:1">
+                <input type="number" id="coupon-discount" placeholder="Discount value" min="1" style="flex:1" aria-label="Discount value">
+                <select id="coupon-type" style="flex:1" aria-label="Coupon Type">
                     <option value="percent">% Percent</option>
                     <option value="flat">₹ Flat</option>
                 </select>
             </div>
-            <input type="text" id="coupon-label" placeholder="Label (e.g. 20% off on orders)">
+            <input type="text" id="coupon-label" placeholder="Label (e.g. 20% off on orders)" aria-label="Label (e.g. 20% off on orders)">
             <div style="display:flex;gap:0.5rem">
-                <input type="number" id="coupon-min-order" placeholder="Min order ₹ (0=none)" min="0" style="flex:1">
-                <input type="number" id="coupon-max-discount" placeholder="Max discount ₹ (0=none)" min="0" style="flex:1">
+                <input type="number" id="coupon-min-order" placeholder="Min order ₹ (0=none)" min="0" style="flex:1" aria-label="Min order ₹ (0=none)">
+                <input type="number" id="coupon-max-discount" placeholder="Max discount ₹ (0=none)" min="0" style="flex:1" aria-label="Max discount ₹ (0=none)">
             </div>
             <div style="display:flex;gap:0.5rem">
-                <input type="number" id="coupon-usage-limit" placeholder="Usage limit (0=unlimited)" min="0" style="flex:1">
-                <input type="date" id="coupon-expires" style="flex:1">
+                <input type="number" id="coupon-usage-limit" placeholder="Usage limit (0=unlimited)" min="0" style="flex:1" aria-label="Usage limit (0=unlimited)">
+                <input type="date" id="coupon-expires" style="flex:1" aria-label="Coupon Expires">
             </div>
             <button class="add-special-confirm" onclick="addCoupon()">Add Coupon</button>
         </div>
@@ -3192,10 +3192,10 @@
                 <h3>Add Today's Special</h3>
                 <button class="modal-close" onclick="hideAddSpecial()">&times;</button>
             </div>
-            <select id="special-item-select"><option value="">Select a menu item...</option></select>
-            <input type="number" id="special-price" placeholder="Special price (₹)">
-            <input type="text" id="special-badge" placeholder="Badge text (e.g. Amogha Special)" value="Special">
-            <textarea id="special-desc" placeholder="Description" rows="2"></textarea>
+            <select id="special-item-select" aria-label="Special Item Select"><option value="">Select a menu item...</option></select>
+            <input type="number" id="special-price" placeholder="Special price (₹)" aria-label="Special price (₹)">
+            <input type="text" id="special-badge" placeholder="Badge text (e.g. Amogha Special)" value="Special" aria-label="Badge text (e.g. Amogha Special)">
+            <textarea id="special-desc" placeholder="Description" rows="2" aria-label="Description"></textarea>
             <button class="add-special-confirm" onclick="addSpecial()">Add Special</button>
         </div>
     </div>
@@ -3226,9 +3226,9 @@
                 <h3>Add Menu Item</h3>
                 <button class="modal-close" onclick="hideAddMenuItem()">&times;</button>
             </div>
-            <input type="text" id="menu-item-name" placeholder="Item name (e.g. Paneer Tikka)">
-            <input type="number" id="menu-item-price" placeholder="Price (₹)" min="0">
-            <select id="menu-item-category">
+            <input type="text" id="menu-item-name" placeholder="Item name (e.g. Paneer Tikka)" aria-label="Item name (e.g. Paneer Tikka)">
+            <input type="number" id="menu-item-price" placeholder="Price (₹)" min="0" aria-label="Price (₹)">
+            <select id="menu-item-category" aria-label="Menu Item Category">
                 <option value="">Select category...</option>
                 <option value="Starters">Starters</option>
                 <option value="Curries">Curries</option>
@@ -3239,11 +3239,11 @@
                 <option value="Rotis & Naan">Rotis & Naan</option>
                 <option value="Beverages">Beverages</option>
             </select>
-            <select id="menu-item-type">
+            <select id="menu-item-type" aria-label="Menu Item Type">
                 <option value="veg">Veg</option>
                 <option value="non-veg">Non-Veg</option>
             </select>
-            <input type="text" id="menu-item-badge" placeholder="Badge (optional, e.g. Bestseller, New)">
+            <input type="text" id="menu-item-badge" placeholder="Badge (optional, e.g. Bestseller, New)" aria-label="Badge (optional, e.g. Bestseller, New)">
             <div class="mac-image-section" style="margin-top:0.5rem;">
                 <label class="mac-img-upload-btn" for="menu-item-image" style="display:inline-flex;margin-bottom:0.4rem;">&#128247; Attach Image (optional)</label>
                 <input type="file" id="menu-item-image" accept="image/jpeg,image/png,image/webp" style="display:none">
@@ -3458,23 +3458,23 @@
                     '<div>' +
                     '<div style="font-size:0.78rem;font-weight:600;color:#D4A017;margin-bottom:0.4rem">🖨 Bill Printer (Counter) &nbsp;<span style="color:' + billColor + ';font-weight:400">' + billOk + '</span></div>' +
                     '<div style="display:grid;gap:0.4rem">' +
-                    '<input id="bt-name-' + s.id + '" value="' + btName + '" placeholder="Bluetooth name (e.g. XP-58-IIA9B2)" style="' + inStyle + '">' +
+                    '<input id="bt-name-' + s.id + '" value="' + btName + '" placeholder="Bluetooth name (e.g. XP-58-IIA9B2)" style="' + inStyle + '" aria-label="Bluetooth name (e.g. XP-58-IIA9B2)">' +
                     '<div style="display:flex;gap:0.4rem;align-items:center">' +
                     '<label style="color:#aaa;font-size:0.78rem;white-space:nowrap">Paper:</label>' +
-                    '<select id="bt-width-' + s.id + '" style="' + selStyle + '">' +
+                    '<select id="bt-width-' + s.id + '" style="' + selStyle + '" aria-label="Bt Width ">' +
                     '<option value="58"' + (paperWidth===58?' selected':'') + '>58mm</option>' +
                     '<option value="80"' + (paperWidth===80?' selected':'') + '>80mm</option>' +
                     '</select></div>' +
-                    '<input id="bt-footer-' + s.id + '" value="' + footer + '" placeholder="Receipt footer text" style="' + inStyle + '">' +
+                    '<input id="bt-footer-' + s.id + '" value="' + footer + '" placeholder="Receipt footer text" style="' + inStyle + '" aria-label="Receipt footer text">' +
                     '</div></div>' +
                     // KOT Printer
                     '<div>' +
                     '<div style="font-size:0.78rem;font-weight:600;color:#e67e22;margin-bottom:0.4rem">🍳 KOT Printer (Kitchen) &nbsp;<span style="color:' + kotColor + ';font-weight:400">' + kotOk + '</span></div>' +
                     '<div style="display:grid;gap:0.4rem">' +
-                    '<input id="bt-kot-name-' + s.id + '" value="' + kotBtName + '" placeholder="Kitchen printer Bluetooth name" style="' + inStyle + '">' +
+                    '<input id="bt-kot-name-' + s.id + '" value="' + kotBtName + '" placeholder="Kitchen printer Bluetooth name" style="' + inStyle + '" aria-label="Kitchen printer Bluetooth name">' +
                     '<div style="display:flex;gap:0.4rem;align-items:center">' +
                     '<label style="color:#aaa;font-size:0.78rem;white-space:nowrap">Paper:</label>' +
-                    '<select id="bt-kot-width-' + s.id + '" style="' + selStyle + '">' +
+                    '<select id="bt-kot-width-' + s.id + '" style="' + selStyle + '" aria-label="Bt Kot Width ">' +
                     '<option value="58"' + (kotPaperWidth===58?' selected':'') + '>58mm</option>' +
                     '<option value="80"' + (kotPaperWidth===80?' selected':'') + '>80mm</option>' +
                     '</select></div>' +
@@ -3838,7 +3838,7 @@
                         '<span class="payment">' + escHtml(order.payment || 'N/A') + '</span>' +
                     '</div>' +
                     '<div class="order-actions">' +
-                        '<select data-order-id="' + escHtml(order.id) + '" data-customer="' + escHtml(order.customer || '') + '" data-phone="' + escHtml(waPhone) + '" onchange="updateStatus(this.dataset.orderId, this.value, this.dataset.customer, this.dataset.phone)">' +
+                        '<select data-order-id="' + escHtml(order.id) + '" data-customer="' + escHtml(order.customer || '') + '" data-phone="' + escHtml(waPhone) + '" onchange="updateStatus(this.dataset.orderId, this.value, this.dataset.customer, this.dataset.phone)" aria-label="select">' +
                             '<option value="pending"' + (order.status === 'pending' ? ' selected' : '') + '>Pending</option>' +
                             '<option value="confirmed"' + (order.status === 'confirmed' ? ' selected' : '') + '>Confirmed</option>' +
                             '<option value="preparing"' + (order.status === 'preparing' ? ' selected' : '') + '>Preparing</option>' +
@@ -4095,7 +4095,7 @@
                     '<div class="mac-cat" id="view-cat-' + safeKey + '">' + escHtml(item.category) + ' · ₹' + item.price + '</div>' +
                     '<div class="mac-edit-panel" id="edit-panel-' + safeKey + '" style="display:none">' +
                         '<div class="mac-edit-row"><label>Name</label><input id="ei-name-' + safeKey + '" class="mac-edit-input" value="' + escHtml(item.name) + '"></div>' +
-                        '<div class="mac-edit-row"><label>Category</label><select id="ei-cat-' + safeKey + '" class="mac-edit-select">' +
+                        '<div class="mac-edit-row"><label>Category</label><select id="ei-cat-' + safeKey + '" class="mac-edit-select" aria-label="Ei Cat ">' +
                             (function() {
                                 var cats = Array.from(new Set(allMenuItems.map(function(m){ return m.category; }))).sort();
                                 return cats.map(function(c) {
@@ -4104,8 +4104,8 @@
                             })() +
                         '</select></div>' +
                         '<div class="mac-edit-row"><label>Price (₹)</label><input id="ei-price-' + safeKey + '" class="mac-edit-input" type="number" value="' + item.price + '" min="0"></div>' +
-                        '<div class="mac-edit-row"><label>Type</label><select id="ei-type-' + safeKey + '" class="mac-edit-select"><option value="veg"' + (item.type==='veg'?' selected':'') + '>🟢 Veg</option><option value="non-veg"' + (item.type==='non-veg'?' selected':'') + '>🔴 Non-Veg</option></select></div>' +
-                        '<div class="mac-edit-row"><label>Badge</label><input id="ei-badge-' + safeKey + '" class="mac-edit-input" value="' + escHtml(item.badge||'') + '" placeholder="e.g. Chef\'s Special"></div>' +
+                        '<div class="mac-edit-row"><label>Type</label><select id="ei-type-' + safeKey + '" class="mac-edit-select" aria-label="Ei Type "><option value="veg"' + (item.type==='veg'?' selected':'') + '>🟢 Veg</option><option value="non-veg"' + (item.type==='non-veg'?' selected':'') + '>🔴 Non-Veg</option></select></div>' +
+                        '<div class="mac-edit-row"><label>Badge</label><input id="ei-badge-' + safeKey + '" class="mac-edit-input" value="' + escHtml(item.badge||'') + '" placeholder="e.g. Chef\'s Special" aria-label="e.g. Chef\"></div>' +
                     '</div>' +
                     '<div class="mac-image-section">' +
                         '<img class="mac-img-preview" id="img-preview-' + safeKey + '" src="' + (item.imageUrl ? escHtml(item.imageUrl) : '') + '" alt="" loading="lazy" style="' + (item.imageUrl ? 'display:block' : 'display:none') + '">' +
@@ -4137,14 +4137,14 @@
                                 else stockBadge = '<span class="stock-badge stock-ok">' + stock + ' in stock</span>';
                             }
                             return '<label class="stock-label">Stock:</label>' +
-                                '<input type="number" class="stock-input" id="stock-' + safeKey + '" value="' + (stock != null ? stock : '') + '" placeholder="∞" min="0">' +
+                                '<input type="number" class="stock-input" id="stock-' + safeKey + '" value="' + (stock != null ? stock : '') + '" placeholder="∞" min="0" aria-label="∞">' +
                                 '<button class="stock-save-btn" onclick="saveStock(\'' + escapedId + '\')">Set</button>' +
                                 stockBadge;
                         })() +
                     '</div>' +
                     '<div class="mac-preptime-row">' +
                         '<label class="preptime-label">Prep Time:</label>' +
-                        '<input type="number" class="preptime-input" id="preptime-' + safeKey + '" value="' + (item.prepTimeMinutes != null ? item.prepTimeMinutes : 15) + '" placeholder="15" min="1" max="120">' +
+                        '<input type="number" class="preptime-input" id="preptime-' + safeKey + '" value="' + (item.prepTimeMinutes != null ? item.prepTimeMinutes : 15) + '" placeholder="15" min="1" max="120" aria-label="15">' +
                         '<span class="preptime-unit">min</span>' +
                         '<button class="preptime-save-btn" onclick="savePrepTime(\'' + escapedId + '\')">Set</button>' +
                     '</div>' +
@@ -4800,8 +4800,8 @@
                 return '<div class="media-admin-card">' +
                     '<div class="media-thumb" style="background-image:url(' + escHtml(thumbUrl) + ')"><div class="media-play">▶</div></div>' +
                     '<div class="media-info">' +
-                        '<input class="media-name-input" value="' + escHtml(t.customerName || '') + '" placeholder="Customer name" onchange="updateTestimonial(\'' + t.id + '\', \'customerName\', this.value)">' +
-                        '<input class="media-caption-input" value="' + escHtml(t.caption || '') + '" placeholder="Caption" onchange="updateTestimonial(\'' + escHtml(t.id) + '\', \'caption\', this.value)">' +
+                        '<input class="media-name-input" value="' + escHtml(t.customerName || '') + '" placeholder="Customer name" onchange="updateTestimonial(\'' + t.id + '\', \'customerName\', this.value)" aria-label="Customer name">' +
+                        '<input class="media-caption-input" value="' + escHtml(t.caption || '') + '" placeholder="Caption" onchange="updateTestimonial(\'' + escHtml(t.id) + '\', \'caption\', this.value)" aria-label="Caption">' +
                     '</div>' +
                     '<div class="media-actions">' +
                         '<label class="toggle-switch"><input type="checkbox"' + (t.active ? ' checked' : '') + ' onchange="updateTestimonial(\'' + escHtml(t.id) + '\', \'active\', this.checked)"><span class="toggle-slider"></span></label>' +
@@ -4879,8 +4879,8 @@
                 return '<div class="media-admin-card">' +
                     '<img class="media-thumb-img" src="' + escHtml(p.imageUrl) + '" alt="" loading="lazy">' +
                     '<div class="media-info">' +
-                        '<input class="media-caption-input" value="' + escHtml(p.caption || '') + '" placeholder="Caption" onchange="updateSocialPost(\'' + p.id + '\', \'caption\', this.value)">' +
-                        '<input class="media-caption-input" value="' + escHtml(p.link || '') + '" placeholder="Link (optional)" onchange="updateSocialPost(\'' + escHtml(p.id) + '\', \'link\', this.value)">' +
+                        '<input class="media-caption-input" value="' + escHtml(p.caption || '') + '" placeholder="Caption" onchange="updateSocialPost(\'' + p.id + '\', \'caption\', this.value)" aria-label="Caption">' +
+                        '<input class="media-caption-input" value="' + escHtml(p.link || '') + '" placeholder="Link (optional)" onchange="updateSocialPost(\'' + escHtml(p.id) + '\', \'link\', this.value)" aria-label="Link (optional)">' +
                     '</div>' +
                     '<div class="media-actions">' +
                         '<label class="toggle-switch"><input type="checkbox"' + (p.active ? ' checked' : '') + ' onchange="updateSocialPost(\'' + escHtml(p.id) + '\', \'active\', this.checked)"><span class="toggle-slider"></span></label>' +

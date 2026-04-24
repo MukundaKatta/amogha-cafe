@@ -863,7 +863,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="text" id="search-input" data-i18n-placeholder="searchMenu" placeholder="Search menu..." autocomplete="off">
+        <input type="text" id="search-input" data-i18n-placeholder="searchMenu" placeholder="Search menu..." autocomplete="off" aria-label="searchMenu">
         <button class="mic-btn" onclick="startVoiceOrder()" title="Voice Order">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
@@ -935,9 +935,9 @@
         </div>
         <div class="co-form" id="co-form">
             <label data-i18n="yourName">Your Name *</label>
-            <input type="text" id="co-name" data-i18n-placeholder="enterName" placeholder="Enter your name" autocomplete="name">
+            <input type="text" id="co-name" data-i18n-placeholder="enterName" placeholder="Enter your name" autocomplete="name" aria-label="enterName">
             <label data-i18n="phoneNumber">Phone Number *</label>
-            <input type="tel" id="co-phone" data-i18n-placeholder="enterPhone" placeholder="10-digit phone number" maxlength="10" autocomplete="tel">
+            <input type="tel" id="co-phone" data-i18n-placeholder="enterPhone" placeholder="10-digit phone number" maxlength="10" autocomplete="tel" aria-label="enterPhone">
             <div class="loyalty-bar" id="loyalty-bar">
                 <div class="loyalty-top">
                     <span class="loyalty-tier-name" id="loyalty-tier-name"></span>
@@ -955,7 +955,7 @@
             </div>
             <label data-i18n="tableLabel">Table Number (optional)</label>
             <div class="table-input-row">
-                <input type="text" id="co-table" data-i18n-placeholder="enterTable" placeholder="e.g. 5" maxlength="3" autocomplete="off">
+                <input type="text" id="co-table" data-i18n-placeholder="enterTable" placeholder="e.g. 5" maxlength="3" autocomplete="off" aria-label="enterTable">
                 <button class="table-qr-btn" onclick="openQRScanner()" title="Scan QR">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                         <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/>
@@ -965,7 +965,7 @@
                 </button>
             </div>
             <label data-i18n="notesLabel">Special Instructions (optional)</label>
-            <textarea id="co-notes" data-i18n-placeholder="enterNotes" placeholder="Any allergies, preferences, or notes..."></textarea>
+            <textarea id="co-notes" data-i18n-placeholder="enterNotes" placeholder="Any allergies, preferences, or notes..." aria-label="enterNotes"></textarea>
             <button class="pay-btn" id="pay-btn" onclick="initiatePayment()" data-i18n="payNow">Pay &#8377;0</button>
             <div class="pay-divider" data-i18n="orText">or</div>
             <button class="cod-btn" onclick="placeOrderCOD()" data-i18n="payAtCounter">Pay at Counter</button>
@@ -1013,7 +1013,7 @@
                 <div class="kiosk-feedback-emoji" onclick="selectFeedbackRating(3)" data-rating="3">&#128522;</div>
                 <div class="kiosk-feedback-emoji" onclick="selectFeedbackRating(4)" data-rating="4">&#128525;</div>
             </div>
-            <textarea class="kiosk-feedback-comment" id="feedback-comment" placeholder="Any comments? (optional)" rows="2"></textarea>
+            <textarea class="kiosk-feedback-comment" id="feedback-comment" placeholder="Any comments? (optional)" rows="2" aria-label="Any comments? (optional)"></textarea>
             <button class="kiosk-feedback-submit" id="feedback-submit-btn" onclick="submitKioskFeedback()" disabled>Submit Feedback</button>
         </div>
         <div id="kiosk-feedback-thanks" style="display:none">

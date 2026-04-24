@@ -675,7 +675,7 @@
         <img src="../amogha-logo.png" alt="Amogha" class="login-logo">
         <h2><b>Amogha</b> Kitchen</h2>
         <p class="sub">Kitchen Display System &mdash; Enter PIN to access</p>
-        <input type="password" id="pin" placeholder="Kitchen PIN" maxlength="6" inputmode="numeric" autofocus>
+        <input type="password" id="pin" placeholder="Kitchen PIN" maxlength="6" inputmode="numeric" autofocus aria-label="Kitchen PIN">
         <button class="lbtn" id="lbtn">Open Kitchen Display</button>
         <p id="lerr" class="lerr"></p>
         <p class="lver">KDS Ultimate v6.0 &mdash; 15 Features</p>
@@ -706,7 +706,7 @@
                 <div class="vtab" data-view="batch">Batch</div>
                 <div class="vtab" data-view="analytics">Analytics</div>
             </div>
-            <div class="sbar" id="sbar"><span style="font-size:.8rem">&#128269;</span><input type="text" id="sinp" placeholder="Search..."><span class="sx" id="scl">&times;</span></div>
+            <div class="sbar" id="sbar"><span style="font-size:.8rem">&#128269;</span><input type="text" id="sinp" placeholder="Search..." aria-label="Search..."><span class="sx" id="scl">&times;</span></div>
             <button class="hb" id="bsearch" title="Search (/)">&#128269;</button>
             <button class="hb on" id="bsound" title="Sound (S)">&#128266;</button>
             <button class="hb" id="bvoice" title="Voice (V)">&#128483;</button>
@@ -824,7 +824,7 @@
 </div>
 
 <!-- 86 Modal -->
-<div class="m86" id="m86"><div class="m86-box"><h3>&#10060; Mark Item as 86'd</h3><input id="m86inp" placeholder="Item name (e.g. Paneer 65)"><div class="m86-btns"><button class="m86-cancel" id="m86c">Cancel</button><button class="m86-add" id="m86a">86 It</button></div></div></div>
+<div class="m86" id="m86"><div class="m86-box"><h3>&#10060; Mark Item as 86'd</h3><input id="m86inp" placeholder="Item name (e.g. Paneer 65)" aria-label="Item name (e.g. Paneer 65)"><div class="m86-btns"><button class="m86-cancel" id="m86c">Cancel</button><button class="m86-add" id="m86a">86 It</button></div></div></div>
 
 <!-- Print Ticket -->
 <div class="ptk" id="ptk"></div>
@@ -834,7 +834,7 @@
 <div class="staff-panel" id="staffpanel">
     <div class="hp-hdr"><h2>&#128104;&#8205;&#127859; Staff &amp; Leaderboard</h2><button class="hp-close" id="staffcl">&times;</button></div>
     <div class="staff-lb" id="stafflb"></div>
-    <div class="staff-add-row"><input id="staffinp" placeholder="Add staff name..."><button id="staffadd">+ Add</button></div>
+    <div class="staff-add-row"><input id="staffinp" placeholder="Add staff name..." aria-label="Add staff name..."><button id="staffadd">+ Add</button></div>
 </div>
 
 <!-- Chat Panel -->
@@ -850,7 +850,7 @@
         <button class="chat-qbtn" data-msg="Order ready for pickup">&#9989; Ready for pickup</button>
         <button class="chat-qbtn" data-msg="Need help in kitchen">&#128591; Need help</button>
     </div>
-    <div class="chat-inp"><input id="chatinp" placeholder="Type a message..."><button id="chatsend">Send</button></div>
+    <div class="chat-inp"><input id="chatinp" placeholder="Type a message..." aria-label="Type a message..."><button id="chatsend">Send</button></div>
 </div>
 
 <!-- Recipe Modal -->
@@ -861,7 +861,7 @@
         <div id="recipecontent"></div>
         <div class="recipe-sec">
             <h4>Notes &amp; Instructions</h4>
-            <textarea class="recipe-ta" id="recipeta" placeholder="Add recipe notes, ingredients, prep steps..."></textarea>
+            <textarea class="recipe-ta" id="recipeta" placeholder="Add recipe notes, ingredients, prep steps..." aria-label="Add recipe notes, ingredients, prep steps..."></textarea>
         </div>
         <div class="recipe-btns">
             <button class="recipe-save" id="recipesave">&#128190; Save Recipe</button>
@@ -874,7 +874,7 @@
 <div class="inv-ov" id="invov"></div>
 <div class="inv-panel" id="invpanel">
     <div class="hp-hdr"><h2>&#128230; Inventory Management</h2><button class="hp-close" id="invcl">&times;</button></div>
-    <div class="inv-search"><input id="invsearch" placeholder="Search items..."></div>
+    <div class="inv-search"><input id="invsearch" placeholder="Search items..." aria-label="Search items..."></div>
     <div class="inv-list" id="invlist"></div>
     <div class="inv-footer">
         <button class="inv-reset" id="invreset">Reset All</button>

@@ -380,10 +380,10 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
         <div class="login-sub">Sign in to your kiosk terminal</div>
         <input class="login-input" type="text" id="pos-username" placeholder="Username"
             autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false"
-            onkeydown="if(event.key==='Enter')document.getElementById('pos-password').focus()">
+            onkeydown="if(event.key==='Enter')document.getElementById('pos-password').focus()" aria-label="Username">
         <input class="login-input" type="password" id="pos-password" placeholder="Password"
             autocomplete="current-password"
-            onkeydown="if(event.key==='Enter')posLogin()">
+            onkeydown="if(event.key==='Enter')posLogin()" aria-label="Password">
         <button class="login-btn" id="pos-login-btn" onclick="posLogin()">Login</button>
         <div class="login-err" id="pos-login-err"></div>
     </div>
@@ -415,7 +415,7 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
         <!-- Menu -->
         <div class="pos-menu-col">
             <div class="pos-search-bar">
-                <input type="text" id="pos-search" placeholder="🔍  Search items..." oninput="debouncedRenderMenu()">
+                <input type="text" id="pos-search" placeholder="🔍  Search items..." oninput="debouncedRenderMenu()" aria-label="🔍  Search items...">
             </div>
             <div class="pos-menu-grid" id="pos-menu-grid"></div>
         </div>
@@ -441,13 +441,13 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
                 </div>
                 <div class="pos-order-footer" id="pos-order-footer" style="display:none">
                     <div class="pos-customer-row">
-                        <input type="tel" id="pos-cust-phone" placeholder="Phone (for WhatsApp bill)" maxlength="10" inputmode="numeric" oninput="lookupCustomer(this.value)">
-                        <input type="text" id="pos-table" placeholder="Table #" style="max-width:72px">
+                        <input type="tel" id="pos-cust-phone" placeholder="Phone (for WhatsApp bill)" maxlength="10" inputmode="numeric" oninput="lookupCustomer(this.value)" aria-label="Phone (for WhatsApp bill)">
+                        <input type="text" id="pos-table" placeholder="Table #" style="max-width:72px" aria-label="Table #">
                     </div>
                     <div class="pos-cust-badge" id="pos-cust-badge"></div>
                     <div class="pos-loyalty-row" id="pos-loyalty-row"></div>
                     <div class="pos-customer-row" style="margin-bottom:8px">
-                        <input type="text" id="pos-cust-name" placeholder="Customer name">
+                        <input type="text" id="pos-cust-name" placeholder="Customer name" aria-label="Customer name">
                     </div>
                     <div class="pos-pay-methods">
                         <button class="pos-pay-btn active" onclick="selectPay('Cash',this)">💵 Cash</button>
@@ -455,7 +455,7 @@ body.light-mode .pos-ro-pay{background:rgba(0,0,0,.06);color:var(--txt2)}
                         <button class="pos-pay-btn" onclick="selectPay('Card',this)">💳 Card</button>
                     </div>
                     <div class="pos-notes-row">
-                        <input type="text" id="pos-order-notes" placeholder="📝 Notes (extra spicy, no onion…)" maxlength="120">
+                        <input type="text" id="pos-order-notes" placeholder="📝 Notes (extra spicy, no onion…)" maxlength="120" aria-label="📝 Notes (extra spicy, no onion…)">
                     </div>
                     <div class="pos-total-row">
                         <span class="pos-total-label">Total</span>
