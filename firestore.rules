@@ -97,11 +97,23 @@ service cloud.firestore {
       allow read: if true;
       allow create: if hasFields(['name', 'price', 'category'])
                     && isString(request.resource.data.name)
+                    && request.resource.data.name.size() <= 200
+                    && isString(request.resource.data.category)
+                    && request.resource.data.category.size() <= 100
                     && isNumber(request.resource.data.price)
-                    && request.resource.data.price > 0;
-      // Admin panel writes from client — validate price is positive to prevent tampering
-      allow update: if !request.resource.data.keys().hasAny(['price'])
-                    || (isNumber(request.resource.data.price) && request.resource.data.price > 0);
+                    && request.resource.data.price > 0
+                    && request.resource.data.price < 100000;
+      // Admin panel writes from client. Validate price stays positive AND
+      // bounded (previously the rule's `||` short-circuited validation when
+      // a non-price field changed, so an attacker could set price to a
+      // negative number on an existing item by also touching another field).
+      allow update: if (!request.resource.data.keys().hasAny(['price'])
+                       || (isNumber(request.resource.data.price)
+                           && request.resource.data.price > 0
+                           && request.resource.data.price < 100000))
+                    && (!request.resource.data.keys().hasAny(['name'])
+                        || (isString(request.resource.data.name)
+                            && request.resource.data.name.size() <= 200));
       allow delete: if false;
     }
 
@@ -120,8 +132,20 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.resource.data.keys().hasAll(['url', 'type', 'sortOrder', 'active'])
                     && request.resource.data.url is string
-                    && request.resource.data.type is string;
-      allow update: if true;
+                    && request.resource.data.url.size() <= 2000
+                    && request.resource.data.type is string
+                    && request.resource.data.type in ['image', 'video']
+                    && request.resource.data.sortOrder is number
+                    && request.resource.data.active is bool;
+      // Restrict update to known fields. Previously `allow update: if true` let
+      // anyone with internet access inject arbitrary data into the homepage
+      // slideshow (hostile image URLs, type tampering, etc.).
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['url', 'type', 'sortOrder', 'active', 'caption', 'updatedAt'])
+                    && (!request.resource.data.keys().hasAny(['url'])
+                        || (request.resource.data.url is string && request.resource.data.url.size() <= 2000))
+                    && (!request.resource.data.keys().hasAny(['type'])
+                        || request.resource.data.type in ['image', 'video']);
       allow delete: if false;
     }
 
@@ -175,8 +199,19 @@ service cloud.firestore {
       allow read: if false;
       allow create: if request.resource.data.keys().hasAll(['username', 'shopId', 'active', 'createdAt'])
                     && request.resource.data.username is string
-                    && request.resource.data.shopId is string;
-      allow update: if true;
+                    && request.resource.data.username.size() <= 60
+                    && request.resource.data.shopId is string
+                    && request.resource.data.shopId.size() <= 60;
+      // Restrict update to admin-managed fields. Previously `allow update: if
+      // true` let any client modify any field on any kiosk record — including
+      // reassigning a terminal to a different shop. Credential rotation
+      // (passwordHash) is allowed because the admin panel does it client-side.
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['active', 'passwordHash', 'username', 'lastLogin', 'updatedAt'])
+                    && (!request.resource.data.keys().hasAny(['username'])
+                        || (request.resource.data.username is string && request.resource.data.username.size() <= 60))
+                    && (!request.resource.data.keys().hasAny(['active'])
+                        || request.resource.data.active is bool);
       allow delete: if false;
     }
 
