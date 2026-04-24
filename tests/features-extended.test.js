@@ -992,11 +992,12 @@ describe('submitCateringEnquiry', () => {
         );
     }
 
-    it('shows alert when required fields are missing', () => {
+    it('shows error toast when required fields are missing', () => {
         setupDOM('<input id="catering-name" value="">');
-        window.alert = vi.fn();
         submitCateringEnquiry();
-        expect(window.alert).toHaveBeenCalled();
+        const toast = document.body.querySelector('.catering-toast.is-error');
+        expect(toast).not.toBeNull();
+        expect(toast.textContent).toMatch(/required/i);
     });
 
     it('submits to Firestore and shows success toast on success', async () => {
@@ -1012,16 +1013,17 @@ describe('submitCateringEnquiry', () => {
         expect(toast.textContent).toContain('Catering enquiry received');
     });
 
-    it('shows alert and re-enables button on Firestore failure', async () => {
+    it('shows error toast and re-enables button on Firestore failure', async () => {
         buildCateringDOM();
         window.scrollTo = vi.fn();
-        window.alert = vi.fn();
         const db = makeDb();
         db._colRef.add = vi.fn(() => Promise.reject(new Error('fail')));
         window.db = db;
         submitCateringEnquiry();
         await new Promise(r => setTimeout(r, 20));
-        expect(window.alert).toHaveBeenCalled();
+        const errToast = document.body.querySelector('.catering-toast.is-error');
+        expect(errToast).not.toBeNull();
+        expect(errToast.textContent).toMatch(/91210 04999|could not submit/i);
         const btn = document.getElementById('catering-submit-btn');
         expect(btn.disabled).toBe(false);
     });
@@ -1302,7 +1304,7 @@ describe('generateMealPlan', () => {
             dailyAverage: 36,
             tips: ['Drink water between meals']
         };
-        global.fetch = vi.fn(() => Promise.resolve({ json: () => Promise.resolve(planData) }));
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(planData) }));
         await generateMealPlan();
         const resultEl = document.getElementById('meal-plan-result');
         expect(resultEl.innerHTML).toContain('Monday');
@@ -1352,7 +1354,7 @@ describe('loadSmartCombos', () => {
                 { name: 'Weekend Special', items: ['Mutton Biryani', 'Raita'], originalPrice: 390, suggestedPrice: 329, discount: 16, reason: 'Weekend favourite' }
             ]
         };
-        global.fetch = vi.fn(() => Promise.resolve({ json: () => Promise.resolve(combosData) }));
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(combosData) }));
         await loadSmartCombos();
         expect(global.fetch).toHaveBeenCalledWith('/api/smart-combo', expect.any(Object));
         const section = document.getElementById('ai-combo-section');
@@ -2751,7 +2753,7 @@ describe('initAiForYou with cart data in fetch body', () => {
         let capturedBody = null;
         global.fetch = vi.fn((url, opts) => {
             capturedBody = JSON.parse(opts.body);
-            return Promise.resolve({
+            return Promise.resolve({ ok: true,
                 json: () => Promise.resolve({ recommendations: [] })
             });
         });
@@ -2775,7 +2777,7 @@ describe('initAiForYou with cart data in fetch body', () => {
         let capturedBody = null;
         global.fetch = vi.fn((url, opts) => {
             capturedBody = JSON.parse(opts.body);
-            return Promise.resolve({
+            return Promise.resolve({ ok: true,
                 json: () => Promise.resolve({ recommendations: [] })
             });
         });
@@ -3452,7 +3454,7 @@ describe('processVoiceCommand branches (via voice recognition)', () => {
     it('reorder with empty cache falls through to search (line 625)', () => {
         setupDOM('<div id="auth-toast"></div>');
         localStorage.removeItem('amoghaMyOrders');
-        global.fetch = vi.fn(() => Promise.resolve({ json: () => Promise.resolve({ reply: 'no match' }) }));
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ reply: 'no match' }) }));
         setupVoiceAndSendCommand('my usual please');
         // Falls through to the match-based or API path
     });
@@ -3502,7 +3504,7 @@ describe('processVoiceCommand branches (via voice recognition)', () => {
 
     it('API fallback on unrecognized command with suggestedItems (line 680)', async () => {
         setupDOM('<div id="auth-toast"></div>');
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({
                 suggestedItems: [{ name: 'Special Biryani', price: 300 }]
             })
@@ -3515,7 +3517,7 @@ describe('processVoiceCommand branches (via voice recognition)', () => {
 
     it('API fallback with no suggestedItems shows reply (line 680)', async () => {
         setupDOM('<div id="auth-toast"></div>');
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({ reply: 'I did not understand', suggestedItems: [] })
         }));
         setupVoiceAndSendCommand('jabberwocky gibberish xyzzy');
@@ -3889,10 +3891,10 @@ describe('submitCateringEnquiry branch coverage', () => {
             '<button id="catering-submit-btn">Submit</button>'
         );
         window.db = undefined;
-        window.alert = vi.fn();
         submitCateringEnquiry();
         await new Promise(r => setTimeout(r, 20));
-        expect(window.alert).toHaveBeenCalled();
+        const errToast = document.body.querySelector('.catering-toast.is-error');
+        expect(errToast).not.toBeNull();
     });
 });
 
@@ -4102,7 +4104,7 @@ describe('initAiForYou branch: user dietary prefs and catch', () => {
         let capturedBody = null;
         global.fetch = vi.fn((url, opts) => {
             capturedBody = JSON.parse(opts.body);
-            return Promise.resolve({ json: () => Promise.resolve({ recommendations: [{ name: 'Dal', price: 149, reason: 'Veg' }] }) });
+            return Promise.resolve({ ok: true, json: () => Promise.resolve({ recommendations: [{ name: 'Dal', price: 149, reason: 'Veg' }] }) });
         });
         await initAiForYou();
         expect(capturedBody.isVegOnly).toBe(true);
@@ -4115,7 +4117,7 @@ describe('initAiForYou branch: user dietary prefs and catch', () => {
         let capturedBody = null;
         global.fetch = vi.fn((url, opts) => {
             capturedBody = JSON.parse(opts.body);
-            return Promise.resolve({ json: () => Promise.resolve({ recommendations: [] }) });
+            return Promise.resolve({ ok: true, json: () => Promise.resolve({ recommendations: [] }) });
         });
         await initAiForYou();
         expect(capturedBody.isVegOnly).toBe(false);
@@ -4197,7 +4199,7 @@ describe('generateMealPlan branch coverage', () => {
             dailyAverage: 71,
             tips: ['Eat more vegetables', 'Stay hydrated']
         };
-        global.fetch = vi.fn(() => Promise.resolve({ json: () => Promise.resolve(planData) }));
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(planData) }));
         await generateMealPlan();
         const resultEl = document.getElementById('meal-plan-result');
         expect(resultEl.innerHTML).toContain('Monday');
@@ -4216,7 +4218,7 @@ describe('generateMealPlan branch coverage', () => {
             '<input id="mp-people" value="1">'
         );
         const planData = { totalCost: 700, days: [] };
-        global.fetch = vi.fn(() => Promise.resolve({ json: () => Promise.resolve(planData) }));
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(planData) }));
         await generateMealPlan();
         const resultEl = document.getElementById('meal-plan-result');
         expect(resultEl.innerHTML).toContain('700');
@@ -4231,7 +4233,7 @@ describe('generateMealPlan branch coverage', () => {
             '<input id="mp-people" value="1">'
         );
         const planData = { totalCost: 500, days: [], tips: [] };
-        global.fetch = vi.fn(() => Promise.resolve({ json: () => Promise.resolve(planData) }));
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(planData) }));
         await generateMealPlan();
         const resultEl = document.getElementById('meal-plan-result');
         expect(resultEl.innerHTML).not.toContain('meal-plan-tips');
@@ -4245,7 +4247,7 @@ describe('generateMealPlan branch coverage', () => {
             '<input id="mp-people" value="1">'
         );
         const planData = {};
-        global.fetch = vi.fn(() => Promise.resolve({ json: () => Promise.resolve(planData) }));
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(planData) }));
         await generateMealPlan();
         const resultEl = document.getElementById('meal-plan-result');
         expect(resultEl.innerHTML).toContain('meal-plan-grid');
@@ -4275,6 +4277,7 @@ describe('loadSmartCombos branch coverage', () => {
         localStorage.setItem('ai_combos', JSON.stringify({ ts: Date.now() - 4000000, data: [] }));
         setupDOM('<div id="ai-combo-section"></div>');
         global.fetch = vi.fn(() => Promise.resolve({
+            ok: true,
             json: () => Promise.resolve({
                 combos: [{ name: 'Fresh Combo', items: ['Biryani', 'Raita'], originalPrice: 289, suggestedPrice: 239, discount: 17, reason: 'Popular pairing' }]
             })
@@ -4295,7 +4298,7 @@ describe('loadSmartCombos branch coverage', () => {
     it('does not render when fetch returns empty combos (line 1634)', async () => {
         localStorage.removeItem('ai_combos');
         setupDOM('<div id="ai-combo-section"></div>');
-        global.fetch = vi.fn(() => Promise.resolve({ json: () => Promise.resolve({ combos: [] }) }));
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ combos: [] }) }));
         await loadSmartCombos();
         const section = document.getElementById('ai-combo-section');
         // Section innerHTML should not contain ai-combo-card since combos is empty
@@ -4519,7 +4522,7 @@ describe('processVoiceCommand: partial word and indexOf matching (lines 642-643)
 
     it('API fallback with empty suggestedItems shows reply text (line 680)', async () => {
         setupDOM('<div id="auth-toast"></div>');
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({ reply: 'No match found', suggestedItems: null })
         }));
         setupVoiceAndSend('xyzzy999 unknown dish abcdef');
@@ -4782,9 +4785,8 @@ describe('submitCateringEnquiry: constructs payload with empty message (line 133
 
 // --- submitCateringEnquiry: catch path re-enables button (line 1352) ---
 describe('submitCateringEnquiry: catch path re-enables submit button (line 1352)', () => {
-    it('re-enables button and shows alert on failure', async () => {
+    it('re-enables button and shows error toast on failure', async () => {
         window.db = undefined;
-        window.alert = vi.fn();
         setupDOM(
             '<input id="catering-name" value="Bob">' +
             '<input id="catering-phone" value="9222222222">' +
@@ -4799,7 +4801,8 @@ describe('submitCateringEnquiry: catch path re-enables submit button (line 1352)
         const btn = document.getElementById('catering-submit-btn');
         expect(btn.disabled).toBe(false);
         expect(btn.textContent).toBe('Submit Enquiry');
-        expect(window.alert).toHaveBeenCalled();
+        const errToast = document.body.querySelector('.catering-toast.is-error');
+        expect(errToast).not.toBeNull();
     });
 });
 
@@ -4836,7 +4839,7 @@ describe('generateMealPlan: renders meal items with qty and price (lines 1584-15
             '<input id="mp-budget" value="500">' +
             '<input id="mp-people" value="3">'
         );
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({
                 days: [{
                     day: 'Wednesday',
@@ -5350,7 +5353,7 @@ describe('processVoiceCommand: API fallback adds suggestedItems to cart (line 68
         cart.length = 0;
         initVoiceOrdering();
         showVoiceOverlay();
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({
                 suggestedItems: [{ name: 'AI Biryani', price: 299 }, { name: 'AI Raita', price: 40 }]
             })
@@ -5673,7 +5676,7 @@ describe('generateMealPlan: people defaults to 1 when empty (line 1575)', () => 
         let capturedBody = null;
         global.fetch = vi.fn((url, opts) => {
             capturedBody = JSON.parse(opts.body);
-            return Promise.resolve({ json: () => Promise.resolve({ days: [], totalCost: 0 }) });
+            return Promise.resolve({ ok: true, json: () => Promise.resolve({ days: [], totalCost: 0 }) });
         });
         await generateMealPlan();
         expect(capturedBody.people).toBe(1);
@@ -5689,7 +5692,7 @@ describe('generateMealPlan: day with empty meals and items (lines 1584-1587)', (
             '<input id="mp-budget" value="100">' +
             '<input id="mp-people" value="1">'
         );
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({
                 days: [
                     { day: 'Monday', meals: [] },
@@ -5897,7 +5900,7 @@ describe('processVoiceCommand: API fallback shows reply when no suggestedItems (
         setupDOM('<div id="auth-toast"></div>');
         initVoiceOrdering();
         showVoiceOverlay();
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({ reply: 'I did not understand that', suggestedItems: [] })
         }));
         const mockEvent = {
@@ -5956,7 +5959,7 @@ describe('generateMealPlan: meal with undefined items (line 1587)', () => {
             '<input id="mp-budget" value="200">' +
             '<input id="mp-people" value="1">'
         );
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({
                 days: [{ day: 'Friday', meals: [{ mealType: 'Snack' }] }],
                 totalCost: 100,
@@ -6277,7 +6280,7 @@ describe('generateMealPlan: day with null meals (line 1584)', () => {
             '<input id="mp-budget" value="200">' +
             '<input id="mp-people" value="1">'
         );
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({
                 days: [{ day: 'Saturday' }], // no meals field
                 totalCost: 0,
@@ -6298,7 +6301,7 @@ describe('generateMealPlan: meal item with no qty field (line 1587)', () => {
             '<input id="mp-budget" value="200">' +
             '<input id="mp-people" value="1">'
         );
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({
                 days: [{ day: 'Sunday', meals: [{ mealType: 'Dinner', items: [{ name: 'Soup', price: 80 }] }] }],
                 totalCost: 80,
@@ -6324,7 +6327,7 @@ describe('processVoiceCommand: API fallback adds items from suggestedItems (line
         cart.length = 0;
         initVoiceOrdering();
         showVoiceOverlay();
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({
                 suggestedItems: [{ name: 'Gemini Special', price: 350 }]
             })
@@ -6472,9 +6475,8 @@ describe('submitCateringEnquiry: non-numeric guests defaults to 0 (line 1337)', 
 
 // --- Line 1352: submitCateringEnquiry catch without btn element ---
 describe('submitCateringEnquiry: catch path without button (line 1352)', () => {
-    it('shows alert but does not fail when button is missing', async () => {
+    it('shows error toast but does not fail when button is missing', async () => {
         window.db = undefined;
-        window.alert = vi.fn();
         setupDOM(
             '<input id="catering-name" value="Grace">' +
             '<input id="catering-phone" value="9777777777">' +
@@ -6485,7 +6487,8 @@ describe('submitCateringEnquiry: catch path without button (line 1352)', () => {
         );
         submitCateringEnquiry();
         await new Promise(r => setTimeout(r, 20));
-        expect(window.alert).toHaveBeenCalled();
+        const errToast = document.body.querySelector('.catering-toast.is-error');
+        expect(errToast).not.toBeNull();
     });
 });
 

@@ -1201,6 +1201,12 @@ export function initUI() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ query: query })
                     });
+                    if (!resp.ok) {
+                        // Cloud Function unavailable — hide AI badge instead of
+                        // JSON-parsing an HTML error body and showing junk.
+                        badge.style.display = 'none';
+                        return;
+                    }
                     var data = await resp.json();
                     badge.textContent = 'AI: ' + (data.interpretation || 'results');
 

@@ -693,7 +693,13 @@ function processVoiceCommand(text) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: text, cart: [] })
-        }).then(function(r) { return r.json(); }).then(function(data) {
+        }).then(function(r) {
+            // Don't JSON-parse a 4xx/5xx HTML body — it would either throw
+            // (caught below) or, worse, parse to {} and silently show "Could
+            // not understand" when the real problem is the backend.
+            if (!r.ok) throw new Error('chat responded ' + r.status);
+            return r.json();
+        }).then(function(data) {
             if (data.suggestedItems && data.suggestedItems.length > 0) {
                 data.suggestedItems.forEach(function(item) { addToCart(item.name, item.price); });
                 showAuthToast('Added ' + data.suggestedItems.length + ' item(s) via AI');
@@ -1361,8 +1367,20 @@ export function submitCateringEnquiry() {
     const message   = document.getElementById('catering-message')?.value.trim();
     const btn       = document.getElementById('catering-submit-btn');
 
+    // Inline toast helper — same animation as the success toast below; avoids
+    // browser-blocking `alert()` for form validation and submission errors.
+    function cateringToast(text, isError) {
+        const t = document.createElement('div');
+        t.className = 'catering-toast' + (isError ? ' is-error' : '');
+        t.setAttribute('role', isError ? 'alert' : 'status');
+        t.textContent = text;
+        document.body.appendChild(t);
+        setTimeout(() => t.classList.add('show'), 10);
+        setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 4000);
+    }
+
     if (!name || !phone || !eventType || !guests || !date) {
-        alert('Please fill in all required fields.');
+        cateringToast('Please fill in all required fields.', true);
         return;
     }
 
@@ -1373,16 +1391,10 @@ export function submitCateringEnquiry() {
     (db ? db.collection('cateringInquiries').add(payload) : Promise.reject('no db'))
         .then(function() {
             closeCateringModal();
-            // Show success toast
-            const toast = document.createElement('div');
-            toast.className = 'catering-toast';
-            toast.textContent = '✅ Catering enquiry received! We\'ll contact you within 24 hours.';
-            document.body.appendChild(toast);
-            setTimeout(function() { toast.classList.add('show'); }, 10);
-            setTimeout(function() { toast.classList.remove('show'); setTimeout(function(){ toast.remove(); }, 400); }, 4000);
+            cateringToast('✅ Catering enquiry received! We\'ll contact you within 24 hours.');
         })
         .catch(function() {
-            alert('Could not submit. Please call us at +91 91210 04999.');
+            cateringToast('Could not submit. Please call us at +91 91210 04999.', true);
             if (btn) { btn.disabled = false; btn.textContent = 'Submit Enquiry'; }
         });
 }
@@ -1622,6 +1634,10 @@ export async function generateMealPlan() {
                 people: parseInt(document.getElementById('mp-people').value) || 1
             })
         });
+        // Guard against an HTML/error body being JSON-parsed and crashing the
+        // downstream `data.days.forEach(...)` paths when the Cloud Function is
+        // unreachable (preview / offline / 5xx).
+        if (!resp.ok) throw new Error('meal-plan responded ' + resp.status);
         var data = await resp.json();
 
         var html = '<div class="meal-plan-grid">';
@@ -1677,6 +1693,9 @@ export async function loadSmartCombos() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({})
         });
+        // Cloud Function may be unavailable in local preview / offline — bail
+        // out silently instead of JSON-parsing an error body and rendering junk.
+        if (!resp.ok) return;
         var data = await resp.json();
         if (data.combos && data.combos.length > 0) {
             renderSmartCombos(section, data.combos);

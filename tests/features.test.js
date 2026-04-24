@@ -478,7 +478,7 @@ describe('processVoiceCommand via SpeechRecognition mock', () => {
   });
 
   it('unrecognized command calls AI fallback (lines 669-685)', async () => {
-    global.fetch = vi.fn(() => Promise.resolve({
+    global.fetch = vi.fn(() => Promise.resolve({ ok: true,
       json: () => Promise.resolve({ suggestedItems: [{ name: 'Biryani', price: 250 }] })
     }));
     fireVoiceResult('something totally random xyzzy');
@@ -494,7 +494,7 @@ describe('processVoiceCommand via SpeechRecognition mock', () => {
   });
 
   it('AI fallback with no suggested items shows reply (line 681)', async () => {
-    global.fetch = vi.fn(() => Promise.resolve({
+    global.fetch = vi.fn(() => Promise.resolve({ ok: true,
       json: () => Promise.resolve({ suggestedItems: [], reply: 'I cannot help with that' })
     }));
     fireVoiceResult('tell me a joke');
