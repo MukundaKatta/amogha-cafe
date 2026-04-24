@@ -3009,6 +3009,7 @@ describe('initUI — AI-enhanced search', () => {
         `);
 
         const mockResponse = {
+            ok: true,
             json: () => Promise.resolve({
                 interpretation: 'spicy rice dishes',
                 results: [{ name: 'Chicken Biryani' }]
@@ -4583,7 +4584,7 @@ describe('initUI — AI-enhanced search (lines 1061-1084)', () => {
             <div class="menu-item-card" data-id="Butter Chicken"><h4>Butter Chicken</h4></div>
         `);
         // Mock fetch for AI search
-        global.fetch = vi.fn(() => Promise.resolve({
+        global.fetch = vi.fn(() => Promise.resolve({ ok: true,
             json: () => Promise.resolve({
                 interpretation: 'spicy chicken',
                 results: [{ name: 'Butter Chicken' }]
