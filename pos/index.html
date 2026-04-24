@@ -616,7 +616,19 @@ function posLogin() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username, password: password })
-    }).then(function(resp) { return resp.json().then(function(data) { return { ok: resp.ok, data: data }; }); })
+    }).then(function(resp) {
+        // Tolerate non-JSON bodies (HTML error page from Cloud Function,
+        // CORS-stripped body, empty 204, etc.) so the user gets a clean
+        // message instead of an "Unexpected end of JSON input" stack
+        // trace in the console.
+        return resp.text().then(function(text) {
+            var data = {};
+            try { data = text ? JSON.parse(text) : {}; } catch (_) {
+                data = { error: 'Server returned an unexpected response. Try again.' };
+            }
+            return { ok: resp.ok, status: resp.status, data: data };
+        });
+    })
     .then(function(result) {
         if (result.ok && result.data.success) {
             shopId = result.data.shopId;
@@ -629,10 +641,16 @@ function posLogin() {
             document.getElementById('pos-password').value = '';
             document.getElementById('pos-password').focus();
         }
-    }).catch(function() {
+    }).catch(function(e) {
         btn.disabled = false;
         btn.textContent = 'Login';
-        document.getElementById('pos-login-err').textContent = 'Connection error. Try again.';
+        // Distinguish the genuine network/CORS failure ("TypeError: Failed
+        // to fetch") from a logic error so support staff get an actionable
+        // message rather than a generic "Connection error" for everything.
+        var isNetwork = !e || e.name === 'TypeError' || (e.message && /failed to fetch|networkerror|network request failed/i.test(e.message));
+        document.getElementById('pos-login-err').textContent = isNetwork
+            ? 'Cannot reach login server. Check your internet connection.'
+            : 'Login error. Please try again.';
     });
 }
 

@@ -146,8 +146,40 @@ app.use(function(req, res, next) {
     next();
 });
 
+// Allowed origins:
+//   - amogha-cafe.web.app / firebaseapp.com / amoghahotels.com → web frontends
+//   - capacitor://localhost, capacitor-electron://localhost, ionic://localhost
+//     → Capacitor iOS / Android / Electron WebViews (POS, kiosk, delivery,
+//     customer apps). Without these, native apps got "Connection error"
+//     because the CORS preflight failed (no Access-Control-Allow-Origin
+//     header on the OPTIONS response) and the browser blocked the actual
+//     login request.
+//   - http://localhost / https://localhost → some Capacitor Android
+//     configurations + local dev.
+//   - The function-style cors `origin` callback also lets requests with
+//     no Origin header through (e.g. server-to-server, curl, Capacitor
+//     Network plugin in some versions) so the function stays usable
+//     from non-browser callers without falling open to arbitrary CORS
+//     origins.
+var ALLOWED_ORIGINS = [
+    'https://amogha-cafe.web.app',
+    'https://amogha-cafe.firebaseapp.com',
+    'https://amoghahotels.com',
+    'capacitor://localhost',
+    'capacitor-electron://localhost',
+    'ionic://localhost',
+    'http://localhost',
+    'https://localhost',
+];
 app.use(cors({
-    origin: ['https://amogha-cafe.web.app', 'https://amogha-cafe.firebaseapp.com', 'https://amoghahotels.com'],
+    origin: function(origin, cb) {
+        if (!origin) return cb(null, true); // non-browser caller (curl, native fetch w/o Origin)
+        if (ALLOWED_ORIGINS.indexOf(origin) !== -1) return cb(null, true);
+        // Permit any localhost port for local dev (Vite preview, capacitor live-reload)
+        if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return cb(null, true);
+        if (/^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) return cb(null, true);
+        return cb(new Error('CORS: origin ' + origin + ' not allowed'));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
     credentials: true
