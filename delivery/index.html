@@ -561,12 +561,23 @@ function doLogin() {
     if (!pin) { err.textContent = 'Enter your PIN.'; return; }
     err.textContent = '';
 
-    // Authenticate via Cloud Function (credentials never exposed to client)
+    // Authenticate via Cloud Function (credentials never exposed to client).
+    // Tolerate the Cloud Function being unreachable / returning a non-JSON
+    // body (e.g. HTML error page in preview / staging) without spamming the
+    // console with an "Unexpected end of JSON input" SyntaxError.
     fetch('/api/auth/delivery-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: phone, pin: pin })
-    }).then(function(resp) { return resp.json().then(function(data) { return { ok: resp.ok, data: data }; }); })
+    }).then(function(resp) {
+        return resp.text().then(function(text) {
+            var data = {};
+            try { data = text ? JSON.parse(text) : {}; } catch (_) {
+                data = { error: 'Server returned an unexpected response. Check your connection.' };
+            }
+            return { ok: resp.ok, status: resp.status, data: data };
+        });
+    })
     .then(function(result) {
         if (result.ok && result.data.success) {
             myPhone = result.data.phone;
@@ -580,7 +591,9 @@ function doLogin() {
             }
         }
     }).catch(function(err2) {
-        console.error('Login error:', err2);
+        // Genuine network error (DNS, offline, CORS, abort) — don't dump the
+        // full stack trace to the console for routine offline cases.
+        if (err2 && err2.name !== 'TypeError') console.error('Login error:', err2);
         err.textContent = 'Login failed. Check your connection.';
     });
 }

@@ -3176,6 +3176,32 @@ body.dark-mode .pin-dot.filled {
         transform: none;
         visibility: visible;
     }
+    /* Backdrop overlay for the drawer — clicks here close the menu.
+       The base `.mobile-menu-overlay` rule lives inside the
+       `@media (max-width: 768px)` block above, so without this
+       parallel definition the overlay defaults to position:static
+       with no z-index at 769–1024px and the close-on-tap UX
+       silently breaks (overlay renders but clicks fall through
+       to whatever absolutely-positioned hero overlay sits behind). */
+    .mobile-menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .mobile-menu-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
 }
 
 /* ===== Touch-target sizing (WCAG 2.5.5 / Apple HIG: ≥44×44) =====
