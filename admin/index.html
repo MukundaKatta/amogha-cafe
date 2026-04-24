@@ -72,6 +72,9 @@
             min-height: 100vh;
             padding: 2rem;
             position: relative;
+            /* Clip the 500x500 decorative aura (::before) to the viewport so
+               it doesn't spill out and create horizontal scroll on phones. */
+            overflow: hidden;
         }
 
         /* Login background aura */
