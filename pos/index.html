@@ -1518,9 +1518,9 @@ function printBill() {
         });
         return;
     }
-    // Debug: show why Bluetooth wasn't used
-    if (!btPrinter) showToast('No BT plugin — using browser print', 'info');
-    else if (!printerConfig.btName) showToast('No printer name configured — using browser print', 'info');
+    // Log why Bluetooth wasn't used (silent — bill still prints via browser)
+    if (!btPrinter) console.log('[BTPrinter] No Bluetooth plugin — using browser print');
+    else if (!printerConfig.btName) console.log('[BTPrinter] No printer name configured — using browser print');
     // Fallback: browser print dialog
     printBillHTML(data, orderId, shopName, printerConfig, footer);
 }
