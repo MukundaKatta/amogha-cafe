@@ -5,28 +5,31 @@ rules_version = '2';
 // =============================================================================
 //
 // IMPORTANT SECURITY NOTE:
-// This app uses a custom phone+PIN authentication system, NOT Firebase Auth.
-// Because of this, request.auth is always null and true row-level security
-// (e.g. "user can only edit their own data") is NOT enforceable here.
+// The customer-facing app uses a custom phone+PIN system, NOT Firebase Auth,
+// so request.auth is null for customer flows and only field-level validation
+// is possible there.
 //
-// These rules provide the best protection achievable without Firebase Auth:
-//   - Field validation on creates (required fields, correct types)
-//   - DELETE blocked on all collections (enforced)
-//   - Admin-only collections (menu, specials, heroSlides, addons, testimonials,
-//     socialPosts, settings) are read-only from client. Admin operations must
-//     go through Firebase Console or a future Cloud Function with Admin SDK.
-//   - Coupons: only usedCount can be updated (not discount/type/etc.)
-//   - Gift cards: only balance and redeemedAt can be updated
-//   - Reviews: immutable after creation
-//   - Kiosks & deliveryPersons: READ BLOCKED — auth via Cloud Functions
-//     (POST /auth/kiosk-login, POST /auth/delivery-login)
-//   - API orders: prices validated server-side against menu DB
+// The ADMIN panel does use Firebase Auth: it signs in with a custom token
+// minted by POST /auth/admin-login (functions/index.js), and that token
+// carries the {admin: true} custom claim. Admin-writeable collections check
+// request.auth.token.admin == true so a tab without that session can't
+// write — even if it has the password.
 //
-// To enable true row-level security in the future:
-//   1. Migrate to Firebase Anonymous Auth or phone Auth
-//   2. Add request.auth.uid == resource.data.phone checks
-//   3. Add admin role via Custom Claims
+// Rule layout:
+//   - Customer-driven writes (orders, users, etc.): field-validated, no auth.
+//   - Admin-only writes (menu, heroSlides, settings, shops, kiosks):
+//     require request.auth.token.admin == true. Field validation kept as
+//     defense in depth.
+//   - Read-only collections (specials, addons, testimonials, socialPosts):
+//     allow write: if false — admin manages these via Firebase Console or
+//     a future admin endpoint.
+//   - settings/adminConfig: read BLOCKED. The doc holds the admin password
+//     hash + salt; only the Admin SDK in Cloud Functions touches it.
 // =============================================================================
+
+// Reused predicate: the request carries an admin custom claim.
+// Use only inside `match` blocks. Kept as a comment-doc here; inlined below
+// because Firestore rules functions can't be defined at file scope.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -45,6 +48,14 @@ service cloud.firestore {
 
     function isNumber(val) {
       return val is number;
+    }
+
+    // True if the request carries the admin custom claim (minted by the
+    // /auth/admin-login Cloud Function and attached via signInWithCustomToken
+    // in the admin panel).
+    function isAdmin() {
+      return request.auth != null
+             && request.auth.token.admin == true;
     }
 
     // -------------------------------------------------------------------------
@@ -95,7 +106,11 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /menu/{itemId} {
       allow read: if true;
-      allow create: if hasFields(['name', 'price', 'category'])
+      // Admin Firebase Auth claim required. Field validation kept as
+      // defense in depth — if the claim check is ever weakened, the type
+      // and bounds checks still apply.
+      allow create: if isAdmin()
+                    && hasFields(['name', 'price', 'category'])
                     && isString(request.resource.data.name)
                     && request.resource.data.name.size() <= 200
                     && isString(request.resource.data.category)
@@ -103,18 +118,15 @@ service cloud.firestore {
                     && isNumber(request.resource.data.price)
                     && request.resource.data.price > 0
                     && request.resource.data.price < 100000;
-      // Admin panel writes from client. Validate price stays positive AND
-      // bounded (previously the rule's `||` short-circuited validation when
-      // a non-price field changed, so an attacker could set price to a
-      // negative number on an existing item by also touching another field).
-      allow update: if (!request.resource.data.keys().hasAny(['price'])
+      allow update: if isAdmin()
+                    && (!request.resource.data.keys().hasAny(['price'])
                        || (isNumber(request.resource.data.price)
                            && request.resource.data.price > 0
                            && request.resource.data.price < 100000))
                     && (!request.resource.data.keys().hasAny(['name'])
                         || (isString(request.resource.data.name)
                             && request.resource.data.name.size() <= 200));
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
@@ -122,7 +134,8 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /specials/{specialId} {
       allow read: if true;
-      allow write: if false;
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
@@ -130,23 +143,22 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /heroSlides/{slideId} {
       allow read: if true;
-      allow create: if request.resource.data.keys().hasAll(['url', 'type', 'sortOrder', 'active'])
+      allow create: if isAdmin()
+                    && request.resource.data.keys().hasAll(['url', 'type', 'sortOrder', 'active'])
                     && request.resource.data.url is string
                     && request.resource.data.url.size() <= 2000
                     && request.resource.data.type is string
                     && request.resource.data.type in ['image', 'video']
                     && request.resource.data.sortOrder is number
                     && request.resource.data.active is bool;
-      // Restrict update to known fields. Previously `allow update: if true` let
-      // anyone with internet access inject arbitrary data into the homepage
-      // slideshow (hostile image URLs, type tampering, etc.).
-      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+      allow update: if isAdmin()
+                    && request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['url', 'type', 'sortOrder', 'active', 'caption', 'updatedAt'])
                     && (!request.resource.data.keys().hasAny(['url'])
                         || (request.resource.data.url is string && request.resource.data.url.size() <= 2000))
                     && (!request.resource.data.keys().hasAny(['type'])
                         || request.resource.data.type in ['image', 'video']);
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
@@ -154,7 +166,8 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /addons/{addonId} {
       allow read: if true;
-      allow write: if false;
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
@@ -162,7 +175,8 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /testimonials/{tid} {
       allow read: if true;
-      allow write: if false;
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
@@ -170,7 +184,8 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /socialPosts/{postId} {
       allow read: if true;
-      allow write: if false;
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
@@ -178,8 +193,12 @@ service cloud.firestore {
     // Only known document IDs (global, adminConfig, etc.) may be created/updated
     // -------------------------------------------------------------------------
     match /settings/{docId} {
-      allow read: if true;
-      allow create, update: if docId in ['global', 'adminConfig', 'delivery', 'loyalty', 'theme', 'kiosk'];
+      // adminConfig holds the admin password hash + salt. Block client reads.
+      // Other docs (global/dailySpecial/dynamicPricing/etc.) are read by the
+      // customer site and stay world-readable.
+      allow read: if docId != 'adminConfig';
+      allow create, update: if isAdmin()
+                            && docId in ['global', 'adminConfig', 'delivery', 'loyalty', 'theme', 'kiosk', 'dailySpecial', 'dynamicPricing'];
       allow delete: if false;
     }
 
@@ -196,23 +215,23 @@ service cloud.firestore {
     //       direct Firestore access. Until then, admin panel kiosk management
     //       will NOT work with these rules — use Firebase Console or Admin SDK.
     match /kiosks/{kioskId} {
-      allow read: if false;
-      allow create: if request.resource.data.keys().hasAll(['username', 'shopId', 'active', 'createdAt'])
+      // Read stays admin-only — but now via Firebase Auth claim so the admin
+      // panel can list/manage kiosks once signed in.
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+                    && request.resource.data.keys().hasAll(['username', 'shopId', 'active', 'createdAt'])
                     && request.resource.data.username is string
                     && request.resource.data.username.size() <= 60
                     && request.resource.data.shopId is string
                     && request.resource.data.shopId.size() <= 60;
-      // Restrict update to admin-managed fields. Previously `allow update: if
-      // true` let any client modify any field on any kiosk record — including
-      // reassigning a terminal to a different shop. Credential rotation
-      // (passwordHash) is allowed because the admin panel does it client-side.
-      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+      allow update: if isAdmin()
+                    && request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['active', 'passwordHash', 'username', 'lastLogin', 'updatedAt'])
                     && (!request.resource.data.keys().hasAny(['username'])
                         || (request.resource.data.username is string && request.resource.data.username.size() <= 60))
                     && (!request.resource.data.keys().hasAny(['active'])
                         || request.resource.data.active is bool);
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
@@ -232,11 +251,13 @@ service cloud.firestore {
     // -------------------------------------------------------------------------
     match /shops/{shopId} {
       allow read: if true;
-      allow create: if hasFields(['name', 'createdAt'])
+      allow create: if isAdmin()
+                    && hasFields(['name', 'createdAt'])
                     && isString(request.resource.data.name);
-      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+      allow update: if isAdmin()
+                    && request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['name', 'address', 'phone', 'hours', 'logo', 'settings', 'updatedAt']);
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
@@ -361,30 +382,34 @@ service cloud.firestore {
     // EXPENSES — admin-only, full read/write from admin panel
     // -------------------------------------------------------------------------
     match /expenses/{expenseId} {
-      allow read: if true;
-      allow create: if hasFields(['date', 'category', 'amount', 'description', 'createdAt'])
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+                    && hasFields(['date', 'category', 'amount', 'description', 'createdAt'])
                     && isString(request.resource.data.date)
                     && isString(request.resource.data.category)
                     && isString(request.resource.data.description)
                     && isNumber(request.resource.data.amount)
                     && request.resource.data.amount > 0;
-      allow update: if hasFields(['date', 'category', 'amount', 'description'])
+      allow update: if isAdmin()
+                    && hasFields(['date', 'category', 'amount', 'description'])
                     && isNumber(request.resource.data.amount)
                     && request.resource.data.amount > 0;
-      allow delete: if false;  // Expense deletion restricted — use admin console
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------
     // STAFF — managed by admin panel (validate required fields)
     // -------------------------------------------------------------------------
     match /staff/{staffId} {
-      allow read: if true;
-      allow create: if hasFields(['name', 'role'])
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+                    && hasFields(['name', 'role'])
                     && isString(request.resource.data.name)
                     && isString(request.resource.data.role);
-      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+      allow update: if isAdmin()
+                    && request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['name', 'role', 'phone', 'active', 'shift', 'updatedAt']);
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     // -------------------------------------------------------------------------

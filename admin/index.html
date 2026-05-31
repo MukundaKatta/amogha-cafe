@@ -3259,6 +3259,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <!-- Storage SDK removed — using Cloudinary for image hosting -->
     <script>
         firebase.initializeApp({
@@ -3393,8 +3394,11 @@
             if (removeBtn) removeBtn.style.display = 'none';
         }
 
-        // Admin password — stored in Firestore settings/adminConfig
-        // First login: any password sets the admin account (first-come-first-serve setup)
+        // Admin password — validated server-side at POST /api/auth/admin-login,
+        // which returns a Firebase custom token with the {admin: true} claim.
+        // signInWithCustomToken below establishes a session whose ID token
+        // unlocks the admin-writeable collections per firestore.rules.
+        // First login: any password sets the admin account (first-come-first-serve setup).
         var ADMIN_PIN = ''; // kept for variable reference only — no longer used
         var currentShopId = 'amogha';
         var allShops = [];
@@ -3556,29 +3560,36 @@
             if (!password) return;
             var btn = document.querySelector('#admin-login .login-btn');
             btn.disabled = true; btn.textContent = 'Checking…';
+            var errEl = document.getElementById('login-error');
+            errEl.textContent = '';
 
-            db.collection('settings').doc('adminConfig').get().then(function(doc) {
-                if (!doc.exists) {
-                    // First-time setup: save the entered password as the admin password
-                    document.getElementById('admin-login-sub').textContent = '✅ First-time setup — your password has been saved.';
-                    return db.collection('settings').doc('adminConfig').set({
-                        adminPassword: password, createdAt: new Date().toISOString()
-                    }).then(function() { proceedAdminLogin(); });
-                }
-                if (doc.data().adminPassword === password) {
-                    proceedAdminLogin();
-                } else {
+            fetch('/api/auth/admin-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            }).then(function(resp) {
+                return resp.json().then(function(data) { return { status: resp.status, data: data }; });
+            }).then(function(result) {
+                if (result.status !== 200 || !result.data || !result.data.token) {
                     btn.disabled = false; btn.textContent = 'Access Dashboard';
-                    var errEl = document.getElementById('login-error');
-                    errEl.textContent = 'Invalid password. Access denied.';
+                    errEl.textContent = (result.data && result.data.error) || 'Invalid password. Access denied.';
                     var box = document.querySelector('.login-box');
                     box.style.animation = 'none'; box.offsetHeight;
                     box.style.animation = 'shake 0.4s ease';
                     document.getElementById('admin-pin').value = '';
+                    return;
                 }
-            }).catch(function() {
+                if (result.data.firstTimeSetup) {
+                    document.getElementById('admin-login-sub').textContent = '✅ First-time setup — your password has been saved.';
+                }
+                // Establish a Firebase Auth session carrying the {admin: true} claim.
+                // Subsequent Firestore writes from the admin panel pass the
+                // request.auth.token.admin == true rule check.
+                return firebase.auth().signInWithCustomToken(result.data.token).then(proceedAdminLogin);
+            }).catch(function(e) {
+                console.error('Admin login error:', e);
                 btn.disabled = false; btn.textContent = 'Access Dashboard';
-                document.getElementById('login-error').textContent = 'Connection error. Try again.';
+                errEl.textContent = 'Connection error. Try again.';
             });
         }
 
@@ -3592,6 +3603,8 @@
         }
 
         function adminLogout() {
+            // Clear the Firebase Auth session so leftover tabs lose admin privileges
+            try { firebase.auth().signOut(); } catch (e) {}
             document.getElementById('admin-dashboard').style.display = 'none';
             document.getElementById('admin-dashboard').classList.remove('dashboard-enter');
             document.getElementById('admin-login').style.display = 'flex';
@@ -3696,9 +3709,26 @@
             var np = (document.getElementById('new-admin-password').value || '').trim();
             var msg = document.getElementById('admin-pw-msg');
             if (!np) { msg.style.color='#e74c3c'; msg.textContent='Enter a new password.'; return; }
-            db.collection('settings').doc('adminConfig').set({ adminPassword: np }, { merge: true })
-                .then(function(){ msg.style.color='#27ae60'; msg.textContent='Password updated!'; document.getElementById('new-admin-password').value=''; })
-                .catch(function(e){ msg.style.color='#e74c3c'; msg.textContent='Error: '+e.message; });
+            var user = firebase.auth().currentUser;
+            if (!user) { msg.style.color='#e74c3c'; msg.textContent='Session expired. Please log in again.'; return; }
+            user.getIdToken().then(function(idToken) {
+                return fetch('/api/auth/admin-change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+                    body: JSON.stringify({ newPassword: np })
+                });
+            }).then(function(resp) {
+                return resp.json().then(function(data) { return { status: resp.status, data: data }; });
+            }).then(function(result) {
+                if (result.status !== 200) {
+                    msg.style.color='#e74c3c';
+                    msg.textContent = 'Error: ' + ((result.data && result.data.error) || 'Failed to update password.');
+                    return;
+                }
+                msg.style.color='#27ae60';
+                msg.textContent='Password updated!';
+                document.getElementById('new-admin-password').value='';
+            }).catch(function(e){ msg.style.color='#e74c3c'; msg.textContent='Error: ' + (e.message || 'Network error.'); });
         }
 
         // ─── SEASONAL THEME ───
