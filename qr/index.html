@@ -698,7 +698,7 @@ function renderCatTabs() {
     categories.forEach(function(cat) {
         var count = getCatCount(cat);
         html += '<div class="cat-tab' + (cat === activeCat ? ' active' : '') +
-                '" onclick="setCat(' + JSON.stringify(cat) + ',this)">' + escHtml(cat) +
+                '" onclick="setCat(' + escHtml(JSON.stringify(cat)) + ',this)">' + escHtml(cat) +
                 ' <span class="cat-count">(' + count + ')</span></div>';
     });
     document.getElementById('cat-tabs').innerHTML = html;
@@ -842,7 +842,7 @@ function renderMenu() {
         html += '<div class="section-title">' + escHtml(cat) + '</div>';
         grouped[cat].forEach(function(item) {
             var qty = getCartQty(item.name);
-            var jsName = JSON.stringify(item.name);
+            var jsName = escHtml(JSON.stringify(item.name));
             var delay = Math.min(itemIndex * 40, 400);
             itemIndex++;
             html += '<div class="item-card" style="animation-delay:' + delay + 'ms">';
