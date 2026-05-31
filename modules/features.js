@@ -1,4 +1,4 @@
-import { safeGetItem, safeSetItem, lockScroll, unlockScroll } from '../core/utils.js';
+import { safeGetItem, safeSetItem, lockScroll, unlockScroll, sanitizeHtml } from '../core/utils.js';
 import { getCurrentUser, setCurrentUser, showAuthToast } from './auth.js';
 import { cart, updateCartCount, saveCart, updateFloatingCart, updateCartFab, addToCart, displayCart } from './cart.js';
 import { ITEM_PAIRINGS, ITEM_PRICES, HAPPY_HOURS, TRANSLATIONS, DYNAMIC_PRICING_RULES } from '../core/constants.js';
@@ -211,8 +211,9 @@ export function openReviewModal(orderItems) {
     html += '<h2>Rate Your Order</h2><p class="review-subtitle">Help us serve you better!</p>';
     html += '<div id="review-items">';
     items.forEach(function(item, idx) {
-        html += '<div class="review-item" data-item="' + item.name + '">' +
-            '<span class="review-item-name">' + item.name + '</span>' +
+        var safeName = sanitizeHtml(item.name);
+        html += '<div class="review-item" data-item="' + safeName + '">' +
+            '<span class="review-item-name">' + safeName + '</span>' +
             '<div class="review-stars" data-idx="' + idx + '">';
         for (var s = 1; s <= 5; s++) {
             html += '<span class="review-star" data-star="' + s + '" onclick="setReviewStar(this, ' + idx + ', ' + s + ')">&#9734;</span>';
@@ -329,8 +330,9 @@ export function initComboMealBuilder() {
         var container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = items.map(function(item) {
-            return '<button class="combo-option" data-category="' + category + '" data-name="' + item.name + '" data-price="' + item.price + '">' +
-                '<span class="combo-opt-name">' + item.name + '</span>' +
+            var safeName = sanitizeHtml(item.name);
+            return '<button class="combo-option" data-category="' + sanitizeHtml(category) + '" data-name="' + safeName + '" data-price="' + item.price + '">' +
+                '<span class="combo-opt-name">' + safeName + '</span>' +
                 '<span class="combo-opt-price">\u20B9' + item.price + '</span>' +
             '</button>';
         }).join('');
