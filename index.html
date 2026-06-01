@@ -825,7 +825,7 @@
                         <label for="contact-email" class="sr-only">Your Email</label>
                         <input type="email" id="contact-email" name="email" placeholder="Your Email" required autocomplete="email" aria-required="true" aria-label="Your email">
                         <label for="contact-phone" class="sr-only">Phone Number</label>
-                        <input type="tel" id="contact-phone" name="phone" placeholder="Phone Number" autocomplete="tel" aria-label="Phone number">
+                        <input type="tel" id="contact-phone" name="phone" placeholder="Phone Number" inputmode="numeric" autocomplete="tel" aria-label="Phone number">
                         <label for="contact-message" class="sr-only">Your Message</label>
                         <textarea id="contact-message" name="message" placeholder="Your Message" rows="5" required aria-required="true" aria-label="Your message"></textarea>
                         <button type="submit" class="cta-button">Send Message</button>
@@ -989,7 +989,7 @@
                     </div>
                     <div class="catering-field">
                         <label for="catering-phone">Phone Number *</label>
-                        <input type="tel" id="catering-phone" placeholder="+91 98765 43210" required aria-label="+91 98765 43210">
+                        <input type="tel" id="catering-phone" placeholder="+91 98765 43210" required inputmode="numeric" autocomplete="tel" aria-label="Phone number">
                     </div>
                 </div>
                 <div class="catering-form-row">
@@ -1030,7 +1030,7 @@
             <form id="reservation-form">
                 <input type="text" name="name" placeholder="Your Name" required aria-label="Your name">
                 <input type="email" name="email" placeholder="Email Address" required aria-label="Email address">
-                <input type="tel" name="phone" placeholder="Phone Number" required aria-label="Phone number">
+                <input type="tel" name="phone" placeholder="Phone Number" required inputmode="numeric" autocomplete="tel" aria-label="Phone number">
                 <input type="date" name="date" required aria-label="Reservation date">
                 <input type="time" name="time" required aria-label="Reservation time">
                 <select name="guests" required aria-label="Number of guests">
@@ -1117,7 +1117,7 @@
                     <label for="co-name" class="sr-only">Full Name</label>
                     <input type="text" id="co-name" placeholder="Full Name" required autocomplete="name" aria-required="true" aria-label="Full Name">
                     <label for="co-phone" class="sr-only">Phone Number</label>
-                    <input type="tel" id="co-phone" placeholder="Phone Number" required autocomplete="tel" pattern="[0-9]{10}" aria-required="true" aria-label="Phone Number">
+                    <input type="tel" id="co-phone" placeholder="Phone Number" required inputmode="numeric" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" aria-required="true" aria-label="Phone Number">
                     <label for="co-address" class="sr-only">Delivery Address</label>
                     <textarea id="co-address" placeholder="Delivery Address" rows="3" required autocomplete="street-address" aria-required="true" aria-label="Delivery Address"></textarea>
                     <label for="co-notes" class="sr-only">Special Instructions</label>
@@ -1241,7 +1241,7 @@
                 <p class="auth-subtitle">Join Amogha for exclusive offers</p>
                 <form id="signup-form" onsubmit="return false;">
                     <input type="text" id="signup-name" placeholder="Your Name" required aria-label="Your name">
-                    <input type="tel" id="signup-phone" placeholder="Phone Number (10 digits)" required maxlength="10" aria-label="Phone number">
+                    <input type="tel" id="signup-phone" placeholder="Phone Number (10 digits)" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" autocomplete="tel" aria-label="Phone number">
                     <div class="password-field">
                         <input type="password" id="signup-password" placeholder="Create 4-Digit PIN" required maxlength="4" minlength="4" inputmode="numeric" pattern="\d{4}" aria-label="Create 4-digit PIN">
                         <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)" aria-label="Show PIN">
@@ -1260,7 +1260,7 @@
                 <h2>Welcome Back</h2>
                 <p class="auth-subtitle">Sign in to your Amogha account</p>
                 <form id="signin-form" onsubmit="return false;">
-                    <input type="tel" id="signin-phone" placeholder="Phone Number" required maxlength="10" aria-label="Phone number">
+                    <input type="tel" id="signin-phone" placeholder="Phone Number" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" autocomplete="tel" aria-label="Phone number">
                     <div class="password-field">
                         <input type="password" id="signin-password" placeholder="4-Digit PIN" required maxlength="4" inputmode="numeric" pattern="\d{4}" aria-label="4-digit PIN">
                         <button type="button" class="password-toggle" onclick="togglePassword('signin-password', this)" aria-label="Show PIN">
@@ -1283,7 +1283,7 @@
                 <!-- Step 1: Verify Identity -->
                 <div id="forgot-step-1" class="forgot-step">
                     <form id="forgot-verify-form" onsubmit="return false;">
-                        <input type="tel" id="forgot-phone" placeholder="Registered Phone Number" required maxlength="10" aria-label="Registered phone number">
+                        <input type="tel" id="forgot-phone" placeholder="Registered Phone Number" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" autocomplete="tel" aria-label="Registered phone number">
                         <input type="text" id="forgot-name" placeholder="Registered Name" required aria-label="Registered name">
                         <button type="submit" class="cta-button auth-submit-btn" onclick="handleForgotPassword()">Verify Identity</button>
                     </form>
@@ -1354,7 +1354,7 @@
             <button type="button" class="close" aria-label="Close gift card" onclick="closeGiftCardModal()">&times;</button>
             <h2 class="gc-modal-title">🎁 Gift a Meal</h2>
             <p class="gc-modal-subtitle">Send the joy of Amogha to someone special</p>
-            <input type="tel" id="gc-recipient-phone" placeholder="Recipient's phone number" maxlength="10" class="gc-phone-input" aria-label="Recipient phone number">
+            <input type="tel" id="gc-recipient-phone" placeholder="Recipient's phone number" maxlength="10" inputmode="numeric" pattern="[0-9]{10}" autocomplete="tel" class="gc-phone-input" aria-label="Recipient phone number">
             <div class="gc-amounts">
                 <button class="gc-amount-btn" onclick="selectGcAmount(250, this)">&#8377;250</button>
                 <button class="gc-amount-btn active" onclick="selectGcAmount(500, this)">&#8377;500</button>

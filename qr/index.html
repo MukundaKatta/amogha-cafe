@@ -461,7 +461,7 @@
             <label for="co-name">Your Name *</label>
             <input type="text" id="co-name" placeholder="Enter your name" autocomplete="name" aria-label="Enter your name">
             <label for="co-phone">Phone Number *</label>
-            <input type="tel" id="co-phone" placeholder="10-digit phone number" maxlength="10" autocomplete="tel" aria-label="10-digit phone number">
+            <input type="tel" id="co-phone" placeholder="10-digit phone number" maxlength="10" inputmode="numeric" pattern="[0-9]{10}" autocomplete="tel" aria-label="10-digit phone number">
             <label for="co-notes">Special Instructions (optional)</label>
             <textarea id="co-notes" placeholder="Any allergies, preferences, or notes for the chef..." aria-label="Any allergies, preferences, or notes for the chef..."></textarea>
 
