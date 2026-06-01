@@ -829,7 +829,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
                     <h2>Order Placed!</h2>
                     <p class="confirm-msg">Thank you! Your order has been received.</p>
                     <p class="confirm-sub" id="confirm-detail"></p>
-                    <a id="whatsapp-link" class="whatsapp-btn" href="#" target="_blank">Send Order via WhatsApp</a>
+                    <a id="whatsapp-link" class="whatsapp-btn" href="#" target="_blank" rel="noopener noreferrer">Send Order via WhatsApp</a>
                     <div id="order-tracking-link"></div>
                     <a href="/" class="btn-secondary" style="display:inline-block;margin-top:1rem;">Back to Home</a>
                 </div>
@@ -1104,7 +1104,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
         goToStep(4);
         db.collection('orders').add(orderData).then(function(docRef){
             var trackUrl=window.location.origin+'/track/?id='+docRef.id;var td=document.getElementById('order-tracking-link');
-            if(td)td.innerHTML='<div class="order-track-card"><p class="order-track-label">Track your order:</p><a href="'+trackUrl+'" target="_blank" class="order-track-link">'+trackUrl+'</a><br><button onclick="safeCopy(\''+trackUrl+'\',this)" class="cta-button order-track-copy">Copy Link</button></div>';
+            if(td)td.innerHTML='<div class="order-track-card"><p class="order-track-label">Track your order:</p><a href="'+trackUrl+'" target="_blank" rel="noopener noreferrer" class="order-track-link">'+trackUrl+'</a><br><button onclick="safeCopy(\''+trackUrl+'\',this)" class="cta-button order-track-copy">Copy Link</button></div>';
             cart=[];updateCartCount();saveCart();itemNames.forEach(function(n){updateButtonState(n);});updateFloatingCartBar();
         }).catch(function(e){showAuthToast('Error saving order: '+e.message);});
     }
