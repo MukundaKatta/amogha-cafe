@@ -177,15 +177,28 @@ export function addToGroupCart(itemName, itemPrice) {
     var db = getDb();
     if (!db) return;
 
-    db.collection('groupCarts').doc(groupCartId).get().then(function(doc) {
-        if (!doc.exists) return;
-        var data = doc.data();
-        var participant = data.participants.find(function(p) { return p.phone === user.phone; });
-        if (!participant) return;
-        if (!participant.items) participant.items = [];
-        participant.items.push({ name: itemName, price: itemPrice, qty: 1 });
-        db.collection('groupCarts').doc(groupCartId).update({ participants: data.participants });
-        if (typeof window.showAuthToast === 'function') window.showAuthToast('Added to group cart!');
+    // Run as a transaction so concurrent adds from different participants
+    // don't last-write-wins the participants array and silently drop items.
+    var ref = db.collection('groupCarts').doc(groupCartId);
+    db.runTransaction(function(tx) {
+        return tx.get(ref).then(function(doc) {
+            if (!doc.exists) return null;
+            var data = doc.data();
+            var participants = (data.participants || []).map(function(p) {
+                return Object.assign({}, p, { items: (p.items || []).slice() });
+            });
+            var participant = participants.find(function(p) { return p.phone === user.phone; });
+            if (!participant) return null;
+            participant.items.push({ name: itemName, price: itemPrice, qty: 1 });
+            tx.update(ref, { participants: participants });
+            return true;
+        });
+    }).then(function(result) {
+        if (result && typeof window.showAuthToast === 'function') {
+            window.showAuthToast('Added to group cart!');
+        }
+    }).catch(function(err) {
+        console.error('addToGroupCart transaction error:', err);
     });
 }
 
