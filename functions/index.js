@@ -254,17 +254,51 @@ async function rateLimiter(req, res, next) {
     }
 }
 
-// Phone-based order rate limiting (max 5 orders per phone per hour)
-var _orderLimits = {};
-function checkOrderRateLimit(phone) {
+// Phone-based order rate limiting (max 5 orders per phone per hour).
+// Stored in Firestore so cold starts don't reset the counter — the in-memory
+// version was bypassable by waiting for a function instance to recycle.
+var ORDER_RATE_WINDOW = 3600000; // 1 hour
+var ORDER_RATE_MAX = 5;
+var _orderLimitCleanupTs = Date.now();
+
+async function checkOrderRateLimit(phone) {
+    if (!phone) return true; // No-op if no phone (e.g. POS orders)
     var now = Date.now();
-    var key = phone;
-    if (!_orderLimits[key]) _orderLimits[key] = [];
-    // Clean old entries
-    _orderLimits[key] = _orderLimits[key].filter(function(t) { return now - t < 3600000; });
-    if (_orderLimits[key].length >= 5) return false;
-    _orderLimits[key].push(now);
-    return true;
+    var docId = String(phone).replace(/[.:/]/g, '_');
+
+    try {
+        // Periodic cleanup of expired counters (every 2 hours)
+        if (now - _orderLimitCleanupTs > ORDER_RATE_WINDOW * 2) {
+            _orderLimitCleanupTs = now;
+            var expiredCutoff = now - ORDER_RATE_WINDOW;
+            var expiredSnap = await db.collection('_orderLimits')
+                .where('windowStart', '<', expiredCutoff)
+                .limit(500)
+                .get();
+            if (!expiredSnap.empty) {
+                var batch = db.batch();
+                expiredSnap.forEach(function(doc) { batch.delete(doc.ref); });
+                await batch.commit();
+            }
+        }
+
+        var ref = db.collection('_orderLimits').doc(docId);
+        var snap = await ref.get();
+        if (!snap.exists || now - snap.data().windowStart > ORDER_RATE_WINDOW) {
+            await ref.set({ count: 1, windowStart: now });
+            return true;
+        }
+        var data = snap.data();
+        if (data.count >= ORDER_RATE_MAX) return false;
+        await ref.update({ count: admin.firestore.FieldValue.increment(1) });
+        return true;
+    } catch (e) {
+        // If the check itself fails, fail open — better to accept an order
+        // than to refuse one because of an internal error. Mirrors the
+        // behavior of rateLimiter at line 250.
+        console.error('Order rate limit error:', e);
+        return true;
+    }
 }
 
 // Apply rate limiting to AI-powered endpoints (expensive Gemini calls)
@@ -425,7 +459,7 @@ app.post('/order', async function(req, res) {
             return res.status(400).json({ error: 'Order cannot contain more than 100 items' });
         }
 
-        if (!checkOrderRateLimit(phone)) {
+        if (!(await checkOrderRateLimit(phone))) {
             return res.status(429).json({ error: 'Too many orders. Please try again later.' });
         }
 
