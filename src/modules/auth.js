@@ -91,6 +91,15 @@ export function getCurrentUser() {
             try { localStorage.removeItem('amoghaUser'); } catch(e) {}
             return null;
         }
+        // Scrub any legacy PIN hash/salt that an older build may have cached
+        // locally. setCurrentUser no longer persists these, but pre-fix
+        // sessions still carry them — strip and re-persist on first read.
+        if (parsed.pin || parsed.pinSalt || parsed.password) {
+            delete parsed.pin;
+            delete parsed.password;
+            delete parsed.pinSalt;
+            try { safeSetItem('amoghaUser', JSON.stringify(parsed)); } catch(e) {}
+        }
         return parsed;
     } catch(e) { return null; }
 }
@@ -100,7 +109,17 @@ export function setCurrentUser(user) {
     if (user && !user._sessionTimestamp) {
         user._sessionTimestamp = Date.now();
     }
-    safeSetItem('amoghaUser', JSON.stringify(user));
+    // Strip the PIN hash + salt before persisting. The localStorage copy is a
+    // session cache only — signIn() validates against a fresh Firestore read,
+    // so these fields are never needed locally. Keeping them would let
+    // anyone with localStorage access (XSS, lost device, malicious browser
+    // extension) brute-force the 4-digit PIN offline against the known salt
+    // in milliseconds.
+    var cached = Object.assign({}, user);
+    delete cached.pin;
+    delete cached.password;
+    delete cached.pinSalt;
+    safeSetItem('amoghaUser', JSON.stringify(cached));
     // Start listening for order status notifications
     var db = getDb();
     if (user && user.phone && typeof db !== 'undefined' && db && !window._notifListenerActive) {

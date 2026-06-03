@@ -1069,7 +1069,16 @@ describe('addToGroupCart — adds item to participant in Firestore', () => {
             doc: vi.fn(() => docMock),
             add: vi.fn(() => Promise.resolve({ id: 'GC-ADD' })),
         };
-        window.db = { collection: vi.fn(() => collectionMock) };
+        // addToGroupCart now uses db.runTransaction. Provide a mock that
+        // invokes the callback with a tx that proxies to docMock.
+        const runTransaction = vi.fn(async (cb) => {
+            const tx = {
+                get: (ref) => docMock.get(),
+                update: (ref, data) => docMock.update(data),
+            };
+            return cb(tx);
+        });
+        window.db = { collection: vi.fn(() => collectionMock), runTransaction };
 
         createGroupCart();
         await new Promise((r) => setTimeout(r, 10));
@@ -1112,7 +1121,14 @@ describe('addToGroupCart — adds item to participant in Firestore', () => {
             doc: vi.fn(() => docMock),
             add: vi.fn(() => Promise.resolve({ id: 'GC-NOFIND' })),
         };
-        window.db = { collection: vi.fn(() => collectionMock) };
+        const runTransaction = vi.fn(async (cb) => {
+            const tx = {
+                get: (ref) => docMock.get(),
+                update: (ref, data) => docMock.update(data),
+            };
+            return cb(tx);
+        });
+        window.db = { collection: vi.fn(() => collectionMock), runTransaction };
 
         createGroupCart();
         await new Promise((r) => setTimeout(r, 10));
