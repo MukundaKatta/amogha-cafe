@@ -290,6 +290,28 @@ function requireAdminAuth(req, res, next) {
     return res.status(401).json({ error: 'Unauthorized. Provide a valid x-api-key header.' });
 }
 
+// Verify a Firebase ID token in the Authorization header and require the
+// {admin: true} custom claim. Use this for browser-originating admin
+// requests — the admin panel obtains a session via /auth/admin-login,
+// which mints a custom token + signInWithCustomToken in the browser.
+async function requireFirebaseAdmin(req, res, next) {
+    try {
+        var authHeader = req.headers.authorization || '';
+        var match = authHeader.match(/^Bearer\s+(.+)$/);
+        if (!match) {
+            return res.status(401).json({ error: 'Missing Bearer token.' });
+        }
+        var decoded = await admin.auth().verifyIdToken(match[1]);
+        if (!decoded || decoded.admin !== true) {
+            return res.status(403).json({ error: 'Admin privileges required.' });
+        }
+        req.adminUid = decoded.uid;
+        return next();
+    } catch (e) {
+        return res.status(401).json({ error: 'Invalid or expired token.' });
+    }
+}
+
 // Apply admin auth to sensitive endpoints
 app.use(['/notify', '/analytics-query', '/forecast', '/menu-insights'], requireAdminAuth);
 
@@ -784,6 +806,118 @@ app.post('/auth/delivery-login', async function(req, res) {
     } catch (e) {
         console.error('POST /auth/delivery-login error:', e);
         res.status(500).json({ error: 'Login failed. Check your connection.' });
+    }
+});
+
+// -----------------------------------------------------------------------
+// ADMIN PANEL LOGIN
+// Replaces the legacy client-side compare against a world-readable
+// `settings/adminConfig.adminPassword`. The client posts the password
+// here, the server validates against `adminPasswordHash`+`adminPasswordSalt`
+// (or migrates from legacy plaintext on the fly), and returns a Firebase
+// custom token with the {admin: true} claim. The admin panel then calls
+// signInWithCustomToken so subsequent Firestore writes carry the claim
+// and pass the tightened firestore.rules.
+// -----------------------------------------------------------------------
+var ADMIN_UID = 'admin-panel';
+
+app.post('/auth/admin-login', async function(req, res) {
+    try {
+        var body = req.body || {};
+        var password = body.password || '';
+        if (!password || typeof password !== 'string') {
+            return res.status(400).json({ error: 'Password is required.' });
+        }
+        // Throttle by remote IP (best-effort — Firebase's edge forwards
+        // the real client IP in fastly-client-ip / x-forwarded-for).
+        var clientIp = req.headers['fastly-client-ip']
+            || (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+            || req.ip
+            || 'unknown';
+        if (!checkLoginThrottle('admin:' + clientIp)) {
+            return res.status(429).json({ error: 'Too many login attempts. Try again in 5 minutes.' });
+        }
+
+        var ref = db.collection('settings').doc('adminConfig');
+        var snap = await ref.get();
+
+        if (!snap.exists) {
+            // First-time setup: bootstrap with the entered password as the admin password.
+            var bootstrapSalt = crypto.randomBytes(16).toString('hex');
+            var bootstrapHash = hashValue(password, bootstrapSalt);
+            await ref.set({
+                adminPasswordHash: bootstrapHash,
+                adminPasswordSalt: bootstrapSalt,
+                createdAt: new Date().toISOString()
+            });
+            clearLoginAttempts('admin:' + clientIp);
+            var bootstrapToken = await admin.auth().createCustomToken(ADMIN_UID, { admin: true });
+            return res.json({ token: bootstrapToken, firstTimeSetup: true });
+        }
+
+        var data = snap.data() || {};
+        var match = false;
+        var needsMigration = false;
+
+        if (data.adminPasswordHash && data.adminPasswordSalt) {
+            match = timingSafeEqual(
+                hashValue(password, data.adminPasswordSalt),
+                data.adminPasswordHash
+            );
+        } else if (data.adminPassword) {
+            // Legacy plaintext compare. On success, migrate to hashed form
+            // and delete the plaintext field in the same write.
+            match = timingSafeEqual(password, data.adminPassword);
+            if (match) needsMigration = true;
+        }
+
+        if (!match) {
+            return res.status(401).json({ error: 'Invalid password.' });
+        }
+
+        if (needsMigration) {
+            try {
+                var newSalt = crypto.randomBytes(16).toString('hex');
+                var newHash = hashValue(password, newSalt);
+                await ref.update({
+                    adminPasswordHash: newHash,
+                    adminPasswordSalt: newSalt,
+                    adminPassword: admin.firestore.FieldValue.delete()
+                });
+            } catch (migErr) {
+                // Migration failure is non-fatal — caller can still sign in.
+                console.error('Admin password migration error:', migErr);
+            }
+        }
+
+        clearLoginAttempts('admin:' + clientIp);
+        var token = await admin.auth().createCustomToken(ADMIN_UID, { admin: true });
+        return res.json({ token: token });
+    } catch (e) {
+        console.error('Admin login error:', e);
+        return res.status(500).json({ error: 'Login failed.' });
+    }
+});
+
+app.post('/auth/admin-change-password', requireFirebaseAdmin, async function(req, res) {
+    try {
+        var body = req.body || {};
+        var newPassword = body.newPassword || '';
+        if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 4) {
+            return res.status(400).json({ error: 'New password must be at least 4 characters.' });
+        }
+        var salt = crypto.randomBytes(16).toString('hex');
+        var hash = hashValue(newPassword, salt);
+        await db.collection('settings').doc('adminConfig').set({
+            adminPasswordHash: hash,
+            adminPasswordSalt: salt,
+            adminPassword: admin.firestore.FieldValue.delete(),
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+        return res.json({ ok: true });
+    } catch (e) {
+        console.error('Admin change-password error:', e);
+        return res.status(500).json({ error: 'Failed to update password.' });
     }
 });
 
