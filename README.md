@@ -774,10 +774,11 @@ npm run test:e2e
 
 ## CI/CD Pipelines
 
-6 GitHub Actions workflows in `.github/workflows/`:
+7 GitHub Actions workflows in `.github/workflows/`:
 
 | Workflow | Trigger | What It Does |
 |----------|---------|--------------|
+| `ci.yml` | PRs + push to master/main | Run Vitest frontend suite + Jest Cloud Functions suite |
 | `deploy.yml` | Push to master | Build (Vite) + Deploy to Firebase (hosting, rules, functions) |
 | `release-android.yml` | Manual | Sign AAB + upload to Google Play (main/kiosk/POS apps) |
 | `release-ios.yml` | Manual | Build signed IPA + upload to App Store via Fastlane |

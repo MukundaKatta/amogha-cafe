@@ -41,4 +41,19 @@ describe('Auth — getCurrentUser / setCurrentUser', () => {
         setCurrentUser({ name: 'Test', phone: '9000000001', pin: '0000', loyaltyPoints: 250 });
         expect(getCurrentUser().loyaltyPoints).toBe(250);
     });
+
+    // Regression: setCurrentUser(null) used to persist Object.assign({}, null) === {},
+    // which made getCurrentUser() return a truthy empty object instead of null.
+    it('clears the session when setCurrentUser is called with null', () => {
+        setCurrentUser({ name: 'Test', phone: '9876543210' });
+        expect(getCurrentUser()).not.toBeNull();
+        setCurrentUser(null);
+        expect(getCurrentUser()).toBeNull();
+    });
+
+    it('clears the session for any falsy value', () => {
+        setCurrentUser({ name: 'Test', phone: '9876543210' });
+        setCurrentUser(undefined);
+        expect(getCurrentUser()).toBeNull();
+    });
 });

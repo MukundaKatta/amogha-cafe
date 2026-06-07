@@ -4,6 +4,24 @@ All notable changes to the Amogha Cafe platform are documented in this file.
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **Auth session not cleared on `setCurrentUser(null)`** — passing a falsy user
+  previously persisted an empty object (`{}`) to `localStorage`, so
+  `getCurrentUser()` returned a truthy empty object instead of `null`. Callers
+  that branch on `currentUser ? ... : 'guest'` (e.g. gift-card purchase) then
+  saw `currentUser.phone` as `undefined`. `setCurrentUser` now removes the
+  cached entry for falsy input, matching `signOut()`.
+
+### Added
+- **CI workflow** (`.github/workflows/ci.yml`) — runs the Vitest frontend suite
+  and the Jest Cloud Functions suite on every pull request and on pushes to
+  `master`/`main`. Restores an automated test gate independent of `deploy.yml`,
+  whose test steps are currently commented out.
+
+---
+
 ## [1.0.0] — 2026-03-05
 
 ### Added
