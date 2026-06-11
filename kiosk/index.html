@@ -1429,7 +1429,7 @@ function renderFeatured() {
     // Duplicate for seamless loop
     var items = bestsellers.concat(bestsellers);
     items.forEach(function(item) {
-        html += '<div class="featured-item" onclick="scrollToItem(\'' + escHtml(item.name).replace(/'/g,"&#039;") + '\')">';
+        html += '<div class="featured-item" onclick="scrollToItem(' + escHtml(JSON.stringify(item.name)) + ')">';
         html += '<span class="featured-star">\u2605</span>';
         html += '<span class="featured-name">' + escHtml(item.name) + '</span>';
         html += '<span class="featured-price">\u20B9' + item.price + '</span>';
@@ -1698,11 +1698,12 @@ function renderMenu() {
         html += '<div class="item-grid">';
         grouped[cat].forEach(function(item) {
             var qty = getCartQty(item.name);
-            var eName = escHtml(item.name).replace(/'/g, "&#039;");
-            html += '<div class="item-card card-enter" onclick="openDetail(\'' + eName + '\')" style="cursor:pointer">';
+            var eNameAttr = escHtml(item.name);
+            var eNameJs = escHtml(JSON.stringify(item.name));
+            html += '<div class="item-card card-enter" onclick="openDetail(' + eNameJs + ')" style="cursor:pointer">';
             html += '<div class="item-img-wrap">';
             if (item.img) {
-                html += '<img class="item-img" src="' + escHtml(item.img) + '" alt="' + eName + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+                html += '<img class="item-img" src="' + escHtml(item.img) + '" alt="' + eNameAttr + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
                 html += '<div class="item-img-placeholder" style="display:none">' + placeholderSvg + '</div>';
             } else {
                 html += '<div class="item-img-placeholder">' + placeholderSvg + '</div>';
@@ -1721,9 +1722,9 @@ function renderMenu() {
             html += '<div class="item-bottom">';
             html += '<div class="item-price">\u20B9' + item.price + '</div>';
             if (qty === 0) {
-                html += '<button class="add-btn" onclick="event.stopPropagation();addToCart(\'' + eName + '\',' + item.price + ',this)">' + t('addToOrder') + '</button>';
+                html += '<button class="add-btn" onclick="event.stopPropagation();addToCart(' + eNameJs + ',' + item.price + ',this)">' + t('addToOrder') + '</button>';
             } else {
-                html += '<div class="qty-ctrl" onclick="event.stopPropagation()"><button onclick="changeQty(\'' + eName + '\',-1)">&minus;</button><span>' + qty + '</span><button onclick="changeQty(\'' + eName + '\',1)">+</button></div>';
+                html += '<div class="qty-ctrl" onclick="event.stopPropagation()"><button onclick="changeQty(' + eNameJs + ',-1)">&minus;</button><span>' + qty + '</span><button onclick="changeQty(' + eNameJs + ',1)">+</button></div>';
             }
             html += '</div></div></div>';
         });
