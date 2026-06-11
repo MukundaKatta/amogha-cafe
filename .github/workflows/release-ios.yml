@@ -34,16 +34,21 @@ jobs:
         run: npm ci
         working-directory: .
 
-      - name: Build web content for iOS
-        run: npm run build:ios
-        working-directory: .
-
+      # Ruby/Bundler must be ready BEFORE 'Build web content for iOS' below.
+      # npm run build:ios runs `npx cap sync ios`, which itself invokes
+      # `bundle exec pod install` to update iOS native deps. Without gems
+      # installed first, Bundler errors with "Could not find fastlane-X, ...
+      # in locally installed gems" and the build fails.
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
           bundler-cache: true
           working-directory: ios/App
+
+      - name: Build web content for iOS
+        run: npm run build:ios
+        working-directory: .
 
       - name: Install CocoaPods
         run: pod install
