@@ -334,8 +334,9 @@ export function initComboMealBuilder() {
         var container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = items.map(function(item) {
-            return '<button class="combo-option" data-category="' + category + '" data-name="' + item.name + '" data-price="' + item.price + '">' +
-                '<span class="combo-opt-name">' + item.name + '</span>' +
+            var safeName = escH(item.name);
+            return '<button class="combo-option" data-category="' + escH(category) + '" data-name="' + safeName + '" data-price="' + item.price + '">' +
+                '<span class="combo-opt-name">' + safeName + '</span>' +
                 '<span class="combo-opt-price">\u20B9' + item.price + '</span>' +
             '</button>';
         }).join('');
@@ -1647,7 +1648,7 @@ export async function generateMealPlan() {
                 (day.meals || []).forEach(function(meal) {
                     html += '<div style="font-size:.68rem;color:#D4A017;font-weight:600;text-transform:uppercase;margin-top:6px">' + meal.mealType + '</div>';
                     (meal.items || []).forEach(function(item) {
-                        html += '<div class="meal-item">' + item.name + ' x' + (item.qty || 1) + ' — &#8377;' + item.price + '</div>';
+                        html += '<div class="meal-item">' + escH(item.name) + ' x' + (item.qty || 1) + ' — &#8377;' + item.price + '</div>';
                     });
                 });
                 html += '</div>';
