@@ -767,7 +767,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
                     <label for="co-name" class="sr-only">Full Name</label>
                     <input type="text" id="co-name" placeholder="Full Name" required autocomplete="name" aria-label="Full Name">
                     <label for="co-phone" class="sr-only">Phone Number</label>
-                    <input type="tel" id="co-phone" placeholder="Phone Number" required autocomplete="tel" pattern="[0-9]{10}" aria-label="Phone Number">
+                    <input type="tel" id="co-phone" placeholder="Phone Number" required inputmode="numeric" autocomplete="tel" pattern="[0-9]{10}" maxlength="10" aria-label="Phone Number">
                     <label for="co-address" class="sr-only">Delivery Address</label>
                     <textarea id="co-address" placeholder="Delivery Address" rows="3" required autocomplete="street-address" aria-label="Delivery Address"></textarea>
                     <label for="co-notes" class="sr-only">Special Instructions</label>
