@@ -1,5 +1,32 @@
 // ===== VITEST TEST SETUP =====
 
+import { createHash } from 'node:crypto';
+
+// Make crypto.subtle.digest resolve on the microtask queue instead of the
+// libuv threadpool. Production hashPin() awaits crypto.subtle.digest(), which
+// is real async work — under vi.useFakeTimers() the only way to flush it is by
+// guessing how many microtask cycles it needs. That guess is machine-speed
+// dependent: it passes locally but the digest can take >50ms on slower CI
+// runners, leaving the awaited signup/signin chain unresolved (8 timeouts) and
+// the post-signup referral setTimeout never scheduled (refSpy 0 calls).
+//
+// We swap in a synchronous SHA-256 (Node's createHash) wrapped in
+// Promise.resolve, so the digest settles deterministically on the next
+// microtask flush. The hash VALUE is still real SHA-256, so cross-call matching
+// (sign up then sign in with the same PIN) behaves exactly as in production.
+if (globalThis.crypto && globalThis.crypto.subtle && globalThis.crypto.subtle.digest) {
+    const _origDigest = globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle);
+    globalThis.crypto.subtle.digest = (algorithm, data) => {
+        const name = typeof algorithm === 'string' ? algorithm : (algorithm && algorithm.name);
+        if (name === 'SHA-256') {
+            const view = ArrayBuffer.isView(data) ? Buffer.from(data.buffer, data.byteOffset, data.byteLength) : Buffer.from(data);
+            const out = createHash('sha256').update(view).digest();
+            return Promise.resolve(out.buffer.slice(out.byteOffset, out.byteOffset + out.byteLength));
+        }
+        return _origDigest(algorithm, data);
+    };
+}
+
 // Mock localStorage with in-memory store
 const localStorageMock = (() => {
     let store = {};
