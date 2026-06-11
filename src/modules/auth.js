@@ -105,6 +105,15 @@ export function getCurrentUser() {
 }
 
 export function setCurrentUser(user) {
+    // Clearing the session: a falsy user must remove the cached entry, not
+    // persist an empty object. Object.assign({}, null) yields {}, and storing
+    // that would make getCurrentUser() return a truthy {} (with no .phone)
+    // instead of null — leaving callers thinking a user is signed in. Mirror
+    // signOut() and remove the key instead.
+    if (!user) {
+        try { localStorage.removeItem('amoghaUser'); } catch (e) { /* private mode */ }
+        return;
+    }
     // Stamp the session time so we can enforce expiration
     if (user && !user._sessionTimestamp) {
         user._sessionTimestamp = Date.now();
