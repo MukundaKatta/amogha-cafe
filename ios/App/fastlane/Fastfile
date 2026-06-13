@@ -22,39 +22,35 @@ platform :ios do
       is_key_content_base64: true
     )
 
-    # --- Signing WITHOUT match (no certs repo, no Mac seeding required) -------
-    # Create/download the Apple Distribution certificate directly from the
-    # App Store Connect API into the CI keychain. This is exactly the cert
-    # that was missing on the local export ("No signing certificate
-    # 'iOS Distribution' found").
-    cert(
-      api_key: api_key,
-      keychain_path: ENV["KEYCHAIN_PATH"]
-    )
-
-    # Create/download an App Store provisioning profile for the bundle id.
-    sigh(
-      api_key: api_key,
+    # --- Signing via match -----------------------------------------------------
+    # match stores the distribution certificate's PRIVATE KEY (encrypted with
+    # MATCH_PASSWORD) in a dedicated git repo (MATCH_GIT_URL). On the first run
+    # with readonly:false it CREATES the cert + App Store profile via the API
+    # key and pushes them encrypted to that repo; every run after reuses them.
+    #
+    # This is the architecture iOS CI requires: the private key must persist
+    # between ephemeral runners. The earlier `cert`-only approach created a new
+    # certificate every run and threw the key away (orphaned certs, Apple's
+    # 2-3 cert limit) — match fixes that.
+    #
+    # Setup needed once (browser only, no Mac):
+    #   1. Create an empty PRIVATE GitHub repo for certs, e.g. amogha-certs.
+    #   2. Repo secret MATCH_GIT_URL — an HTTPS URL the macOS runner can clone,
+    #      e.g. https://x-access-token:<PAT>@github.com/MukundaKatta/amogha-certs.git
+    #   3. Repo secret MATCH_PASSWORD — any passphrase (the encryption key).
+    match(
+      type: "appstore",
       app_identifier: app_id,
-      platform: "ios"
+      api_key: api_key,
+      git_url: ENV["MATCH_GIT_URL"],
+      readonly: false,
+      keychain_name: "fastlane_tmp_keychain",
+      keychain_password: ""
     )
-    profile_name = lane_context[SharedValues::SIGH_NAME]
 
     increment_build_number(
       build_number: Time.now.strftime("%Y%m%d%H%M"),
       xcodeproj: "App.xcodeproj"
-    )
-
-    # Pin the project to manual signing with the cert + profile we just made,
-    # so build_app uses them instead of Xcode cloud signing (which failed
-    # locally with "Cloud signing permission error").
-    update_code_signing_settings(
-      use_automatic_signing: false,
-      path: "App.xcodeproj",
-      code_sign_identity: "Apple Distribution",
-      profile_name: profile_name,
-      bundle_identifier: app_id,
-      targets: ["App"]
     )
 
     build_app(
@@ -67,7 +63,7 @@ platform :ios do
       export_options: {
         signingStyle: "manual",
         provisioningProfiles: {
-          app_id => profile_name
+          app_id => "match AppStore #{app_id}"
         }
       }
     )
