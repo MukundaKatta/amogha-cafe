@@ -1,6 +1,15 @@
 // ===== AMOGHA CAFE — REST API (Firebase Cloud Functions) =====
 // Powers ChatGPT / AI platform ordering integrations
-const functions = require('firebase-functions');
+// firebase-functions v5+ moved the legacy v1 API (functions.https.onRequest,
+// functions.pubsub.schedule(...).onRun, etc.) under the /v1 import path. The
+// top-level export became the v2 API, which has different signatures.
+// This file uses functions.https.onRequest and functions.pubsub.schedule —
+// both v1-shaped — so we import from /v1 to keep them working as-is.
+// Bumping to firebase-functions v7 with this import is byte-identical
+// runtime behavior; bumping without it would break: the v2 top-level export
+// has no .pubsub property, so the birthday cron at the bottom of this file
+// would crash at module-load time and never deploy.
+const functions = require('firebase-functions/v1');
 const admin     = require('firebase-admin');
 const express   = require('express');
 const cors      = require('cors');
