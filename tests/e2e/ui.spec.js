@@ -172,6 +172,21 @@ async function installDbMock(page, seed = {}) {
                     update: (ref, data) => ops.push(() => ref.update(data)),
                     commit: () => Promise.all(ops.map((op) => op())).then(() => undefined)
                 };
+            },
+            // Firestore SDK exposes runTransaction at the db level. Our group
+            // ordering code uses it to make participant-array reads + writes
+            // atomic. The mock doesn't need real isolation — it just needs to
+            // call the callback with a tx object whose get/update/set proxy
+            // through to the existing docRef methods so the rest of the mock
+            // continues to work unchanged.
+            runTransaction: (cb) => {
+                const tx = {
+                    get: (ref) => ref.get(),
+                    update: (ref, data) => ref.update(data),
+                    set: (ref, data) => ref.set(data),
+                    delete: (ref) => (typeof ref.delete === 'function' ? ref.delete() : Promise.resolve())
+                };
+                return Promise.resolve().then(() => cb(tx));
             }
         };
 
