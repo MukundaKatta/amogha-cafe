@@ -5,7 +5,8 @@ platform :ios do
   lane :beta do
     setup_ci if ENV["CI"]
 
-    # Install provisioning profile from App Store Connect API
+    app_id = ENV["APP_IDENTIFIER"] || "com.amoghahotels.cafe"
+
     api_key = app_store_connect_api_key(
       key_id: ENV["APP_STORE_KEY_ID"],
       issuer_id: ENV["APP_STORE_ISSUER_ID"],
@@ -13,31 +14,56 @@ platform :ios do
       is_key_content_base64: true
     )
 
-    # Sync signing certificates and profiles
-    match(
-      type: "appstore",
-      app_identifier: ENV["APP_IDENTIFIER"] || "com.amoghahotels.cafe",
+    # --- Signing WITHOUT match (no certs repo, no Mac seeding required) -------
+    # Create/download the Apple Distribution certificate directly from the
+    # App Store Connect API into the CI keychain. This is exactly the cert
+    # that was missing on the local export ("No signing certificate
+    # 'iOS Distribution' found").
+    cert(
       api_key: api_key,
-      readonly: is_ci
+      keychain_path: ENV["KEYCHAIN_PATH"]
     )
 
-    # Increment build number (uses current timestamp for unique builds)
+    # Create/download an App Store provisioning profile for the bundle id.
+    sigh(
+      api_key: api_key,
+      app_identifier: app_id,
+      platform: "ios"
+    )
+    profile_name = lane_context[SharedValues::SIGH_NAME]
+
     increment_build_number(
       build_number: Time.now.strftime("%Y%m%d%H%M"),
       xcodeproj: "App.xcodeproj"
     )
 
-    # Build the app
+    # Pin the project to manual signing with the cert + profile we just made,
+    # so build_app uses them instead of Xcode cloud signing (which failed
+    # locally with "Cloud signing permission error").
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "App.xcodeproj",
+      code_sign_identity: "Apple Distribution",
+      profile_name: profile_name,
+      bundle_identifier: app_id,
+      targets: ["App"]
+    )
+
     build_app(
       workspace: "App.xcworkspace",
       scheme: "App",
       export_method: "app-store",
       output_directory: "./build",
       output_name: "AmoghaCafe.ipa",
-      clean: true
+      clean: true,
+      export_options: {
+        signingStyle: "manual",
+        provisioningProfiles: {
+          app_id => profile_name
+        }
+      }
     )
 
-    # Upload to TestFlight
     upload_to_testflight(
       api_key: api_key,
       skip_waiting_for_build_processing: true
