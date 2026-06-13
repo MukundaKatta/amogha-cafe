@@ -7,9 +7,17 @@ platform :ios do
 
     app_id = ENV["APP_IDENTIFIER"] || "com.amoghahotels.cafe"
 
+    # The App Store Connect API *Issuer ID* is an org-wide identifier, not a
+    # secret (it's useless without the .p8 private key, which IS the secret in
+    # APP_STORE_KEY_CONTENT). Default it here so the build works even when the
+    # APP_STORE_ISSUER_ID repo secret is unset/empty. A real value in the
+    # secret still takes precedence.
+    issuer_id = ENV["APP_STORE_ISSUER_ID"].to_s
+    issuer_id = "97d490f7-9127-4b9b-906f-3c093ab650fe" if issuer_id.strip.empty?
+
     api_key = app_store_connect_api_key(
       key_id: ENV["APP_STORE_KEY_ID"],
-      issuer_id: ENV["APP_STORE_ISSUER_ID"],
+      issuer_id: issuer_id,
       key_content: ENV["APP_STORE_KEY_CONTENT"],
       is_key_content_base64: true
     )
