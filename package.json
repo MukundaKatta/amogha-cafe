@@ -19,7 +19,7 @@
     "@playwright/test": "^1.45.0",
     "@vitejs/plugin-legacy": "^5.0.0",
     "@vitest/coverage-istanbul": "^1.6.1",
-    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/coverage-v8": "^4.1.9",
     "firebase-tools": "^15.8.0",
     "jsdom": "^24.0.0",
     "vite": "^5.0.0",
