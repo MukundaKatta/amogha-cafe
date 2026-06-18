@@ -87,7 +87,7 @@ jobs:
         run: ./gradlew bundleRelease
 
       - name: Upload AAB artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: amogha-cafe-release
           path: android/app/build/outputs/bundle/release/app-release.aab
@@ -156,7 +156,7 @@ jobs:
         run: ./gradlew bundleRelease
 
       - name: Upload AAB artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: amogha-kiosk-release
           path: android/app/build/outputs/bundle/release/app-release.aab
@@ -225,7 +225,7 @@ jobs:
         run: ./gradlew bundleRelease
 
       - name: Upload AAB artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: amogha-pos-release
           path: android/app/build/outputs/bundle/release/app-release.aab
