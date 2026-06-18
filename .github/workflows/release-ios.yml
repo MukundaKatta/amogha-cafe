@@ -71,7 +71,7 @@ jobs:
           APP_IDENTIFIER: com.amoghahotels.cafe
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: amogha-cafe-ios
           path: ios/App/build/AmoghaCafe.ipa
